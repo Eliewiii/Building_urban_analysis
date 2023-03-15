@@ -1,6 +1,5 @@
 """
-BuildingHBModel class, representing one building in an urban canopy that will be converted in HB models
-as they will be simulated
+For building to simulate only
 """
 
 import logging
@@ -10,16 +9,16 @@ import dragonfly
 from honeybee.model import Model
 from ladybug_geometry.geometry3d import Vector3D
 
-from building_ubem_tool.building import Building
+from building_ubem.building import Building
 
 from libraries_addons.hb_model_addons import elevation_and_height_from_hb_model
 
 
-class BuildingHBModel(Building):
+class BuildingToSimulate(Building):
     """Building class, representing one building in an urban canopy."""
 
     # todo :make the lb_footprint optional in the Building class
-    def __init__(self, identifier, lb_footprint=None, urban_canopy=None, building_id_shp=None, **kwargs):
+    def __init__(self, identifier, lb_footprint=None, urban_canopy=None, building_id_shp=None,is_target=False, **kwargs):
         # Initialize with the inherited attributes from the Building parent class
         super().__init__(identifier, lb_footprint, urban_canopy, building_id_shp)
         # get the values from the original Building object (if there is one) through **kwargs
@@ -28,6 +27,8 @@ class BuildingHBModel(Building):
 
         self.hb_model_obj = None
         self.hb_model_dict = None
+
+        self.is_target = is_target
 
     def load_hb_attributes(self):
         """
@@ -43,6 +44,7 @@ class BuildingHBModel(Building):
         """
         # Convert the hb_model_obj to hb_model_dict
         self.hb_model_dict = self.hb_model_obj.to_dict()  #todo: test if it works
+
     @classmethod
     def from_building(cls, building_obj):
         """

@@ -8,7 +8,7 @@ import pickle
 
 from honeybee.model import Model
 
-from building_ubem_tool.building import Building
+from building_ubem.building import Building
 from gis.extract_gis import extract_gis
 
 
