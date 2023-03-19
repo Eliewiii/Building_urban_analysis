@@ -40,6 +40,7 @@ if __name__ == "__main__":
     path_additional_gis_attribute_key_dict = args.dic
     move_buildings_to_origin = bool(args.mov)
     run_by_the_tool = bool(args.tool)
+    print (run_by_the_tool)
 
 
     # Create the folder if it does not exist
