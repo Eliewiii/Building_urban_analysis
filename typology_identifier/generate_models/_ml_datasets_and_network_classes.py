@@ -46,6 +46,7 @@ class MultipleBuildingsDataset(Dataset):
         sample = {'image': image, 'label': label}
         return sample
 
+'''
 
 # class SingleBuildingDataset(Dataset):
 #     """
@@ -74,7 +75,7 @@ class MultipleBuildingsDataset(Dataset):
 #
 #         sample = {'image': image, 'label': label}
 #         return sample
-
+'''
 
 class SingleBuildingDataset(Dataset):
     """
