@@ -10,6 +10,7 @@ from honeybee.model import Model
 
 from building_ubem.building import Building
 from gis.extract_gis import extract_gis
+from typology.typology import Typology
 
 
 class UrbanCanopy:
@@ -23,8 +24,7 @@ class UrbanCanopy:
         self.typology_dict = {}
 
         # Move
-        self.moving_vector_to_origin = None # moving vector of the urban canopy that moved the urban canopy to the origin
-
+        self.moving_vector_to_origin = None  # moving vector of the urban canopy that moved the urban canopy to the origin
 
     def __str__(self):
         """ what you see when you print the urban canopy object """
@@ -52,6 +52,22 @@ class UrbanCanopy:
             # todo
             pickle.dump(self, f)
 
+    def load_typologies(self, typo_folder_path):
+        """ Load the typologies from the folder
+         :param typo_folder_path: path to the folder containing the typologies
+         :return: None
+         """
+        # todo : to improve @Sharon
+        # get the list of all the typology from the typology folder
+        typo_folders = os.listdir(typo_folder_path)
+        # loop through the typology folders
+        for typo in typo_folders:
+            path_to_typo = os.path.join(typo_folder_path, typo)  # path to the given typology
+            typo_obj = Typology.from_json(path_to_typo)  # make the typology object from the json file in the folder
+            # todo: have a tuple as a key, ex: (year, shape_type), and the year might even be an interval, so maybe have
+            #  a global variable with values associated to the year, ex: 1900-1945, 1945-1970, 1970-2000, 2000-2020
+            self.typology_dict[typo_obj.identifier] = typo_obj  # add the typology to the urban canopy dictionary
+
     def load_building_hb_attributes(self):
         """ Load the buildings objects that might have some properties stored into dict (ex hb_models) """
         for building_id, building_obj in self.building_dict.items():
@@ -61,7 +77,6 @@ class UrbanCanopy:
         """ Pickle the buildings objects that might have some properties stored into dict (ex hb_models) """
         for building_id, building_obj in self.building_dict.items():
             building_obj.pickle_hb_attributes()
-
 
     def add_list_of_buildings(self, building_id_list, building_obj_list):
         """ Add a list of buildings to the urban canopy"""
@@ -94,7 +109,7 @@ class UrbanCanopy:
         for building_id_shp in range(0, number_of_buildings_in_shp_file):
             # create the building object
             building_id_list, building_obj_list = Building.from_shp_file(self, shape_file, building_id_shp,
-                                                                         building_id_key_gis,unit)
+                                                                         building_id_key_gis, unit)
             # add the building to the urban canopy if it is valid
             if building_obj_list is not None:
                 self.add_list_of_buildings(building_id_list, building_obj_list)
@@ -111,11 +126,11 @@ class UrbanCanopy:
         for room in hb_room_envelop_list:
             room.remove_colinear_vertices_envelope(tolerance=0.01, delete_degenerate=True)
         # Make the hb model
-        hb_model = Model(identifier="urban_canopy_building_envelops", rooms=hb_room_envelop_list,tolerance=0.01)
-        hb_dict =hb_model.to_dict()
+        hb_model = Model(identifier="urban_canopy_building_envelops", rooms=hb_room_envelop_list, tolerance=0.01)
+        hb_dict = hb_model.to_dict()
         if path_folder is not None:
             hb_model.to_hbjson(name="buildings_envelops", folder=path_folder)
-        return hb_dict,hb_model
+        return hb_dict, hb_model
 
     def compute_moving_vector_to_origin(self):
         """ Make the moving vector to move the urban canopy to the origin """
@@ -135,7 +150,7 @@ class UrbanCanopy:
         # Check if the the urban canopy has already been moved to the origin
         if self.moving_vector_to_origin is not None:
             logging.info("The urban canopy has already been moved to the origin, the building will be moved back and"
-                            " then moved again to the origin with the new buildings")
+                         " then moved again to the origin with the new buildings")
             # Move back the buildings to their original position
             self.move_back_buildings()
         # Compute the moving vector
@@ -151,4 +166,3 @@ class UrbanCanopy:
             if building.moved_to_origin:
                 # Move by the opposite vector
                 building.move([-coordinate for coordinate in self.moving_vector_to_origin])
-

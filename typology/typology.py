@@ -13,7 +13,7 @@ from honeybee_energy.lib.materials import window_material_by_identifier
 from honeybee_energy.lib.schedules import schedule_by_identifier
 from honeybee_energy.lib.constructions import opaque_construction_by_identifier
 
-
+# todo : convert the classes into dictionaries
 class BuildingShapeType(Enum):
     square = 1
     L = 2
@@ -348,3 +348,47 @@ class Typology:
             #         typo_obj.building_type = 2000
 
             return (typo_obj)
+
+    def extract_layout(self):
+        """ Extract the layout of the typology from the txt files"""
+        # todo : to adapt, from the old version
+        path_file = self.typology.path_file_layout
+        self.LB_apartments = surface_txt_to_LB_surfaces(path_file + "//apartment.txt")
+        self.LB_cores = surface_txt_to_LB_surfaces(path_file + "//core.txt")
+        self.LB_balconies = surface_txt_to_LB_surfaces(path_file + "//balcony.txt")
+        # todo :  add as well the whole footprint
+
+        # to move for each building
+
+
+
+# todo: check, it's from the old version
+def surface_txt_to_LB_surfaces(path_file):
+    """
+    description
+    input :
+             * path_file
+    output :
+             * LB_surfaces
+    """
+
+    LB_surfaces = []  # initialization of the output
+
+    with open(path_file, "r") as txt_file:
+        data = txt_file.read()  # read the file
+        data = data.split("\n")  # separate
+
+        for surface in data:
+            point_list = []
+            if len(surface) > 0:
+                surface = surface.split(";")
+                for point in surface:
+                    [x, y] = point[1:-1].split(",")
+                    point = [float(x), float(y)]
+                    point_list.append(Point3D(point[0], point[1], 0))
+                LB_surfaces.append(Face3D(point_list, enforce_right_hand=False))
+
+    if LB_surfaces == []:
+        LB_surfaces = None
+
+    return (LB_surfaces)

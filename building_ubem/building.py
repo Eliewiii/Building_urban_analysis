@@ -6,13 +6,13 @@ import logging
 
 import shapely
 
-from math import sqrt,isnan
+from math import sqrt, isnan
 from ladybug_geometry.geometry3d import Point3D, Face3D, Vector3D
 
 from libraries_addons.hb_rooms_addons import lb_face_footprint_to_elevated_hb_room_envelop
 
 default_gis_attribute_key_dict = {
-    "building_id_key_gis" : [],
+    "building_id_key_gis": [],
     "name": ["name", "full_name_"],
     "age": ["age", "date"],
     "typology": ["typo", "typology", "type", "Typology"],
@@ -46,7 +46,6 @@ class Building:
         self.lb_footprint = lb_footprint  # footprint of the building, including the holes in the LB geometry face format
         # Position
         self.moved_to_origin = False  # boolean to know if the building has been moved
-
 
     def load_hb_attributes(self):
         """ Load the attributes that cannot be pickled from equivalent attribute dict. """
@@ -106,7 +105,8 @@ class Building:
                 logging.warning(f"The footprint of the building id {building_id} in the GIS file could not be converted"
                                 f" to a Ladybug footprint. The building will be ignored.")
             else:
-                building_obj = cls.from_polygon(polygon=footprint, identifier=building_id, unit=unit, urban_canopy=urban_canopy,
+                building_obj = cls.from_polygon(polygon=footprint, identifier=building_id, unit=unit,
+                                                urban_canopy=urban_canopy,
                                                 building_id_shp=building_id_shp)
                 if building_obj is not None:
                     building_id_list.append(building_id)
@@ -247,18 +247,17 @@ class Building:
             self.num_floor = 3
             self.floor_height = 3.
 
-    def move(self,vector):
+    def move(self, vector):
         """
         Move the building to a new location
         :param vector: [x,y,z]
         """
         # move the lb footprint
-        self.lb_footprint=self.lb_footprint.move(Vector3D(vector[0], vector[1], 0))
+        self.lb_footprint = self.lb_footprint.move(Vector3D(vector[0], vector[1], 0))
         # adjust the elevation
         self.elevation = self.elevation + vector[2]
         # make it moved
         self.moved_to_origin = True
-
 
     def to_elevated_hb_room_envelop(self):
         """
@@ -272,6 +271,47 @@ class Building:
                                                                         height=self.height,
                                                                         elevation=self.elevation)
         return hb_room_envelop
+
+    def to_hb_model(self, layout_from_typology=False, automatic_subdivision=True, properties_from_typology=True):
+        """ Convert the building to HB model
+        :param properties_from_typology: If True, the properties of the building will be assigned based on the typology
+        :param layout_from_typology: If True, the layout of the building will be assigned based on the typology
+        :param automatic_subdivision: If True, and if the layout is not taken from the typology, footprint of
+        the building will be subdivided automatically into apartments and cores based on the typology"""
+        # todo: under construction @Elie
+        if layout_from_typology:
+            # todo: develop this feature later on,
+            #  we'll only have one Room per floor or the automatic subdivision for now
+            None
+            # todo: maybe have it in a separate function
+            # Load and copy the layout (footprint,apartment and cores) from the typology
+
+            # move them to the location of the building (match the center of the footprints)
+
+            # resize the layout to the size of the building footprint
+
+            # rotate the layout to the orientation of the building centered on the centroid
+            # (use a crieria with maximum intersection between the two footprints)
+
+            # update the new footprint of the building
+
+            # make the HB model with the new layout
+            # todo: consider building on pillars or with unconditioned ground floor if mentioned in the typology.
+            #  in the future
+        else:
+
+            if automatic_subdivision: # then divide the footprint into apartments and cores with Dragonfly
+                None  # todo @Elie, not top priority
+            else:  # then just create one room per floor with the actual lb_footprint
+                None  # todo @Elie
+
+        if properties_from_typology:  # Apply all the properties from the self.typology to the HB model
+            None
+        else: # Apply the default properties to the HB model from the Typology "default"
+            None  # todo @Elie
+
+        hb_model = None  # todo @Elie: remove later, just not to show an error
+        return hb_model
 
 
 def polygon_to_lb_footprint(polygon_obj, unit, tolerance=0.01):
@@ -332,7 +372,6 @@ def polygon_to_lb_footprint(polygon_obj, unit, tolerance=0.01):
     lb_footprint = Face3D(boundary=point_3d_list_outline, holes=interior_holes_pt_3d_list, enforce_right_hand=True)
     # Remove collinear vertices
     lb_footprint = lb_footprint.remove_colinear_vertices(tolerance=tolerance)
-
 
     return lb_footprint
 
