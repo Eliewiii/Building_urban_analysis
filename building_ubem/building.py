@@ -291,11 +291,11 @@ class Building:
             # resize the layout to the size of the building footprint
 
             # rotate the layout to the orientation of the building centered on the centroid
-            # (use a crieria with maximum intersection between the two footprints)
+            # (use a criteria with maximum intersection between the two footprints)
 
             # update the new footprint of the building
 
-            # make the HB model with the new layout
+            # make the HB model with the new layout (windows,HVAC,etc.)
             # todo: consider building on pillars or with unconditioned ground floor if mentioned in the typology.
             #  in the future
         else:

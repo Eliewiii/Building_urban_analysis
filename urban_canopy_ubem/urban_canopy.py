@@ -9,6 +9,7 @@ import pickle
 from honeybee.model import Model
 
 from building_ubem.building import Building
+from building_ubem.building_hb_model import BuildingHBModel
 from gis.extract_gis import extract_gis
 from typology.typology import Typology
 
@@ -18,21 +19,23 @@ class UrbanCanopy:
     def __init__(self):
         """Initialize the Urban Canopy"""
         #
-        self.building_dict = {}
-        self.target_buildings = []
-        self.building_to_simulate = []
-        self.typology_dict = {}
+        self.building_dict = {}  # dictionary of the buildings in the urban canopy
+        self.typology_dict = {} # dictionary of the typologies loaded the urban canopy
 
         # Move
         self.moving_vector_to_origin = None  # moving vector of the urban canopy that moved the urban canopy to the origin
 
+    def __len__(self):
+        """ Return the number of buildings in the urban canopy """
+        return len(self.building_dict)
+
     def __str__(self):
         """ what you see when you print the urban canopy object """
-        return (f"The urban canopy is composed of {self.num_of_buildings} buildings")
+        return (f"The urban canopy is composed of {len(self)} buildings")
 
     def __repr__(self):
         """ what you see when you type the urban canopy variable in the console """
-        return (f"The urban canopy is composed of {self.num_of_buildings} buildings")
+        return (f"The urban canopy is composed of {len(self)} buildings")
 
     @classmethod
     def from_pkl(cls, path_pkl):
@@ -78,6 +81,7 @@ class UrbanCanopy:
         for building_id, building_obj in self.building_dict.items():
             building_obj.pickle_hb_attributes()
 
+
     def add_list_of_buildings(self, building_id_list, building_obj_list):
         """ Add a list of buildings to the urban canopy"""
         for i, building_id in enumerate(building_id_list):
@@ -89,6 +93,15 @@ class UrbanCanopy:
             else:
                 # add the building to the urban canopy
                 self.building_dict[building_id] = building_obj
+
+    def remove_building(self, building_id):
+        """
+        Remove a building from the urban canopy
+        :param building_id: id of the building to remove
+        :return:
+        """
+        # remove the building from urban canopy building_dict
+        self.building_dict.pop(building_id)
 
     def add_2d_gis(self, path_gis, building_id_key_gis="idbinyan", unit="m", additional_gis_attribute_key_dict=None):
         """ Extract the data from a shp file and create the associated buildings objects"""
@@ -117,6 +130,32 @@ class UrbanCanopy:
         # Collect the attributes to the buildings from the shp file
         for building in self.building_dict.values():
             building.collect_attributes_from_shp_file(shape_file, additional_gis_attribute_key_dict)
+
+    #todo : New, to test
+    def add_building_from_hbjsons(self, path_directory_hbjson):
+        """ Add the buildings from the hb models in the folder
+        :param path_directory_hbjson: path to the directory containing the hbjson files
+        :return: None
+        """
+        # Get the list of the hbjson files
+        hbjson_files = [f for f in os.listdir(path_directory_hbjson) if f.endswith(".hbjson")]
+        # Initialize the list of the building ids and the building objects
+        building_id_list = []
+        building_obj_list = []
+        # Loop through the hbjson files
+        for hbjson_file in hbjson_files:
+            # Get the path to the hbjson file
+            path_hbjson = os.path.join(path_directory_hbjson, hbjson_file)
+            # Create the building object
+            building_hb_model_obj,identifier = BuildingHBModel.from_hbjson(path_hbjson=path_hbjson)
+            building_id_list.append(identifier)
+            building_obj_list.append(building_hb_model_obj)
+        # todo @Sharon or @Elie : check that the list of the building ids is not empty or invalid
+        # Add the new buildings to the UrbanCanopy building dict
+        self.add_list_of_buildings(building_id_list, building_obj_list)
+
+
+
 
     def make_building_envelop_hb_model(self, path_folder=None):
         """ Make the hb model for the building envelop and save it to hbjson file if the path is provided """

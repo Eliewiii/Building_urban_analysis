@@ -67,7 +67,7 @@ class BuildingHBModel(Building):
         # todo : @Sharon, check if the code is correct to create object from super class, should it be that way or though a to_buildinghbmodel function in the Building class?
 
         return building_hb_model
-        # todo : change if needed where the dictionnary of the urban canopy is pointing, to point to the new object
+        # todo : change if needed where the dictionary of the urban canopy is pointing, to point to the new object
 
     @classmethod
     def from_hbjson(cls, path_hbjson, urban_canopy=None):
@@ -79,17 +79,18 @@ class BuildingHBModel(Building):
         hb_model = Model.from_hbjson(path_hbjson)
         # get the identifier the
         identifier = hb_model.identifier
-        # Try to extract certain characteristics of the model from the hb_model
-        elevation, height = elevation_and_height_from_hb_model(hb_model)
         # create the BuildingHBModel object from the HB model
         building_hb_model = cls(identifier)
-        # set the attributes of the BuildingHBModel object
+        # Try to extract certain characteristics of the model from the hb_model
+        elevation, height = elevation_and_height_from_hb_model(hb_model)
+        # # set the attributes of the BuildingHBModel object
         building_hb_model.hb_model = hb_model
         building_hb_model.urban_canopy = urban_canopy
         building_hb_model.elevation = elevation
         building_hb_model.height = height
+        # todo @Elie :
 
-        return building_hb_model
+        return building_hb_model, identifier
 
     def move(self, vector):
         """
@@ -107,28 +108,6 @@ class BuildingHBModel(Building):
         # make it moved
         self.hb_model_obj.move(Vector3D(vector[0], vector[1], vector[2]))  # the model is moved fully
         self.moved_to_origin = True
-
-
-def height_from_hb_model(hb_model):
-    """
-    Extract the height of the building from the hb model
-    :param hb_model: honeybee model
-    :return: height : float
-    """
-    # Get the height of the building from the hb model
-    height = None  # todo
-    return height
-
-
-def elevation_from_hb_model(hb_model):
-    """
-    Extract the elevation of the building from the hb model
-    :param hb_model:
-    :return:
-    """
-    # todo : There is a high chance that the elevation will not be necessary,
-    #  because the hb model is already at the right elevation, so wew might keep it at 0
-    None
 
 
 def lb_footprint_from_hb_model(hb_model):
