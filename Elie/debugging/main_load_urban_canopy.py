@@ -8,6 +8,6 @@ from urban_canopy.urban_canopy import UrbanCanopy
 path_folder_simulation = "C:\\Users\\elie-medioni\\OneDrive\\OneDrive - Technion\\BUA\\Elie\\Simulation_test"
 
 path_urban_canopy_pkl = os.path.join(path_folder_simulation, "urban_canopy.pkl")
-urban_canopy = UrbanCanopy.from_pkl(path_urban_canopy_pkl)
+urban_canopy = UrbanCanopy.make_urban_canopy_from_pkl(path_urban_canopy_pkl)
 
 None
