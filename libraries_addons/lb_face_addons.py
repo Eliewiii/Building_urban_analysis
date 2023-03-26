@@ -11,7 +11,7 @@ from ladybug_geometry.geometry3d.pointvector import Point3D
 from ladybug_geometry.geometry3d.face import Face3D
 from honeybee.boundarycondition import Outdoors
 
-def LB_face_to_shapely_polygon(LB_face):
+def make_shapely_polygon_from_LB_face(LB_face):
     """Convert a Ladybug Face to a Shapely Polygon."""
     # convert vertices into tuples
     list_tuple_vertices_2d = [(x,y) for [x,y,z] in LB_face.vertices]
@@ -19,7 +19,7 @@ def LB_face_to_shapely_polygon(LB_face):
     return Polygon(list_tuple_vertices_2d)
 
 
-def shapely_polygon_to_LB_face(polygon,tolerance=0.01):
+def make_LB_face_from_shapely_polygon(polygon,tolerance=0.01):
     """Convert a Ladybug Face to a Shapely Polygon."""
     # convert vertices into tuples
     point_list_outline = [list(point) for point in polygon.exterior.__geo_interface__['coordinates']]
@@ -45,14 +45,14 @@ def merge_LB_face_list(LB_face_list,):
     # Merge only of there is more than one face
     if len (LB_face_list) > 1:
         # convert each LB face to Polygon
-        polygon_list = [LB_face_to_shapely_polygon(LB_face) for LB_face in LB_face_list]
+        polygon_list = [make_shapely_polygon_from_LB_face(LB_face) for LB_face in LB_face_list]
         # Initialize merging polygon
         merged_polygon = polygon_list[0]
         # loop over each polygon
         for polygon in polygon_list[1:] :
             merged_polygon.union(polygon)  # merge the polygon with the merged polygon
         # convert the merged polygon to a LB geometry face 3D
-        LB_face_merged = shapely_polygon_to_LB_face(merged_polygon)
+        LB_face_merged = make_LB_face_from_shapely_polygon(merged_polygon)
         return LB_face_merged
     # if there is only one face, return it
     if len (LB_face_list) == 1:

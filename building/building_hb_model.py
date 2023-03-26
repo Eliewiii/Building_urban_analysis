@@ -113,34 +113,3 @@ class BuildingModeled(BuildingBasic):
         self.moved_to_origin = True
 
 
-def LB_footprint_from_HB_model(HB_model):
-    """
-    Extract the footprint of the building from the hb model
-    :param HB_model:
-    :return:
-    """
-    # todo @Elie : finish the function (and check if it works)
-    # turn into dragonfly building
-    dragonfly_building = dragonfly.Building.from_honeybee(HB_model)
-    # get the footprint
-    LB_footprint_list = dragonfly_building.footprint
-    # merge LB footprint
-
-
-
-def LB_faces_ground_bc_from_HB_model(HB_model):
-    """
-    Extract LB geometry faces 3D that have ground boundary condition from the HB model
-    todo: not relevant if the building is on pillar...
-    :param HB_model:
-    :return:
-    """
-    # Init the list of LB geometry faces 3D that have ground boundary condition
-    LB_face_ground_bc_list = []
-    # Loop through the rooms of the HB model
-    for room in HB_model.rooms:
-        for face in room.faces:
-            if face.boundary_condition.boundary_condition == "Ground":
-                LB_face_ground_bc_list.append(face.geometry)
-
-    return LB_face_ground_bc_list

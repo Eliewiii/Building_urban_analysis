@@ -84,20 +84,21 @@ class UrbanCanopy:
         for building_id, building_obj in self.building_dict.items():
             building_obj.pickle_HB_attributes()
 
+    def add_building_to_dict(self, building_id, building_obj):
+        """ Add a building to the urban canopy"""
+        # check if the building id is already in the urban canopy
+        if building_id in self.building_dict.keys():
+            logging.warning(f"The building id {building_id} is already in the urban canopy, it will not"
+                            f" be added again to the urban canopy")
+        else:
+            # add the building to the urban canopy
+            self.building_dict[building_id] = building_obj
 
     def add_list_of_buildings_to_dict(self, building_id_list, building_obj_list):
         """ Add a list of buildings to the urban canopy"""
-        # todo @Elie or @Sharon: make add_building_to_dict function (for one building), and make add_list_of_buildings_to_dict
-        #  function to use it and loop over the list of buildings
         for i, building_id in enumerate(building_id_list):
             building_obj = building_obj_list[i]
-            # check if the building id is already in the urban canopy
-            if building_id in self.building_dict.keys():
-                logging.warning(f"The building id {building_id} is already in the urban canopy, it will not"
-                                f" be added again to the urban canopy")
-            else:
-                # add the building to the urban canopy
-                self.building_dict[building_id] = building_obj
+            self.add_building_to_dict(building_id, building_obj)
 
     def remove_building_from_dict(self, building_id):
         """
@@ -144,20 +145,16 @@ class UrbanCanopy:
         """
         # Get the list of the hbjson files
         hbjson_files = [f for f in os.listdir(path_directory_hbjson) if f.endswith(".hbjson")]
-        # Initialize the list of the building ids and the building objects
-        building_id_list = []
-        building_obj_list = []
         # Loop through the hbjson files
         for hbjson_file in hbjson_files:
             # Get the path to the hbjson file
             path_hbjson = os.path.join(path_directory_hbjson, hbjson_file)
             # Create the building object
             building_HB_model_obj,identifier = BuildingModeled.make_buildingmodeled_from_hbjson(path_hbjson=path_hbjson)
-            building_id_list.append(identifier)
-            building_obj_list.append(building_HB_model_obj)
+            # Add the building to the urban canopy
+            self.add_building_to_dict(identifier, building_HB_model_obj)
         # todo @Sharon or @Elie : check that the list of the building ids is not empty or invalid
         # Add the new buildings to the UrbanCanopy building dict
-        self.add_list_of_buildings_to_dict(building_id_list, building_obj_list)
 
 
 
