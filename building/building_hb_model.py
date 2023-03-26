@@ -10,7 +10,7 @@ import dragonfly
 from honeybee.model import Model
 from ladybug_geometry.geometry3d import Vector3D
 
-from building_ubem.building import Building
+from building.building import Building
 
 from libraries_addons.hb_model_addons import elevation_and_height_from_hb_model
 
@@ -28,6 +28,9 @@ class BuildingHBModel(Building):
 
         self.hb_model_obj = None
         self.hb_model_dict = None
+
+        self.to_simulate = False
+        self.target = False
 
     def load_hb_attributes(self):
         """

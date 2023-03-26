@@ -8,8 +8,8 @@ import pickle
 
 from honeybee.model import Model
 
-from building_ubem.building import Building
-from building_ubem.building_hb_model import BuildingHBModel
+from building.building import Building
+from building.building_hb_model import BuildingHBModel
 from gis.extract_gis import extract_gis
 from typology.typology import Typology
 

@@ -2,7 +2,7 @@
 test, add building HB model to Urban Canopy
 """
 import os
-from urban_canopy_ubem.urban_canopy import UrbanCanopy
+from urban_canopy.urban_canopy import UrbanCanopy
 
 # Inputs
 path_folder_simulation = "C:\\Users\\elie-medioni\\OneDrive\\OneDrive - Technion\\BUA\\Elie\\Simulation_test"
