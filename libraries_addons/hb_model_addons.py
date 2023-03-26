@@ -11,8 +11,8 @@ from honeybee_energy.lib.programtypes import program_type_by_identifier
 def elevation_and_height_from_hb_model(hb_model):
     """
     Extract the elevation of the building from the hb model
-    :param hb_model:
-    :return:
+    :param hb_model: honeybee Model
+    :return: elevation, height
     """
     elevation = min([room.min.z for room in hb_model.rooms])
     height = max([room.max.z for room in hb_model.rooms]) - elevation

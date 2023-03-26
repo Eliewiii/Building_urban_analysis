@@ -8,8 +8,10 @@ import pickle
 
 from honeybee.model import Model
 
-from building_ubem.building import Building
+from building.building import Building
+from building.building_hb_model import BuildingHBModel
 from gis.extract_gis import extract_gis
+from typology.typology import Typology
 
 
 class UrbanCanopy:
@@ -17,22 +19,23 @@ class UrbanCanopy:
     def __init__(self):
         """Initialize the Urban Canopy"""
         #
-        self.building_dict = {}
-        self.target_buildings = []
-        self.building_to_simulate = []
-        self.typology_dict = {}
+        self.building_dict = {}  # dictionary of the buildings in the urban canopy
+        self.typology_dict = {} # dictionary of the typologies loaded the urban canopy
 
         # Move
-        self.moving_vector_to_origin = None # moving vector of the urban canopy that moved the urban canopy to the origin
+        self.moving_vector_to_origin = None  # moving vector of the urban canopy that moved the urban canopy to the origin
 
+    def __len__(self):
+        """ Return the number of buildings in the urban canopy """
+        return len(self.building_dict)
 
     def __str__(self):
         """ what you see when you print the urban canopy object """
-        return (f"The urban canopy is composed of {self.num_of_buildings} buildings")
+        return (f"The urban canopy is composed of {len(self)} buildings")
 
     def __repr__(self):
         """ what you see when you type the urban canopy variable in the console """
-        return (f"The urban canopy is composed of {self.num_of_buildings} buildings")
+        return (f"The urban canopy is composed of {len(self)} buildings")
 
     @classmethod
     def from_pkl(cls, path_pkl):
@@ -51,6 +54,22 @@ class UrbanCanopy:
             self.pickle_building_hb_attributes()
             # todo
             pickle.dump(self, f)
+
+    def load_typologies(self, typo_folder_path):
+        """ Load the typologies from the folder
+         :param typo_folder_path: path to the folder containing the typologies
+         :return: None
+         """
+        # todo : to improve @Sharon
+        # get the list of all the typology from the typology folder
+        typo_folders = os.listdir(typo_folder_path)
+        # loop through the typology folders
+        for typo in typo_folders:
+            path_to_typo = os.path.join(typo_folder_path, typo)  # path to the given typology
+            typo_obj = Typology.from_json(path_to_typo)  # make the typology object from the json file in the folder
+            # todo: have a tuple as a key, ex: (year, shape_type), and the year might even be an interval, so maybe have
+            #  a global variable with values associated to the year, ex: 1900-1945, 1945-1970, 1970-2000, 2000-2020
+            self.typology_dict[typo_obj.identifier] = typo_obj  # add the typology to the urban canopy dictionary
 
     def load_building_hb_attributes(self):
         """ Load the buildings objects that might have some properties stored into dict (ex hb_models) """
@@ -75,6 +94,15 @@ class UrbanCanopy:
                 # add the building to the urban canopy
                 self.building_dict[building_id] = building_obj
 
+    def remove_building(self, building_id):
+        """
+        Remove a building from the urban canopy
+        :param building_id: id of the building to remove
+        :return:
+        """
+        # remove the building from urban canopy building_dict
+        self.building_dict.pop(building_id)
+
     def add_2d_gis(self, path_gis, building_id_key_gis="idbinyan", unit="m", additional_gis_attribute_key_dict=None):
         """ Extract the data from a shp file and create the associated buildings objects"""
         # Read GIS file
@@ -94,7 +122,7 @@ class UrbanCanopy:
         for building_id_shp in range(0, number_of_buildings_in_shp_file):
             # create the building object
             building_id_list, building_obj_list = Building.from_shp_file(self, shape_file, building_id_shp,
-                                                                         building_id_key_gis,unit)
+                                                                         building_id_key_gis, unit)
             # add the building to the urban canopy if it is valid
             if building_obj_list is not None:
                 self.add_list_of_buildings(building_id_list, building_obj_list)
@@ -102,6 +130,32 @@ class UrbanCanopy:
         # Collect the attributes to the buildings from the shp file
         for building in self.building_dict.values():
             building.collect_attributes_from_shp_file(shape_file, additional_gis_attribute_key_dict)
+
+    #todo : New, to test
+    def add_building_from_hbjsons(self, path_directory_hbjson):
+        """ Add the buildings from the hb models in the folder
+        :param path_directory_hbjson: path to the directory containing the hbjson files
+        :return: None
+        """
+        # Get the list of the hbjson files
+        hbjson_files = [f for f in os.listdir(path_directory_hbjson) if f.endswith(".hbjson")]
+        # Initialize the list of the building ids and the building objects
+        building_id_list = []
+        building_obj_list = []
+        # Loop through the hbjson files
+        for hbjson_file in hbjson_files:
+            # Get the path to the hbjson file
+            path_hbjson = os.path.join(path_directory_hbjson, hbjson_file)
+            # Create the building object
+            building_hb_model_obj,identifier = BuildingHBModel.from_hbjson(path_hbjson=path_hbjson)
+            building_id_list.append(identifier)
+            building_obj_list.append(building_hb_model_obj)
+        # todo @Sharon or @Elie : check that the list of the building ids is not empty or invalid
+        # Add the new buildings to the UrbanCanopy building dict
+        self.add_list_of_buildings(building_id_list, building_obj_list)
+
+
+
 
     def make_building_envelop_hb_model(self, path_folder=None):
         """ Make the hb model for the building envelop and save it to hbjson file if the path is provided """
@@ -111,11 +165,11 @@ class UrbanCanopy:
         for room in hb_room_envelop_list:
             room.remove_colinear_vertices_envelope(tolerance=0.01, delete_degenerate=True)
         # Make the hb model
-        hb_model = Model(identifier="urban_canopy_building_envelops", rooms=hb_room_envelop_list,tolerance=0.01)
-        hb_dict =hb_model.to_dict()
+        hb_model = Model(identifier="urban_canopy_building_envelops", rooms=hb_room_envelop_list, tolerance=0.01)
+        hb_dict = hb_model.to_dict()
         if path_folder is not None:
             hb_model.to_hbjson(name="buildings_envelops", folder=path_folder)
-        return hb_dict,hb_model
+        return hb_dict, hb_model
 
     def compute_moving_vector_to_origin(self):
         """ Make the moving vector to move the urban canopy to the origin """
@@ -135,7 +189,7 @@ class UrbanCanopy:
         # Check if the the urban canopy has already been moved to the origin
         if self.moving_vector_to_origin is not None:
             logging.info("The urban canopy has already been moved to the origin, the building will be moved back and"
-                            " then moved again to the origin with the new buildings")
+                         " then moved again to the origin with the new buildings")
             # Move back the buildings to their original position
             self.move_back_buildings()
         # Compute the moving vector
@@ -151,4 +205,3 @@ class UrbanCanopy:
             if building.moved_to_origin:
                 # Move by the opposite vector
                 building.move([-coordinate for coordinate in self.moving_vector_to_origin])
-
