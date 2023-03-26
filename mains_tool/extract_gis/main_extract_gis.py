@@ -88,7 +88,7 @@ if __name__ == "__main__":
     if move_buildings_to_origin or urban_canopy.moving_vector_to_origin is not None:
         urban_canopy.move_buildings_to_origin()
     # generate the hb model that contains all the building envelopes to plot in Grasshopper
-    urban_canopy.make_HB_model_envelops_from_building(path_folder=path_folder_gis_extraction)
+    urban_canopy.make_HB_model_envelops_from_buildings(path_folder=path_folder_gis_extraction)
     logging.info(f"HB model for the building envelop created successfully")
     # save the urban canopy object in a pickle file in the temp folder
     urban_canopy.export_urban_canopy_to_pkl(path_folder=path_folder_gis_extraction)

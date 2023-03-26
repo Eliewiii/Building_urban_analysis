@@ -162,7 +162,7 @@ class UrbanCanopy:
 
 
 
-    def make_HB_model_envelops_from_building(self, path_folder=None):
+    def make_HB_model_envelops_from_buildings(self, path_folder=None):
         """ Make the hb model for the building envelop and save it to hbjson file if the path is provided """
         # List of the hb rooms representing the building envelops
         HB_room_envelop_list = [building.export_building_to_elevated_HB_room_envelop () for building in self.building_dict.values()]
