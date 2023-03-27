@@ -58,7 +58,7 @@ if _run:
         Model.to_hbjson(hb_model, path_hb_model)
 
     # Write the command
-    command = path_bat_files
+    command = path_bat_file
     # argument =" -t 1"
     argument = " "
     # Optional argument of the bat file/Python script
