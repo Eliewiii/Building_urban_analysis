@@ -13,29 +13,32 @@ local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 
 # Default values
-# default_path_gis = os.path.join(path_tool, "Libraries", "GIS", "gis_typo_id_extra_small")
 default_path_folder_simulation = os.path.join(path_tool, "Simulation_temp")
-# default_unit = "m"
-# default_additional_gis_attribute_key_dict = None
-# default_move_buildings_to_origin = False
+default_make_hb_model_envelops= False
 default_run_by_the_tool = False
+
 name_hbjson_directory = "hbjsons_to_add"
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--folder", help="path to the simulation folder", nargs='?',
                         default=default_path_folder_simulation)
+    parser.add_argument("-e", "--hbenv", help="Boolean telling if a HB Model containing the envelop of all buildings should be generated", nargs='?',
+                        default=default_make_hb_model_envelops)
     parser.add_argument("-t", "--tool",
                         help="Boolean telling if the code is run from an editor or externally by the batch file",
                         nargs='?',
                         default=default_run_by_the_tool)
+
 
     args = parser.parse_args()
 
     # Input parameter that will be given by Grasshopper
 
     path_folder_simulation = args.folder
+    make_hb_model_envelops = bool(args.hbenv)
     run_by_the_tool = bool(args.tool)
+
 
     # Create the folder if it does not exist
     os.makedirs(path_folder_simulation, exist_ok=True)
@@ -49,7 +52,7 @@ if __name__ == "__main__":
     if run_by_the_tool:
         sys.path.append(os.path.join(path_tool, "Scripts"))
         # # Import libraries from the tool
-    # Import libraries from the tool (after as we don't know it's run from the tool or PyCharm)
+    # Import libraries from the tool (after as we don't know if it runs from the tool or PyCharm)
     from urban_canopy.urban_canopy import UrbanCanopy
 
     # Create or load the urban canopy object
@@ -65,13 +68,11 @@ if __name__ == "__main__":
     path_folder_hbjson = os.path.join(path_folder_simulation, name_hbjson_directory)
     # Add the buildings in the hbjson files to the urban canopy
     urban_canopy.add_buildings_from_hbjson_to_dict(path_directory_hbjson=path_folder_hbjson)
-    logging.info(f"Builing geometries extracted from the GIS file successfully")
-    # Move the buildings to the origin if asked
-    if move_buildings_to_origin or urban_canopy.moving_vector_to_origin is not None:
-        urban_canopy.move_buildings_to_origin()
+    logging.info(f"Building(s) from hbjson added to the urban canopy successfully")
     # generate the hb model that contains all the building envelopes to plot in Grasshopper
-    urban_canopy.make_HB_model_envelops_from_buildings(path_folder=path_folder_gis_extraction)
-    logging.info(f"HB model for the building envelop created successfully")
+    if make_hb_model_envelops:
+        urban_canopy.make_HB_model_envelops_from_buildings(path_folder=path_folder_simulation)
+        logging.info(f"HB model for the building envelop created successfully")
     # save the urban canopy object in a pickle file in the temp folder
-    urban_canopy.export_urban_canopy_to_pkl(path_folder=path_folder_gis_extraction)
+    urban_canopy.export_urban_canopy_to_pkl(path_folder=path_folder_simulation)
     logging.info(f"Urban canopy object saved successfully")

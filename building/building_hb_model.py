@@ -83,17 +83,17 @@ class BuildingModeled(BuildingBasic):
         # get the identifier the
         identifier = HB_model.identifier
         # create the BuildingModeled object from the HB model
-        building_HB_model = cls(identifier)
+        building_modeled_obj = cls(identifier)
         # Try to extract certain characteristics of the model from the HB_model
         elevation, height = elevation_and_height_from_HB_model(HB_model)
         # # set the attributes of the BuildingModeled object
-        building_HB_model.HB_model = HB_model
-        building_HB_model.urban_canopy = urban_canopy
-        building_HB_model.elevation = elevation
-        building_HB_model.height = height
+        building_modeled_obj.HB_model_obj = HB_model
+        building_modeled_obj.urban_canopy = urban_canopy
+        building_modeled_obj.elevation = elevation
+        building_modeled_obj.height = height
         # todo @Elie : finish the function (and check if it works)
 
-        return building_HB_model, identifier
+        return building_modeled_obj, identifier
 
     def move(self, vector):
         """
