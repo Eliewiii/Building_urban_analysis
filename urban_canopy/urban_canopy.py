@@ -6,8 +6,9 @@ import os
 import logging
 import pickle
 
-from honeybee.model import Model
-
+#from honeybee.model import Model
+#this can be replaced with these:
+#from libraries_addons.hb_model_addons import *
 from building.building import BuildingBasic
 from building.building_hb_model import BuildingModeled
 from gis.extract_gis import extract_gis
@@ -29,13 +30,13 @@ class UrbanCanopy:
         """ Return the number of buildings in the urban canopy """
         return len(self.building_dict)
 
-    def __str__(self):
-        """ what you see when you print the urban canopy object """
-        return (f"The urban canopy is composed of {len(self)} buildings")
-
-    def __repr__(self):
-        """ what you see when you type the urban canopy variable in the console """
-        return (f"The urban canopy is composed of {len(self)} buildings")
+    # def __str__(self):
+    #     """ what you see when you print the urban canopy object """
+    #     return (f"The urban canopy is composed of {len(self)} buildings")
+    #
+    # def __repr__(self):
+    #     """ what you see when you type the urban canopy variable in the console """
+    #     return (f"The urban canopy is composed of {len(self)} buildings")
 
     @classmethod
     def make_urban_canopy_from_pkl(cls, path_pkl):
@@ -158,7 +159,6 @@ class UrbanCanopy:
         # todo @Sharon or @Elie : check that the list of the building ids is not empty or invalid
         # Add the new buildings to the UrbanCanopy building dict
         self.add_list_of_buildings_to_dict(building_id_list, building_obj_list)
-
 
 
 

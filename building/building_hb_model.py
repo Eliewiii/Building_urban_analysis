@@ -6,12 +6,10 @@ as they will be simulated
 import logging
 
 import dragonfly
-
 from honeybee.model import Model
 from ladybug_geometry.geometry3d import Vector3D
 
 from building.building import BuildingBasic
-
 from libraries_addons.hb_model_addons import elevation_and_height_from_HB_model
 
 
@@ -28,7 +26,6 @@ class BuildingModeled(BuildingBasic):
 
         self.HB_model_obj = None
         self.HB_model_dict = None
-
         self.to_simulate = False
         self.is_target = False
 
