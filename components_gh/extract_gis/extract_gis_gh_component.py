@@ -30,7 +30,7 @@ def clean_log_for_out(path_log_file):
 local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 
-path_gis_extract_bat = os.path.join(path_tool, "Scripts", "mains_tool", "extract_gis", "extract_gis.bat")
+path_gis_extract_bat = os.path.join(path_tool, "Scripts", "mains_tool", "", "extract_gis.bat")
 
 if _run:
     # if there are additionnal keys for GIS attributes, make a json file containing the values
@@ -55,7 +55,7 @@ if _run:
     if unit_gis is not None:
         argument = argument + ' -u "{}"'.format(unit_gis)
     if move_to_origin_ is not None:
-        argument = argument + ' -m "{}"'.format(move_to_origin_)
+        argument = argument + ' -m "{}"'.format(int(move_to_origin_))
     # Execute the command
     output = os.system(command + argument)
     print(command + argument)

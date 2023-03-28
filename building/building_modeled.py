@@ -10,7 +10,7 @@ import dragonfly
 from honeybee.model import Model
 from ladybug_geometry.geometry3d import Vector3D
 
-from building.building import BuildingBasic
+from building.building_basic import BuildingBasic
 
 from libraries_addons.hb_model_addons import elevation_and_height_from_HB_model
 

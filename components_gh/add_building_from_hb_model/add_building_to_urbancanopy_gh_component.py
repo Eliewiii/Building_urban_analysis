@@ -65,7 +65,7 @@ if _run:
     if path_folder_simulation_ is not None:
         argument = argument + ' -f "{}"'.format(path_folder_simulation_)
     if make_hb_model_building_envelop_ is not None and type(make_hb_model_building_envelop_) == bool:
-        argument = argument + ' -e "{}"'.format(make_hb_model_building_envelop_)
+        argument = argument + ' -e "{}"'.format(int(make_hb_model_building_envelop_))
     output = os.system(command + argument)
     print(command + argument)
 
@@ -80,3 +80,5 @@ if os.path.isfile(path_log_file):
     out = clean_log_for_out(path_log_file)
     for line in out:
         print(line)
+
+path_hb_model_envelop_json = os.path.join(path_folder_simulation_, "buildings_envelops.hbjson")
