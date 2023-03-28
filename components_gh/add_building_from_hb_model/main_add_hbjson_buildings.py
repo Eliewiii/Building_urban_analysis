@@ -14,7 +14,7 @@ path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 
 # Default values
 default_path_folder_simulation = os.path.join(path_tool, "Simulation_temp")
-default_make_hb_model_envelops = True
+default_make_hb_model_envelops = False
 default_run_by_the_tool = False
 
 name_hbjson_directory = "hbjsons_to_add"
