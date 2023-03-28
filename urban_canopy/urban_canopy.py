@@ -166,6 +166,7 @@ class UrbanCanopy:
         HB_room_envelop_list = []  # Initialize the list
         for building in self.building_dict.values():
             if isinstance(building, BuildingBasic):  # Make an HB room by extruding the footprint
+                print("BuildingBasic")
                 HB_room_envelop_list.append(building.export_building_to_elevated_HB_room_envelop())
             elif isinstance(building, BuildingModeled):  # Extract the rooms from the HB model attribute of the building
                 for HB_room in building.HB_model_obj.rooms:

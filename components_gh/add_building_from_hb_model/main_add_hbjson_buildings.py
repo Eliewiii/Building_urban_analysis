@@ -14,7 +14,7 @@ path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 
 # Default values
 default_path_folder_simulation = os.path.join(path_tool, "Simulation_temp")
-default_make_hb_model_envelops= False
+default_make_hb_model_envelops = True
 default_run_by_the_tool = False
 
 name_hbjson_directory = "hbjsons_to_add"
@@ -23,13 +23,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--folder", help="path to the simulation folder", nargs='?',
                         default=default_path_folder_simulation)
-    parser.add_argument("-e", "--hbenv", help="Boolean telling if a HB Model containing the envelop of all buildings should be generated", nargs='?',
+    parser.add_argument("-e", "--hbenv",
+                        help="Boolean telling if a HB Model containing the envelop of all buildings should be generated",
+                        nargs='?',
                         default=default_make_hb_model_envelops)
     parser.add_argument("-t", "--tool",
                         help="Boolean telling if the code is run from an editor or externally by the batch file",
                         nargs='?',
                         default=default_run_by_the_tool)
-
 
     args = parser.parse_args()
 
@@ -38,7 +39,6 @@ if __name__ == "__main__":
     path_folder_simulation = args.folder
     make_hb_model_envelops = bool(args.hbenv)
     run_by_the_tool = bool(args.tool)
-
 
     # Create the folder if it does not exist
     os.makedirs(path_folder_simulation, exist_ok=True)
@@ -76,4 +76,4 @@ if __name__ == "__main__":
     # save the urban canopy object in a pickle file in the temp folder
     urban_canopy.export_urban_canopy_to_pkl(path_folder=path_folder_simulation)
     logging.info(f"Urban canopy object saved successfully")
-    #test
+    # test
