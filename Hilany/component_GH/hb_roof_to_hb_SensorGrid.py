@@ -2,6 +2,7 @@ try:
     from ladybug_geometry.geometry3d.plane import Plane
     from ladybug_geometry.geometry3d.face import Face3D
     from ladybug_geometry.geometry3d.mesh import Mesh3D
+    from ladybug_geometry.geometry3d.pointvector import Vector3D
 except ImportError as e:
     raise ImportError('\nFailed to import ladybug:\n\t{}'.format(e))
 
@@ -24,7 +25,7 @@ def hb_roof_to_hb_SensorGrid(_name_,_model,_grid_size,_offset_dist_,quad_only):
 
     geometry=[]
     for face in _model.faces:
-        if isinstance(face.boundary_condition, Outdoors)  and face.normal == Vector3D(1,0,0):
+        if isinstance(face.boundary_condition, Outdoors)  and face.normal == Vector3D(0,0,1):
             geometry.append(face.geometry)
 
 
