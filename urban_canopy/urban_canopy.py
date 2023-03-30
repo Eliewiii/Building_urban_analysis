@@ -7,6 +7,7 @@ import logging
 import pickle
 
 from honeybee.model import Model
+from honeybee.room import Room
 
 from building.building_basic import BuildingBasic
 from building.building_modeled import BuildingModeled
@@ -165,11 +166,9 @@ class UrbanCanopy:
         # HB_room_envelop_list = [building.export_building_to_elevated_HB_room_envelop() for building in self.building_dict.values()] todo:to delete if it works
         HB_room_envelop_list = []  # Initialize the list
         for building in self.building_dict.values():
-            if isinstance(building, BuildingBasic):  # Make an HB room by extruding the footprint
-                print("BuildingBasic")
-                print(type(building))
+            if type(building) is BuildingBasic:  # Make an HB room by extruding the footprint
                 HB_room_envelop_list.append(building.export_building_to_elevated_HB_room_envelop())
-            elif isinstance(building, BuildingModeled):  # Extract the rooms from the HB model attribute of the building
+            elif type(building) is BuildingModeled:  # Extract the rooms from the HB model attribute of the building
                 for HB_room in building.HB_model_obj.rooms:
                     HB_room_envelop_list.append(HB_room)
         # additional cleaning of the colinear vertices, might not be necessary
@@ -181,6 +180,20 @@ class UrbanCanopy:
         if path_folder is not None:
             HB_model.to_hbjson(name="buildings_envelops", folder=path_folder)
         return HB_dict, HB_model
+
+    def make_oriented_bounding_boxes_of_buildings(self, path_folder=None, hbjson_name=None):
+        """ Make the oriented bounding boxes of the buildings in the urban canopy
+        and save it to hbjson file if the path is provided """
+        for building in self.building_dict.values():
+            building.make_oriented_bounding_box()
+        if path_folder is not None:
+            # List of the hb rooms representing the building envelops
+            bounding_boxes_HB_room_list = [
+                Room.from_polyface3d(identifier=str(building.id), polyface=building.oriented_bounding_box) for building in
+                self.building_dict.values()]
+            HB_model = Model(identifier="urban_canopy_bounding_boxes", rooms=bounding_boxes_HB_room_list,
+                             tolerance=0.01)
+            HB_model.to_hbjson(name=hbjson_name, folder=path_folder)
 
     def compute_moving_vector_to_origin(self):
         """ Make the moving vector to move the urban canopy to the origin """

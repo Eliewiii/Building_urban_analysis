@@ -2,10 +2,14 @@
 Additional functions to apply on honeybee model
 """
 
+import logging
 
+from dragonfly.building import Building
 from honeybee.room import Room
 from honeybee_energy.lib.constructionsets import construction_set_by_identifier
 from honeybee_energy.lib.programtypes import program_type_by_identifier
+
+
 
 
 def elevation_and_height_from_HB_model(HB_model):
@@ -27,10 +31,19 @@ def make_LB_face_footprint_from_HB_model(HB_model):
     """
     # todo @Elie : finish the function (and check if it works)
     # turn into dragonfly building
-    dragonfly_building = dragonfly.Building.from_honeybee(HB_model)
+    dragonfly_building = Building.from_honeybee(HB_model)
     # get the footprint
-    LB_footprint_list = dragonfly_building.footprint
-    # merge LB footprint
+    LB_footprint_list = dragonfly_building.footprint()
+    if len(LB_footprint_list) > 1:
+        logging.warning("The HB model has more than one footprint, an oriented bounded box will be used to represent the footprint")
+        # todo : @Elie : convert the function that makes the oriented bounded box from LB
+
+    elif len(LB_footprint_list) == 0:
+        logging.warning("The HB model has no footprint")
+        # todo : @Elie : convert the function that makes the oriented bounded box from LB
+    else:
+        return LB_footprint_list[0]
+
 
 
 
