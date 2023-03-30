@@ -17,7 +17,7 @@ geopandas==0.12.2
 honeybee-core
 honeybee-energy
 honeybee-energy-standards
-honeybee-radiance==1.64.117
+honeybee-radiance==1.64.162
 honeybee-radiance-command==1.22.2
 honeybee-radiance-folder==2.11.10
 honeybee-schema

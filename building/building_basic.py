@@ -9,6 +9,7 @@ import shapely
 from math import sqrt, isnan
 from ladybug_geometry.geometry3d import Point3D, Face3D, Vector3D
 
+from libraries_addons.lb_face_addons import make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint
 from libraries_addons.hb_rooms_addons import LB_face_footprint_to_elevated_HB_room_envelop
 
 default_gis_attribute_key_dict = {
@@ -44,6 +45,8 @@ class BuildingBasic:
         self.floor_height = None  # height of the floors in meter
         # Geometry
         self.LB_face_footprint = LB_face_footprint  # footprint of the building, including the holes in the LB geometry face format
+        # Context filter algorithm
+        self.LB_polyface3d_oriented_bounding_box = None  # oriented bounding box of the building
         # Position
         self.moved_to_origin = False  # boolean to know if the building has been moved
 
@@ -58,12 +61,14 @@ class BuildingBasic:
         None
 
     @classmethod
-    def make_buildingbasic_from_LB_footprint(cls, LB_face_footprint, identifier, urban_canopy=None, building_index_in_GIS=None):
+    def make_buildingbasic_from_LB_footprint(cls, LB_face_footprint, identifier, urban_canopy=None,
+                                             building_index_in_GIS=None):
         """Generate a BuildingBasic from a Ladybug footprint."""
         return cls(identifier, LB_face_footprint, urban_canopy, building_index_in_GIS)
 
     @classmethod
-    def make_buildingbasic_from_shapely_polygon(cls, polygon, identifier, unit, urban_canopy=None, building_index_in_GIS=None):
+    def make_buildingbasic_from_shapely_polygon(cls, polygon, identifier, unit, urban_canopy=None,
+                                                building_index_in_GIS=None):
         """Generate a BuildingBasic from a shapely polygon."""
         LB_face_footprint = polygon_to_LB_footprint(polygon, unit)
         if LB_face_footprint is not None:
@@ -105,9 +110,10 @@ class BuildingBasic:
                 logging.warning(f"The footprint of the building id {building_id} in the GIS file could not be converted"
                                 f" to a Ladybug footprint. The building will be ignored.")
             else:
-                building_obj = cls.make_buildingbasic_from_shapely_polygon(polygon=footprint, identifier=building_id, unit=unit,
-                                                urban_canopy=urban_canopy,
-                                                building_index_in_GIS=building_index_in_GIS)
+                building_obj = cls.make_buildingbasic_from_shapely_polygon(polygon=footprint, identifier=building_id,
+                                                                           unit=unit,
+                                                                           urban_canopy=urban_canopy,
+                                                                           building_index_in_GIS=building_index_in_GIS)
                 if building_obj is not None:
                     building_id_list.append(building_id)
                     building_obj_list.append(building_obj)
@@ -124,9 +130,10 @@ class BuildingBasic:
                         f"The footprint of the building id {sub_building_id} in the GIS file could not be converted"
                         f" to a Ladybug footprint. The building will be ignored.")
                 else:
-                    building_obj = cls.make_buildingbasic_from_shapely_polygon(polygon=footprint, identifier=sub_building_id,
-                                                    urban_canopy=urban_canopy,
-                                                    building_index_in_GIS=building_index_in_GIS)
+                    building_obj = cls.make_buildingbasic_from_shapely_polygon(polygon=footprint,
+                                                                               identifier=sub_building_id,
+                                                                               urban_canopy=urban_canopy,
+                                                                               building_index_in_GIS=building_index_in_GIS)
                     if building_obj is not None:
                         building_id_list.append(sub_building_id)
                         building_obj_list.append(building_obj)
@@ -247,6 +254,12 @@ class BuildingBasic:
             self.num_floor = 3
             self.floor_height = 3.
 
+    def make_oriented_bounding_box(self):
+        """  """
+        # todo @Elie: adapt from old tool
+        self.oriented_bounding_box = make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint(
+            LB_face_footprint = self.LB_face_footprint, height=self.height, elevation=self.elevation)
+
     def move(self, vector):
         """
         Move the building to a new location
@@ -254,14 +267,17 @@ class BuildingBasic:
         """
         # move the LB footprint
         self.LB_face_footprint = self.LB_face_footprint.move(Vector3D(vector[0], vector[1], 0))
+        # move the oriented bounding box if it exists
+        if self.LB_polyface3d_oriented_bounding_box:
+            self.LB_polyface3d_oriented_bounding_box = self.LB_polyface3d_oriented_bounding_box.move(Vector3D(vector[0], vector[1], 0))
         # adjust the elevation
         self.elevation = self.elevation + vector[2]
         # make it moved
         self.moved_to_origin = True
 
-    def export_building_to_elevated_HB_room_envelop (self):
+    def export_building_to_elevated_HB_room_envelop(self):
         """
-        Convert the building to HB Room object showing the envelop of the building for plotting purposes
+        Convert the building to HB Room object showing the envelope of the building for plotting purposes
         or for context filtering
         :return: HB Room envelop
         """
@@ -300,14 +316,14 @@ class BuildingBasic:
             #  in the future
         else:
 
-            if automatic_subdivision: # then divide the footprint into apartments and cores with Dragonfly
+            if automatic_subdivision:  # then divide the footprint into apartments and cores with Dragonfly
                 None  # todo @Elie, not top priority
             else:  # then just create one room per floor with the actual LB_face_footprint
                 None  # todo @Elie
 
         if properties_from_typology:  # Apply all the properties from the self.typology to the HB model
             None
-        else: # Apply the default properties to the HB model from the Typology "default"
+        else:  # Apply the default properties to the HB model from the Typology "default"
             None  # todo @Elie
 
         HB_model = None  # todo @Elie: remove later, just not to show an error
