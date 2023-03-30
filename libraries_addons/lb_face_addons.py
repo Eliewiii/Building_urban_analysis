@@ -44,7 +44,6 @@ def make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint(LB_face_fo
     :param elevation: float : elevation of the building compared to the ground
     :return: LB_polyface3D_bounding_box: Ladybug Polyface3D : oriented bounding box
     """
-    # todo @Elie: finish and check the function
     # Identify the oriented bounding rectangle and the angle of orientation
     LB_face3d_bounding_rectangle, angle = make_LB_Face3D_oriented_bounding_rectangle_from_LB_Face3D_footprint(
         LB_face_footprint)
@@ -62,7 +61,6 @@ def make_LB_Face3D_oriented_bounding_rectangle_from_LB_Face3D_footprint(LB_Face3
     :param n_step: int : number of steps for the angle of rotation of the bounding box
     :return: LB_Face3D_bounding_rectangle: Ladybug Face3D : oriented bounding rectangle
     """
-    # todo @Elie: finish and check the function
     # Initialization
     bounding_rectangle_area_list = []  # List of the area of the bounding rectangle for each angle at each step
     angle = 0  # Initial angle
@@ -89,7 +87,6 @@ def make_LB_Face3D_footprint_bounding_rectangle(LB_Face3D_footprint, angle=0):
     :param angle: float : angle of rotation of the bounding box
     :return: LB_Face3D_bounding_rectangle: Ladybug Face3D : oriented bounding rectangle
     """
-    # todo @Elie: finish and check the function
     if angle != 0:  # rotate geometry to the bounding box
         center_of_rotation = LB_Face3D_footprint.vertices[0]
         oriented_LB_Face3D_footprint_list = _orient_geometry(geometries=[LB_Face3D_footprint], axis_angle=angle,
@@ -111,8 +108,7 @@ def make_LB_Face3D_footprint_bounding_rectangle(LB_Face3D_footprint, angle=0):
         pt_3 = pt_3.rotate_xy(angle, center_of_rotation)
         pt_4 = pt_4.rotate_xy(angle, center_of_rotation)
     # Create the rectangle
-    LB_Face3D_bounding_rectangle = Face3D([pt_1, pt_2, pt_3, pt_4])  # The rectangle doesn't need to be counterclock,
-    # the transformation into Face3D will solve the issue automatically
+    LB_Face3D_bounding_rectangle = Face3D([pt_4, pt_3, pt_2, pt_1])  # The points need to be counterclockwise
 
     return LB_Face3D_bounding_rectangle
 

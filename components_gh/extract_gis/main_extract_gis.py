@@ -87,6 +87,7 @@ if __name__ == "__main__":
     # Move the buildings to the origin if asked
     if move_buildings_to_origin or urban_canopy.moving_vector_to_origin is not None:
         urban_canopy.move_buildings_to_origin()
+        logging.info("Buildings have been moved to origin successfully")
     # generate the hb model that contains all the building envelopes to plot in Grasshopper
     urban_canopy.make_HB_model_envelops_from_buildings(path_folder=path_folder_gis_extraction)
     logging.info(f"HB model for the building envelop created successfully")

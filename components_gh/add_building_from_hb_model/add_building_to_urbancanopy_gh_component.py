@@ -31,7 +31,7 @@ local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 
 # Path to the bat file
-path_bat_file = os.path.join(path_tool, "Scripts", "mains_tool", "manipulate_urban_canopy", "add_hbjson_buildings.bat")
+path_bat_file = os.path.join(path_tool, "Scripts", "components_gh", "add_building_from_hb_model", "add_hbjson_buildings.bat")
 # name of the folder that will contain the hbjsons to add
 name_hbjson_directory = "hbjsons_to_add"
 
