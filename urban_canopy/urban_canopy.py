@@ -7,10 +7,11 @@ import logging
 import pickle
 
 #from honeybee.model import Model
+from honeybee.room import Room
 #this can be replaced with these:
 #from libraries_addons.hb_model_addons import *
-from building.building import BuildingBasic
-from building.building_hb_model import BuildingModeled
+from building.building_basic import BuildingBasic
+from building.building_modeled import BuildingModeled
 from gis.extract_gis import extract_gis
 from typology.typology import Typology
 
@@ -21,7 +22,7 @@ class UrbanCanopy:
         """Initialize the Urban Canopy"""
         #
         self.building_dict = {}  # dictionary of the buildings in the urban canopy
-        self.typology_dict = {} # dictionary of the typologies loaded the urban canopy
+        self.typology_dict = {}  # dictionary of the typologies loaded the urban canopy
 
         # Move
         self.moving_vector_to_origin = None  # moving vector of the urban canopy that moved the urban canopy to the origin
@@ -85,20 +86,21 @@ class UrbanCanopy:
         for building_id, building_obj in self.building_dict.items():
             building_obj.pickle_HB_attributes()
 
+    def add_building_to_dict(self, building_id, building_obj):
+        """ Add a building to the urban canopy"""
+        # check if the building id is already in the urban canopy
+        if building_id in self.building_dict.keys():
+            logging.warning(f"The building id {building_id} is already in the urban canopy, it will not"
+                            f" be added again to the urban canopy")
+        else:
+            # add the building to the urban canopy
+            self.building_dict[building_id] = building_obj
 
     def add_list_of_buildings_to_dict(self, building_id_list, building_obj_list):
         """ Add a list of buildings to the urban canopy"""
-        # todo @Elie or @Sharon: make add_building_to_dict function (for one building), and make add_list_of_buildings_to_dict
-        #  function to use it and loop over the list of buildings
         for i, building_id in enumerate(building_id_list):
             building_obj = building_obj_list[i]
-            # check if the building id is already in the urban canopy
-            if building_id in self.building_dict.keys():
-                logging.warning(f"The building id {building_id} is already in the urban canopy, it will not"
-                                f" be added again to the urban canopy")
-            else:
-                # add the building to the urban canopy
-                self.building_dict[building_id] = building_obj
+            self.add_building_to_dict(building_id, building_obj)
 
     def remove_building_from_dict(self, building_id):
         """
@@ -109,7 +111,8 @@ class UrbanCanopy:
         # remove the building from urban canopy building_dict
         self.building_dict.pop(building_id)
 
-    def add_buildings_from_2D_GIS_to_dict(self, path_gis, building_id_key_gis="idbinyan", unit="m", additional_gis_attribute_key_dict=None):
+    def add_buildings_from_2D_GIS_to_dict(self, path_gis, building_id_key_gis="idbinyan", unit="m",
+                                          additional_gis_attribute_key_dict=None):
         """ Extract the data from a shp file and create the associated buildings objects"""
         # Read GIS file
         shape_file = extract_gis(path_gis)
@@ -127,8 +130,9 @@ class UrbanCanopy:
         number_of_buildings_in_shp_file = len(shape_file['geometry'])  # number of buildings in the shp file
         for building_index_in_GIS in range(0, number_of_buildings_in_shp_file):
             # create the building object
-            building_id_list, building_obj_list = BuildingBasic.make_buildingbasic_from_GIS(self, shape_file, building_index_in_GIS,
-                                                                         building_id_key_gis, unit)
+            building_id_list, building_obj_list = BuildingBasic.make_buildingbasic_from_GIS(self, shape_file,
+                                                                                            building_index_in_GIS,
+                                                                                            building_id_key_gis, unit)
             # add the building to the urban canopy if it is valid
             if building_obj_list is not None:
                 self.add_list_of_buildings_to_dict(building_id_list, building_obj_list)
@@ -137,35 +141,37 @@ class UrbanCanopy:
         for building in self.building_dict.values():
             building.extract_building_attributes_from_GIS(shape_file, additional_gis_attribute_key_dict)
 
-    #todo : New, to test
-    def add_building_from_hbjson_to_dict(self, path_directory_hbjson):
+    # todo : New, to test
+    def add_buildings_from_hbjson_to_dict(self, path_directory_hbjson):
         """ Add the buildings from the hb models in the folder
         :param path_directory_hbjson: path to the directory containing the hbjson files
         :return: None
         """
         # Get the list of the hbjson files
         hbjson_files = [f for f in os.listdir(path_directory_hbjson) if f.endswith(".hbjson")]
-        # Initialize the list of the building ids and the building objects
-        building_id_list = []
-        building_obj_list = []
         # Loop through the hbjson files
         for hbjson_file in hbjson_files:
             # Get the path to the hbjson file
             path_hbjson = os.path.join(path_directory_hbjson, hbjson_file)
             # Create the building object
-            building_HB_model_obj,identifier = BuildingModeled.make_buildingmodeled_from_hbjson(path_hbjson=path_hbjson)
-            building_id_list.append(identifier)
-            building_obj_list.append(building_HB_model_obj)
+            building_HB_model_obj, identifier = BuildingModeled.make_buildingmodeled_from_hbjson(
+                path_hbjson=path_hbjson)
+            # Add the building to the urban canopy
+            self.add_building_to_dict(identifier, building_HB_model_obj)
         # todo @Sharon or @Elie : check that the list of the building ids is not empty or invalid
         # Add the new buildings to the UrbanCanopy building dict
-        self.add_list_of_buildings_to_dict(building_id_list, building_obj_list)
-
-
 
     def make_HB_model_envelops_from_buildings(self, path_folder=None):
         """ Make the hb model for the building envelop and save it to hbjson file if the path is provided """
         # List of the hb rooms representing the building envelops
-        HB_room_envelop_list = [building.export_building_to_elevated_HB_room_envelop () for building in self.building_dict.values()]
+        # HB_room_envelop_list = [building.export_building_to_elevated_HB_room_envelop() for building in self.building_dict.values()] todo:to delete if it works
+        HB_room_envelop_list = []  # Initialize the list
+        for building in self.building_dict.values():
+            if type(building) is BuildingBasic:  # Make an HB room by extruding the footprint
+                HB_room_envelop_list.append(building.export_building_to_elevated_HB_room_envelop())
+            elif type(building) is BuildingModeled:  # Extract the rooms from the HB model attribute of the building
+                for HB_room in building.HB_model_obj.rooms:
+                    HB_room_envelop_list.append(HB_room)
         # additional cleaning of the colinear vertices, might not be necessary
         for room in HB_room_envelop_list:
             room.remove_colinear_vertices_envelope(tolerance=0.01, delete_degenerate=True)
@@ -175,6 +181,20 @@ class UrbanCanopy:
         if path_folder is not None:
             HB_model.to_hbjson(name="buildings_envelops", folder=path_folder)
         return HB_dict, HB_model
+
+    def make_oriented_bounding_boxes_of_buildings(self, path_folder=None, hbjson_name=None):
+        """ Make the oriented bounding boxes of the buildings in the urban canopy
+        and save it to hbjson file if the path is provided """
+        for building in self.building_dict.values():
+            building.make_oriented_bounding_box()
+        if path_folder is not None:
+            # List of the hb rooms representing the building envelops
+            bounding_boxes_HB_room_list = [
+                Room.from_polyface3d(identifier=str(building.id), polyface=building.oriented_bounding_box) for building in
+                self.building_dict.values()]
+            HB_model = Model(identifier="urban_canopy_bounding_boxes", rooms=bounding_boxes_HB_room_list,
+                             tolerance=0.01)
+            HB_model.to_hbjson(name=hbjson_name, folder=path_folder)
 
     def compute_moving_vector_to_origin(self):
         """ Make the moving vector to move the urban canopy to the origin """

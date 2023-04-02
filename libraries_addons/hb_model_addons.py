@@ -2,10 +2,14 @@
 Additional functions to apply on honeybee model
 """
 
+import logging
 
+from dragonfly.building import Building
 from honeybee.room import Room
 from honeybee_energy.lib.constructionsets import construction_set_by_identifier
 from honeybee_energy.lib.programtypes import program_type_by_identifier
+
+
 
 
 def elevation_and_height_from_HB_model(HB_model):
@@ -19,6 +23,49 @@ def elevation_and_height_from_HB_model(HB_model):
 
     return elevation, height
 
+def make_LB_face_footprint_from_HB_model(HB_model):
+    """
+    Extract the footprint of the building from the hb model
+    :param HB_model:
+    :return:
+    """
+    # todo @Elie : finish the function (and check if it works)
+    # turn into dragonfly building
+    dragonfly_building = Building.from_honeybee(HB_model)
+    # get the footprint
+    LB_footprint_list = dragonfly_building.footprint()
+    if len(LB_footprint_list) > 1:
+        logging.warning("The HB model has more than one footprint, an oriented bounded box will be used to represent the footprint")
+        # todo : @Elie : convert the function that makes the oriented bounded box from LB
+
+    elif len(LB_footprint_list) == 0:
+        logging.warning("The HB model has no footprint")
+        # todo : @Elie : convert the function that makes the oriented bounded box from LB
+    else:
+        return LB_footprint_list[0]
+
+
+
+
+def get_LB_faces_with_ground_bc_from_HB_model(HB_model):
+    """
+    Extract LB geometry faces 3D that have ground boundary condition from the HB model
+    todo: not relevant if the building is on pillar...
+    :param HB_model:
+    :return:
+    """
+    # Init the list of LB geometry faces 3D that have ground boundary condition
+    LB_face_ground_bc_list = []
+    # Loop through the rooms of the HB model
+    for room in HB_model.rooms:
+        for face in room.faces:
+            if face.boundary_condition.boundary_condition == "Ground":
+                LB_face_ground_bc_list.append(face.geometry)
+
+    return LB_face_ground_bc_list
+
+
+# todo: @Elie : from mow on not
 
 
 def LB_footprint_to_HB_model(LB_face_footprint, height, elevation, typology_layout=False,core_to_floor_area_ratio=0.15):
@@ -31,6 +78,7 @@ def LB_footprint_to_HB_model(LB_face_footprint, height, elevation, typology_layo
     :param core_to_floor_area_ratio:
     :return:
     """
+    # todo: @Elie : finish the function (and check if it works)
 
     if typology_layout:
         None
@@ -41,19 +89,11 @@ def LB_footprint_to_HB_model(LB_face_footprint, height, elevation, typology_layo
 
     return None
 
-
-
-
-
-
-
-
-
-
 def HB_model_apply_constructionset(HB_model, constructions_set_id):
     """
     Assign construction set and program type to each room of the model
     """
+    # todo: @Elie : finish the function (and check if it works)
     for room in HB_model.rooms:
         ## assign construction set
         room.properties.energy.construction_set = construction_set_by_identifier(constructions_set_id)
@@ -64,6 +104,7 @@ def HB_model_apply_programs(HB_model, program_type_apartment_id, program_type_co
     """
     Assign construction set and program type to each room of the model
     """
+    # todo: @Elie : finish the function (and check if it works)
     for room in HB_model.rooms:
         ## assign program
         if room.properties.energy.is_conditioned:
@@ -77,6 +118,7 @@ def HB_model_window_by_facade_ratio_per_direction(HB_model, ratio_per_direction,
     """
     Assign window to each room of the model
     """
+    # todo: @Elie : finish the function (and check if it works)
     for room in HB_model.rooms:
         if room.properties.energy.is_conditioned or only_conditioned==False:
             for face in room.faces:
