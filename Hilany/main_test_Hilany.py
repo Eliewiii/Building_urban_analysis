@@ -32,6 +32,7 @@ from Hilany.component_GH.HB_model_to_HB_SensorGrid_facades import hb_model_to_hb
 from Hilany.component_GH.HB_model_to_HB_SensorGrid_roofs import hb_model_to_hb_SensorGrid_roofs
 from Hilany.component_GH.HB_Annual_Irradiance_Simulation import hb_ann_irr_sim
 from Hilany.component_GH.HB_Recipe_Settings import hb_recipe_settings
+from Hilany.component_GH.HB_Annual_Cumulative_Values import hb_ann_cum_values
 
 
 
@@ -66,11 +67,18 @@ logging.info("Pre-processing complete")
 
 # Run simulation
 
-# todo : functions Recipe Settings, HB annual irradiance and HB Annual Cumulative Values
-# for Roofs and Facades
 path_folder_simulation = os.path.join("C:\\Users\\User\OneDrive - Technion\Documents\\test","Radiation Simulation")
-settings=hb_recipe_settings(path_folder_simulation)
-hb_annual_irr_roofs=hb_ann_irr_sim(model_sensorgrid_roofs, wea_folder, run_settings_=settings)
+path_folder_simulation_roofs = os.path.join(path_folder_simulation,"Roofs")
+path_folder_simulation_facades = os.path.join(path_folder_simulation,"Facades")
+# Roofs
+settings_roofs=hb_recipe_settings(path_folder_simulation_roofs)
+hb_annual_irr_roofs=hb_ann_irr_sim(model_sensorgrid_roofs, wea_folder, settings_roofs)
+# Facades
+settings_facades=hb_recipe_settings(path_folder_simulation_facades)
+hb_annual_irr_facades=hb_ann_irr_sim(model_sensorgrid_facades, wea_folder, settings_facades)
 
-#hb_model_cum_radiation = cum_radiation(hb_model_obj_ready)
-#context_cum_radiation = cum_radiation(context_ready)
+# HB Annual cumulative value
+#hb_ann_cum_values_roofs=hb_ann_cum_values(os.path.join(path_folder_simulation_roofs, "annual_irradiance", "results","total"))
+
+cum_values_roofs=hb_ann_cum_values("C:\\Users\\User\OneDrive - Technion\Documents\\test\Radiation Simulation\Facades\\annual_irradiance\\results")
+

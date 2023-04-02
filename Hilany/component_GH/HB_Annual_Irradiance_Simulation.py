@@ -4,7 +4,7 @@ except ImportError as e:
     raise ImportError('\nFailed to import lbt_recipes:\n\t{}'.format(e))
 
 
-def hb_ann_irr_sim(_model, _wea, run_settings_, _timestep_=1, visible_=False, north_=0, grid_filter_=None, radiance_par_='-ab 2;-ad 5000,-lw 2e-05', _run=True):
+def hb_ann_irr_sim(_model, _wea, run_settings_, _timestep_=1, visible_=False, north_=0, grid_filter_=None, radiance_par_='-ab 2 -ad 5000 -lw 2e-05', _run=True):
 
     """Args
     _model : A HB model for which Annual Irradiance will be simulated ( this model must have grids assigned to it)
