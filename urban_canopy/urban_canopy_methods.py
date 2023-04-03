@@ -6,7 +6,7 @@ import os
 import logging
 import pickle
 
-#from honeybee.model import Model
+from honeybee.model import Model
 from honeybee.room import Room
 #this can be replaced with these:
 #from libraries_addons.hb_model_addons import *
@@ -90,8 +90,15 @@ class UrbanCanopy:
         """ Add a building to the urban canopy"""
         # check if the building id is already in the urban canopy
         if building_id in self.building_dict.keys():
-            logging.warning(f"The building id {building_id} is already in the urban canopy, it will not"
-                            f" be added again to the urban canopy")
+            logging.warning("The building id {building_id} is already in the urban canopy, "
+                            "it will not be added again to the urban canopy".format(building_id=building_id))
+            #TODO multiple lines which is the same
+            logging.warning("***check-lines***")
+            logging.warning("The building id {} is already in the urban canopy, "
+                            "it will not be added again to the urban canopy".format(building_id))
+
+            #logging.warning(f"The building id {building_id} is already in the urban canopy, it will not"
+            #                f" be added again to the urban canopy")
         else:
             # add the building to the urban canopy
             self.building_dict[building_id] = building_obj
@@ -120,8 +127,8 @@ class UrbanCanopy:
         try:
             shape_file[building_id_key_gis]
         except KeyError:
-            logging.error(
-                f"The key {building_id_key_gis} is not an attribute of the shape file, the id will be generated automatically")
+            logging.error("The key {building_id_key_gis} is not an attribute of the shape file, the id will be generated automatically")
+
             raise
             # if the key is not valid, set it to None, and the building will automatically be assigned an id
             building_id_key_gis = None

@@ -3,15 +3,7 @@ BuildingModeled class, representing one building in an urban canopy that will be
 as they will be simulated
 """
 
-import logging
-
-import dragonfly
-from honeybee.model import Model
-from ladybug_geometry.geometry3d import Vector3D
-
-from building.building_basic import BuildingBasic
-from libraries_addons.hb_model_addons import elevation_and_height_from_HB_model, make_LB_face_footprint_from_HB_model
-
+from building.utils import *
 
 class BuildingModeled(BuildingBasic):
     """BuildingBasic class, representing one building in an urban canopy."""
@@ -110,5 +102,3 @@ class BuildingModeled(BuildingBasic):
         # make it moved
         self.HB_model_obj.move(Vector3D(vector[0], vector[1], vector[2]))  # the model is moved fully
         self.moved_to_origin = True
-
-
