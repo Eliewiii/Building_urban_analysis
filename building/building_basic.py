@@ -1,28 +1,7 @@
 """
 BuildingBasic class, representing one building in an urban canopy.
 """
-
-import logging
-
-import shapely
-
-from math import sqrt, isnan
-from ladybug_geometry.geometry3d import Point3D, Face3D, Vector3D
-
-from libraries_addons.lb_face_addons import make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint
-from libraries_addons.hb_rooms_addons import LB_face_footprint_to_elevated_HB_room_envelop
-
-default_gis_attribute_key_dict = {
-    "building_id_key_gis": [],
-    "name": ["name", "full_name_"],
-    "age": ["age", "date"],
-    "typology": ["typo", "typology", "type", "Typology"],
-    "elevation": ["minheight"],
-    "height": ["height", "Height", "govasimple"],
-    "number of floor": ["number_floor", "nb_floor", "mskomot"],
-    "group": ["group"]
-}
-
+from building.utils import *
 
 class BuildingBasic:
     """BuildingBasic class, representing one building in an urban canopy."""
@@ -107,8 +86,8 @@ class BuildingBasic:
                 polygon_to_LB_footprint(footprint, unit)
 
             except:
-                logging.warning(f"The footprint of the building id {building_id} in the GIS file could not be converted"
-                                f" to a Ladybug footprint. The building will be ignored.")
+                logging.warning("The footprint of the building id {building_id} in the GIS file could not be converted"
+                                " to a Ladybug footprint. The building will be ignored.")
             else:
                 building_obj = cls.make_buildingbasic_from_shapely_polygon(polygon=footprint, identifier=building_id,
                                                                            unit=unit,
@@ -122,13 +101,13 @@ class BuildingBasic:
         # if the building footprint is a multipolygon
         elif isinstance(footprint, shapely.geometry.multipolygon.MultiPolygon):
             for i, polygon in enumerate(footprint.geoms):
-                sub_building_id = f"{building_id}_{i}"
+                sub_building_id = "{building_id}_{i}"
                 try:
                     polygon_to_LB_footprint(polygon, unit)
                 except:
                     logging.warning(
-                        f"The footprint of the building id {sub_building_id} in the GIS file could not be converted"
-                        f" to a Ladybug footprint. The building will be ignored.")
+                        "The footprint of the building id {sub_building_id} in the GIS file could not be converted"
+                        " to a Ladybug footprint. The building will be ignored.")
                 else:
                     building_obj = cls.make_buildingbasic_from_shapely_polygon(polygon=footprint,
                                                                                identifier=sub_building_id,
