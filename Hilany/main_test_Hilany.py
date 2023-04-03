@@ -15,8 +15,6 @@ try:
 except ImportError as e:
     raise ImportError('\nFailed to import ladybug:\n\t{}'.format(e))
 
-from honeybee.boundarycondition import Outdoors
-
 try:  # import the core honeybee dependencies
     from honeybee.typing import clean_and_id_rad_string, clean_rad_string
 except ImportError as e:
@@ -34,51 +32,51 @@ from Hilany.component_GH.HB_Annual_Irradiance_Simulation import hb_ann_irr_sim
 from Hilany.component_GH.HB_Recipe_Settings import hb_recipe_settings
 from Hilany.component_GH.HB_Annual_Cumulative_Values import hb_ann_cum_values
 
-
-
-
 # Import EPW, context, hb model
-#epw_path = ""
 
-# todo write the correct path
 
 path_folder = "C:\\Users\\User\OneDrive - Technion\Documents\\test"
 wea_folder = "C:\\Users\\User\AppData\Local\Building_urban_analysis\Libraries\EPW\IS_5280_A_Haifa.epw"
 hb_model_facades_hbjson_path = os.path.join("C:\\Users\\User\OneDrive - Technion\Documents\\test","test_model_facades.hbjson")
 hb_model_roofs_hbjson_path = os.path.join("C:\\Users\\User\OneDrive - Technion\Documents\\test","test_model_roofs.hbjson")
 
-#context_hbjsom_path = "path"
 
 # Extract hb_model and context
 hb_model_facades = Model.from_hbjson(hb_model_facades_hbjson_path)
 hb_model_roofs = Model.from_hbjson(hb_model_roofs_hbjson_path)
-#context = Model.from_hbjson(context_hbjsom_path)
+
+# context = Model.from_hbjson(context_hbjsom_path)
 logging.info("Extraction of context and hb_model complete")
 
 # Since we suppose that we already have a hb_building, we suppose all the shades, faces, roofs are already defined
 
 # PRE PROCESSING
 # Roof
-model_sensorgrid_roofs=hb_model_to_hb_SensorGrid_roofs("SensorGrid_Roofs",hb_model_roofs,3,0.1,True)
+model_sensorgrid_roofs=  hb_model_to_hb_SensorGrid_roofs("SensorGrid_Roofs", hb_model_roofs, 3, 0.1, True)
 # Facades
-model_sensorgrid_facades=hb_model_to_hb_SensorGrid_facades("SensorGrid_Facades",hb_model_facades,3,0.1,True)
+model_sensorgrid_facades = hb_model_to_hb_SensorGrid_facades("SensorGrid_Facades", hb_model_facades, 3, 0.1, True)
 
 logging.info("Pre-processing complete")
 
 # Run simulation
 
-path_folder_simulation = os.path.join("C:\\Users\\User\OneDrive - Technion\Documents\\test","Radiation Simulation")
-path_folder_simulation_roofs = os.path.join(path_folder_simulation,"Roofs")
-path_folder_simulation_facades = os.path.join(path_folder_simulation,"Facades")
+path_folder_simulation = os.path.join("C:\\Users\\User\OneDrive - Technion\Documents\\test", "Radiation Simulation")
+path_folder_simulation_roofs = os.path.join(path_folder_simulation, "Roofs")
+path_folder_simulation_facades = os.path.join(path_folder_simulation, "Facades")
 # Roofs
-settings_roofs=hb_recipe_settings(path_folder_simulation_roofs)
-hb_annual_irr_roofs=hb_ann_irr_sim(model_sensorgrid_roofs, wea_folder, settings_roofs)
+settings_roofs = hb_recipe_settings(path_folder_simulation_roofs)
+hb_annual_irr_roofs = hb_ann_irr_sim(model_sensorgrid_roofs, wea_folder, settings_roofs)
 # Facades
-settings_facades=hb_recipe_settings(path_folder_simulation_facades)
-hb_annual_irr_facades=hb_ann_irr_sim(model_sensorgrid_facades, wea_folder, settings_facades)
+settings_facades = hb_recipe_settings(path_folder_simulation_facades)
+hb_annual_irr_facades = hb_ann_irr_sim(model_sensorgrid_facades, wea_folder, settings_facades)
 
 # HB Annual cumulative value
-#hb_ann_cum_values_roofs=hb_ann_cum_values(os.path.join(path_folder_simulation_roofs, "annual_irradiance", "results","total"))
+cum_values_roofs_direct = hb_ann_cum_values([os.path.join(path_folder_simulation_roofs, "annual_irradiance", "results",
+                                                          "direct")])
+cum_values_roofs_total = hb_ann_cum_values([os.path.join(path_folder_simulation_roofs, "annual_irradiance", "results",
+                                                         "total")])
 
-cum_values_roofs=hb_ann_cum_values("C:\\Users\\User\OneDrive - Technion\Documents\\test\Radiation Simulation\Facades\\annual_irradiance\\results")
-
+cum_values_facades_direct = hb_ann_cum_values([os.path.join(path_folder_simulation_facades, "annual_irradiance",
+                                                            "results", "direct")])
+cum_values_facades_total = hb_ann_cum_values([os.path.join(path_folder_simulation_facades, "annual_irradiance",
+                                                           "results", "total")])
