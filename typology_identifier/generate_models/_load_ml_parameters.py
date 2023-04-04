@@ -2,9 +2,6 @@
 Load the input parameters of a machine learning model for training and testing from json
 """
 
-import json
-import os
-
 
 def load_ml_parameters(path_json):
     """
@@ -51,6 +48,10 @@ def load_ml_parameters(path_json):
 
 
 if __name__ == "__main__":
+
+    import json
+    import os
+
     test = load_ml_parameters(
         "D:\Elie\PhD\Simulation\Input_Data\Typology\machine_learning_training\model_sample\model_sample.json")
     print(test)

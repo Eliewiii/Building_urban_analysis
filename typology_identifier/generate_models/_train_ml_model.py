@@ -3,7 +3,6 @@
 
 """
 import os
-
 import torch
 import pickle
 from torch.utils.data import Dataset, DataLoader
@@ -11,9 +10,8 @@ from torchvision import transforms, utils
 import torch.nn as nn
 import torch.optim as optim
 
-from typology_identifier.generate_models._ml_datasets_and_network_classes import MultipleBuildingsDataset, Net
-
-from typology_identifier.generate_models._load_ml_parameters import load_ml_parameters
+from generate_models._ml_datasets_and_network_classes import MultipleBuildingsDataset, Net
+from generate_models._load_ml_parameters import load_ml_parameters
 
 
 def train_ml_model(path_model_parameters_json, num_epochs=10, batch_size=1, learning_rate=0.0001, continue_training=False):
@@ -78,12 +76,13 @@ def train_ml_model(path_model_parameters_json, num_epochs=10, batch_size=1, lear
 
     # Write the training parameters in a txt file
     with open(os.path.join(path_folder_model,"model_training_param.txt"),"w") as training_par_file :
-        training_par_file.write(f"number of epochs = {num_epochs}, batch_size = {batch_size}, learning_rate = {learning_rate} ")
-
+        #training_par_file.write(f"number of epochs = {num_epochs}, batch_size = {batch_size}, " \
+        #                         "learning_rate = {learning_rate} ")
+        training_par_file.write("The number of epochs {} is: {} and The batch_size {} is: {} and "
+                                "The learning_rate: {} is: {} \n".format(num_epochs, batch_size,learning_rate ))
 
 # Training
 if __name__ == "__main__":
     path_folder_model ="D:\Elie\PhD\Simulation\Input_Data\Typology\machine_learning_training\Tel_Aviv_MOE_test"
     path_model_parameters_json = os.path.join(path_folder_model,"model_param.json")
     train_ml_model(path_model_parameters_json, num_epochs=2, batch_size=8, learning_rate=0.001, continue_training=True)
-
