@@ -102,3 +102,13 @@ class BuildingModeled(BuildingBasic):
         # make it moved
         self.HB_model_obj.move(Vector3D(vector[0], vector[1], vector[2]))  # the model is moved fully
         self.moved_to_origin = True
+
+    def solar_radiations(self):
+        """
+        """
+        hb_model_with_sensor_grid = hb_model_solar_radiation(self.HB_model_obj,on_roof=True,on_facade=True)
+
+        # blbala
+        hb_model_with_sensor_grid = generetesensor_grid()
+
+        return hb_model_with_sensor_grid
