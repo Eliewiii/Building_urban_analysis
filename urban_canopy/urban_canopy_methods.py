@@ -193,11 +193,11 @@ class UrbanCanopy:
         """ Make the oriented bounding boxes of the buildings in the urban canopy
         and save it to hbjson file if the path is provided """
         for building in self.building_dict.values():
-            building.make_oriented_bounding_box()
+            building.make_LB_polyface3d_oriented_bounding_box()
         if path_folder is not None:
             # List of the hb rooms representing the building envelops
             bounding_boxes_HB_room_list = [
-                Room.from_polyface3d(identifier=str(building.id), polyface=building.oriented_bounding_box) for building in
+                Room.from_polyface3d(identifier=str(building.id), polyface=building.LB_polyface3d_oriented_bounding_box) for building in
                 self.building_dict.values()]
             HB_model = Model(identifier="urban_canopy_bounding_boxes", rooms=bounding_boxes_HB_room_list,
                              tolerance=0.01)
