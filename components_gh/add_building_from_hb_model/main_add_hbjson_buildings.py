@@ -13,18 +13,13 @@ import json
 local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 parser = argparse.ArgumentParser()
-from urban_canopy.urban_canopy_methods import UrbanCanopy
 
 # Default values
 default_path_folder_simulation = os.path.join(path_tool, "Simulation_temp")
 default_make_hb_model_envelops = False
 default_run_by_the_tool = False
 name_hbjson_directory = "hbjsons_to_add"
-args = parser.parse_args()
-path_folder_simulation = args.folder
-path_folder_hbjson = os.path.join(path_folder_simulation, name_hbjson_directory)
-make_hb_model_envelops = bool(args.hbenv)
-run_by_the_tool = bool(args.tool)
+
 
 
 if __name__ == "__main__":
@@ -39,6 +34,11 @@ if __name__ == "__main__":
                         nargs='?',
                         default=default_run_by_the_tool)
 
+    args = parser.parse_args()
+    path_folder_simulation = args.folder
+    path_folder_hbjson = os.path.join(path_folder_simulation, name_hbjson_directory)
+    make_hb_model_envelops = bool(args.hbenv)
+    run_by_the_tool = bool(args.tool)
 
     os.makedirs(path_folder_simulation, exist_ok=True)
     path_logger = os.path.join(path_folder_simulation, "log_report.log")
@@ -52,6 +52,10 @@ if __name__ == "__main__":
             sys.path.append(os.path.join(path_tool, "Scripts"))
 
     update_script_path_venv()
+
+    # Import the urban canopy methods, needs to be after the update_script_path_venv(), otherwise it will not find the lib
+    # when executed from Grasshopper
+    from urban_canopy.urban_canopy_methods import UrbanCanopy
 
     # Create or load the urban canopy object
     path_urban_canopy_pkl = os.path.join(path_folder_simulation, "urban_canopy.pkl")
