@@ -37,6 +37,21 @@ def make_LB_face_from_shapely_polygon(polygon, tolerance=0.01):
     return LB_face_footprint
 
 
+def LB_face_footprint_to_lB_polyface3D_extruded_footprint(LB_face_footprint, height= 9.,elevation=0.):
+    """
+    Extrude a ladybug geometry footprint to obtain the room envelop
+    :param LB_face_footprint: ladybug geometry footprint
+    :param height: height of the building in meters
+    :return: ladybug geometry extruded footprint
+    """
+    # extrude the footprint to obtain the room envelop
+    extruded_face = Polyface3D.from_offset_face(LB_face_footprint, height)
+    # move the room to the right elevation
+    extruded_face.move(Vector3D(0, 0, elevation))
+
+    return extruded_face
+
+
 def make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint(LB_face_footprint, height=9., elevation=0.):
     """ Make Ladybug Polyface3D oriented bounding box from a Ladybug Face3D (mostly from the footprint of buildings)
     :param LB_face_footprint: Ladybug Face3D

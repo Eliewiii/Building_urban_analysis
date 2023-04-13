@@ -87,6 +87,10 @@ class BuildingModeled(BuildingBasic):
 
         return building_modeled_obj, identifier
 
+    def select_context_building_for_simulation(self, context_building_list,):
+        """
+        """
+
     def move(self, vector):
         """
         Move the building

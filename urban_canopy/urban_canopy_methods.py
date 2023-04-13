@@ -203,6 +203,27 @@ class UrbanCanopy:
                              tolerance=0.01)
             HB_model.to_hbjson(name=hbjson_name, folder=path_folder)
 
+    def perform_context_filtering_on_buildingmodeled_to_simulate(self):
+        """
+        Perform the context filtering on the BuildingModeled objects in the urban canopy that need to be simulated.
+
+        """
+        # todo @Elie: to adapt from old code
+
+        #todo @ Sharon and @Elie: speed up this part by preparing making some preprocessing (centroid of faces, height etc...)
+
+        # Make bounding boxes and extruded footprint if they don't exist already
+        # todo @Elie or @Sharon: can be put in a separate function
+        for building_obj in self.building_dict.values():
+            # by default the functions don't overwrite the existing attribute if it exist already
+            building_obj.make_LB_polyface3d_extruded_footprint()
+            building_obj.make_LB_polyface3d_oriented_bounding_box()
+
+        # Loop through the buildings in the urban canopy
+        for building_obj in self.building_dict.values():
+            if isinstance(building_obj, BuildingModeled) and building_obj.simulate:
+                None #todo
+
     def compute_moving_vector_to_origin(self):
         """ Make the moving vector to move the urban canopy to the origin """
         # get the center of mass (Point3D) of the urban canopy on the x,y plane

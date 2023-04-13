@@ -3,6 +3,7 @@ BuildingBasic class, representing one building in an urban canopy.
 """
 from building.utils import *
 
+
 class BuildingBasic:
     """BuildingBasic class, representing one building in an urban canopy."""
 
@@ -26,6 +27,7 @@ class BuildingBasic:
         self.LB_face_footprint = LB_face_footprint  # footprint of the building, including the holes in the LB geometry face format
         # Context filter algorithm
         self.LB_polyface3d_oriented_bounding_box = None  # oriented bounding box of the building
+        self.LB_polyface3d_extruded_footprint = None  # extruded footprint of the building
         # Position
         self.moved_to_origin = False  # boolean to know if the building has been moved
 
@@ -233,10 +235,23 @@ class BuildingBasic:
             self.num_floor = 3
             self.floor_height = 3.
 
-    def make_LB_polyface3d_oriented_bounding_box(self):
-        """  """
-        self.LB_polyface3d_oriented_bounding_box = make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint(
-            LB_face_footprint = self.LB_face_footprint, height=self.height, elevation=self.elevation)
+    def make_LB_polyface3d_extruded_footprint(self, overwrite=False):
+        """ make the oriented bounding box of the building
+        :param overwrite: if True, overwrite the existing LB_polyface3d_oriented_bounding_box
+        :return: LB_polyface3d_oriented_bounding_box, a LB Polyface3D object
+        """
+        if overwrite or self.LB_polyface3d_extruded_footprint is None:
+            self.LB_polyface3d_extruded_footprint = LB_face_footprint_to_lB_polyface3D_extruded_footprint(
+                LB_face_footprint=self.LB_face_footprint, height=self.height, elevation=self.elevation)
+
+    def make_LB_polyface3d_oriented_bounding_box(self, overwrite=False):
+        """ make the oriented bounding box of the building
+        :param overwrite: if True, overwrite the existing LB_polyface3d_oriented_bounding_box
+        :return: LB_polyface3d_oriented_bounding_box, a LB Polyface3D object
+        """
+        if overwrite or self.LB_polyface3d_oriented_bounding_box is None:
+            self.LB_polyface3d_oriented_bounding_box = make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint(
+                LB_face_footprint=self.LB_face_footprint, height=self.height, elevation=self.elevation)
 
     def move(self, vector):
         """
@@ -247,7 +262,8 @@ class BuildingBasic:
         self.LB_face_footprint = self.LB_face_footprint.move(Vector3D(vector[0], vector[1], 0))
         # move the oriented bounding box if it exists
         if self.LB_polyface3d_oriented_bounding_box:
-            self.LB_polyface3d_oriented_bounding_box = self.LB_polyface3d_oriented_bounding_box.move(Vector3D(vector[0], vector[1], 0))
+            self.LB_polyface3d_oriented_bounding_box = self.LB_polyface3d_oriented_bounding_box.move(
+                Vector3D(vector[0], vector[1], 0))
         # adjust the elevation
         self.elevation = self.elevation + vector[2]
         # make it moved
