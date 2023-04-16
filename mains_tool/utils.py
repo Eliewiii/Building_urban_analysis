@@ -18,6 +18,7 @@ unit = args.unit
 #Get Appdata\local folder
 local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
+
 # Default values
 default_path_gis = os.path.join(path_tool, "Libraries", "GIS", "gis_typo_id_extra_small")
 default_folder_gis_extraction = os.path.join(path_tool, "Simulation_temp")

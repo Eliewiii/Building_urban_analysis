@@ -1,18 +1,8 @@
 """
 Additional functions for Ladybug Face objects.
 """
-import logging
 
-from shapely.geometry import Polygon
-from math import pi
-
-import dragonfly
-
-from ladybug_geometry.geometry3d.pointvector import Point3D, Vector3D
-from ladybug_geometry.geometry3d.face import Face3D
-from ladybug_geometry.geometry3d.polyface import Polyface3D
-from ladybug_geometry.bounding import bounding_domain_x, bounding_domain_y, bounding_rectangle_extents, _orient_geometry
-from honeybee.boundarycondition import Outdoors
+from libraries_addons.utils import *
 
 
 def make_shapely_polygon_from_LB_face(LB_face):
@@ -173,7 +163,8 @@ def LB_footprint_to_df_building(LB_face_footprint, core_area_ratio=0.15, tol=0.0
     max_core_area = target_core_area * (1 + tol)
     min_core_area = target_core_area * (1 - tol)
     # list with the floor height between each floor
-    floor_to_floor_heights = [self.floor_height for i in range(self.num_floor)]
+    #TODO what do wanted to do here?
+    #floor_to_floor_heights = [self.floor_height for i in range(self.num_floor)]
     # initialization of the dichotomy
     perimeter_offset_boundary_up = 20
     perimeter_offset_boundary_down = 1
@@ -297,7 +288,3 @@ def room2d_is_core(room_2d):
         if isinstance(boundary_condition, Outdoors):
             return False
     return True
-
-
-if __name__ == "__main__":
-    None

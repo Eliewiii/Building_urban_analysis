@@ -2,9 +2,7 @@
 This file contains the functions that create and modify the honeybee room objects
 """
 
-from ladybug_geometry.geometry3d import Vector3D, Polyface3D
-
-from honeybee.room import Room
+from libraries_addons.utils import *
 
 
 

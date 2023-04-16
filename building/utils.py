@@ -7,6 +7,9 @@ import argparse
 import json
 import shutil
 from urban_canopy.urban_canopy_methods import UrbanCanopy
+import geopandas as gpd
+
+
 
 # todo @Sharon : cannot be imported in building.building_basic because of circular import (from building import utils)
 # from building.building_basic import BuildingBasic

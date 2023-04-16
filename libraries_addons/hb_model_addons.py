@@ -2,14 +2,7 @@
 Additional functions to apply on honeybee model
 """
 
-import logging
-
-from dragonfly.building import Building
-from honeybee.room import Room
-from honeybee_energy.lib.constructionsets import construction_set_by_identifier
-from honeybee_energy.lib.programtypes import program_type_by_identifier
-
-
+from libraries_addons.utils import *
 
 
 def elevation_and_height_from_HB_model(HB_model):
@@ -20,7 +13,6 @@ def elevation_and_height_from_HB_model(HB_model):
     """
     elevation = min([room.min.z for room in HB_model.rooms])
     height = max([room.max.z for room in HB_model.rooms]) - elevation
-
     return elevation, height
 
 def make_LB_face_footprint_from_HB_model(HB_model):
@@ -43,7 +35,6 @@ def make_LB_face_footprint_from_HB_model(HB_model):
         # todo : @Elie : convert the function that makes the oriented bounded box from LB
     else:
         return LB_footprint_list[0]
-
 
 
 
@@ -79,14 +70,10 @@ def LB_footprint_to_HB_model(LB_face_footprint, height, elevation, typology_layo
     :return:
     """
     # todo: @Elie : finish the function (and check if it works)
-
     if typology_layout:
         None
     if not typology_layout:  # Automatic subdivision of the building on cores an apartments
         HB_model = Room.from_footprint("building", LB_face_footprint, height, elevation)
-
-
-
     return None
 
 def HB_model_apply_constructionset(HB_model, constructions_set_id):
