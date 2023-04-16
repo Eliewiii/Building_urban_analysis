@@ -1,5 +1,22 @@
 import os
 from urban_canopy.urban_canopy_methods import UrbanCanopy
+import logging
+import numpy as np
+
+from time import time
+from math import sqrt, atan, pi, log
+
+import pyvista as pv
+
+from copy import deepcopy
+
+from ladybug_geometry.geometry3d import Vector3D, Point3D, Face3D
+
+from honeybee.model import Model
+from honeybee.face import Face
+from honeybee.shade import Shade
+from ladybug_geometry.bounding import bounding_domain_x, bounding_domain_y, bounding_rectangle_extents, _orient_geometry
+# from building_ubem._footprin_and_envelop_manipulation import extrude_lb_face_to_hb_room
 
 
 # Inputs

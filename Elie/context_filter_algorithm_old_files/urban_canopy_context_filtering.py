@@ -3,10 +3,9 @@ Additional methods for the Urban_canopy class.
 Deals with the context filtering
 """
 
-import logging
+from Elie.utils import *
 
-from time import time
-from math import sqrt, atan, pi, log
+
 
 
 class Mixin:
@@ -67,7 +66,7 @@ class Mixin:
     #     ## second pass
     #
     #     # to be continued...
-
+    #TODO - is this method should be deleted?
     def identify_building_to_simulate(self, vf_criteria):
         """
         identify, according to the LWR, with the filtering criteria if we should keep the surfaces
@@ -116,15 +115,13 @@ class Mixin:
         timer = time()
         self.prepare_building_face_for_context_new()
         timer = time() - timer
-        logging.warning(
-            f" Preprocessing of surfaces for context filtering second pass duration :{round(timer, 4)}s")
+        logging.warning(" Preprocessing of surfaces for context filtering second pass duration :{round(timer, 4)}s")
         ## Prepare Bounding Box
         timer = time()
         self.prepare_bounding_box_faces_for_context()
         timer = time() - timer
         pre_processed_bb_building_dict = self.generate_pre_processed_bb_building_surface_dict()
-        logging.warning(
-            f" Preprocessing of bounding boxes for context filtering second pass duration :{round(timer, 4)}s")
+        logging.warning(" Preprocessing of bounding boxes for context filtering second pass duration :{round(timer, 4)}s")
 
         ## Loop over all the target buildings
         for id_target in self.building_to_simulate:
