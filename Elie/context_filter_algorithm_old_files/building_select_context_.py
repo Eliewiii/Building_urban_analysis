@@ -2,26 +2,8 @@
 Additional methods for the Building class.
 Deals with the context selection of the context.
 """
-import copy
-import time
-import logging
-import numpy as np
 
-import pyvista as pv
-
-from math import sqrt, atan, pi, log
-from copy import deepcopy
-
-from ladybug_geometry.geometry3d import Vector3D, Point3D, Face3D
-
-from honeybee.model import Model
-from honeybee.face import Face
-from honeybee.shade import Shade
-
-from ladybug_geometry.bounding import bounding_domain_x, bounding_domain_y, bounding_rectangle_extents, _orient_geometry
-
-
-# from building_ubem._footprin_and_envelop_manipulation import extrude_lb_face_to_hb_room
+from Elie.utils import *
 
 
 class Mixin:
@@ -113,7 +95,7 @@ class Mixin:
             first_pass [boolean]: True if we want to use the first pass, False if not.
             second_pass [boolean]: True if we want to use the second pass, False if not.
         """
-        logging.warning(f" building_{self.id} : start context filering")
+        logging.warning(" building_{self.id} : start context filering")
         building_surfaces_dict_to_test = copy.deepcopy(pre_processed_bb_building_surface_dict)
 
         ## Initialization
@@ -130,7 +112,7 @@ class Mixin:
             first_pass_duration = time.time()
             kept_building_first_pass = self.shading_context_bb_first_pass(building_surfaces_dict_to_test, mvfc)
             first_pass_duration = time.time() - first_pass_duration
-            logging.warning(f" building_{self.id} :  first pass duration :{round(first_pass_duration, 4)}s")
+            logging.warning(" building_{self.id} :  first pass duration :{round(first_pass_duration, 4)}s")
             # conversion into surface dict list
             kept_surfaces_dict_list = context_building_to_surface_kept(building_surfaces_dict_to_test,
                                                                        kept_building_first_pass)
@@ -159,7 +141,7 @@ class Mixin:
                 second_pass_duration = time.time()
                 kept_surfaces_dict_list = self.shading_context_second_pass(kept_surfaces_dict_list)
                 second_pass_duration = time.time() - second_pass_duration
-                logging.warning(f" building_{self.id} :  second pass duration :{round(second_pass_duration, 4)}s")
+                logging.warning(" building_{self.id} :  second pass duration :{round(second_pass_duration, 4)}s")
 
                 kept_surface_second_pass = surface_dict_to_hb_faces(kept_surfaces_dict_list)
                 # remove the surface kept in the second pass from the first pass
@@ -175,7 +157,7 @@ class Mixin:
             second_pass_duration = time.time()
             kept_surfaces_dict_list = self.shading_context_second_pass(all_context_surface_dict_list)
             second_pass_duration = time.time() - second_pass_duration
-            logging.warning(f" building_{self.id} :  second pass duration :{round(second_pass_duration, 4)}s")
+            logging.warning(" building_{self.id} :  second pass duration :{round(second_pass_duration, 4)}s")
             kept_surface_second_pass = surface_dict_to_hb_faces(kept_surfaces_dict_list)
             if keep_all_context:
                 all_context_hb_faces = surface_dict_to_hb_faces(all_context_surface_dict_list)
@@ -208,7 +190,7 @@ class Mixin:
             first_pass [boolean]: True if we want to use the first pass, False if not.
             second_pass [boolean]: True if we want to use the second pass, False if not.
         """
-        logging.warning(f" building_{self.id} : start context filering")
+        logging.warning(" building_{self.id} : start context filering")
         surface_to_test = copy.deepcopy(pre_processed_surface_list)
 
         ## Initialization
@@ -224,7 +206,7 @@ class Mixin:
             first_pass_duration = time.time()
             kept_surfaces_dict_list = self.shading_context_first_pass(surface_to_test, mvfc)
             first_pass_duration = time.time() - first_pass_duration
-            logging.warning(f" building_{self.id} :  first pass duration :{round(first_pass_duration, 4)}s")
+            logging.warning(" building_{self.id} :  first pass duration :{round(first_pass_duration, 4)}s")
             kept_surface_first_pass = surface_dict_to_hb_faces(kept_surfaces_dict_list)
             if keep_first_pass:
                 self.context_hb_kept_first_pass = list(kept_surface_first_pass)
@@ -241,7 +223,7 @@ class Mixin:
                 second_pass_duration = time.time()
                 kept_surfaces_dict_list = self.shading_context_second_pass(kept_surfaces_dict_list)
                 second_pass_duration = time.time() - second_pass_duration
-                logging.warning(f" building_{self.id} :  second pass duration :{round(second_pass_duration, 4)}s")
+                logging.warning(" building_{self.id} :  second pass duration :{round(second_pass_duration, 4)}s")
 
                 kept_surface_second_pass = surface_dict_to_hb_faces(kept_surfaces_dict_list)
                 # remove the surface kept in the second pass from the first pass
@@ -255,7 +237,7 @@ class Mixin:
             second_pass_duration = time.time()
             kept_surfaces_dict_list = self.shading_context_second_pass(surface_to_test)
             second_pass_duration = time.time() - second_pass_duration
-            logging.warning(f" building_{self.id} :  second pass duration :{round(second_pass_duration, 4)}s")
+            logging.warning(" building_{self.id} :  second pass duration :{round(second_pass_duration, 4)}s")
             kept_surface_second_pass = surface_dict_to_hb_faces(kept_surfaces_dict_list)
 
         hb_context_faces = surface_dict_to_hb_faces(kept_surfaces_dict_list)
@@ -403,6 +385,9 @@ class Mixin:
             self.HB_model.add_shade(shade_obj)
 
 
+
+
+#TODO - understand why those methods stand alone? do they belong to another class maybe?
 def distance_lb_geometry_point3d(pt_1, pt_2):
     """ Distance between 2 LB geometry Point3D """
     return sqrt((pt_1.x - pt_2.x) ** 2 + (pt_1.y - pt_2.y) ** 2 + (pt_1.z - pt_2.z) ** 2)
