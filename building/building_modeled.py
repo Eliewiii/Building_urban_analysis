@@ -5,6 +5,7 @@ as they will be simulated
 
 from building.utils import *
 
+
 class BuildingModeled(BuildingBasic):
     """BuildingBasic class, representing one building in an urban canopy."""
 
@@ -39,8 +40,9 @@ class BuildingModeled(BuildingBasic):
         # todo : maybe add more properties to modify before pickling to avoid locked class issue
 
     @classmethod
-    def convert_buildingbasic_to_buildingmodeled(cls, building_obj, layout_from_typology=False, automatic_subdivision=True,
-                      properties_from_typology=True):
+    def convert_buildingbasic_to_buildingmodeled(cls, building_obj, layout_from_typology=False,
+                                                 automatic_subdivision=True,
+                                                 properties_from_typology=True):
         """
         Create a BuildingModeled object from a BuildingBasic object
         :return: building_HB_model : BuildingModeled object
@@ -103,12 +105,14 @@ class BuildingModeled(BuildingBasic):
         self.HB_model_obj.move(Vector3D(vector[0], vector[1], vector[2]))  # the model is moved fully
         self.moved_to_origin = True
 
-    def solar_radiations(self):
+    def solar_radiations(self, _name_, _wea, _folder, _grid_size, _offset_dist_):
         """
         """
-        hb_model_with_sensor_grid = hb_model_solar_radiation(self.HB_model_obj,on_roof=True,on_facade=True)
+        # hb_model_with_sensor_grid = hb_model_solar_radiation(self.HB_model_obj,on_roof=True,on_facade=True)
 
         # blbala
-        hb_model_with_sensor_grid = generetesensor_grid()
+        hb_model_with_sensor_grid = add_sensor_grid_to_hb_model(self.HB_model_obj, _name_, _grid_size, _offset_dist_)
+        settings = hb_recipe_settings(_folder)
+        project_folder = hb_ann_irr_sim(hb_model_with_sensor_grid, _wea, settings)
+        hb_ann_cum_values([os.path.join(project_folder, "annual_irradiance", "results", "total")])
 
-        return hb_model_with_sensor_grid
