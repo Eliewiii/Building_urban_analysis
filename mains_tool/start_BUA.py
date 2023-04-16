@@ -1,8 +1,4 @@
-import sys
-import os
-import logging
-from datetime import datetime
-
+from mains_tool.utils import *
 
 def main():
 
