@@ -2,9 +2,10 @@
 This file contains the functions that create and modify the honeybee room objects
 """
 
-from ladybug_geometry.geometry3d import Vector3D, Polyface3D
+from libraries_addons.utils import *
 
-from honeybee.room import Room
+
+
 
 
 def LB_face_footprint_to_elevated_HB_room_envelop(LB_face_footprint, building_id, height, elevation):

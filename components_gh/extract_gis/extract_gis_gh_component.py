@@ -8,9 +8,14 @@
 #__author__ = "elie-medioni"
 #__version__ = "2023.02.08"
 
-import os
-import json
 
+from building.utils import *
+
+_run = None
+_gis_attribute_keys_dict_ = None
+_path_gis = None
+unit_gis = None
+move_to_origin_ = None
 
 def clean_path(path):
     path = path.replace("\\", "/")
@@ -26,12 +31,14 @@ def clean_log_for_out(path_log_file):
         log_line_list = [line.split("[ERROR] ")[-1] for line in log_line_list]
     return (log_line_list)
 
-# Get Appdata\local folder
-local_appdata = os.environ['LOCALAPPDATA']
-path_tool = os.path.join(local_appdata, "Building_urban_analysis")
+def get_sppdata_local_folder():
+    global path_gis_extract_bat,path_tool
+    local_appdata = os.environ['LOCALAPPDATA']
+    path_tool = os.path.join(local_appdata, "Building_urban_analysis")
+    path_gis_extract_bat = os.path.join(path_tool, "Scripts", "components_gh", "extract_gis", "extract_gis.bat")
+get_sppdata_local_folder()
 
-path_gis_extract_bat = os.path.join(path_tool, "Scripts", "components_gh", "extract_gis", "extract_gis.bat")
-
+#TODO who change this value?
 if _run:
     # if there are additionnal keys for GIS attributes, make a json file containing the values
     path_gis_attribute_keys_dict = None  # default value
@@ -58,23 +65,28 @@ if _run:
         argument = argument + ' -m "{}"'.format(int(move_to_origin_))
     # Execute the command
     output = os.system(command + argument)
-    print(command + argument)
+    #print(command + argument)
 
-    # delete json file with the additionnal GIS attributes
+    # def delete_json_with_additionnal_GIS_attributes()
     # todo
 
-# set default value for the simulation folder if not provided
-if path_folder_simulation_ is None:
-    path_folder_simulation_ = os.path.join(path_tool, "Simulation_temp")
+def set_default_value_for_simulation_folder():
+    global path_folder_simulation_
+    if path_folder_simulation_ is None:
+        path_folder_simulation_ = os.path.join(path_tool, "Simulation_temp")
+set_default_value_for_simulation_folder()
 
-# path to th elog file to plot in the report
-path_log_file = os.path.join(path_folder_simulation_, "out.txt")
+def save_elog_file():
+    path_log_file = os.path.join(path_folder_simulation_, "out.txt")
+save_elog_file()
 
-# Extract the log if they exist
-if os.path.isfile(path_log_file):
-    out = clean_log_for_out(path_log_file)
-    for line in out:
-        print(line)
+def Extract_log():
+    if os.path.isfile(path_log_file):
+        out = clean_log_for_out(path_log_file)
+        for line in out:
+            print(line)
+Extract_log()
 
-# output the path to the hbjson_envelops
-path_hb_model_envelop_json = os.path.join(path_folder_simulation_, "buildings_envelops.hbjson")
+def update_hbjson_envelops_path():
+    path_hb_model_envelop_json = os.path.join(path_folder_simulation_, "buildings_envelops.hbjson")
+update_hbjson_envelops_path()

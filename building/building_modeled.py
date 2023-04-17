@@ -4,8 +4,8 @@ as they will be simulated
 """
 
 from building.utils import *
-
-
+from building.building_basic import BuildingBasic  # todo: cannot be imported from building.utils because of circular import (building.building_basic import utils)
+                                                #TODO:(answer to above) what we should do - is change  the names on the class to be unique then it should work
 class BuildingModeled(BuildingBasic):
     """BuildingBasic class, representing one building in an urban canopy."""
 
@@ -40,9 +40,8 @@ class BuildingModeled(BuildingBasic):
         # todo : maybe add more properties to modify before pickling to avoid locked class issue
 
     @classmethod
-    def convert_buildingbasic_to_buildingmodeled(cls, building_obj, layout_from_typology=False,
-                                                 automatic_subdivision=True,
-                                                 properties_from_typology=True):
+    def convert_buildingbasic_to_buildingmodeled(cls, building_obj, layout_from_typology=False, automatic_subdivision=True,
+                      properties_from_typology=True):
         """
         Create a BuildingModeled object from a BuildingBasic object
         :return: building_HB_model : BuildingModeled object
@@ -87,6 +86,10 @@ class BuildingModeled(BuildingBasic):
         # todo @Elie : finish the function (and check if it works)
 
         return building_modeled_obj, identifier
+
+    def select_context_building_for_simulation(self, context_building_list,):
+        """
+        """
 
     def move(self, vector):
         """

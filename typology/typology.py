@@ -12,7 +12,7 @@ from honeybee_energy.lib.programtypes import program_type_by_identifier
 from honeybee_energy.lib.materials import window_material_by_identifier
 from honeybee_energy.lib.schedules import schedule_by_identifier
 from honeybee_energy.lib.constructions import opaque_construction_by_identifier
-
+from ladybug_geometry.geometry3d import Point3D, Face3D
 
 # todo : convert the classes into dictionaries
 class BuildingShapeType(Enum):

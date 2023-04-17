@@ -3,6 +3,7 @@ BuildingBasic class, representing one building in an urban canopy.
 """
 from building.utils import *
 
+
 class BuildingBasic:
     """BuildingBasic class, representing one building in an urban canopy."""
 
@@ -26,6 +27,7 @@ class BuildingBasic:
         self.LB_face_footprint = LB_face_footprint  # footprint of the building, including the holes in the LB geometry face format
         # Context filter algorithm
         self.LB_polyface3d_oriented_bounding_box = None  # oriented bounding box of the building
+        self.LB_polyface3d_extruded_footprint = None  # extruded footprint of the building
         # Position
         self.moved_to_origin = False  # boolean to know if the building has been moved
 
@@ -233,11 +235,23 @@ class BuildingBasic:
             self.num_floor = 3
             self.floor_height = 3.
 
-    def make_oriented_bounding_box(self):
-        """  """
-        # todo @Elie: adapt from old tool
-        self.oriented_bounding_box = make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint(
-            LB_face_footprint = self.LB_face_footprint, height=self.height, elevation=self.elevation)
+    def make_LB_polyface3d_extruded_footprint(self, overwrite=False):
+        """ make the oriented bounding box of the building
+        :param overwrite: if True, overwrite the existing LB_polyface3d_oriented_bounding_box
+        :return: LB_polyface3d_oriented_bounding_box, a LB Polyface3D object
+        """
+        if overwrite or self.LB_polyface3d_extruded_footprint is None:
+            self.LB_polyface3d_extruded_footprint = LB_face_footprint_to_lB_polyface3D_extruded_footprint(
+                LB_face_footprint=self.LB_face_footprint, height=self.height, elevation=self.elevation)
+
+    def make_LB_polyface3d_oriented_bounding_box(self, overwrite=False):
+        """ make the oriented bounding box of the building
+        :param overwrite: if True, overwrite the existing LB_polyface3d_oriented_bounding_box
+        :return: LB_polyface3d_oriented_bounding_box, a LB Polyface3D object
+        """
+        if overwrite or self.LB_polyface3d_oriented_bounding_box is None:
+            self.LB_polyface3d_oriented_bounding_box = make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint(
+                LB_face_footprint=self.LB_face_footprint, height=self.height, elevation=self.elevation)
 
     def move(self, vector):
         """
@@ -248,7 +262,8 @@ class BuildingBasic:
         self.LB_face_footprint = self.LB_face_footprint.move(Vector3D(vector[0], vector[1], 0))
         # move the oriented bounding box if it exists
         if self.LB_polyface3d_oriented_bounding_box:
-            self.LB_polyface3d_oriented_bounding_box = self.LB_polyface3d_oriented_bounding_box.move(Vector3D(vector[0], vector[1], 0))
+            self.LB_polyface3d_oriented_bounding_box = self.LB_polyface3d_oriented_bounding_box.move(
+                Vector3D(vector[0], vector[1], 0))
         # adjust the elevation
         self.elevation = self.elevation + vector[2]
         # make it moved
@@ -318,6 +333,7 @@ def polygon_to_LB_footprint(polygon_obj, unit, tolerance=0.01):
         Returns:
             LB_face_footprint:A Ladybug footprint.
     """
+    # todo @Elie: move to LBT methods
 
     # Convert the exterior of the polygon to a list of points
     point_list_outline = [list(point) for point in polygon_obj.exterior.__geo_interface__['coordinates']]
@@ -377,6 +393,7 @@ def scale_point_list_according_to_unit(point_list, unit):
     :param point_list: list of points, a point is a list of two coordinates
     :param unit: unit of the shp file, usually degree or meter
     """
+    # todo @Elie: move to a "additional function" file/package
     if unit == "deg":
         factor = 111139  # conversion factor, but might be a bit different, it depends on the altitude, but the
         # deformation induced should be small if it's not on a very high mountain
@@ -394,6 +411,8 @@ def remove_redundant_vertices(point_list, tol=0.5):
     :param point_list: list of points, a point is a list of two coordinates
     :param tol: tolerance in meter. if the distance between 2 consecutive point is lower than this value, one of the point is deleted
     """
+    # todo @Elie: move to a "additional function" file/package
+
     # Number of points in the point list
     number_of_points = len(point_list)
     # Initialize the index
@@ -417,6 +436,7 @@ def distance(pt_1, pt_2):
     :param pt_2: list for the point 2
     :return: distance between the 2 points
     """
+    # todo @Elie: move to a "additional function" file/package
 
     return sqrt((pt_1[0] - pt_2[0]) ** 2 + (pt_1[1] - pt_2[1]) ** 2)
 
@@ -428,6 +448,7 @@ def add_additional_attribute_keys_to_dict(attribute_key_dict, additional_attribu
     :param additional_attribute_key_dict: dictionary of additional attribute keys
     :return: dictionary of attribute keys
     """
+    # todo @Elie: move to a "additional function" file/package
     if additional_attribute_key_dict is None:
         # if there is no additional attribute key dictionary, return the default attribute key dictionary
         return attribute_key_dict

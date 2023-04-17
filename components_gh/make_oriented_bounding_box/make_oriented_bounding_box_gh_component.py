@@ -6,7 +6,9 @@
     Output:
         a: The a output variable"""
 
-import os
+from building.utils import *
+
+_run = None
 
 def clean_path(path):
     path = path.replace("\\", "/")
