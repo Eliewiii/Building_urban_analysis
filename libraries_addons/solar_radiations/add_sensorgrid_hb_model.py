@@ -88,7 +88,7 @@ def add_sensor_grid(model, name, mesh):
     return model_sensor_grid
 
 
-def add_sensor_grid_to_hb_model(_model, _name_ _grid_size, _offset_dist_, on_facades=True, on_roof=True):
+def add_sensor_grid_to_hb_model(_model, _name_, _grid_size, _offset_dist_, on_facades=True, on_roof=True):
     """Create a HoneyBee SensorGrid from a HoneyBe model and add it to the model"""
 
     assert isinstance(_model, Model), \
