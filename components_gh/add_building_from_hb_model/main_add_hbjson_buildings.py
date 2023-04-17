@@ -19,7 +19,7 @@ default_run_by_the_tool = False
 name_hbjson_directory = "hbjsons_to_add"
 
 def main():
-    #TODO how can we describe these following?
+    # Extract optional argument of the bat file/Python script
     parser.add_argument("-f", "--folder", help="path to the simulation folder", nargs='?',
                         default=default_path_folder_simulation)
     parser.add_argument("-e", "--hbenv",

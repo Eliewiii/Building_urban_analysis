@@ -84,6 +84,7 @@ class BuildingModeled(BuildingBasic):
         # todo @Elie : make the LB_face_footprint from the HB_model
         building_modeled_obj.LB_face_footprint = make_LB_face_footprint_from_HB_model(HB_model=HB_model)
         # todo @Elie : finish the function (and check if it works)
+        building_modeled_obj.moved_to_origin = True  # we assumed that the HB model is already in the proper place within the urban canopy
 
         return building_modeled_obj, identifier
 
