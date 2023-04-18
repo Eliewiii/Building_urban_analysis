@@ -244,3 +244,10 @@ class UrbanCanopy:
             if building.moved_to_origin:
                 # Move by the opposite vector
                 building.move([-coordinate for coordinate in self.moving_vector_to_origin])
+
+    def radiation_simulation_urban_canopy(self, path_folder, path_weather_file, grid_size=1, offset_dist=0.1):
+        for building in self.building_dict.values(): # for every building in the urban canopy
+            if type(building) is BuildingModeled and building.is_target:
+                path_folder_building = os.path.join(path_folder, building.id)
+                building.HB_model_obj.solar_radiations(building.id, path_folder_building, path_weather_file, grid_size,
+                                                       offset_dist)

@@ -117,12 +117,10 @@ class BuildingModeled(BuildingBasic):
 
 
 
-    def solar_radiations(self, name, path_folder, path_weather_file, grid_size, offset_dist):
-        """
-        """
-
-        # blbala
-        hb_model_with_sensor_grid = add_sensor_grid_to_hb_model(self.HB_model_obj, name, grid_size, offset_dist_)
+    def solar_radiations(self, name, path_folder, path_weather_file, grid_size=1, offset_dist=0.1):
+        """Create and add a sensor grid to the HB model of the building then run the annual irradiance simulation on
+        it"""
+        hb_model_with_sensor_grid = add_sensor_grid_to_hb_model(self.HB_model_obj, name, grid_size, offset_dist)
         settings = hb_recipe_settings(path_folder)
         project_folder = hb_ann_irr_sim(hb_model_with_sensor_grid, path_weather_file, settings)
         hb_ann_cum_values([os.path.join(project_folder, "annual_irradiance", "results", "total")])

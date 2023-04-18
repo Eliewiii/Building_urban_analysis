@@ -89,7 +89,7 @@ def add_sensor_grid(model, name, mesh):
     return model_sensor_grid
 
 
-def add_sensor_grid_to_hb_model(model, grid_size, offset_dist, name=None, on_facades=True, on_roof=True):
+def add_sensor_grid_to_hb_model(model, grid_size=1, offset_dist=0.1, name=None, on_facades=True, on_roof=True):
     """Create a HoneyBee SensorGrid from a HoneyBe model for the roof, the facades or both and add it to the model"""
     """Args :
     model : HB model
