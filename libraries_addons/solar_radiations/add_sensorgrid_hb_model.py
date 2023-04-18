@@ -79,34 +79,41 @@ def get_lb_mesh(faces, grid_size, offset_dist):
 
 
 def add_sensor_grid(model, name, mesh):
+    """Create a HB SensorGrid and add it to a HB model"""
     name = clean_and_id_rad_string('SensorGrid') if name is None else name
     id = clean_rad_string(name) if '/' not in name else clean_rad_string(name.split('/')[0])
     sensor_grid = SensorGrid.from_mesh3d(id, mesh)
-    model_sensor_grid = model.duplicate()
+    model_sensor_grid = model.duplicate() # duplicate the model so that no changes will be made on the original model
     if len(sensor_grid) != 0:
-        model_sensor_grid.properties.radiance.add_sensor_grid(sensor_grid)
+        model_sensor_grid.properties.radiance.add_sensor_grid(sensor_grid) # add the sensor grid to the hb model
     return model_sensor_grid
 
 
-def add_sensor_grid_to_hb_model(_model, _name_, _grid_size, _offset_dist_, on_facades=True, on_roof=True):
-    """Create a HoneyBee SensorGrid from a HoneyBe model and add it to the model"""
+def add_sensor_grid_to_hb_model(model, grid_size, offset_dist, name=None, on_facades=True, on_roof=True):
+    """Create a HoneyBee SensorGrid from a HoneyBe model for the roof, the facades or both and add it to the model"""
+    """Args :
+    model : HB model
+    grid_size : Number for the size of the test grid
+    offset_dist : Number for the distance to move points from the surfaces of the geometry of the model. Typically, this
+    should be a small positive number to ensure points are not blocked by the mesh.
+    name : Name """
 
-    assert isinstance(_model, Model), \
-        'Expected Honeybee Model. Got {}.'.format(type(_model))
+    assert isinstance(model, Model), \
+        'Expected Honeybee Model. Got {}.'.format(type(model))
 
     if on_facades and not on_roof:
-        faces_facades = get_hb_faces_facades(_model)
-        mesh_facades = get_lb_mesh(faces_facades, _grid_size, _offset_dist_)
-        model_sg = add_sensor_grid(_name_, _model, mesh_facades)
+        faces_facades = get_hb_faces_facades(model)
+        mesh_facades = get_lb_mesh(faces_facades, grid_size, offset_dist)
+        model_sg = add_sensor_grid(name, model, mesh_facades)
 
     elif on_roof and not on_facades:
-        faces_roof = get_hb_faces_roof(_model)
-        mesh_roof = get_lb_mesh(faces_roof, _grid_size, _offset_dist_)
-        model_sg = add_sensor_grid(_name_, _model, mesh_roof)
+        faces_roof = get_hb_faces_roof(model)
+        mesh_roof = get_lb_mesh(faces_roof, grid_size, offset_dist)
+        model_sg = add_sensor_grid(name, model, mesh_roof)
 
     else:
-        faces = get_hb_faces(_model)
-        mesh = get_lb_mesh(faces, _grid_size, _offset_dist_)
-        model_sg = add_sensor_grid(_name_, _model, mesh)
+        faces = get_hb_faces(model)
+        mesh = get_lb_mesh(faces, grid_size, offset_dist)
+        model_sg = add_sensor_grid(name, model, mesh)
 
     return model_sg

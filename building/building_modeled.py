@@ -117,14 +117,13 @@ class BuildingModeled(BuildingBasic):
 
 
 
-    def solar_radiations(self, _name_, _wea, _folder, _grid_size, _offset_dist_):
+    def solar_radiations(self, name, path_folder, path_weather_file, grid_size, offset_dist):
         """
         """
-        # hb_model_with_sensor_grid = hb_model_solar_radiation(self.HB_model_obj,on_roof=True,on_facade=True)
 
         # blbala
-        hb_model_with_sensor_grid = add_sensor_grid_to_hb_model(self.HB_model_obj, _name_, _grid_size, _offset_dist_)
-        settings = hb_recipe_settings(_folder)
-        project_folder = hb_ann_irr_sim(hb_model_with_sensor_grid, _wea, settings)
+        hb_model_with_sensor_grid = add_sensor_grid_to_hb_model(self.HB_model_obj, name, grid_size, offset_dist_)
+        settings = hb_recipe_settings(path_folder)
+        project_folder = hb_ann_irr_sim(hb_model_with_sensor_grid, path_weather_file, settings)
         hb_ann_cum_values([os.path.join(project_folder, "annual_irradiance", "results", "total")])
 

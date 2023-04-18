@@ -54,31 +54,31 @@ def cumulative_values(ill_file, su_pattern, timestep):
     return cumul_vals
 
 
-def hb_ann_cum_values(_results, _hoys_=None, grid_filter_=None):
+def hb_ann_cum_values(path_results, hoys=None, grid_filter=None):
     """Args:
-    _results : A list of Annual Radiance result files from either the "HB Annual Daylight" or the "HB Annual
+    path_results : A list of Annual Radiance result files from either the "HB Annual Daylight" or the "HB Annual
     Irradiance" component (containing the.ill files and the sun-up-hours.text). This can also be just the path to the
     folder containing these result files.
     If it's a path, it must be in a list. For instance : [path_folder]
-    _hoys_ : An optional number or list of numbers to select the hours of the year (HOYs) for which results will be
+    hoys : An optional number or list of numbers to select the hours of the year (HOYs) for which results will be
     computed. These HOYs can be obtained from the "LB calculate HOY" or the "LB Analysis Period" components. If None,
     all hours of the day will be used.
-    grid_filter_ : The name of a grid or a pattern to filter the grids. For instance, first_floor* will simulate only
+    grid_filter : The name of a grid or a pattern to filter the grids. For instance, first_floor* will simulate only
     the sensor grids that have an identifier that starts with first_floor/ By default, all the grids will be processed.
     """
     # set up the default values
-    grid_filter_ = '*' if grid_filter_ is None else grid_filter_
-    hoys = [] if _hoys_ is None else _hoys_
-    res_folder = os.path.dirname(_results[0]) if os.path.isfile(_results[0]) \
-        else _results[0]
+    grid_filter_ = '*' if grid_filter is None else grid_filter
+    hoys_ = [] if hoys is None else hoys
+    res_folder = os.path.dirname(path_results[0]) if os.path.isfile(path_results[0]) \
+        else path_results[0]
 
 
         # check to see if results use the newer numpy arrays
     if os.path.isdir(os.path.join(res_folder, '__static_apertures__')):
         cmds = [folders.python_exe_path, '-m', 'honeybee_radiance_postprocess',
                 'post-process', 'cumulative-values', res_folder, '-sf', 'metrics']
-        if len(hoys) != 0:
-            hoys_str = '\n'.join(str(h) for h in hoys)
+        if len(hoys_) != 0:
+            hoys_str = '\n'.join(str(h) for h in hoys_)
             hoys_file = os.path.join(res_folder, 'hoys.txt')
             write_to_file(hoys_file, hoys_str)
             cmds.extend(['--hoys-file', hoys_file])
@@ -106,7 +106,7 @@ def hb_ann_cum_values(_results, _hoys_=None, grid_filter_=None):
 
         # parse the sun-up-hours
         grids, sun_up_hours = _process_input_folder(res_folder, grid_filter_)
-        su_pattern = parse_sun_up_hours(sun_up_hours, hoys, timestep)
+        su_pattern = parse_sun_up_hours(sun_up_hours, hoys_, timestep)
 
         # compute the average values
         values = []
