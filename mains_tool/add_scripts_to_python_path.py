@@ -1,7 +1,11 @@
-import os
+"""
+Add to the python path the path of the scripts of the tool.
+Meant to be run before the main script when the called from Grasshopper.
+It should be run before the main in the batch file.
+"""
+
 import sys
+from utils_main_default_values import path_scripts_tool
 
-local_appdata = os.environ['LOCALAPPDATA']
-path_tool = os.path.join(local_appdata, "Building_urban_analysis")
-
-sys.path.append(os.path.join(path_tool, "Scripts"))
+# Add the path of the scripts to the python path
+sys.path.append(path_scripts_tool)

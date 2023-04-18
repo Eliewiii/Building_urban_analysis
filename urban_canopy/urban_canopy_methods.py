@@ -2,14 +2,8 @@
 Urban canopy class, containing and managing collections of buildings in urban areas.
 """
 
-import os
-import logging
-import pickle
+from urban_canopy.utils_urban_canopy import *
 
-from honeybee.model import Model
-from honeybee.room import Room
-#this can be replaced with these:
-#from libraries_addons.hb_model_addons import *
 from building.building_basic import BuildingBasic
 from building.building_modeled import BuildingModeled
 from Elie.gis.extract_gis import extract_gis

@@ -4,8 +4,8 @@ as they will be simulated
 """
 
 from building.utils import *
-from building.building_basic import BuildingBasic  # todo: cannot be imported from building.utils because of circular import (building.building_basic import utils)
-                                                #TODO:(answer to above) what we should do - is change  the names on the class to be unique then it should work
+from building.building_basic import BuildingBasic
+
 class BuildingModeled(BuildingBasic):
     """BuildingBasic class, representing one building in an urban canopy."""
 
