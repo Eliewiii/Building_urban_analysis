@@ -189,14 +189,14 @@ class UrbanCanopy:
                              tolerance=0.01)
             HB_model.to_hbjson(name=hbjson_name, folder=path_folder)
 
-    def perform_context_filtering_on_buildingmodeled_to_simulate(self):
+    def perform_context_filtering_on_buildingmodeled_to_simulate(self,minimum_vf_criterion = default_minimum_vf_criterion_for_shadow_calculation):
         """
         Perform the context filtering on the BuildingModeled objects in the urban canopy that need to be simulated.
 
         """
         # todo @Elie: to adapt from old code
 
-        #todo @ Sharon and @Elie: speed up this part by preparing making some preprocessing (centroid of faces, height etc...)
+        #todo @ Sharon and @Elie: speed up this part LATER by preparing making some preprocessing (centroid of faces, height etc...)
 
         # Make bounding boxes and extruded footprint if they don't exist already
         # todo @Elie or @Sharon: can be put in a separate function
@@ -208,7 +208,8 @@ class UrbanCanopy:
         # Loop through the buildings in the urban canopy
         for building_obj in self.building_dict.values():
             if isinstance(building_obj, BuildingModeled) and building_obj.to_simulate:
-                None #todo
+                list_of_all_buildings = list(self.building_dict.values())
+                building_obj.select_context_surfaces_for_shading_computation(context_building_list=list_of_all_buildings,minimum_vf_criterion=minimum_vf_criterion)
 
     def compute_moving_vector_to_origin(self):
         """ Make the moving vector to move the urban canopy to the origin """

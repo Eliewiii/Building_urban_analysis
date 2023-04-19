@@ -6,6 +6,7 @@ as they will be simulated
 from building.utils import *
 from building.building_basic import BuildingBasic
 
+
 class BuildingModeled(BuildingBasic):
     """BuildingBasic class, representing one building in an urban canopy."""
 
@@ -40,8 +41,9 @@ class BuildingModeled(BuildingBasic):
         # todo : maybe add more properties to modify before pickling to avoid locked class issue
 
     @classmethod
-    def convert_buildingbasic_to_buildingmodeled(cls, building_obj, layout_from_typology=False, automatic_subdivision=True,
-                      properties_from_typology=True):
+    def convert_buildingbasic_to_buildingmodeled(cls, building_obj, layout_from_typology=False,
+                                                 automatic_subdivision=True,
+                                                 properties_from_typology=True):
         """
         Create a BuildingModeled object from a BuildingBasic object
         :return: building_HB_model : BuildingModeled object
@@ -88,9 +90,28 @@ class BuildingModeled(BuildingBasic):
 
         return building_modeled_obj, identifier
 
-    def select_context_building_for_simulation(self, context_building_list,):
+    def select_context_surfaces_for_shading_computation(self, context_building_list, minimum_vf_criterion):
+        """ Select the context surfaces that will be used for the shading simulation of the current building.
+        :param context_building_list: list of BuildingModeled objects
+        :param minimum_vf_criterion: minimum view factor between surfaces to be considered as context surfaces
+        in the first pass of the algorithm
         """
-        """
+        # todo @ Elie: finish the function
+        # Initialize variables
+        building_kept_first_pass = []
+        LB_Face3D_surfaces_kept_second_pass = []
+        # First pass
+        for context_building_obj in context_building_list:
+            if context_building_obj.id != self.id:
+                if is_bounding_box_context_using_mvfc_criterion(
+                        target_LB_polyface3d_extruded_footprint=self.LB_polyface3d_extruded_footprint,
+                        context_LB_polyface3d_oriented_bounding_box=context_building_obj.LB_polyface3d_oriented_bounding_box,
+                        minimum_vf_criterion=minimum_vf_criterion):
+                    None
+                    # todo @Elie : add the buoiliding to the list of building kept in the first pass
+
+
+        # Second pass
 
     def move(self, vector):
         """

@@ -2,7 +2,7 @@
 Additional functions for Ladybug Face objects.
 """
 
-from libraries_addons.utils import *
+from libraries_addons.libraries_utils import *
 
 # todo : for some rreason, the following import is necessary for _orient_geometry to work
 from ladybug_geometry.bounding import  _orient_geometry

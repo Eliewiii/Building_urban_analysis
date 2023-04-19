@@ -2,7 +2,7 @@
 This file contains the functions that create and modify the honeybee room objects
 """
 
-from libraries_addons.utils import *
+from libraries_addons.libraries_utils import *
 
 
 
