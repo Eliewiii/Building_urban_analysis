@@ -6,10 +6,16 @@
     Output:
         a: The a output variable"""
 
-import os
-import shutil
-from honeybee.model import Model
+from building.utils_building import *
 
+####initialize variables#########
+
+
+
+path_tool = None
+# name of the folder that will contain the hbjsons to add
+name_hbjson_directory = "hbjsons_to_add"
+path_folder_simulation_ = None
 
 def clean_path(path):
     path = path.replace("\\", "/")

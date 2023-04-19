@@ -1,4 +1,4 @@
-from mains_tool.utils import *  # todo @Sharon: change with the new utils file
+from mains_tool.utils_general import *
 
 def main():
 
