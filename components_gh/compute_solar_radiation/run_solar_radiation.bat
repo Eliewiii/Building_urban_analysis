@@ -7,7 +7,7 @@ set path_python_scripts=%LOCALAPPDATA%\Building_urban_analysis\Scripts
 echo Activate the virtual environment
 call "%path_venv_script%\activate.bat"
 
-echo Run the GIS extraction
+echo Run the solar radiation simulation
 python "%path_python_scripts%\components_gh\compute_solar_radiation\main_run_solar_radiation.py" -t 1 %* > "%LOCALAPPDATA%\Building_urban_analysis\Simulation_temp\out.txt" 2>&1
 
 rem Deactivate the virtual environment
