@@ -3,13 +3,10 @@ Urban canopy class, containing and managing collections of buildings in urban ar
 """
 
 from urban_canopy.utils_urban_canopy import *
-from honeybee.model import Model
-from honeybee.room import Room
-#this can be replaced with these:
-#from libraries_addons.hb_model_addons import *
+
 from building.building_basic import BuildingBasic
 from building.building_modeled import BuildingModeled
-from gis.extract_gis import extract_gis
+from Elie.gis.extract_gis import extract_gis
 from typology.typology import Typology
 
 
@@ -27,14 +24,6 @@ class UrbanCanopy:
     def __len__(self):
         """ Return the number of buildings in the urban canopy """
         return len(self.building_dict)
-
-    # def __str__(self):
-    #     """ what you see when you print the urban canopy object """
-    #     return (f"The urban canopy is composed of {len(self)} buildings")
-    #
-    # def __repr__(self):
-    #     """ what you see when you type the urban canopy variable in the console """
-    #     return (f"The urban canopy is composed of {len(self)} buildings")
 
     @classmethod
     def make_urban_canopy_from_pkl(cls, path_pkl):
@@ -218,7 +207,7 @@ class UrbanCanopy:
 
         # Loop through the buildings in the urban canopy
         for building_obj in self.building_dict.values():
-            if isinstance(building_obj, BuildingModeled) and building_obj.simulate:
+            if isinstance(building_obj, BuildingModeled) and building_obj.to_simulate:
                 None #todo
 
     def compute_moving_vector_to_origin(self):

@@ -4,8 +4,8 @@ as they will be simulated
 """
 
 from building.utils_building import *
-from building.building_basic import BuildingBasic  #todo: cannot be imported from building.utils because of circular import (building.building_basic import utils)
-                                                #TODO:(answer to above) what we should do - is change  the names on the class to be unique then it should work
+from building.building_basic import BuildingBasic  # todo: cannot be imported from building.utils because of circular import (building.building_basic import utils)
+
 class BuildingModeled(BuildingBasic):
     """BuildingBasic class, representing one building in an urban canopy."""
     # todo :make the LB_face_footprint optional in the BuildingBasic class
@@ -83,6 +83,7 @@ class BuildingModeled(BuildingBasic):
         # todo @Elie : make the LB_face_footprint from the HB_model
         building_modeled_obj.LB_face_footprint = make_LB_face_footprint_from_HB_model(HB_model=HB_model)
         # todo @Elie : finish the function (and check if it works)
+        building_modeled_obj.moved_to_origin = True  # we assumed that the HB model is already in the proper place within the urban canopy
 
         return building_modeled_obj, identifier
 

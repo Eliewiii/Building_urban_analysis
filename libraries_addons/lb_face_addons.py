@@ -4,6 +4,10 @@ Additional functions for Ladybug Face objects.
 
 from libraries_addons.utils_libraries_addons import *
 
+# todo : for some rreason, the following import is necessary for _orient_geometry to work
+from ladybug_geometry.bounding import  _orient_geometry
+
+
 
 def make_shapely_polygon_from_LB_face(LB_face):
     """Convert a Ladybug Face to a Shapely Polygon."""
