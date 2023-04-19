@@ -9,7 +9,7 @@
 #__version__ = "2023.02.08"
 
 
-from building.utils import *
+from building.utils_building import *
 
 _run = None
 _gis_attribute_keys_dict_ = None

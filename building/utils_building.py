@@ -13,7 +13,7 @@ import geopandas as gpd
 
 # todo @Sharon : cannot be imported in building.building_basic because of circular import (from building import utils)
 # from building.building_basic import BuildingBasic
-   #TODO:(answer to above) what we should do - is change  the names on the
+#TODO:(answer to above) what we should do - is change  the names on the
 
 from libraries_addons.hb_model_addons import elevation_and_height_from_HB_model, make_LB_face_footprint_from_HB_model
 

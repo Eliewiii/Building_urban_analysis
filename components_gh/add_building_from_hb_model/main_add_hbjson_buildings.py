@@ -2,7 +2,7 @@
 Extract add buildings to the urban canopy from hbjson files.
 """
 
-from building.utils import *
+from building.utils_building import *
 # Import the urban canopy methods, needs to be after the update_script_path_venv(), otherwise it will not find the lib
 # when executed from Grasshopper
 ##from urban_canopy.urban_canopy_methods import UrbanCanopy #moved to utils

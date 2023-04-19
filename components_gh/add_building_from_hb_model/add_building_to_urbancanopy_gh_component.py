@@ -6,12 +6,12 @@
     Output:
         a: The a output variable"""
 
-from building.utils import *
+from building.utils_building import *
 
 ####initialize variables#########
-_run = None #TODO check if this make sense as a default value
-_hb_model_list = None #TODO check if this make sense as a default value
-make_hb_model_building_envelop_ = None #TODO check if this make sense as a default value
+
+
+
 path_tool = None
 # name of the folder that will contain the hbjsons to add
 name_hbjson_directory = "hbjsons_to_add"
@@ -91,8 +91,8 @@ path_log_file = os.path.join(path_folder_simulation_, "out.txt")
 def Extract_log_if_exist():
     if os.path.isfile(path_log_file):
         out = clean_log_for_out(path_log_file)
-        #for line in out:
-        #    print(line)
+        #for line in out: # TODO should go to the txt file
+        #    print(line)  # TODO should go to the txt file
 Extract_log_if_exist()
 
 path_hb_model_envelop_json = os.path.join(path_folder_simulation_, "buildings_envelops.hbjson")

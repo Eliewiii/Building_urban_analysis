@@ -2,7 +2,7 @@
 Extract add buildings to the urban canopy from hbjson files.
 """
 
-from building.utils import *
+from building.utils_building import *
 # Import libraries from the tool (after as we don't know if it runs from the tool or PyCharm)
 from urban_canopy.urban_canopy_methods import UrbanCanopy
 

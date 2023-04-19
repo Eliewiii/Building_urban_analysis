@@ -2,7 +2,7 @@
 Additional functions for Ladybug Face objects.
 """
 
-from libraries_addons.utils import *
+from libraries_addons.utils_libraries_addons import *
 
 
 def make_shapely_polygon_from_LB_face(LB_face):

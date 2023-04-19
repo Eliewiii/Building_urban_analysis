@@ -1,4 +1,4 @@
-from mains_tool.utils import *
+from mains_tool.utils_general import *
 
 def main():
 

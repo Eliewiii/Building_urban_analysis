@@ -2,7 +2,7 @@
 Extract the GIS file and convert it into a hb model that can be read and plotted by Grasshopper.
 """
 
-from building.utils import *
+from building.utils_building import *
 # Import libraries from the tool (after as we don't know it's run from the tool or PyCharm)
 from urban_canopy.urban_canopy_methods import UrbanCanopy
 

@@ -2,10 +2,7 @@
 Urban canopy class, containing and managing collections of buildings in urban areas.
 """
 
-import os
-import logging
-import pickle
-
+from urban_canopy.utils_urban_canopy import *
 from honeybee.model import Model
 from honeybee.room import Room
 #this can be replaced with these:
