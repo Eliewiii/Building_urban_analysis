@@ -1,6 +1,3 @@
-"""
-Imports for the urban_canopy package.
-"""
 import os
 import logging
 import pickle

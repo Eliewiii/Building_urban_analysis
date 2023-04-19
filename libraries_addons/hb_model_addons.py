@@ -2,7 +2,7 @@
 Additional functions to apply on honeybee model
 """
 
-from libraries_addons.libraries_utils import *
+from libraries_addons.utils_libraries_addons import *
 
 
 def elevation_and_height_from_HB_model(HB_model):

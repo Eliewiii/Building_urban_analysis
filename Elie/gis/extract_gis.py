@@ -1,4 +1,4 @@
-from building.utils import *
+from building.utils_building import *
 
 path_gis = "D:\Elie\PhD\Simulation\Input_Data\GIS\gis_typo_id_extra_small"
 
