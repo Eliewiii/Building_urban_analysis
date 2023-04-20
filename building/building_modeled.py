@@ -3,6 +3,7 @@ BuildingModeled class, representing one building in an urban canopy that will be
 as they will be simulated
 """
 
+
 from building.utils_building import *
 from building.building_basic import BuildingBasic  # todo: cannot be imported from building.utils because of circular import (building.building_basic import utils)
 

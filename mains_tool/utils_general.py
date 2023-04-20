@@ -32,6 +32,8 @@ default_is_simulated_building = True  # target building is always simulated
 name_bounding_box_file_hbjson = "bounding_boxes.hbjson"
 
 # Default values for the simulations - Context filter
+default_minimum_vf_criterion_context_filter_first_pass_shading = 0.01
+default_number_of_rays_context_filter_second_pass = 3
 # todo @Elie: add when coded
 # Default values for the simulations - Solar radiation calculation
 # todo @Elie: add when coded

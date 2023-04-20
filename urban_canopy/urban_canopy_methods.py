@@ -2,6 +2,7 @@
 Urban canopy class, containing and managing collections of buildings in urban areas.
 """
 
+from mains_tool.utils_general import default_minimum_vf_criterion_context_filter_first_pass_shading
 from urban_canopy.utils_urban_canopy import *
 
 from building.building_basic import BuildingBasic
@@ -189,7 +190,7 @@ class UrbanCanopy:
                              tolerance=0.01)
             HB_model.to_hbjson(name=hbjson_name, folder=path_folder)
 
-    def perform_context_filtering_on_buildingmodeled_to_simulate(self,minimum_vf_criterion = default_minimum_vf_criterion_for_shadow_calculation):
+    def perform_context_filtering_for_shading_on_buildingmodeled_to_simulate(self,minimum_vf_criterion=default_minimum_vf_criterion_context_filter_first_pass_shading):
         """
         Perform the context filtering on the BuildingModeled objects in the urban canopy that need to be simulated.
 
