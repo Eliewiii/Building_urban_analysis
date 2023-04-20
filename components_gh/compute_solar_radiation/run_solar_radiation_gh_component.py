@@ -63,5 +63,6 @@ if os.path.isfile(path_log_file):
     for line in out:
         print(line)
 
+
 # output the path to the hbjson_envelops
 path_hb_model_envelop_json = os.path.join(path_folder_simulation_, "buildings_envelops.hbjson")
