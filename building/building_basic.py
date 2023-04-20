@@ -1,7 +1,7 @@
 """
 BuildingBasic class, representing one building in an urban canopy.
 """
-from building.utils_building import *
+from building.utils import *
 
 
 class BuildingBasic:
