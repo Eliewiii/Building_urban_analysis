@@ -3,8 +3,8 @@ BuildingModeled class, representing one building in an urban canopy that will be
 as they will be simulated
 """
 
-from building.utils import *
-from building.building_basic import BuildingBasic
+from building.utils_building import *
+from building.building_basic import BuildingBasic  # todo: cannot be imported from building.utils because of circular import (building.building_basic import utils)
 
 
 from libraries_addons.solar_radiations.add_sensorgrid_hb_model import add_sensor_grid_to_hb_model
@@ -14,7 +14,6 @@ from libraries_addons.solar_radiations.annual_cumulative_value import hb_ann_cum
 
 class BuildingModeled(BuildingBasic):
     """BuildingBasic class, representing one building in an urban canopy."""
-
     # todo :make the LB_face_footprint optional in the BuildingBasic class
     def __init__(self, identifier, LB_face_footprint=None, urban_canopy=None, building_index_in_GIS=None, **kwargs):
         # Initialize with the inherited attributes from the BuildingBasic parent class

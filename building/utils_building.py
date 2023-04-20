@@ -1,3 +1,6 @@
+import logging
+import dragonfly
+from honeybee.model import Model
 import os
 import sys
 import shutil
@@ -6,6 +9,7 @@ import argparse
 import json
 import shapely
 import geopandas as gpd
+   #TODO:(answer to above) what we should do - is change  the names on the
 from math import sqrt, isnan
 
 import dragonfly
