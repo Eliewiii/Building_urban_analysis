@@ -2,7 +2,7 @@
 
 """
 
-from libraries_addons.libraries_utils import *
+from libraries_addons.utils_libraries_addons import *
 
 
 def is_bounding_box_context_using_mvfc_criterion(target_LB_polyface3d_extruded_footprint,
@@ -20,7 +20,7 @@ def is_bounding_box_context_using_mvfc_criterion(target_LB_polyface3d_extruded_f
     # Loop over all the couples of surfaces between the target building and the context building
     for context_LB_Face3D in list(context_LB_polyface3d_oriented_bounding_box.faces):  # polyface3D.faces is a tuple
         if not is_vector3D_vertical(context_LB_Face3D.normal):  # exclude the horizontal/roof/ground surfaces
-            for target_LB_Face3D in list(target_LB_polyface3d_extruded_footprint):
+            for target_LB_Face3D in list(target_LB_polyface3d_extruded_footprint.faces):
                 # Get the view factor between the context building and the current building
                 majorized_view_factor = max_VF(Point3D_centroid_1=target_LB_Face3D.centroid,
                                                area_1=target_LB_Face3D.area,

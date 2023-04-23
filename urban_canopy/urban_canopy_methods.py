@@ -206,6 +206,9 @@ class UrbanCanopy:
             building_obj.make_LB_polyface3d_extruded_footprint()
             building_obj.make_LB_polyface3d_oriented_bounding_box()
 
+        # Make a Pyvista mesh containing all the surfaces of all the buildings in the urban canopy
+        # todo @Elie : make the mesh, only once for all the buildings
+
         # Loop through the buildings in the urban canopy
         for building_obj in self.building_dict.values():
             if isinstance(building_obj, BuildingModeled) and building_obj.to_simulate:

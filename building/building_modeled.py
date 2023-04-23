@@ -90,7 +90,7 @@ class BuildingModeled(BuildingBasic):
 
         return building_modeled_obj, identifier
 
-    def select_context_surfaces_for_shading_computation(self, context_building_list, minimum_vf_criterion):
+    def select_context_surfaces_for_shading_computation(self, context_building_list,full_urban_canopy_Pyvista_mesh, minimum_vf_criterion):
         """ Select the context surfaces that will be used for the shading simulation of the current building.
         :param context_building_list: list of BuildingModeled objects
         :param minimum_vf_criterion: minimum view factor between surfaces to be considered as context surfaces
@@ -102,7 +102,7 @@ class BuildingModeled(BuildingBasic):
         HB_Face_surfaces_kept_second_pass = []
         # First pass
         for context_building_obj in context_building_list:
-            if context_building_obj.id != self.id:
+            if context_building_obj.id != self.id: # does not take itself into account
                 if is_bounding_box_context_using_mvfc_criterion(
                         target_LB_polyface3d_extruded_footprint=self.LB_polyface3d_extruded_footprint,
                         context_LB_polyface3d_oriented_bounding_box=context_building_obj.LB_polyface3d_oriented_bounding_box,
@@ -116,11 +116,11 @@ class BuildingModeled(BuildingBasic):
 
         # Second pass
 
-        for context_building_obj in list_building_kept_first_pass:
-             for HB_face_surface in context_building_obj.HB_model_obj:
-                 if not is_HB_Face_context_surface_obstructed_for_target_LB_polyface3d(target_LB_polyface3d_extruded_footprint=self.LB_polyface3d_extruded_footprint , context_HB_Face_surface=HB_face_surface):
-                     None
-                    #todo
+        # for context_building_obj in list_building_kept_first_pass:
+        #      for HB_face_surface in context_building_obj.HB_model_obj:
+        #          if not is_HB_Face_context_surface_obstructed_for_target_LB_polyface3d(target_LB_polyface3d_extruded_footprint=self.LB_polyface3d_extruded_footprint , context_HB_Face_surface=HB_face_surface):
+        #              None
+        #             #todo
 
 
 
