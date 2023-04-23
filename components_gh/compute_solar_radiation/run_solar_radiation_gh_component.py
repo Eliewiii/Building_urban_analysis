@@ -1,7 +1,6 @@
 """Run a solar radiation simulation for all the buildings in the urban canopy that are targeted
     Inputs:
-        _path_folder: Path to the folder. By default, the code will be run in Appdata\Roaming\Building_urban_analysis\Simulation_temp
-        _name: Name of the simulation folder. By default, it will be "Radiation Simulation"
+        path_folder_simulation_: Path to the folder. By default, the code will be run in Appdata\Roaming\Building_urban_analysis\Simulation_temp
         _path_weather_file : Path to the weather file.
         _grid_size_ : Number for the distance to move points from the surfaces of the geometry of the model
         _offset_dist_ :  Number for the distance to move points from the surfaces of the geometry of the model.
@@ -11,7 +10,7 @@
         a: The a output variable"""
 
 
-
+import os
 
 
 def clean_path(path):
@@ -43,8 +42,12 @@ if _run:
     # Optionnal argument of the bat file/Python script
     if path_folder_simulation_ is not None:
         argument = argument + ' -f "{}"'.format(path_folder_simulation_)
-    if path_weather_file_ is not None:
-        argument = argument + ' -d "{}"'.format(path_weather_file_)
+    if _path_weather_file is not None:
+        argument = argument + ' -w "{}"'.format(_path_weather_file)
+    if _grid_size_ is not None:
+        argument = argument + ' -g "{}"'.format(_grid_size_)
+    if _offset_dist_ is not None:
+        argument = argument + ' -o "{}"'.format(_offset_dist_)
     # Execute the command
     output = os.system(command + argument)
     print(command + argument)

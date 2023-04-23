@@ -13,8 +13,7 @@ local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 
 # Default values
-default_path_folder = os.path.join(path_tool, "Simulation_temp")
-default_name_folder_simulation = "Radiation simulation"
+default_path_folder_simulation = os.path.join(path_tool, "Simulation_temp")
 default_path_weather_file = os.path.join(path_tool, "Librarie", "EPW", "IS_5280_A_Haifa.epw")
 default_grid_size = 1
 default_offset_dist = 0.1
@@ -23,9 +22,7 @@ default_run_by_the_tool = False
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--folder", help="path to the simulation folder", nargs='?',
-                        default=default_path_folder)
-    parser.add_argument("-n", "--name", help="name of the simulation folder", nargs='?',
-                        default=default_name_folder_simulation)
+                        default=default_path_folder_simulation)
     parser.add_argument("-w", "--epw", help="path to the weather file", nargs='?',
                         default=default_path_weather_file)
     parser.add_argument("-g", "--grid", help="Number for the size of the test grid", nargs='?',
@@ -42,13 +39,10 @@ if __name__ == "__main__":
     # Input parameter that will be given by Grasshopper
     args = parser.parse_args()
 
-    path_folder = args.folder
-    name_folder_simulation = args.name
-    path_folder_simulation = os.path.join(path_folder, name_folder_simulation)
-
+    path_folder_simulation = args.folder
     path_weather_file = args.epw
-    grid_size = args.grid
-    offset_dist = args.off
+    grid_size = float(args.grid)
+    offset_dist = float(args.off)
     run_by_the_tool = bool(args.tool)
 
     # Create the folder if it does not exist
@@ -69,15 +63,21 @@ if __name__ == "__main__":
     # # Import libraries from the tool
     # Import libraries from the tool (after as we don't know it's run from the tool or PyCharm)
     from urban_canopy.urban_canopy_methods import UrbanCanopy
+    from building.building_modeled import BuildingModeled
 
     # Create or load the urban canopy object
-    path_urban_canopy_pkl = os.path.join(path_folder_gis_extraction, "urban_canopy.pkl")
+    path_urban_canopy_pkl = os.path.join(path_folder_simulation, "urban_canopy.pkl")
     if os.path.isfile(path_urban_canopy_pkl):
         urban_canopy = UrbanCanopy.make_urban_canopy_from_pkl(path_urban_canopy_pkl)
-        logging.info(f"An urban canopy already exist in the simulation folder, the input GIS will be added to it")
+        logging.info(f"An urban canopy already exist in the simulation folder, let us load it")
     else:
         urban_canopy = UrbanCanopy()
         logging.info(f"New urban canopy object was created")
+
+    for building in urban_canopy.building_dict.values():  # for every building in the urban canopy
+        if type(building) is BuildingModeled:
+            print(building.is_target)
+
 
     # Run the annual solar radiation simulation on each building targeted of the urban canopy
     urban_canopy.radiation_simulation_urban_canopy(path_folder_simulation, path_weather_file, grid_size, offset_dist)

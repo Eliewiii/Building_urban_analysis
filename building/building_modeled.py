@@ -4,16 +4,18 @@ as they will be simulated
 """
 
 from building.utils_building import *
-from building.building_basic import BuildingBasic  # todo: cannot be imported from building.utils because of circular import (building.building_basic import utils)
-
+from building.building_basic import \
+    BuildingBasic  # todo: cannot be imported from building.utils because of circular import (building.building_basic import utils)
 
 from libraries_addons.solar_radiations.add_sensorgrid_hb_model import add_sensor_grid_to_hb_model
 from libraries_addons.solar_radiations.hb_recipe_settings import hb_recipe_settings
 from libraries_addons.solar_radiations.annual_irradiance_simulation import hb_ann_irr_sim
 from libraries_addons.solar_radiations.annual_cumulative_value import hb_ann_cum_values
 
+
 class BuildingModeled(BuildingBasic):
     """BuildingBasic class, representing one building in an urban canopy."""
+
     # todo :make the LB_face_footprint optional in the BuildingBasic class
     def __init__(self, identifier, LB_face_footprint=None, urban_canopy=None, building_index_in_GIS=None, **kwargs):
         # Initialize with the inherited attributes from the BuildingBasic parent class
@@ -120,12 +122,9 @@ class BuildingModeled(BuildingBasic):
 
         # Second pass
 
-        for context_building_obj in list_building_kept_first_pass:
-             for HB_face_surface in context_building_obj.HB_model_obj:
-                 if not is_HB_Face_context_surface_obstructed_for_target_LB_polyface3d(target_LB_polyface3d_extruded_footprint= , context_HB_Face_surface= ):
-
-
-
+        # for context_building_obj in list_building_kept_first_pass:
+        #    for HB_face_surface in context_building_obj.HB_model_obj:
+        #        if not is_HB_Face_context_surface_obstructed_for_target_LB_polyface3d(target_LB_polyface3d_extruded_footprint= , context_HB_Face_surface= ):
 
     def move(self, vector):
         """
@@ -144,13 +143,12 @@ class BuildingModeled(BuildingBasic):
         self.HB_model_obj.move(Vector3D(vector[0], vector[1], vector[2]))  # the model is moved fully
         self.moved_to_origin = True
 
-
-
-    def solar_radiations(self, name, path_folder, path_weather_file, grid_size=1, offset_dist=0.1):
+    def solar_radiations(self, name, path_folder_simulation, path_weather_file, grid_size=1, offset_dist=0.1, on_facades=True,
+                         on_roof=True):
         """Create and add a sensor grid to the HB model of the building then run the annual irradiance simulation on
         it"""
-        hb_model_with_sensor_grid = add_sensor_grid_to_hb_model(self.HB_model_obj, name, grid_size, offset_dist)
-        settings = hb_recipe_settings(path_folder)
+        hb_model_with_sensor_grid = add_sensor_grid_to_hb_model(self.HB_model_obj, name, grid_size, offset_dist,
+                                                                on_facades, on_roof)
+        settings = hb_recipe_settings(path_folder_simulation)
         project_folder = hb_ann_irr_sim(hb_model_with_sensor_grid, path_weather_file, settings)
         hb_ann_cum_values([os.path.join(project_folder, "annual_irradiance", "results", "total")])
-

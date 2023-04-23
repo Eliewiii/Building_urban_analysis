@@ -78,12 +78,12 @@ class UrbanCanopy:
         if building_id in self.building_dict.keys():
             logging.warning("The building id {building_id} is already in the urban canopy, "
                             "it will not be added again to the urban canopy".format(building_id=building_id))
-            #TODO multiple lines which is the same
+            # TODO multiple lines which is the same
             logging.warning("***check-lines***")
             logging.warning("The building id {} is already in the urban canopy, "
                             "it will not be added again to the urban canopy".format(building_id))
 
-            #logging.warning(f"The building id {building_id} is already in the urban canopy, it will not"
+            # logging.warning(f"The building id {building_id} is already in the urban canopy, it will not"
             #                f" be added again to the urban canopy")
         else:
             # add the building to the urban canopy
@@ -113,7 +113,8 @@ class UrbanCanopy:
         try:
             shape_file[building_id_key_gis]
         except KeyError:
-            logging.error("The key {building_id_key_gis} is not an attribute of the shape file, the id will be generated automatically")
+            logging.error(
+                "The key {building_id_key_gis} is not an attribute of the shape file, the id will be generated automatically")
 
             raise
             # if the key is not valid, set it to None, and the building will automatically be assigned an id
@@ -183,20 +184,22 @@ class UrbanCanopy:
         if path_folder is not None:
             # List of the hb rooms representing the building envelops
             bounding_boxes_HB_room_list = [
-                Room.from_polyface3d(identifier=str(building.id), polyface=building.LB_polyface3d_oriented_bounding_box) for building in
+                Room.from_polyface3d(identifier=str(building.id), polyface=building.LB_polyface3d_oriented_bounding_box)
+                for building in
                 self.building_dict.values()]
             HB_model = Model(identifier="urban_canopy_bounding_boxes", rooms=bounding_boxes_HB_room_list,
                              tolerance=0.01)
             HB_model.to_hbjson(name=hbjson_name, folder=path_folder)
 
-    def perform_context_filtering_on_buildingmodeled_to_simulate(self,minimum_vf_criterion = default_minimum_vf_criterion_for_shadow_calculation):
+    def perform_context_filtering_on_buildingmodeled_to_simulate(self,
+                                                                 minimum_vf_criterion=default_minimum_vf_criterion_for_shadow_calculation):
         """
         Perform the context filtering on the BuildingModeled objects in the urban canopy that need to be simulated.
 
         """
         # todo @Elie: to adapt from old code
 
-        #todo @ Sharon and @Elie: speed up this part LATER by preparing making some preprocessing (centroid of faces, height etc...)
+        # todo @ Sharon and @Elie: speed up this part LATER by preparing making some preprocessing (centroid of faces, height etc...)
 
         # Make bounding boxes and extruded footprint if they don't exist already
         # todo @Elie or @Sharon: can be put in a separate function
@@ -209,7 +212,8 @@ class UrbanCanopy:
         for building_obj in self.building_dict.values():
             if isinstance(building_obj, BuildingModeled) and building_obj.to_simulate:
                 list_of_all_buildings = list(self.building_dict.values())
-                building_obj.select_context_surfaces_for_shading_computation(context_building_list=list_of_all_buildings,minimum_vf_criterion=minimum_vf_criterion)
+                building_obj.select_context_surfaces_for_shading_computation(
+                    context_building_list=list_of_all_buildings, minimum_vf_criterion=minimum_vf_criterion)
 
     def compute_moving_vector_to_origin(self):
         """ Make the moving vector to move the urban canopy to the origin """
@@ -246,9 +250,11 @@ class UrbanCanopy:
                 # Move by the opposite vector
                 building.move([-coordinate for coordinate in self.moving_vector_to_origin])
 
-    def radiation_simulation_urban_canopy(self, path_folder, path_weather_file, grid_size=1, offset_dist=0.1):
-        for building in self.building_dict.values(): # for every building in the urban canopy
-            if type(building) is BuildingModeled and building.is_target:
-                path_folder_building = os.path.join(path_folder, building.id)
-                building.HB_model_obj.solar_radiations(building.id, path_folder_building, path_weather_file, grid_size,
-                                                       offset_dist)
+    def radiation_simulation_urban_canopy(self, path_folder_simulation, path_weather_file, grid_size=1, offset_dist=0.1):
+        for building in self.building_dict.values():  # for every building in the urban canopy
+            # if type(building) is BuildingModeled and building.is_target:
+            if type(building) is BuildingModeled:
+                path_folder_building = os.path.join(path_folder_simulation, building.id)
+                building.solar_radiations(str(building.id), path_folder_building, path_weather_file, grid_size,
+                                          offset_dist)
+                print("Another radiation simulation was done")

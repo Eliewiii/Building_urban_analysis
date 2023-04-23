@@ -26,12 +26,13 @@ except ImportError as e:
 
 def is_facade(face):
     """Check if the face is an exterior wall"""
-    isinstance(face.type, Wall) and isinstance(face.boundary_condition, Outdoors)
+    return (isinstance(face.type, Wall) and isinstance(face.boundary_condition, Outdoors))
 
 
 def is_roof(face):
     """Check if the face is a roof"""
-    isinstance(face.type, RoofCeiling) and isinstance(face.boundary_condition, Outdoors)
+    return (isinstance(face.type, RoofCeiling) and isinstance(face.boundary_condition, Outdoors))
+
 
 
 def get_hb_faces_facades(model):
@@ -78,7 +79,7 @@ def get_lb_mesh(faces, grid_size, offset_dist):
     return lb_mesh
 
 
-def add_sensor_grid(model, name, mesh):
+def add_sensor_grid(model, mesh, name=None):
     """Create a HB SensorGrid and add it to a HB model"""
     name = clean_and_id_rad_string('SensorGrid') if name is None else name
     id = clean_rad_string(name) if '/' not in name else clean_rad_string(name.split('/')[0])
@@ -89,7 +90,7 @@ def add_sensor_grid(model, name, mesh):
     return model_sensor_grid
 
 
-def add_sensor_grid_to_hb_model(model, grid_size=1, offset_dist=0.1, name=None, on_facades=True, on_roof=True):
+def add_sensor_grid_to_hb_model(model, name=None, grid_size=1, offset_dist=0.1, on_facades=True, on_roof=True):
     """Create a HoneyBee SensorGrid from a HoneyBe model for the roof, the facades or both and add it to the model"""
     """Args :
     model : HB model
@@ -104,16 +105,16 @@ def add_sensor_grid_to_hb_model(model, grid_size=1, offset_dist=0.1, name=None, 
     if on_facades and not on_roof:
         faces_facades = get_hb_faces_facades(model)
         mesh_facades = get_lb_mesh(faces_facades, grid_size, offset_dist)
-        model_sg = add_sensor_grid(name, model, mesh_facades)
+        model_sg = add_sensor_grid(model, mesh_facades, name)
 
     elif on_roof and not on_facades:
         faces_roof = get_hb_faces_roof(model)
         mesh_roof = get_lb_mesh(faces_roof, grid_size, offset_dist)
-        model_sg = add_sensor_grid(name, model, mesh_roof)
+        model_sg = add_sensor_grid(model, mesh_roof, name)
 
     else:
         faces = get_hb_faces(model)
         mesh = get_lb_mesh(faces, grid_size, offset_dist)
-        model_sg = add_sensor_grid(name, model, mesh)
+        model_sg = add_sensor_grid(model, mesh, name)
 
     return model_sg
