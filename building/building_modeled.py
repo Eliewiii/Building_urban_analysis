@@ -118,8 +118,9 @@ class BuildingModeled(BuildingBasic):
 
         for context_building_obj in list_building_kept_first_pass:
              for HB_face_surface in context_building_obj.HB_model_obj:
-                 if not is_HB_Face_context_surface_obstructed_for_target_LB_polyface3d(target_LB_polyface3d_extruded_footprint= , context_HB_Face_surface= ):
-
+                 if not is_HB_Face_context_surface_obstructed_for_target_LB_polyface3d(target_LB_polyface3d_extruded_footprint=self.LB_polyface3d_extruded_footprint , context_HB_Face_surface=HB_face_surface):
+                     None
+                    #todo
 
 
 

@@ -6,7 +6,7 @@ import argparse
 import json
 import shapely
 import geopandas as gpd
-from math import sqrt, isnan
+from math import sqrt, isnan, log
 
 import dragonfly
 from honeybee.model import Model
@@ -18,6 +18,7 @@ from libraries_addons.lb_face_addons import make_LB_polyface3D_oriented_bounding
 from libraries_addons.hb_rooms_addons import LB_face_footprint_to_elevated_HB_room_envelop
 from libraries_addons.context_filter_algorithm.context_filter_first_pass import is_bounding_box_context_using_mvfc_criterion
 from libraries_addons.context_filter_algorithm.context_filter_second_pass import is_HB_Face_context_surface_obstructed_for_target_LB_polyface3d
+
 
 
 
