@@ -102,8 +102,8 @@ class BuildingModeled(BuildingBasic):
         """
         # todo @ Elie: finish the function
         # Initialize variables
-        building_kept_first_pass = []
-        LB_Face3D_surfaces_kept_second_pass = []
+        list_building_kept_first_pass = []
+        HB_Face_surfaces_kept_second_pass = []
         # First pass
         for context_building_obj in context_building_list:
             if context_building_obj.id != self.id:
@@ -113,9 +113,19 @@ class BuildingModeled(BuildingBasic):
                         minimum_vf_criterion=minimum_vf_criterion):
                     None
                     # todo @Elie : add the buoiliding to the list of building kept in the first pass
+                    # add the building to the list of building for the second path
 
+                    # convert the buildingbasics into buildingmodeled (with typo identifier when it will work, put an empty function for now
+                    # use the honeybee model to have the proper caracteristics of the surfsace
 
         # Second pass
+
+        for context_building_obj in list_building_kept_first_pass:
+             for HB_face_surface in context_building_obj.HB_model_obj:
+                 if not is_HB_Face_context_surface_obstructed_for_target_LB_polyface3d(target_LB_polyface3d_extruded_footprint= , context_HB_Face_surface= ):
+
+
+
 
     def move(self, vector):
         """
