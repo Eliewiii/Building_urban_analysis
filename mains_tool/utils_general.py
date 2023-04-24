@@ -1,7 +1,9 @@
 """
 
 """
-from utils_main_imports_packages import *
+
+
+from mains_tool.utils_main_imports_packages import *
 
 # Get Appdata\local folder
 local_appdata = os.environ['LOCALAPPDATA']
