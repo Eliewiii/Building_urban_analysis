@@ -70,10 +70,6 @@ def main():
             logging.info("New urban canopy object was created")
     Create_load_urban_canopy_object()
 
-
-
-
-
     def additional_gis_attribute_key_dict_exists():
         if default_additional_gis_attribute_key_dict and os.path.isfile(path_additional_gis_attribute_key_dict):
             with open(path_additional_gis_attribute_key_dict, "r") as f:
