@@ -147,8 +147,13 @@ class BuildingModeled(BuildingBasic):
                          on_roof=True):
         """Create and add a sensor grid to the HB model of the building then run the annual irradiance simulation on
         it"""
-        hb_model_with_sensor_grid = add_sensor_grid_to_hb_model(self.HB_model_obj, name, grid_size, offset_dist,
-                                                                on_facades, on_roof)
+        hb_model_with_sensor_grid = add_sensor_grid_to_hb_model(self.HB_model_obj, path_folder_simulation, name,
+                                                                grid_size, offset_dist, on_facades, on_roof)
         settings = hb_recipe_settings(path_folder_simulation)
         project_folder = hb_ann_irr_sim(hb_model_with_sensor_grid, path_weather_file, settings)
-        hb_ann_cum_values([os.path.join(project_folder, "annual_irradiance", "results", "total")])
+        return hb_ann_cum_values([os.path.join(project_folder, "annual_irradiance", "results", "total")])
+
+    def post_process(self, path_folder_simulation):
+        path_file_values = os.path.join(path_folder_simulation, 'values.txt')
+        f = open(path_file_values)
+        values = [(int(i)/1000) for i in f]

@@ -14,7 +14,7 @@ path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 
 # Default values
 default_path_folder_simulation = os.path.join(path_tool, "Simulation_temp")
-default_path_weather_file = os.path.join(path_tool, "Librarie", "EPW", "IS_5280_A_Haifa.epw")
+default_path_weather_file = os.path.join(path_tool, "Libraries", "EPW", "IS_5280_A_Haifa.epw")
 default_grid_size = 1
 default_offset_dist = 0.1
 default_run_by_the_tool = False
@@ -40,6 +40,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     path_folder_simulation = args.folder
+    path_radiation_folder = os.path.join(path_folder_simulation, "Radiation simulation")
     path_weather_file = args.epw
     grid_size = float(args.grid)
     offset_dist = float(args.off)
@@ -74,21 +75,14 @@ if __name__ == "__main__":
         urban_canopy = UrbanCanopy()
         logging.info(f"New urban canopy object was created")
 
-    for building in urban_canopy.building_dict.values():  # for every building in the urban canopy
-        if type(building) is BuildingModeled:
-            print(building.is_target)
-
-
     # Run the annual solar radiation simulation on each building targeted of the urban canopy
-    urban_canopy.radiation_simulation_urban_canopy(path_folder_simulation, path_weather_file, grid_size, offset_dist)
+    urban_canopy.radiation_simulation_urban_canopy(path_radiation_folder, path_weather_file, grid_size, offset_dist)
     logging.info(f"Solar radiation simulation run successfully")
-    # save the urban canopy object in a pickle file in the temp folder
-    urban_canopy.export_urban_canopy_to_pkl(path_folder=path_folder_simulation)
-    logging.info(f"Urban canopy object saved successfully")
 
     # generate the hb model that contains all the building envelopes to plot in Grasshopper
     urban_canopy.make_HB_model_envelops_from_buildings(path_folder=path_folder_simulation)
     logging.info(f"HB model for the building envelop created successfully")
+
     # save the urban canopy object in a pickle file in the temp folder
     urban_canopy.export_urban_canopy_to_pkl(path_folder=path_folder_simulation)
     logging.info(f"Urban canopy object saved successfully")

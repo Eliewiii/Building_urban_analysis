@@ -250,11 +250,25 @@ class UrbanCanopy:
                 # Move by the opposite vector
                 building.move([-coordinate for coordinate in self.moving_vector_to_origin])
 
-    def radiation_simulation_urban_canopy(self, path_folder_simulation, path_weather_file, grid_size=1, offset_dist=0.1):
+    def radiation_simulation_urban_canopy(self, path_folder_simulation, path_weather_file, grid_size=1,
+                                          offset_dist=0.1):
         for building in self.building_dict.values():  # for every building in the urban canopy
             # if type(building) is BuildingModeled and building.is_target:
             if type(building) is BuildingModeled:
                 path_folder_building = os.path.join(path_folder_simulation, building.id)
-                building.solar_radiations(str(building.id), path_folder_building, path_weather_file, grid_size,
-                                          offset_dist)
+                values = building.solar_radiations(str(building.id), path_folder_building, path_weather_file, grid_size,
+                                                   offset_dist)
+                name_file = os.path.join(path_folder_building, 'radiation_values.txt')
+                file = open(name_file, 'w')
+                tmp = (','.join(str(n) for n in values[0]))
+                file.write('{}'.format(tmp))
+                file.close()
                 print("Another radiation simulation was done")
+
+    def post_processing_urban_canopy(self, path_folder_simulation):
+        for building in self.building_dict.values():  # for every building in the urban canopy
+            # if type(building) is BuildingModeled and building.is_target:
+            if type(building) is BuildingModeled:
+                path_building = os.path.join(path_folder_simulation, building.id)
+                building.post_process(path_building)
+

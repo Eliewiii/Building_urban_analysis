@@ -118,3 +118,5 @@ def hb_ann_cum_values(path_results, hoys=None, grid_filter=None):
             else:
                 cumul = cumulative_values(ill_file, su_pattern, timestep)
             values.append(cumul)
+
+    return values

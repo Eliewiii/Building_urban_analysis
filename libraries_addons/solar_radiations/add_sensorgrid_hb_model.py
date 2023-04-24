@@ -90,7 +90,7 @@ def add_sensor_grid(model, mesh, name=None):
     return model_sensor_grid
 
 
-def add_sensor_grid_to_hb_model(model, name=None, grid_size=1, offset_dist=0.1, on_facades=True, on_roof=True):
+def add_sensor_grid_to_hb_model(model, path_folder_simulation, name=None, grid_size=1, offset_dist=0.1, on_facades=True, on_roof=True):
     """Create a HoneyBee SensorGrid from a HoneyBe model for the roof, the facades or both and add it to the model"""
     """Args :
     model : HB model
@@ -106,15 +106,18 @@ def add_sensor_grid_to_hb_model(model, name=None, grid_size=1, offset_dist=0.1, 
         faces_facades = get_hb_faces_facades(model)
         mesh_facades = get_lb_mesh(faces_facades, grid_size, offset_dist)
         model_sg = add_sensor_grid(model, mesh_facades, name)
+        mesh_facades.to_stl(path_folder_simulation)
 
     elif on_roof and not on_facades:
         faces_roof = get_hb_faces_roof(model)
         mesh_roof = get_lb_mesh(faces_roof, grid_size, offset_dist)
         model_sg = add_sensor_grid(model, mesh_roof, name)
+        mesh_roof.to_stl(path_folder_simulation)
 
     else:
         faces = get_hb_faces(model)
         mesh = get_lb_mesh(faces, grid_size, offset_dist)
         model_sg = add_sensor_grid(model, mesh, name)
+        mesh.to_stl(path_folder_simulation)
 
     return model_sg
