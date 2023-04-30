@@ -5,10 +5,9 @@ from libraries_addons.utils_libraries_addons import *
 from mains_tool.utils_general import default_number_of_rays_context_filter_second_pass
 
 
-def select_non_obstructed_surfaces_of_context_HB_Model_for_target_LB_polyface3d(target_LB_polyface3d_extruded_footprint,
-                                                                                context_HB_Model_list_to_test,
-                                                                                full_urban_canopy_Pyvista_mesh,
-                                                                                number_of_rays = default_number_of_rays_context_filter_second_pass):
+def select_non_obstructed_surfaces_of_context_HB_Model_for_target_LB_polyface3d(
+        target_LB_polyface3d_extruded_footprint,context_HB_Model_list_to_test,full_urban_canopy_Pyvista_mesh,
+        number_of_rays = default_number_of_rays_context_filter_second_pass):
     """
     Select the context surfaces that will be used for the shading simulation of the current target building.
     :param target_LB_polyface3d_extruded_footprint: LB polyface3d of the target building
@@ -128,7 +127,6 @@ def ray_list_from_emitter_to_receiver(emitter, receiver, exclude_surface_from_ra
         for i in range(number_of_rays):
             ray_list[i] = excluding_surfaces_from_ray(start=ray_list[i][0], end=ray_list[i][1])
     return ray_list[:number_of_rays]
-
 
 
 def excluding_surfaces_from_ray(start, end):

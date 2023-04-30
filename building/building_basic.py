@@ -276,7 +276,7 @@ class BuildingBasic:
         :return: HB Room envelop
         """
         # convert the envelop of the building to a HB Room
-        HB_room_envelop = LB_face_footprint_to_elevated_HB_room_envelop(LB_face_footprint=self.LB_face_footprint,
+        HB_room_envelop = RooomsAddons.LB_face_footprint_to_elevated_HB_room_envelop(LB_face_footprint=self.LB_face_footprint,
                                                                         building_id=self.id,
                                                                         height=self.height,
                                                                         elevation=self.elevation)

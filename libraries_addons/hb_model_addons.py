@@ -4,9 +4,9 @@ Additional functions to apply on honeybee model
 
 from libraries_addons.utils_libraries_addons import *
 
-class HbAddons():
+class HbAddons:
 
-    def elevation_and_height_from_HB_model(HB_model):
+    def elevation_and_height_from_HB_model(self,HB_model):
         """
         Extract the elevation of the building from the hb model
         :param HB_model: honeybee Model
@@ -16,7 +16,7 @@ class HbAddons():
         height = max([room.max.z for room in HB_model.rooms]) - elevation
         return elevation, height
 
-    def make_LB_face_footprint_from_HB_model(HB_model):
+    def make_LB_face_footprint_from_HB_model(self,HB_model):
         """
         Extract the footprint of the building from the hb model
         :param HB_model:
@@ -39,7 +39,7 @@ class HbAddons():
 
 
 
-    def get_LB_faces_with_ground_bc_from_HB_model(HB_model):
+    def get_LB_faces_with_ground_bc_from_HB_model(self,HB_model):
         """
         Extract LB geometry faces 3D that have ground boundary condition from the HB model
         todo: not relevant if the building is on pillar...
@@ -60,7 +60,7 @@ class HbAddons():
     # todo: @Elie : from mow on not
 
 
-    def LB_footprint_to_HB_model(LB_face_footprint, height, elevation, typology_layout=False,core_to_floor_area_ratio=0.15):
+    def LB_footprint_to_HB_model(self,LB_face_footprint, height, elevation, typology_layout=False,core_to_floor_area_ratio=0.15):
         """
         Create a honeybee model with extruded footprints of the building
         :param LB_face_footprint:
@@ -77,7 +77,7 @@ class HbAddons():
             HB_model = Room.from_footprint("building", LB_face_footprint, height, elevation)
         return None
 
-    def HB_model_apply_constructionset(HB_model, constructions_set_id):
+    def HB_model_apply_constructionset(self,HB_model, constructions_set_id):
         """
         Assign construction set and program type to each room of the model
         """
@@ -88,7 +88,7 @@ class HbAddons():
             ## assign program
 
 
-    def HB_model_apply_programs(HB_model, program_type_apartment_id, program_type_core_id):
+    def HB_model_apply_programs(self,HB_model, program_type_apartment_id, program_type_core_id):
         """
         Assign construction set and program type to each room of the model
         """
@@ -102,7 +102,7 @@ class HbAddons():
                 room.properties.energy.program_type = program_type_by_identifier(program_type_core_id)
 
 
-    def HB_model_window_by_facade_ratio_per_direction(HB_model, ratio_per_direction, min_length_wall_for_window=2.,only_conditioned=True):
+    def HB_model_window_by_facade_ratio_per_direction(self,HB_model, ratio_per_direction, min_length_wall_for_window=2.,only_conditioned=True):
         """
         Assign window to each room of the model
         """

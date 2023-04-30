@@ -2,9 +2,9 @@
 
 """
 
-from utils_libraries_addons import *
+from libraries_addons.utils_libraries_addons import *
 
-def polygon_to_LB_footprint(polygon_obj, unit, tolerance=0.01):
+def polygon_to_LB_footprint(polygon_obj, unit, tolerance=default_tolerance):
     """
         Transform a Polygon object to a Ladybug footprint.
         Args:
@@ -65,8 +65,6 @@ def polygon_to_LB_footprint(polygon_obj, unit, tolerance=0.01):
     LB_face_footprint = LB_face_footprint.remove_colinear_vertices(tolerance=tolerance)
 
     return LB_face_footprint
-
-
 def scale_point_list_according_to_unit(point_list, unit):
     """
     Scale the point list according to the unit of the shp file.
@@ -83,9 +81,7 @@ def scale_point_list_according_to_unit(point_list, unit):
     # a priori the only units re degrees and meters. For meter not need to scale
     else:
         None
-
-
-def remove_redundant_vertices(point_list, tol=0.5):
+def remove_redundant_vertices(point_list, tol=default_tol):
     """
     Check if the points of the footprint are too close to each other. If yes, delete one of the points.
     :param point_list: list of points, a point is a list of two coordinates
@@ -108,8 +104,6 @@ def remove_redundant_vertices(point_list, tol=0.5):
     if distance(point_list[0],
                 point_list[-1]) < tol:  # check also with the first and last points in the footprint
         point_list.pop(-1)
-
-
 def distance(pt_1, pt_2):
     """
     :param pt_1: list for the point 1
@@ -119,8 +113,6 @@ def distance(pt_1, pt_2):
     # todo @Elie: move to a "additional function" file/package
 
     return sqrt((pt_1[0] - pt_2[0]) ** 2 + (pt_1[1] - pt_2[1]) ** 2)
-
-
 def add_additional_attribute_keys_to_dict(attribute_key_dict, additional_attribute_key_dict):
     """
     Add additional attribute keys to the attribute key dictionary.
