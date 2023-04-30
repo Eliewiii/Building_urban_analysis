@@ -77,14 +77,14 @@ class BuildingModeled(BuildingBasic):
         # create the BuildingModeled object from the HB model
         building_modeled_obj = cls(identifier)
         # Try to extract certain characteristics of the model from the HB_model
-        elevation, height = elevation_and_height_from_HB_model(HB_model)
+        elevation, height = HbAddons.elevation_and_height_from_HB_model(HB_model)
         # # set the attributes of the BuildingModeled object
         building_modeled_obj.HB_model_obj = HB_model
         building_modeled_obj.urban_canopy = urban_canopy
         building_modeled_obj.elevation = elevation
         building_modeled_obj.height = height
         # todo @Elie : make the LB_face_footprint from the HB_model
-        building_modeled_obj.LB_face_footprint = make_LB_face_footprint_from_HB_model(HB_model=HB_model)
+        building_modeled_obj.LB_face_footprint = HbAddons.make_LB_face_footprint_from_HB_model(HB_model=HB_model)
         # todo @Elie : finish the function (and check if it works)
         building_modeled_obj.moved_to_origin = True  # we assumed that the HB model is already in the proper place within the urban canopy
 
