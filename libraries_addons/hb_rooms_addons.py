@@ -5,9 +5,6 @@ This file contains the functions that create and modify the honeybee room object
 from libraries_addons.utils_libraries_addons import *
 
 
-
-
-
 def LB_face_footprint_to_elevated_HB_room_envelop(LB_face_footprint, building_id, height, elevation):
     """
     Create a honeybee room with extruded footprints of the building and put it at the right elevation.

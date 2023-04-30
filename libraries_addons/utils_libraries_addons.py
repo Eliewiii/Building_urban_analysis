@@ -3,6 +3,9 @@ from honeybee.room import Room
 import logging
 from shapely.geometry import Polygon
 from math import pi,sqrt,atan,log
+import numpy as np
+import pyvista as pv
+from copy import deepcopy
 import dragonfly
 from ladybug_geometry.geometry3d.pointvector import Point3D, Vector3D
 from ladybug_geometry.geometry3d.face import Face3D

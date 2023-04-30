@@ -1,5 +1,5 @@
 """
-Extract the GIS file and convert it into a hb model that can be read and plotted by Grasshopper.
+Run solar radiation on buildings of urban canopy
 """
 
 import os
@@ -86,3 +86,6 @@ if __name__ == "__main__":
     # save the urban canopy object in a pickle file in the temp folder
     urban_canopy.export_urban_canopy_to_pkl(path_folder=path_folder_simulation)
     logging.info(f"Urban canopy object saved successfully")
+
+    urban_canopy.json_urban_canopy_attributes(path_folder=path_folder_simulation)
+    logging.info(f"Urban canopy attributes saved successfully")

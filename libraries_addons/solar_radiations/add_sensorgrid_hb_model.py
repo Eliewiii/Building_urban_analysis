@@ -79,45 +79,11 @@ def get_lb_mesh(faces, grid_size, offset_dist):
     return lb_mesh
 
 
-def add_sensor_grid(model, mesh, name=None):
+def create_sensor_grid_from_mesh(mesh, name=None):
     """Create a HB SensorGrid and add it to a HB model"""
     name = clean_and_id_rad_string('SensorGrid') if name is None else name
     id = clean_rad_string(name) if '/' not in name else clean_rad_string(name.split('/')[0])
     sensor_grid = SensorGrid.from_mesh3d(id, mesh)
-    model_sensor_grid = model.duplicate() # duplicate the model so that no changes will be made on the original model
-    if len(sensor_grid) != 0:
-        model_sensor_grid.properties.radiance.add_sensor_grid(sensor_grid) # add the sensor grid to the hb model
-    return model_sensor_grid
+    return sensor_grid
 
 
-def add_sensor_grid_to_hb_model(model, path_folder_simulation, name=None, grid_size=1, offset_dist=0.1, on_facades=True, on_roof=True):
-    """Create a HoneyBee SensorGrid from a HoneyBe model for the roof, the facades or both and add it to the model"""
-    """Args :
-    model : HB model
-    grid_size : Number for the size of the test grid
-    offset_dist : Number for the distance to move points from the surfaces of the geometry of the model. Typically, this
-    should be a small positive number to ensure points are not blocked by the mesh.
-    name : Name """
-
-    assert isinstance(model, Model), \
-        'Expected Honeybee Model. Got {}.'.format(type(model))
-
-    if on_facades and not on_roof:
-        faces_facades = get_hb_faces_facades(model)
-        mesh_facades = get_lb_mesh(faces_facades, grid_size, offset_dist)
-        model_sg = add_sensor_grid(model, mesh_facades, name)
-        mesh_facades.to_stl(path_folder_simulation)
-
-    elif on_roof and not on_facades:
-        faces_roof = get_hb_faces_roof(model)
-        mesh_roof = get_lb_mesh(faces_roof, grid_size, offset_dist)
-        model_sg = add_sensor_grid(model, mesh_roof, name)
-        mesh_roof.to_stl(path_folder_simulation)
-
-    else:
-        faces = get_hb_faces(model)
-        mesh = get_lb_mesh(faces, grid_size, offset_dist)
-        model_sg = add_sensor_grid(model, mesh, name)
-        mesh.to_stl(path_folder_simulation)
-
-    return model_sg

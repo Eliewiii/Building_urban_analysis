@@ -7,7 +7,7 @@ from building.utils_building import *
 from building.building_basic import \
     BuildingBasic  # todo: cannot be imported from building.utils because of circular import (building.building_basic import utils)
 
-from libraries_addons.solar_radiations.add_sensorgrid_hb_model import add_sensor_grid_to_hb_model
+from libraries_addons.solar_radiations.add_sensorgrid_hb_model import *
 from libraries_addons.solar_radiations.hb_recipe_settings import hb_recipe_settings
 from libraries_addons.solar_radiations.annual_irradiance_simulation import hb_ann_irr_sim
 from libraries_addons.solar_radiations.annual_cumulative_value import hb_ann_cum_values
@@ -26,6 +26,7 @@ class BuildingModeled(BuildingBasic):
 
         self.HB_model_obj = None
         self.HB_model_dict = None
+        self.sensor_grid_dict = {'Roof': None, 'Facades': None}
         self.to_simulate = False
         self.is_target = False
 
@@ -96,7 +97,8 @@ class BuildingModeled(BuildingBasic):
 
         return building_modeled_obj, identifier
 
-    def select_context_surfaces_for_shading_computation(self, context_building_list, minimum_vf_criterion):
+    def select_context_surfaces_for_shading_computation(self, context_building_list, full_urban_canopy_Pyvista_mesh,
+                                                        minimum_vf_criterion):
         """ Select the context surfaces that will be used for the shading simulation of the current building.
         :param context_building_list: list of BuildingModeled objects
         :param minimum_vf_criterion: minimum view factor between surfaces to be considered as context surfaces
@@ -108,7 +110,7 @@ class BuildingModeled(BuildingBasic):
         HB_Face_surfaces_kept_second_pass = []
         # First pass
         for context_building_obj in context_building_list:
-            if context_building_obj.id != self.id:
+            if context_building_obj.id != self.id:  # does not take itself into account
                 if is_bounding_box_context_using_mvfc_criterion(
                         target_LB_polyface3d_extruded_footprint=self.LB_polyface3d_extruded_footprint,
                         context_LB_polyface3d_oriented_bounding_box=context_building_obj.LB_polyface3d_oriented_bounding_box,
@@ -123,8 +125,10 @@ class BuildingModeled(BuildingBasic):
         # Second pass
 
         # for context_building_obj in list_building_kept_first_pass:
-        #    for HB_face_surface in context_building_obj.HB_model_obj:
-        #        if not is_HB_Face_context_surface_obstructed_for_target_LB_polyface3d(target_LB_polyface3d_extruded_footprint= , context_HB_Face_surface= ):
+        #      for HB_face_surface in context_building_obj.HB_model_obj:
+        #          if not is_HB_Face_context_surface_obstructed_for_target_LB_polyface3d(target_LB_polyface3d_extruded_footprint=self.LB_polyface3d_extruded_footprint , context_HB_Face_surface=HB_face_surface):
+        #              None
+        #             #todo
 
     def move(self, vector):
         """
@@ -143,17 +147,66 @@ class BuildingModeled(BuildingBasic):
         self.HB_model_obj.move(Vector3D(vector[0], vector[1], vector[2]))  # the model is moved fully
         self.moved_to_origin = True
 
-    def solar_radiations(self, name, path_folder_simulation, path_weather_file, grid_size=1, offset_dist=0.1, on_facades=True,
-                         on_roof=True):
+    def add_sensor_grid_to_hb_model(self, name=None, grid_size=1, offset_dist=0.1, on_roof=True, on_facades=True):
+        """Create a HoneyBee SensorGrid from a HoneyBe model for the roof, the facades or both and add it to the
+        model"""
+        """Args :
+        name : Name 
+        grid_size : Number for the size of the test grid
+        offset_dist : Number for the distance to move points from the surfaces of the geometry of the model. Typically, this
+        should be a small positive number to ensure points are not blocked by the mesh.
+        name : Name """
+
+        assert isinstance(self.HB_model_obj, Model), \
+            'Expected Honeybee Model. Got {}.'.format(type(self.HB_model_obj))
+
+        if on_roof:
+            faces_roof = get_hb_faces_roof(self.HB_model_obj)
+            mesh_roof = get_lb_mesh(faces_roof, grid_size, offset_dist)
+            sensor_grid_roof = create_sensor_grid_from_mesh(mesh_roof, name)
+            self.sensor_grid_dict['Roof'] = sensor_grid_roof.to_dict()
+
+        if on_facades:
+            faces_facades = get_hb_faces_facades(self.HB_model_obj)
+            mesh_facades = get_lb_mesh(faces_facades, grid_size, offset_dist)
+            sensor_grid_facades = create_sensor_grid_from_mesh(mesh_facades, name)
+            self.sensor_grid_dict['Facades'] = sensor_grid_facades.to_dict()
+
+    def solar_radiations(self, name, path_folder_simulation, path_weather_file, grid_size=1, offset_dist=0.1,
+                         on_roof=True, on_facades=True):
         """Create and add a sensor grid to the HB model of the building then run the annual irradiance simulation on
         it"""
-        hb_model_with_sensor_grid = add_sensor_grid_to_hb_model(self.HB_model_obj, path_folder_simulation, name,
-                                                                grid_size, offset_dist, on_facades, on_roof)
-        settings = hb_recipe_settings(path_folder_simulation)
-        project_folder = hb_ann_irr_sim(hb_model_with_sensor_grid, path_weather_file, settings)
-        return hb_ann_cum_values([os.path.join(project_folder, "annual_irradiance", "results", "total")])
+
+        # Add the sensor grids to the building modeled
+        self.add_sensor_grid_to_hb_model(name, grid_size, offset_dist, on_roof, on_facades)
+
+        if on_roof:
+            # generate the sensor grid from the dict
+            sensor_grid_roof = SensorGrid.from_dict(self.sensor_grid_dict['Roof'])
+            # duplicate the model so that no changes will be made on the original model
+            model_sensor_grid_roof = self.HB_model_obj.duplicate()
+            if len(sensor_grid_roof) != 0:
+                # add the sensor grid to the hb model duplicate
+                model_sensor_grid_roof.properties.radiance.add_sensor_grid(sensor_grid_roof)
+                # run the solar radiation simulation on the roof
+                settings = hb_recipe_settings(path_folder_simulation)
+                project_folder = hb_ann_irr_sim(model_sensor_grid_roof, path_weather_file, settings)
+            return hb_ann_cum_values([os.path.join(project_folder, "Roof", "annual_irradiance", "results", "total")])
+
+        if on_facades:
+            # generate the sensor grid from the dict
+            sensor_grid_roof = SensorGrid.from_dict(self.sensor_grid_dict['Facades'])
+            # duplicate the model so that no changes will be made on the original model
+            model_sensor_grid_facades = self.HB_model_obj.duplicate()
+            if len(model_sensor_grid_facades) != 0:
+                # add the sensor grid to the hb model duplicate
+                model_sensor_grid_facades.properties.radiance.add_sensor_grid(sensor_grid_roof)
+                # run the solar radiation simulation on the roof
+                settings = hb_recipe_settings(path_folder_simulation)
+                project_folder = hb_ann_irr_sim(model_sensor_grid_facades, path_weather_file, settings)
+            return hb_ann_cum_values([os.path.join(project_folder, "Facades", "annual_irradiance", "results", "total")])
 
     def post_process(self, path_folder_simulation):
         path_file_values = os.path.join(path_folder_simulation, 'values.txt')
         f = open(path_file_values)
-        values = [(int(i)/1000) for i in f]
+        values = [(int(i) / 1000) for i in f]

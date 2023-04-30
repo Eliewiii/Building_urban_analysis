@@ -4,7 +4,6 @@ Additional functions to apply on honeybee model
 
 from libraries_addons.utils_libraries_addons import *
 
-
 def elevation_and_height_from_HB_model(HB_model):
     """
     Extract the elevation of the building from the hb model
