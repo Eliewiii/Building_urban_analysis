@@ -20,9 +20,7 @@ default_make_hb_model_envelops = False
 default_run_by_the_tool = False
 name_hbjson_directory = "hbjsons_to_add"
 
-
-
-if __name__ == "__main__":
+def main():
     parser.add_argument("-f", "--folder", help="path to the simulation folder", nargs='?',
                         default=default_path_folder_simulation)
     parser.add_argument("-e", "--hbenv",
@@ -79,3 +77,5 @@ if __name__ == "__main__":
     urban_canopy.export_urban_canopy_to_pkl(path_folder=path_folder_simulation)
     logging.info("Urban canopy object saved successfully")
     # test
+if __name__ == "__main__":
+    main()
