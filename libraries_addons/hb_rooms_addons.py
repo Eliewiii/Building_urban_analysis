@@ -6,7 +6,8 @@ from libraries_addons.utils_libraries_addons import *
 
 
 class RooomsAddons:
-    def LB_face_footprint_to_elevated_HB_room_envelop(self,LB_face_footprint, building_id, height, elevation):
+    @classmethod
+    def LB_face_footprint_to_elevated_HB_room_envelop(cls,LB_face_footprint, building_id, height, elevation):
         """
         Create a honeybee room with extruded footprints of the building and put it at the right elevation.
         :param LB_face_footprint: ladybug geometry footprint
@@ -22,12 +23,12 @@ class RooomsAddons:
         # create the honeybee room
         HB_room_envelop = Room.from_polyface3d(identifier, extruded_face)
         # move the room to the right elevation
-        self.HB_room_move_vertically(HB_room_envelop, elevation)
+        cls.HB_room_move_vertically(HB_room_envelop, elevation)
 
         return HB_room_envelop
 
-
-    def HB_room_move_vertically(self,HB_room, elevation):
+    @staticmethod
+    def HB_room_move_vertically(HB_room, elevation):
         """
         Move a honeybee room vertically to the right elevation
         :param HB_room: honeybee room

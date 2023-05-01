@@ -12,8 +12,10 @@ class UrbanCanopy:
         """Initialize the Urban Canopy"""
         self.building_dict = {}  # dictionary of the buildings in the urban canopy
         self.typology_dict = {}  # dictionary of the typologies loaded the urban canopy
-        self.moving_vector_to_origin = None
-        self.tolerance_default_value = 0.01
+        self.moving_vector_to_origin = None # moving vector of the urban canopy that moved the urban canopy to the origin
+
+        self.tolerance_default_value = 0.01  # todo : move this values to utils_general.py,
+        # call it LBT_default_tolerance, it will be the same value for all the functions using LBT objects
 
     def __len__(self):
         """ Return the number of buildings in the urban canopy """
@@ -23,6 +25,7 @@ class UrbanCanopy:
     def make_urban_canopy_from_pkl(cls, path_pkl):
         """ Load the urban canopy from a pickle file """
         with open(path_pkl, 'rb') as pkl_file:
+            # Load pickle file
             urban_canopy = pickle.load(pkl_file) #TODO can we define urban_canopy as table?
             # Load the buildings objects that might have some properties stored into dict (ex HB_models)
             urban_canopy.load_building_HB_attributes()
@@ -139,7 +142,7 @@ class UrbanCanopy:
         # Loop through the hbjson files
         if hbjson_files_list:
             for hbjson_file in hbjson_files_list:
-                if os.path.getsize(hbjson_file) > 0: # hbjson_file should be the fullpath of json
+                if os.path.getsize(os.path.join(path_directory_hbjson, hbjson_file)) > 0: # hbjson_file should be the fullpath of json
                     # Get the path to the hbjson file
                     path_hbjson = os.path.join(path_directory_hbjson, hbjson_file)
                     # Create the building object
@@ -226,16 +229,22 @@ class UrbanCanopy:
 
     def move_buildings_to_origin(self):
         """ Move the buildings to the origin if the the urban canopy has not already been moved to the origin"""
+        # Check if the the urban canopy has already been moved to the origin
         if self.moving_vector_to_origin is not None:
             logging.info("The urban canopy has already been moved to the origin, the building will be moved back and"
                          " then moved again to the origin with the new buildings")
+            # Move back the buildings to their original position
             self.move_back_buildings()
+        # Compute the moving vector
         self.compute_moving_vector_to_origin()
+        # Move the buildings
         for building in self.building_dict.values():
             building.move(self.moving_vector_to_origin)
 
     def move_back_buildings(self):
         """ Move back the buildings to their original position by the opposite vector """
         for building in self.building_dict.values():
+            # Check if the building has been moved to the origin already
             if building.moved_to_origin:
+                # Move by the opposite vector
                 building.move([-coordinate for coordinate in self.moving_vector_to_origin])
