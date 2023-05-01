@@ -132,7 +132,7 @@ class UrbanCanopy:
             building.extract_building_attributes_from_GIS(shape_file, additional_gis_attribute_key_dict)
 
     # todo : New, to test
-    def add_buildings_from_hbjson_to_dict(self, path_directory_hbjson):
+    def add_buildings_from_hbjson_to_dict(self, path_directory_hbjson, are_buildings_targets=False):
         """ Add the buildings from the hb models in the folder
         :param path_directory_hbjson: path to the directory containing the hbjson files
         :return: None
@@ -147,7 +147,7 @@ class UrbanCanopy:
                     path_hbjson = os.path.join(path_directory_hbjson, hbjson_file)
                     # Create the building object
                     building_HB_model_obj, identifier = BuildingModeled.make_buildingmodeled_from_hbjson(
-                        path_hbjson=path_hbjson)
+                        path_hbjson=path_hbjson,is_target=are_buildings_targets)
                     # Add the building to the urban canopy
                     self.add_building_to_dict(identifier, building_HB_model_obj)
                 else:
