@@ -49,10 +49,10 @@ class UrbanCanopy:
             pickle.dump(self, pkl_file)
 
         # Json file
-        self.json_urban_canopy_attributes()
+        urban_canopy_dict = self.json_urban_canopy_attributes(path_folder)
         # Write json file
         with open(os.path.join(path_folder, "urban_canopy.json"), 'w') as json_file:
-            json.dump(self, json_file)
+            json.dump(urban_canopy_dict, json_file)
 
     def load_typologies(self, typology_folder_path):
         """ Load the typologies from the folder
@@ -60,7 +60,7 @@ class UrbanCanopy:
          :return: None
          """
 
-        #todo : to improve @Sharon
+        # todo : to improve @Sharon
         # get the list of all the typology from the typology folder
         typology_folders_list = os.listdir(typology_folder_path)
         # loop through the typology folders list
@@ -72,13 +72,14 @@ class UrbanCanopy:
             # where is the keys list or where can I get the value of the key
             # TODO cont.: so maybe have a global variable with values associated to the year,
             # TODO cont.: ex: 1900-1945, 1945-1970, 1970-2000, 2000-2020 : what else?
-            #years_range_list = [1900-1945, 1945-1970, 1970-2000, 2000-2020]
-            self.typology_dict[typology_obj.identifier] = typology_obj  # add the typology to the urban canopy dictionary
+            # years_range_list = [1900-1945, 1945-1970, 1970-2000, 2000-2020]
+            self.typology_dict[
+                typology_obj.identifier] = typology_obj  # add the typology to the urban canopy dictionary
 
     def load_building_HB_attributes(self):
         """ Load the buildings objects that might have some properties stored into dict (ex HB_models) """
         # todo @Elie or @Sharon: here there is only one function that works for any type of building, but maybe we will
-        #todo.cont: have to make a specific function for each type of building (like this it's simpler but maybe more confusing)
+        # todo.cont: have to make a specific function for each type of building (like this it's simpler but maybe more confusing)
         # it is depend in the the action - it is better to have one method if all the functions purpose is the same
         # if not how can we separarte the building type into groups and then decide what is unique for each group
         for building_id, building_obj in self.building_dict.items():
@@ -90,16 +91,42 @@ class UrbanCanopy:
         for building_id, building_obj in self.building_dict.items():
             building_obj.pickle_HB_attributes()
 
-    def json_urban_canopy_attributes(self):
+    def json_urban_canopy_attributes(self, path_folder):
         """ Create a dictionary which will contain certain useful attributes of the urban canopy and the buildings"""
         list_id = self.get_list_id_buildings_urban_canopy()
         urban_canopy_attributes_dict = {'list_id_buildings': list_id, 'buildings': {}}
         for building in self.building_dict.values():
             if type(building) is BuildingModeled:
-                building_attributes_dict = {'SensorGrid_dict': building.sensor_grid_dict, 'HB_obj': building.HB_model_obj}
+                path_building = os.path.join(path_folder, 'Radiation Simulation', building.id)
+                if building.sensor_grid_dict['Roof'] is not None and building.sensor_grid_dict['Facades'] is not None:
+                    path_building_roof_values = os.path.join(path_building, 'Roof', 'annual_radiation_values.txt')
+                    path_building_facades_values = os.path.join(path_building, 'Facades', 'annual_radiation_values.txt')
+                    building_attributes_dict = {'SensorGrid_dict': building.sensor_grid_dict,
+                                                'HB_model_dict': building.HB_model_dict,
+                                                'path_values_roof': path_building_roof_values,
+                                                'path_values_facade': path_building_facades_values}
+
+                elif building.sensor_grid_dict['Roof'] is not None and building.sensor_grid_dict['Facades'] is None:
+                    path_building_roof_values = os.path.join(path_building, 'Roof', 'annual_radiation_values.txt')
+                    building_attributes_dict = {'SensorGrid_dict': building.sensor_grid_dict,
+                                                'HB_obj': building.HB_model_obj,
+                                                'path_values_roof': path_building_roof_values,
+                                                'path_values_facade': None}
+
+                elif building.sensor_grid_dict['Roof'] is None and building.sensor_grid_dict['Facades'] is not None:
+                    path_building_facades_values = os.path.join(path_building, 'Facades', 'annual_radiation_values.txt')
+                    building_attributes_dict = {'SensorGrid_dict': building.sensor_grid_dict,
+                                                'HB_obj': building.HB_model_obj,
+                                                'path_values_roof': None,
+                                                'path_values_facade': path_building_facades_values}
+
+                else:
+                    building_attributes_dict = {'SensorGrid_dict': building.sensor_grid_dict,
+                                                'HB_obj': building.HB_model_obj,
+                                                'path_values_roof': None,
+                                                'path_values_facade': None}
                 urban_canopy_attributes_dict['buildings'][building.id] = building_attributes_dict
-
-
+        return urban_canopy_attributes_dict
 
     def add_building_to_dict(self, building_id, building_obj):
         """ Add a building to the urban canopy"""
@@ -275,19 +302,47 @@ class UrbanCanopy:
                 # Move by the opposite vector
                 building.move([-coordinate for coordinate in self.moving_vector_to_origin])
 
-    def radiation_simulation_urban_canopy(self, path_folder_simulation, path_weather_file, grid_size=1,
-                                          offset_dist=0.1):
+    def radiation_simulation_urban_canopy(self, path_folder_simulation, path_weather_file, grid_size=1, offset_dist=0.1,
+                                          on_roof=True, on_facades=True):
         for building in self.building_dict.values():  # for every building in the urban canopy
-            # if type(building) is BuildingModeled and building.is_target:
-            if type(building) is BuildingModeled:
+            if type(building) is BuildingModeled and building.is_target:
                 path_folder_building = os.path.join(path_folder_simulation, building.id)
-                values = building.solar_radiations(str(building.id), path_folder_building, path_weather_file, grid_size,
-                                                   offset_dist)
-                name_file = os.path.join(path_folder_building, 'radiation_values.txt')
-                file = open(name_file, 'w')
-                tmp = (','.join(str(n) for n in values[0]))
-                file.write('{}'.format(tmp))
-                file.close()
+                if on_roof and on_facades:
+                    # we run the radiation simulation on all the roofs of the buildings within the urban canopy
+                    values_roof = building.solar_radiations(str(building.id), path_folder_building, path_weather_file,
+                                                            grid_size, offset_dist, on_facades=False)
+                    name_file = os.path.join(path_folder_building, 'Roof', 'annual_radiation_values.txt')
+                    file = open(name_file, 'w')
+                    tmp = (','.join(str(n) for n in values_roof[0]))
+                    file.write('{}'.format(tmp))
+                    file.close()
+                    # then we run it on all the facades of the buildings within the urban canopy
+                    values_facades = building.solar_radiations(str(building.id), path_folder_building, path_weather_file
+                                                               , grid_size, offset_dist, on_roof=False)
+                    name_file = os.path.join(path_folder_building, 'Facades', 'annual_radiation_values.txt')
+                    file = open(name_file, 'w')
+                    tmp = (','.join(str(n) for n in values_facades[0]))
+                    file.write('{}'.format(tmp))
+                    file.close()
+                elif on_roof and not on_facades:
+                    # we only run the radiation simulation on the facades of the buildings
+                    values_roof = building.solar_radiations(str(building.id), path_folder_building, path_weather_file,
+                                                            grid_size,
+                                                            offset_dist, on_facades=False)
+                    name_file = os.path.join(path_folder_building, 'Roof', 'annual_radiation_values.txt')
+                    file = open(name_file, 'w')
+                    tmp = (','.join(str(n) for n in values_roof[0]))
+                    file.write('{}'.format(tmp))
+                    file.close()
+                elif on_facades and not on_roof:
+                    # we only run the radiation simulation on the facades of the buildings
+                    values_facades = building.solar_radiations(str(building.id), path_folder_building, path_weather_file
+                                                               , grid_size, offset_dist, on_roof=False)
+                    name_file = os.path.join(path_folder_building, 'Facades', 'annual_radiation_values.txt')
+                    file = open(name_file, 'w')
+                    tmp = (','.join(str(n) for n in values_facades[0]))
+                    file.write('{}'.format(tmp))
+                    file.close()
                 print("Another radiation simulation was done")
 
     def post_processing_urban_canopy(self, path_folder_simulation):

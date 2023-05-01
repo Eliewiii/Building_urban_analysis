@@ -190,22 +190,25 @@ class BuildingModeled(BuildingBasic):
                 # add the sensor grid to the hb model duplicate
                 model_sensor_grid_roof.properties.radiance.add_sensor_grid(sensor_grid_roof)
                 # run the solar radiation simulation on the roof
-                settings = hb_recipe_settings(path_folder_simulation)
+                path_folder_simulation_roof = os.path.join(path_folder_simulation, "Roof")
+                settings = hb_recipe_settings(path_folder_simulation_roof)
                 project_folder = hb_ann_irr_sim(model_sensor_grid_roof, path_weather_file, settings)
-            return hb_ann_cum_values([os.path.join(project_folder, "Roof", "annual_irradiance", "results", "total")])
+            return hb_ann_cum_values([os.path.join(project_folder, "annual_irradiance", "results", "total")])
 
-        if on_facades:
+        elif on_facades:
             # generate the sensor grid from the dict
-            sensor_grid_roof = SensorGrid.from_dict(self.sensor_grid_dict['Facades'])
+            sensor_grid_facades = SensorGrid.from_dict(self.sensor_grid_dict['Facades'])
             # duplicate the model so that no changes will be made on the original model
             model_sensor_grid_facades = self.HB_model_obj.duplicate()
-            if len(model_sensor_grid_facades) != 0:
+            if len(sensor_grid_facades) != 0:
                 # add the sensor grid to the hb model duplicate
-                model_sensor_grid_facades.properties.radiance.add_sensor_grid(sensor_grid_roof)
+                model_sensor_grid_facades.properties.radiance.add_sensor_grid(sensor_grid_facades)
                 # run the solar radiation simulation on the roof
-                settings = hb_recipe_settings(path_folder_simulation)
+                path_folder_simulation_facades = os.path.join(path_folder_simulation, "Facades")
+                settings = hb_recipe_settings(path_folder_simulation_facades)
                 project_folder = hb_ann_irr_sim(model_sensor_grid_facades, path_weather_file, settings)
-            return hb_ann_cum_values([os.path.join(project_folder, "Facades", "annual_irradiance", "results", "total")])
+            return hb_ann_cum_values([os.path.join(project_folder, "annual_irradiance", "results", "total")])
+
 
     def post_process(self, path_folder_simulation):
         path_file_values = os.path.join(path_folder_simulation, 'values.txt')

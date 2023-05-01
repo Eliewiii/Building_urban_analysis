@@ -83,9 +83,5 @@ if __name__ == "__main__":
     urban_canopy.make_HB_model_envelops_from_buildings(path_folder=path_folder_simulation)
     logging.info(f"HB model for the building envelop created successfully")
 
-    # save the urban canopy object in a pickle file in the temp folder
-    urban_canopy.export_urban_canopy_to_pkl(path_folder=path_folder_simulation)
-    logging.info(f"Urban canopy object saved successfully")
-
-    urban_canopy.json_urban_canopy_attributes(path_folder=path_folder_simulation)
+    urban_canopy.export_urban_canopy_to_pkl_and_json(path_folder=path_folder_simulation)
     logging.info(f"Urban canopy attributes saved successfully")
