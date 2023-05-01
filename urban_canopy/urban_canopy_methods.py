@@ -2,13 +2,9 @@
 Urban canopy class, containing and managing collections of buildings in urban areas.
 """
 
+from mains_tool.utils_general import *
+#from mains_tool.utils_general import default_minimum_vf_criterion_context_filter_first_pass_shading
 from urban_canopy.utils_urban_canopy import *
-
-from building.building_basic import BuildingBasic
-from building.building_modeled import BuildingModeled
-from Elie.gis.extract_gis import extract_gis
-from typology.typology import Typology
-
 
 class UrbanCanopy:
 
@@ -16,8 +12,10 @@ class UrbanCanopy:
         """Initialize the Urban Canopy"""
         self.building_dict = {}  # dictionary of the buildings in the urban canopy
         self.typology_dict = {}  # dictionary of the typologies loaded the urban canopy
-        self.moving_vector_to_origin = None
-        self.tolerance_default_value = 0.01
+        self.moving_vector_to_origin = None # moving vector of the urban canopy that moved the urban canopy to the origin
+
+        self.tolerance_default_value = 0.01  # todo : move this values to utils_general.py,
+        # call it LBT_default_tolerance, it will be the same value for all the functions using LBT objects
 
     def __len__(self):
         """ Return the number of buildings in the urban canopy """
@@ -27,7 +25,8 @@ class UrbanCanopy:
     def make_urban_canopy_from_pkl(cls, path_pkl):
         """ Load the urban canopy from a pickle file """
         with open(path_pkl, 'rb') as pkl_file:
-            urban_canopy = pickle.load(pkl_file)  # TODO can we define urban_canopy as table?
+            # Load pickle file
+            urban_canopy = pickle.load(pkl_file) #TODO can we define urban_canopy as table?
             # Load the buildings objects that might have some properties stored into dict (ex HB_models)
             urban_canopy.load_building_HB_attributes()
         return urban_canopy
@@ -61,7 +60,7 @@ class UrbanCanopy:
          :return: None
          """
 
-        # todo : to improve @Sharon
+        #todo : to improve @Sharon
         # get the list of all the typology from the typology folder
         typology_folders_list = os.listdir(typology_folder_path)
         # loop through the typology folders list
@@ -73,14 +72,13 @@ class UrbanCanopy:
             # where is the keys list or where can I get the value of the key
             # TODO cont.: so maybe have a global variable with values associated to the year,
             # TODO cont.: ex: 1900-1945, 1945-1970, 1970-2000, 2000-2020 : what else?
-            # years_range_list = [1900-1945, 1945-1970, 1970-2000, 2000-2020]
-            self.typology_dict[
-                typology_obj.identifier] = typology_obj  # add the typology to the urban canopy dictionary
+            #years_range_list = [1900-1945, 1945-1970, 1970-2000, 2000-2020]
+            self.typology_dict[typology_obj.identifier] = typology_obj  # add the typology to the urban canopy dictionary
 
     def load_building_HB_attributes(self):
         """ Load the buildings objects that might have some properties stored into dict (ex HB_models) """
         # todo @Elie or @Sharon: here there is only one function that works for any type of building, but maybe we will
-        # todo.cont: have to make a specific function for each type of building (like this it's simpler but maybe more confusing)
+        #todo.cont: have to make a specific function for each type of building (like this it's simpler but maybe more confusing)
         # it is depend in the the action - it is better to have one method if all the functions purpose is the same
         # if not how can we separarte the building type into groups and then decide what is unique for each group
         for building_id, building_obj in self.building_dict.items():
@@ -139,8 +137,7 @@ class UrbanCanopy:
         try:
             shape_file[building_id_key_gis]
         except KeyError:
-            logging.error(
-                "The key {building_id_key_gis} is not an attribute of the shape file, the id will be generated automatically")
+            logging.error("The key {building_id_key_gis} is not an attribute of the shape file, the id will be generated automatically")
 
             raise
             building_id_key_gis = None
@@ -161,29 +158,28 @@ class UrbanCanopy:
             building.extract_building_attributes_from_GIS(shape_file, additional_gis_attribute_key_dict)
 
     # todo : New, to test
-    def add_buildings_from_hbjson_to_dict(self, path_directory_hbjson):
+    def add_buildings_from_hbjson_to_dict(self, path_directory_hbjson, are_buildings_targets=False):
         """ Add the buildings from the hb models in the folder
         :param path_directory_hbjson: path to the directory containing the hbjson files
         :return: None
         """
         # Get the list of the hbjson files
-        hbjson_files_list = [hbjson_file for hbjson_file in os.listdir(path_directory_hbjson) if
-                             hbjson_file.endswith(".hbjson")]
+        hbjson_files_list = [hbjson_file for hbjson_file in os.listdir(path_directory_hbjson) if hbjson_file.endswith(".hbjson")]
         # Loop through the hbjson files
         if hbjson_files_list:
             for hbjson_file in hbjson_files_list:
-                if os.path.getsize(hbjson_file) > 0:  # hbjson_file should be the fullpath of json
+                if os.path.getsize(os.path.join(path_directory_hbjson, hbjson_file)) > 0: # hbjson_file should be the fullpath of json
                     # Get the path to the hbjson file
                     path_hbjson = os.path.join(path_directory_hbjson, hbjson_file)
                     # Create the building object
                     building_HB_model_obj, identifier = BuildingModeled.make_buildingmodeled_from_hbjson(
-                        path_hbjson=path_hbjson)
+                        path_hbjson=path_hbjson,is_target=are_buildings_targets)
                     # Add the building to the urban canopy
                     self.add_building_to_dict(identifier, building_HB_model_obj)
                 else:
                     logging.info("The file is empty")
         # todo @Sharon or @Elie : check that the list of the building ids is not empty or invalid - done # try catch?
-        # todo: add a log in case it is not added!
+                    # todo: add a log in case it is not added!
         # Add the new buildings to the UrbanCanopy building dict
 
     def make_HB_model_envelops_from_buildings(self, path_folder=None):
@@ -199,10 +195,9 @@ class UrbanCanopy:
                     HB_room_envelop_list.append(HB_room)
         # additional cleaning of the colinear vertices, might not be necessary
         for room in HB_room_envelop_list:
-            room.remove_colinear_vertices_envelope(tolerance=self.tolerance_default_value, delete_degenerate=True)
+            room.remove_colinear_vertices_envelope(tolerance = self.tolerance_default_value, delete_degenerate=True)
         # Make the hb model
-        HB_model = Model(identifier="urban_canopy_building_envelops", rooms=HB_room_envelop_list,
-                         tolerance=self.tolerance_default_value)
+        HB_model = Model(identifier="urban_canopy_building_envelops", rooms=HB_room_envelop_list, tolerance=self.tolerance_default_value)
         HB_dict = HB_model.to_dict()
         if path_folder is not None:
             HB_model.to_hbjson(name="buildings_envelops", folder=path_folder)
@@ -216,22 +211,20 @@ class UrbanCanopy:
         if path_folder is not None:
             # List of the hb rooms representing the building envelops
             bounding_boxes_HB_room_list = [
-                Room.from_polyface3d(identifier=str(building.id), polyface=building.LB_polyface3d_oriented_bounding_box)
-                for building in
+                Room.from_polyface3d(identifier=str(building.id), polyface=building.LB_polyface3d_oriented_bounding_box) for building in
                 self.building_dict.values()]
             HB_model = Model(identifier="urban_canopy_bounding_boxes", rooms=bounding_boxes_HB_room_list,
-                             tolerance=self.tolerance_default_value)
+                             tolerance = self.tolerance_default_value)
             HB_model.to_hbjson(name=hbjson_name, folder=path_folder)
 
-    def perform_context_filtering_for_shading_on_buildingmodeled_to_simulate(self,
-                                                                             minimum_vf_criterion=default_minimum_vf_criterion_context_filter_first_pass_shading):
+    def perform_context_filtering_for_shading_on_buildingmodeled_to_simulate(self,minimum_vf_criterion=default_minimum_vf_criterion_context_filter_first_pass_shading):
         """
         Perform the context filtering on the BuildingModeled objects in the urban canopy that need to be simulated.
 
         """
         # todo @Elie: to adapt from old code
 
-        # todo @ Sharon and @Elie: speed up this part LATER by preparing making some preprocessing (centroid of faces, height etc...)
+        #todo @ Sharon and @Elie: speed up this part LATER by preparing making some preprocessing (centroid of faces, height etc...)
 
         # Make bounding boxes and extruded footprint if they don't exist already
         # todo @Elie or @Sharon: can be put in a separate function
@@ -247,8 +240,7 @@ class UrbanCanopy:
         for building_obj in self.building_dict.values():
             if isinstance(building_obj, BuildingModeled) and building_obj.to_simulate:
                 list_of_all_buildings = list(self.building_dict.values())
-                building_obj.select_context_surfaces_for_shading_computation(
-                    context_building_list=list_of_all_buildings, minimum_vf_criterion=minimum_vf_criterion)
+                building_obj.select_context_surfaces_for_shading_computation(context_building_list=list_of_all_buildings,minimum_vf_criterion=minimum_vf_criterion)
 
     def compute_moving_vector_to_origin(self):
         """ Make the moving vector to move the urban canopy to the origin """
@@ -263,18 +255,24 @@ class UrbanCanopy:
 
     def move_buildings_to_origin(self):
         """ Move the buildings to the origin if the the urban canopy has not already been moved to the origin"""
+        # Check if the the urban canopy has already been moved to the origin
         if self.moving_vector_to_origin is not None:
             logging.info("The urban canopy has already been moved to the origin, the building will be moved back and"
                          " then moved again to the origin with the new buildings")
+            # Move back the buildings to their original position
             self.move_back_buildings()
+        # Compute the moving vector
         self.compute_moving_vector_to_origin()
+        # Move the buildings
         for building in self.building_dict.values():
             building.move(self.moving_vector_to_origin)
 
     def move_back_buildings(self):
         """ Move back the buildings to their original position by the opposite vector """
         for building in self.building_dict.values():
+            # Check if the building has been moved to the origin already
             if building.moved_to_origin:
+                # Move by the opposite vector
                 building.move([-coordinate for coordinate in self.moving_vector_to_origin])
 
     def radiation_simulation_urban_canopy(self, path_folder_simulation, path_weather_file, grid_size=1,

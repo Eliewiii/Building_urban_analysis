@@ -15,3 +15,10 @@ from honeybee.boundarycondition import Outdoors
 from dragonfly.building import Building
 from honeybee_energy.lib.constructionsets import construction_set_by_identifier
 from honeybee_energy.lib.programtypes import program_type_by_identifier
+
+
+
+default_tolerance = 0.01
+default_height = 9.
+default_elevation=0.
+default_tol=0.5

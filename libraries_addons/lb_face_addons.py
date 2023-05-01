@@ -5,19 +5,17 @@ Additional functions for Ladybug Face objects.
 from libraries_addons.utils_libraries_addons import *
 
 # todo : for some rreason, the following import is necessary for _orient_geometry to work
-from ladybug_geometry.bounding import  _orient_geometry
-
+from ladybug_geometry.bounding import _orient_geometry
 
 
 def make_shapely_polygon_from_LB_face(LB_face):
     """Convert a Ladybug Face to a Shapely Polygon."""
     # convert vertices into tuples
     list_tuple_vertices_2d = [(x, y) for [x, y, z] in LB_face.vertices]
-
     return Polygon(list_tuple_vertices_2d)
 
 
-def make_LB_face_from_shapely_polygon(polygon, tolerance=0.01):
+def make_LB_face_from_shapely_polygon(polygon, tolerance = default_tolerance):
     """Convert a Ladybug Face to a Shapely Polygon."""
     # convert vertices into tuples
     point_list_outline = [list(point) for point in polygon.exterior.__geo_interface__['coordinates']]
@@ -31,7 +29,7 @@ def make_LB_face_from_shapely_polygon(polygon, tolerance=0.01):
     return LB_face_footprint
 
 
-def LB_face_footprint_to_lB_polyface3D_extruded_footprint(LB_face_footprint, height= 9.,elevation=0.):
+def LB_face_footprint_to_lB_polyface3D_extruded_footprint(LB_face_footprint, height = default_height,elevation=default_elevation):
     """
     Extrude a ladybug geometry footprint to obtain the room envelop
     :param LB_face_footprint: ladybug geometry footprint
@@ -46,7 +44,7 @@ def LB_face_footprint_to_lB_polyface3D_extruded_footprint(LB_face_footprint, hei
     return extruded_face
 
 
-def make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint(LB_face_footprint, height=9., elevation=0.):
+def make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint(LB_face_footprint,height = default_height,elevation=default_elevation):
     """ Make Ladybug Polyface3D oriented bounding box from a Ladybug Face3D (mostly from the footprint of buildings)
     :param LB_face_footprint: Ladybug Face3D
     :param height: float : height of the building
@@ -158,6 +156,7 @@ def merge_LB_face_list(LB_face_list):
 
 
 def LB_footprint_to_df_building(LB_face_footprint, core_area_ratio=0.15, tol=0.005):
+    global nb_rooms_per_stories
     """ generate a Dragonfly building out of the footprint, generating a core in the center """
     # todo @Elie : adapt to the new tool
 
@@ -207,6 +206,7 @@ def LB_footprint_to_df_building(LB_face_footprint, core_area_ratio=0.15, tol=0.0
             perimeter_offset_boundary_up = perimeter_offset
 
     if converged:
+        #TODO is this error appears only in my laptop? Sharon
         self.DF_building = dragonfly.building.Building.from_footprint(identifier="Building_" + str(self.id),
                                                                       footprint=[LB_face_footprint],
                                                                       floor_to_floor_heights=floor_to_floor_heights,
@@ -283,7 +283,6 @@ def find_perimeter_offset_df_building(LB_face_footprint, core_area_ratio=0.15, t
             # last room is the core
             for i in range(len(self.DF_building.unique_stories[0].room_2ds) - nb_rooms_per_stories + 1):
                 self.DF_building.unique_stories[0].room_2ds[-i - 1].identifier = "core_" + str(i)
-
 
 def room2d_is_core(room_2d):
     """ check if a room is a core or not """
