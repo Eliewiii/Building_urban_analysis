@@ -160,44 +160,46 @@ def adjust_lower_corners(pt_left, pt_right):
 
 
 
-def hb_face_list_to_pv_polydata(face_list):
+
+def make_Pyvista_Polydata_from_LB_Polyface3D_list(LB_Polyface3D_list):
+    """
+    Convert a list of LB Polyface3D to a Pyvista Polydata mesh
+    :param LB_Polyface3D_list: list of LB Polyface3D
+    :return Pyvista_Polydata_mesh: Pyvista Polydata mesh
+    """
+    # todo @Elie: to test
+    # todo LATER : maybe add some test before to avaoid errors
+    # Make a list of all the faces in the Polyface3D
+    LB_Face3D_list = []
+    for LB_polyface3d in LB_Polyface3D_list:
+        LB_Face3D_list.extend(list(LB_polyface3d.faces)) # add the faces of the polyface3d to the list, need to use list()
+    # Convert the list of LB_Face3D to a Pyvista Polydata mesh
+    Pyvista_Polydata_mesh = make_Pyvista_Polydata_from_HB_Face_or_LB_Face3D_list(face_list=LB_Face3D_list)
+
+    return Pyvista_Polydata_mesh
+
+def make_Pyvista_Polydata_from_HB_Face_or_LB_Face3D_list(face_list):
     """ Convert the context hb face to a polydata Pyvista mesh  """
 
     if face_list != []:
         # Initialize mesh
-        PV_Polydata_mesh = HB_Face_or_LB_Face3D_to_pv_Polydata(face_list[0])
+        Pyvista_Polydata_mesh = make_Pyvista_Polydata_from_HB_Face_or_LB_Face3D(face_list[0])
         # concatenate the other faces to the mesh
         for hb_face in face_list[1:]:
-            PV_Polydata_mesh = PV_Polydata_mesh + hb_face_to_pv_polydata(hb_face)
+            PV_Polydata_mesh = PV_Polydata_mesh + make_Pyvista_Polydata_from_HB_Face_or_LB_Face3D(hb_face)
 
-        return PV_Polydata_mesh
+        return Pyvista_Polydata_mesh
 
     else:
         return []
 
-def hb_face_to_pv_polydata(hb_face):
-    """ Convert the context hb face to a polydata Pyvista mesh  """
-
-    # vertices
-    vertices = []  # initialize the list of vertices
-    lb_vertex_list = hb_face.vertices  # extract LB geometry vertices
-    # face [number of vertices, index vertex 1, index vertex 2 ...] <=> [n, 0,1,2...]
-    face = [len(lb_vertex_list)]
-    # extraction
-    for index, vertex in enumerate(lb_vertex_list):
-        vertices.append([vertex.x, vertex.y, vertex.z])  # add the coordinates of the vertices
-        face.append(index)
-    vertices = np.array(vertices)  # convert into numpy array ( makes it faster to process for later
-
-    return pv.PolyData(vertices, face)
-
-def HB_Face_or_LB_Face3D_to_pv_Polydata(face_object):
+def make_Pyvista_Polydata_from_HB_Face_or_LB_Face3D(face_object):
     """
     Convert a Honeybee Face or Ladybug Face3D to a Pyvista PolyData mesh
     :param face_object:
     :return:
     """
-    # todo @Elie: update
+    # todo @Elie: update if needed
     # Get the vertices of the face
     vertices = []  # initialize the list of vertices
     lb_vertex_list = face_object.vertices  # extract the ladybug-geometry Point3D vertices
