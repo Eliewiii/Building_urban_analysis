@@ -61,8 +61,9 @@ if __name__ == "__main__":
         logging.info(f"New urban canopy object was created")
 
     # Get the list of id of the buildings in the urban canopy
-    list_id = urban_canopy.get_list_id_buildings_urban_canopy()
-    logging.info(f"List of building ids created")
+    list_id = urban_canopy.get_list_id_buildings_urban_canopy(path_folder)
+    logging.info(f"List of building ids retrieved")
+    print(list_id)
 
     # save the urban canopy object in a pickle file in the temp folder
     urban_canopy.export_urban_canopy_to_pkl(path_folder=path_folder)

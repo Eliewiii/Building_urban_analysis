@@ -76,7 +76,7 @@ if __name__ == "__main__":
         logging.info(f"New urban canopy object was created")
 
     # Run the annual solar radiation simulation on each building targeted of the urban canopy
-    urban_canopy.radiation_simulation_urban_canopy(path_radiation_folder, path_weather_file, grid_size, offset_dist)
+    urban_canopy.radiation_simulation_urban_canopy(path_radiation_folder, path_weather_file, ['unnamed_88b30172'], grid_size, offset_dist)
     logging.info(f"Solar radiation simulation run successfully")
 
     # generate the hb model that contains all the building envelopes to plot in Grasshopper
