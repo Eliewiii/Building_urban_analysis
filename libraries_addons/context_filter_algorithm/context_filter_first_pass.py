@@ -3,6 +3,7 @@
 """
 
 from libraries_addons.utils_libraries_addons import *
+from libraries_addons.context_filter_algorithm.utils_context_filter import *
 
 
 def is_bounding_box_context_using_mvfc_criterion(target_LB_polyface3d_extruded_footprint,
@@ -65,9 +66,3 @@ def max_VF(Point3D_centroid_1, area_1, Point3D_centroid_2, area_2):
 
     return 1 / (pi * w_1 ** 2) * (log(p / q) + s - t)
 
-
-def is_vector3D_vertical(Vector3D):
-    if Vector3D.x == 0 and Vector3D.y == 0:
-        return True
-    else:
-        return False

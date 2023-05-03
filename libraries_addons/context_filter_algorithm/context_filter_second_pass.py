@@ -2,12 +2,14 @@
 
 """
 from libraries_addons.utils_libraries_addons import *
+from libraries_addons.context_filter_algorithm.utils_context_filter import *
+
 from mains_tool.utils_general import default_number_of_rays_context_filter_second_pass
 
 
 def select_non_obstructed_surfaces_of_context_HB_Model_for_target_LB_polyface3d(
-        target_LB_polyface3d_extruded_footprint,context_HB_Model_list_to_test,full_urban_canopy_Pyvista_mesh,
-        number_of_rays = default_number_of_rays_context_filter_second_pass):
+        target_LB_polyface3d_extruded_footprint, context_HB_Model_list_to_test, full_urban_canopy_Pyvista_mesh,
+        number_of_rays=default_number_of_rays_context_filter_second_pass):
     """
     Select the context surfaces that will be used for the shading simulation of the current target building.
     :param target_LB_polyface3d_extruded_footprint: LB polyface3d of the target building
@@ -26,13 +28,13 @@ def select_non_obstructed_surfaces_of_context_HB_Model_for_target_LB_polyface3d(
             for HB_Face_surface_to_test in HB_Room.faces:
                 if not is_HB_Face_context_surface_obstructed_for_target_LB_polyface3d(
                         target_LB_polyface3d_extruded_footprint=target_LB_polyface3d_extruded_footprint,
-                        context_HB_Face_surface_to_test=HB_Face_surface_to_test, full_urban_canopy_Pyvista_mesh=full_urban_canopy_Pyvista_mesh,
+                        context_HB_Face_surface_to_test=HB_Face_surface_to_test,
+                        full_urban_canopy_Pyvista_mesh=full_urban_canopy_Pyvista_mesh,
                         number_of_rays=number_of_rays):
                     # If the context surface is not obstructed, add it to the list of non-obstructed surfaces
                     non_obstructed_HB_Face_list.append(HB_Face_surface_to_test)
 
     return non_obstructed_HB_Face_list
-
 
 
 def is_HB_Face_context_surface_obstructed_for_target_LB_polyface3d(target_LB_polyface3d_extruded_footprint,
@@ -47,14 +49,43 @@ def is_HB_Face_context_surface_obstructed_for_target_LB_polyface3d(target_LB_pol
     :param number_of_rays: number of rays to be used for the ray tracing to check if the context surfaces are obstructed
     :return  :
     """
+    # todo @Elie : to check
+    # Loop over all the Face3D of the LB Polyface3D of the target building
+    for target_LB_Face3D in list(target_LB_polyface3d_extruded_footprint.faces):
+        # Check if the normal of the target LB Face3D is vertical (ground or roof) and if the context surface is facing it
+        if not is_vector3D_vertical(target_LB_Face3D.normal) and are_HB_Face_or_LB_Face3D_facing(target_LB_Face3D,
+                                                                                                 context_HB_Face_surface_to_test):
+            # Check if the context surface is obstructed for the target building
+            if is_HB_Face_context_surface_obstructed_for_target_LB_Face3D(target_LB_Face3D=target_LB_Face3D,
+                                                                          context_HB_Face_surface_to_test=context_HB_Face_surface_to_test,
+                                                                          full_urban_canopy_Pyvista_mesh=full_urban_canopy_Pyvista_mesh,
+                                                                          number_of_rays=number_of_rays):
+                return False
 
+    return True
+
+
+def is_HB_Face_context_surface_obstructed_for_target_LB_Face3D(target_LB_Face3D,
+                                                               context_HB_Face_surface_to_test,
+                                                               full_urban_canopy_Pyvista_mesh,
+                                                               number_of_rays=default_number_of_rays_context_filter_second_pass):
+    """
+    Check if the context surface is obstructed for the target building
+    :param target_LB_polyface3d_extruded_footprint: LB polyface3d of the target building
+    :param context_HB_Face_surface_to_test: HB face of the context surface to test
+    :param full_urban_canopy_Pyvista_mesh: Pyvista mesh containing the envelopes of all the in the urban canopy
+    :param number_of_rays: number of rays to be used for the ray tracing to check if the context surfaces are obstructed
+    :return  :
+    """
+    # todo @Elie : to finish
     # Make the list of ray to launch
-    ray_list = None
+    ray_list = ray_list_from_emitter_to_receiver(emitter, receiver, exclude_surface_from_ray=True,
+                                                 number_of_rays=number_of_rays)
     # Loop over all the rays
-    for ray in ray_list :
+    for ray in ray_list:
         # Check if the ray is obstructed
-        points, ind = full_urban_canopy_Pyvista_mesh.ray_trace(origin=ray[0], end_point=ray[1], first_point=False, plot=False)
-
+        points, ind = full_urban_canopy_Pyvista_mesh.ray_trace(origin=ray[0], end_point=ray[1], first_point=False,
+                                                               plot=False)
 
         if ind.size == 0:  # no obstruction
             return False
@@ -62,15 +93,19 @@ def is_HB_Face_context_surface_obstructed_for_target_LB_polyface3d(target_LB_pol
     return True
 
 
-
-
-
-def are_hb_faces_facing(hb_face_1, centroid_1, hb_face_2, centroid_2):
-    """ Check with the normals if the surfaces are facing each other (and thus they can shade on each other) """
+def are_HB_Face_or_LB_Face3D_facing(face_1, face_2):
+    """ Check with the normals if the surfaces are facing each other (and thus they can shade on each other)
+    :param face_1: HB Face or LB Face3D
+    :param face_2: HB Face or LB Face3D
+    :return: True if the surfaces are facing each other, False otherwise
+    """
     # todo @Elie: update
+    # centroids
+    centroid_1 = face_1.centroid
+    centroid_2 = face_2.centroid
     # normal vectors
-    normal_1 = hb_face_1.normal
-    normal_2 = hb_face_2.normal
+    normal_1 = face_1.normal
+    normal_2 = face_2.normal
     # vectors from centroid_2 to centroid_1
     vector_21 = centroid_1 - centroid_2  # operation possible with LB Point3D
     # dot product
@@ -158,9 +193,6 @@ def adjust_lower_corners(pt_left, pt_right):
     return ([new_point_left, new_point_right])
 
 
-
-
-
 def make_Pyvista_Polydata_from_LB_Polyface3D_list(LB_Polyface3D_list):
     """
     Convert a list of LB Polyface3D to a Pyvista Polydata mesh
@@ -172,11 +204,13 @@ def make_Pyvista_Polydata_from_LB_Polyface3D_list(LB_Polyface3D_list):
     # Make a list of all the faces in the Polyface3D
     LB_Face3D_list = []
     for LB_polyface3d in LB_Polyface3D_list:
-        LB_Face3D_list.extend(list(LB_polyface3d.faces)) # add the faces of the polyface3d to the list, need to use list()
+        LB_Face3D_list.extend(
+            list(LB_polyface3d.faces))  # add the faces of the polyface3d to the list, need to use list()
     # Convert the list of LB_Face3D to a Pyvista Polydata mesh
     Pyvista_Polydata_mesh = make_Pyvista_Polydata_from_HB_Face_or_LB_Face3D_list(face_list=LB_Face3D_list)
 
     return Pyvista_Polydata_mesh
+
 
 def make_Pyvista_Polydata_from_HB_Face_or_LB_Face3D_list(face_list):
     """ Convert the context hb face to a polydata Pyvista mesh  """
@@ -192,6 +226,7 @@ def make_Pyvista_Polydata_from_HB_Face_or_LB_Face3D_list(face_list):
 
     else:
         return []
+
 
 def make_Pyvista_Polydata_from_HB_Face_or_LB_Face3D(face_object):
     """
@@ -212,5 +247,3 @@ def make_Pyvista_Polydata_from_HB_Face_or_LB_Face3D(face_object):
     vertices = np.array(vertices)  # convert into numpy array, makes it faster for Pyvista to process
 
     return pv.PolyData(vertices, face)
-
-
