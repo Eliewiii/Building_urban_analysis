@@ -161,17 +161,32 @@ class BuildingModeled(BuildingBasic):
         assert isinstance(self.HB_model_obj, Model), \
             'Expected Honeybee Model. Got {}.'.format(type(self.HB_model_obj))
 
-        if on_roof:
+        if on_roof and on_facades:
             faces_roof = get_hb_faces_roof(self.HB_model_obj)
             mesh_roof = get_lb_mesh(faces_roof, grid_size, offset_dist)
             sensor_grid_roof = create_sensor_grid_from_mesh(mesh_roof, name)
             self.sensor_grid_dict['Roof'] = sensor_grid_roof.to_dict()
 
-        if on_facades:
             faces_facades = get_hb_faces_facades(self.HB_model_obj)
             mesh_facades = get_lb_mesh(faces_facades, grid_size, offset_dist)
             sensor_grid_facades = create_sensor_grid_from_mesh(mesh_facades, name)
             self.sensor_grid_dict['Facades'] = sensor_grid_facades.to_dict()
+
+        elif on_roof and not on_facades:
+            faces_roof = get_hb_faces_roof(self.HB_model_obj)
+            mesh_roof = get_lb_mesh(faces_roof, grid_size, offset_dist)
+            sensor_grid_roof = create_sensor_grid_from_mesh(mesh_roof, name)
+            self.sensor_grid_dict['Roof'] = sensor_grid_roof.to_dict()
+
+        elif on_facades and not on_roof:
+            faces_facades = get_hb_faces_facades(self.HB_model_obj)
+            mesh_facades = get_lb_mesh(faces_facades, grid_size, offset_dist)
+            sensor_grid_facades = create_sensor_grid_from_mesh(mesh_facades, name)
+            self.sensor_grid_dict['Facades'] = sensor_grid_facades.to_dict()
+
+        else:
+            logging.warning(f"You did not precise whether you want to run the simulation on the roof, "
+                            f"the facades or both")
 
     def solar_radiations(self, name, path_folder_simulation, path_weather_file, grid_size=1, offset_dist=0.1,
                          on_roof=True, on_facades=True):
@@ -181,7 +196,7 @@ class BuildingModeled(BuildingBasic):
         # Add the sensor grids to the building modeled
         self.add_sensor_grid_to_hb_model(name, grid_size, offset_dist, on_roof, on_facades)
 
-        if on_roof:
+        if on_roof and not on_facades:
             # generate the sensor grid from the dict
             sensor_grid_roof = SensorGrid.from_dict(self.sensor_grid_dict['Roof'])
             # duplicate the model so that no changes will be made on the original model
@@ -195,7 +210,7 @@ class BuildingModeled(BuildingBasic):
                 project_folder = hb_ann_irr_sim(model_sensor_grid_roof, path_weather_file, settings)
             return hb_ann_cum_values([os.path.join(project_folder, "annual_irradiance", "results", "total")])
 
-        elif on_facades:
+        elif on_facades and not on_roof:
             # generate the sensor grid from the dict
             sensor_grid_facades = SensorGrid.from_dict(self.sensor_grid_dict['Facades'])
             # duplicate the model so that no changes will be made on the original model

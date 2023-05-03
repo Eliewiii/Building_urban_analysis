@@ -1,14 +1,17 @@
 """Run a solar radiation simulation for all the buildings in the urban canopy that are targeted
     Inputs:
-        path_folder_simulation_: Path to the folder. By default, the code will be run in Appdata\Roaming\Building_urban_analysis\Simulation_temp
+        building_id_list : list of buildings we want to run the simulation on
+        path_folder_simulation_: Path to the folder. By default, the code will be run in
+                                Appdata\Roaming\Building_urban_analysis\Simulation_temp
         _path_weather_file : Path to the weather file.
         _grid_size_ : Number for the distance to move points from the surfaces of the geometry of the model
         _offset_dist_ :  Number for the distance to move points from the surfaces of the geometry of the model.
         Typically, this should be a small positive number to ensure points are not blocked by the mesh.
+        on_roof_ : True if the the simulation is to be run on the roof, else False (Default = True)
+        on_facades_ : True if the the simulation is to be run on the facades, else False (Default = True)
         _run: Plug in a button to run the component
     Output:
         a: The a output variable"""
-
 
 import os
 
@@ -27,6 +30,7 @@ def clean_log_for_out(path_log_file):
         log_line_list = [line.split("[ERROR] ")[-1] for line in log_line_list]
     return (log_line_list)
 
+
 # Get Appdata\local folder
 local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
@@ -40,6 +44,8 @@ if _run:
     # argument =" -t 1"
     argument = " "
     # Optionnal argument of the bat file/Python script
+    if building_id_list_ is not None:
+        argument = argument + ' -l "{}"'.format(building_id_list_)
     if path_folder_simulation_ is not None:
         argument = argument + ' -f "{}"'.format(path_folder_simulation_)
     if _path_weather_file is not None:
@@ -48,10 +54,13 @@ if _run:
         argument = argument + ' -g "{}"'.format(_grid_size_)
     if _offset_dist_ is not None:
         argument = argument + ' -o "{}"'.format(_offset_dist_)
+    if on_roof_ is not None:
+        argument = argument + ' -o "{}"'.format(on_roof_)
+    if on_facades_ is not None:
+        argument = argument + ' -o "{}"'.format(on_facades)
     # Execute the command
     output = os.system(command + argument)
     print(command + argument)
-
 
 # set default value for the simulation folder if not provided
 if path_folder_simulation_ is None:
@@ -66,4 +75,3 @@ if os.path.isfile(path_log_file):
     for line in out:
         print(line)
 
-# todo values = list_to_data_tree(values) ?

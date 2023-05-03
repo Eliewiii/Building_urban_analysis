@@ -17,6 +17,9 @@ default_path_folder_simulation = os.path.join(path_tool, "Simulation_temp")
 default_path_weather_file = os.path.join(path_tool, "Libraries", "EPW", "IS_5280_A_Haifa.epw")
 default_grid_size = 1
 default_offset_dist = 0.1
+default_list_id_buildings = None
+default_on_roof = True
+default_on_facades = True
 default_run_by_the_tool = False
 
 if __name__ == "__main__":
@@ -25,16 +28,20 @@ if __name__ == "__main__":
                         default=default_path_folder_simulation)
     parser.add_argument("-w", "--epw", help="path to the weather file", nargs='?',
                         default=default_path_weather_file)
+    parser.add_argument("-l", "--list", help="Llist of the id of the buildings we want to run the simulation on",
+                        nargs='?', default=default_list_id_buildings)
     parser.add_argument("-g", "--grid", help="Number for the size of the test grid", nargs='?',
                         default=default_grid_size)
     parser.add_argument("-o", "--off",
                         help="Number for the distance to move points from the surfaces of the geometry of the model",
-                        nargs='?',
-                        default=default_offset_dist)
+                        nargs='?', default=default_offset_dist)
+    parser.add_argument("-r", "--roof", help="True if the simulation is to be run on the roof of the buildings",
+                        nargs='?', default=default_on_roof)
+    parser.add_argument("-a", "--facades", help="True if the simulation is to be run on the facades of the buildings",
+                        nargs='?', default=default_on_facades)
     parser.add_argument("-t", "--tool",
                         help="Boolean telling if the code is run from an editor or externally by the batch file",
-                        nargs='?',
-                        default=default_run_by_the_tool)
+                        nargs='?', default=default_run_by_the_tool)
 
     # Input parameter that will be given by Grasshopper
     args = parser.parse_args()
@@ -42,8 +49,11 @@ if __name__ == "__main__":
     path_folder_simulation = args.folder
     path_radiation_folder = os.path.join(path_folder_simulation, "Radiation simulation")
     path_weather_file = args.epw
+    list_id_buildings = args.list
     grid_size = float(args.grid)
     offset_dist = float(args.off)
+    on_roof = bool(args.roof)
+    on_facades = bool(args.facades)
     run_by_the_tool = bool(args.tool)
 
     # Create the folder if it does not exist
@@ -76,7 +86,8 @@ if __name__ == "__main__":
         logging.info(f"New urban canopy object was created")
 
     # Run the annual solar radiation simulation on each building targeted of the urban canopy
-    urban_canopy.radiation_simulation_urban_canopy(path_radiation_folder, path_weather_file, ['unnamed_88b30172'], grid_size, offset_dist)
+    urban_canopy.radiation_simulation_urban_canopy(path_radiation_folder, path_weather_file, list_id_buildings,
+                                                   grid_size, offset_dist, on_roof, on_facades)
     logging.info(f"Solar radiation simulation run successfully")
 
     # generate the hb model that contains all the building envelopes to plot in Grasshopper
