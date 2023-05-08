@@ -1,7 +1,7 @@
 """
 Extract the GIS file and convert it into a hb model that can be read and plotted by Grasshopper.
 """
-from mains_tool.utils_general import *
+from main_tool.utils_general import *
 
 if __name__ == "__main__":
     def create_user_parameter_options():
