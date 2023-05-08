@@ -1,5 +1,4 @@
 Step 1, load arguments and create urban canopy: -s1
-SimulationCommonMethods.load_bat_file_user_arguments(parser)
 SimulationCommonMethods.make_simulation_folder(path_folder_simulation)
 urban_canopy = SimulationCommonMethods.create_or_load_urban_canopy_object()
 
