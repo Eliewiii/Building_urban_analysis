@@ -7,8 +7,14 @@ from Sharon_components_gh_to_modify.utils_gh import *
 class CommonMethods:
     global path_folder_simulation, path_additional_gis_attribute_key_dict, \
             path_gis, move_buildings_to_origin, unit, make_hb_model_envelops, path_folder_hbjson, parser
+    # todo @Sharon: should we really make global variables?, can it interfere with some parameters with the same name
     def get_user_parameters(self):
-        parser = argparse.ArgumentParser()
+        """
+        Get the user parameters from the command line
+        :return:
+        """
+        # todo @Elie or @Sharon: maybe split this function in different subfunction to make it more readable, have one function for the different domains of simulations
+        parser = argparse.ArgumentParser() # create a parser object todo: move to main script and have parser (changed to parsed_args)
         parser.add_argument("-f", "--folder", help="path to the simulation folder", nargs='?',
                             default = default_path_folder_simulation)
         parser.add_argument("-e", "--hbenv",
@@ -42,6 +48,7 @@ class CommonMethods:
         else:
             urban_canopy = UrbanCanopy()
             logging.info("New urban canopy object was created")
+        return urban_canopy
 
     def save_urban_canopy_object_to_pickle(self):
         UrbanCanopy.export_urban_canopy_to_pkl(path_folder=path_folder_simulation)
