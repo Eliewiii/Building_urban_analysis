@@ -1,0 +1,21 @@
+Step 1, load arguments and create urban canopy: -s1
+SimulationCommonMethods.load_bat_file_user_arguments(parser)
+SimulationCommonMethods.make_simulation_folder(path_folder_simulation)
+urban_canopy = SimulationCommonMethods.create_or_load_urban_canopy_object()
+
+
+Step 2, Extract geometries from GIS file: -s2
+building_id_key_gis = SimulationLoadBuildingOrGeometry.get_building_id_key_gis(additional_gis_attribute_key_dict)
+SimulationLoadBuildingOrGeometry.add_2D_GIS_to_urban_canopy(urban_canopy)
+
+Step 3, move building to origin of the plan: -s3
+SimulationBuildingManipulationFunctions.move_building_to_origin(urban_canopy)
+
+step 4, add building from hbjson: -s4
+add_buildings_in_hbjson_to_urban_canopy(,urban_canopypath_folder_hbjson)
+
+step 5, remove building from urban canopy: -s5
+SimulationBuildingManipulationFunctions.remove_building_list_from_urban_canopy(urban_canopy,building_list)
+
+step 0, wrap up the simulation and export the urban canopy: -s0
+SimulationCommonMethods.save_urban_canopy_object_to_pickle(path_folder_simulation)

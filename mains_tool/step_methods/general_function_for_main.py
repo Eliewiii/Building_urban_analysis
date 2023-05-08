@@ -1,40 +1,43 @@
 """
-
+Common methods to most of the simulations
 """
 
-def load_user_parameter_options():
-    """
+from mains_tool.utils_general import *
+from mains_tool.step_methods.load_bat_file_arguments import LoadArguments
 
-    :return:
-    """
-    parser.add_argument("-g", "--gis", help="path to gis file", nargs='?', default=default_path_gis)
-    parser.add_argument("-f", "--folder", help="path to the simulation folder", nargs='?',
-                        default=default_folder_gis_extraction)
-    parser.add_argument("-u", "--unit", help="unit of the GIS", nargs='?', default=default_unit)
-    parser.add_argument("-d", "--dic", help="path to the additional key dictionary", nargs='?',
-                        default=default_additional_gis_attribute_key_dict)
-    parser.add_argument("-m", "--mov", help="Boolean telling if building should be moved to the origin", nargs='?',
-                        default=default_move_buildings_to_origin)
-    parser.add_argument("-f", "--folder", help="path to the simulation folder", nargs='?',
-                        default=default_path_folder_simulation)
-    parser.add_argument("-e", "--hbenv",
-                        help="Boolean telling if a HB Model containing the envelop of all buildings should be generated",
-                        nargs='?',
-                        default=default_make_hb_model_envelops)
+class SimulationCommonMethods:
+    global path_folder_simulation, path_additional_gis_attribute_key_dict, \
+            path_gis, move_buildings_to_origin, unit, make_hb_model_envelops, path_folder_hbjson, parser
+    # todo @Sharon: should we really make global variables?, can it interfere with some parameters with the same name
+    @staticmethod
+    def load_bat_file_user_arguments(parser):
+        """
 
+        :param parser:
+        :return:
+        """
+        LoadArguments.load_user_parameters(parser)
+        LoadArguments.load_user_simulation_steps(parser)
+        LoadArguments.parse_arguments(parser)
 
+        return parser
 
-def load_or_create_UrbanCanopy_object():
-    """
+    @staticmethod
+    def make_simulation_folder(path_folder_simulation):
+        os.makedirs(path_folder_simulation, exist_ok=True)
 
-    :return:
-    """
-    path_urban_canopy_pkl = os.path.join(path_folder_gis_extraction, "urban_canopy.pkl")
-    if os.path.isfile(path_urban_canopy_pkl):
-        urban_canopy = urban_canopy_methods.make_urban_canopy_from_pkl(path_urban_canopy_pkl)
-        logging.info("An urban canopy already exist in the simulation folder, the input GIS will be added to it")
-    else:
-        # urban_canopy = UrbanCanopy()
-        # we can create a new object only in a new function and we currentky in main method
-        # TODO
-        logging.info("New urban canopy object was created")
+    @staticmethod
+    def create_or_load_urban_canopy_object(path_folder_simulation):
+        path_urban_canopy_pkl = os.path.join(path_folder_simulation, "urban_canopy.pkl")
+        if os.path.isfile(path_urban_canopy_pkl):
+            urban_canopy = UrbanCanopy.make_urban_canopy_from_pkl(path_urban_canopy_pkl)
+            logging.info("An urban canopy already exist in the simulation folder, the input GIS will be added to it")
+        else:
+            urban_canopy = UrbanCanopy()
+            logging.info("New urban canopy object was created")
+        return urban_canopy
+
+    @staticmethod
+    def save_urban_canopy_object_to_pickle(path_folder_simulation):
+        UrbanCanopy.export_urban_canopy_to_pkl(path_folder=path_folder_simulation)
+        logging.info("Urban canopy object saved successfully")

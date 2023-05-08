@@ -2,6 +2,7 @@ from mains_tool.utils_general import *
 
 def main():
 
+    # Create the logs
     currentDirectory = os.getcwd()
     Logspath = "/logs"
     isExist = os.path.exists(currentDirectory + Logspath)
@@ -10,6 +11,9 @@ def main():
 
     LOG_FILENAME = datetime.now().strftime(currentDirectory + Logspath + '/logfile_%H_%M_%S_%d_%m_%Y.log')
     logging.basicConfig(filename=LOG_FILENAME, level=logging.INFO)
+
+    # Get the user parameters from the command line
+    parser = argparse.ArgumentParser()
 
 
 
