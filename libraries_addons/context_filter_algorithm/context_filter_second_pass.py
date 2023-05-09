@@ -79,8 +79,9 @@ def is_HB_Face_context_surface_obstructed_for_target_LB_Face3D(target_LB_Face3D,
     """
     # todo @Elie : to finish
     # Make the list of ray to launch
-    ray_list = ray_list_from_emitter_to_receiver(emitter, receiver, exclude_surface_from_ray=True,
-                                                 number_of_rays=number_of_rays)
+    ray_list = ray_list_from_emitter_to_receiver(face_emitter=target_LB_Face3D,
+                                                 face_receiver=context_HB_Face_surface_to_test,
+                                                 exclude_surface_from_ray=True, number_of_rays=number_of_rays)
     # Loop over all the rays
     for ray in ray_list:
         # Check if the ray is obstructed
@@ -98,6 +99,7 @@ def are_HB_Face_or_LB_Face3D_facing(face_1, face_2):
     :param face_1: HB Face or LB Face3D
     :param face_2: HB Face or LB Face3D
     :return: True if the surfaces are facing each other, False otherwise
+    Credit: highly inspired from the PyviewFactor code
     """
     # todo @Elie: update
     # centroids
@@ -111,57 +113,106 @@ def are_HB_Face_or_LB_Face3D_facing(face_1, face_2):
     # dot product
     dot_product_sup = normal_2.dot(vector_21)
     dot_product_inf = normal_1.dot(vector_21)
-    # vivibility/facing criteria  (same as PyviewFactor)
+    # visibility/facing criteria  (same as PyviewFactor)
     if dot_product_sup > 0 and dot_product_inf < 0:
         return True
     else:
         return False
 
 
-def ray_list_from_emitter_to_receiver(emitter, receiver, exclude_surface_from_ray=True, number_of_rays=3):
+def ray_list_from_emitter_to_receiver(face_emitter, face_receiver, exclude_surface_from_ray=True, number_of_rays=3):
     """
         Args:
-            emitter [dict]: dictionary with the following properties of the emitter surface {"hb_face_obj", "area",
-                "centroid":(Point3D), "lower_corner_point3d":{"left","right"},"height"}
-            receiver [dict]: dictionary with the following properties of the receiver surface {"hb_face_obj", "area",
-                "centroid":(Point3D), "lower_corner_point3d":{"left","right"},"height"}
-            exclude_surface_from_ray [boolean]: True the rays are slightly shorten not to intersect
-                with the emitter and receiver surfaces
 
         Output:
             ray list, with ray tuple (start, stop)
     """
-    # todo @Elie: update
+    # todo @Elie: check if it works
+    # Check the type of the input, could be either a Ladybug Face3D or a Honeybee Face for more flexibility
+    if isinstance(face_emitter,Face3D):
+        emitter_Face3D=face_emitter
+    elif isinstance(face_emitter,Face):
+        emitter_Face3D=face_emitter.geometry
+    else:
+        raise TypeError("face_emitter should be a Ladybug Face3D or a Honeybee Face object")
+
+    if isinstance(face_receiver,Face3D):
+        receiver_Face3D=face_receiver
+    elif isinstance(face_receiver,Face):
+        receiver_Face3D=face_receiver.geometry
+    else:
+        raise TypeError("face_receiver should be a Ladybug Face3D or a Honeybee Face object")
+
     # z coordinate of the start and end of the rays
-    z_receiver = receiver["elevation"] + receiver["height"]
-    z_emitter = min([emitter["elevation"] + emitter["height"], z_receiver])
+    z_receiver = receiver_Face3D.max.z  # maximum z coordinate of the max (Point3D) of the Face receiver
+    z_emitter = min([emitter_Face3D.max.z, z_receiver])
     # start vertices
-    start_c = emitter["lower_corner_points"]["center"]
-    start_l = emitter["lower_corner_points"]["left"]
-    start_r = emitter["lower_corner_points"]["right"]
-    start_c[2], start_l[2], start_r[2] = z_emitter, z_emitter, z_emitter  # correct the z coordinate
+    start_point_l = convert_Point3D_to_list(emitter_Face3D.lower_left_corner)
+    start_point_r = convert_Point3D_to_list(emitter_Face3D.lower_right_corner)
+    start_point_c = [(start_point_l[0]+start_point_r[0])/2., (start_point_l[1]+start_point_r[1])/2., z_emitter]
+    start_point_l[2], start_point_l[2] = z_emitter, z_emitter  # correct the z coordinate
     # end vertices
-    end_c = receiver["lower_corner_points"]["center"]
-    end_l = receiver["lower_corner_points"]["left"]
-    end_r = receiver["lower_corner_points"]["right"]
-    end_c[2], end_l[2], end_r[2] = z_receiver, z_receiver, z_receiver  # correct the z coordinate
+    end_point_l = convert_Point3D_to_list(receiver_Face3D.lower_left_corner)
+    end_point_r = convert_Point3D_to_list(receiver_Face3D.lower_right_corner)
+    end_point_c = [(end_point_l[0]+end_point_r[0])/2., (end_point_l[1]+end_point_r[1])/2., z_receiver]
+    end_point_l[2], end_point_l[2] = z_receiver, z_receiver  # correct the z coordinate
 
     # ray list
     ray_list = [
-        (start_c, end_c),
-        (start_c, end_l),
-        (start_c, end_r),
-        (start_l, end_l),
-        (start_r, end_r),
-        (start_l, end_c),
-        (start_r, end_c),
-        (start_l, end_r),
-        (start_r, end_l),
+        (start_point_c, end_point_c),
+        (start_point_c, end_point_l),
+        (start_point_c, end_point_r),
+        (start_point_l, end_point_l),
+        (start_point_r, end_point_r),
+        (start_point_l, end_point_c),
+        (start_point_r, end_point_c),
+        (start_point_l, end_point_r),
+        (start_point_r, end_point_l),
     ]
     if exclude_surface_from_ray:
         for i in range(number_of_rays):
-            ray_list[i] = excluding_surfaces_from_ray(start=ray_list[i][0], end=ray_list[i][1])
+            ray_list[i] = excluding_surfaces_from_ray(start=ray_list[i][0], end_point=ray_list[i][1])
     return ray_list[:number_of_rays]
+
+
+# def ray_list_from_emitter_to_receiver_old(face_emitter, face_receiver, exclude_surface_from_ray=True, number_of_rays=3):
+#     """
+#         Args:
+#
+#         Output:
+#             ray list, with ray tuple (start, stop)
+#     """
+#     # todo @Elie: update
+#     # z coordinate of the start and end of the rays
+#     z_receiver = receiver["elevation"] + receiver["height"]
+#     z_emitter = min([emitter["elevation"] + emitter["height"], z_receiver])
+#     # start vertices
+#     start_c = emitter["lower_corner_points"]["center"]
+#     start_l = emitter["lower_corner_points"]["left"]
+#     start_r = emitter["lower_corner_points"]["right"]
+#     start_c[2], start_l[2], start_r[2] = z_emitter, z_emitter, z_emitter  # correct the z coordinate
+#     # end vertices
+#     end_c = receiver["lower_corner_points"]["center"]
+#     end_l = receiver["lower_corner_points"]["left"]
+#     end_r = receiver["lower_corner_points"]["right"]
+#     end_c[2], end_l[2], end_r[2] = z_receiver, z_receiver, z_receiver  # correct the z coordinate
+#
+#     # ray list
+#     ray_list = [
+#         (start_c, end_c),
+#         (start_c, end_l),
+#         (start_c, end_r),
+#         (start_l, end_l),
+#         (start_r, end_r),
+#         (start_l, end_c),
+#         (start_r, end_c),
+#         (start_l, end_r),
+#         (start_r, end_l),
+#     ]
+#     if exclude_surface_from_ray:
+#         for i in range(number_of_rays):
+#             ray_list[i] = excluding_surfaces_from_ray(start=ray_list[i][0], end=ray_list[i][1])
+#     return ray_list[:number_of_rays]
 
 
 def excluding_surfaces_from_ray(start, end):
