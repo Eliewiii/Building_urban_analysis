@@ -15,7 +15,7 @@ def make_shapely_polygon_from_LB_face(LB_face):
     return Polygon(list_tuple_vertices_2d)
 
 
-def make_LB_face_from_shapely_polygon(polygon, tolerance = default_tolerance):
+def make_LB_face_from_shapely_polygon(polygon, tolerance=default_tolerance):
     """Convert a Ladybug Face to a Shapely Polygon."""
     # convert vertices into tuples
     point_list_outline = [list(point) for point in polygon.exterior.__geo_interface__['coordinates']]
@@ -29,7 +29,8 @@ def make_LB_face_from_shapely_polygon(polygon, tolerance = default_tolerance):
     return LB_face_footprint
 
 
-def LB_face_footprint_to_lB_polyface3D_extruded_footprint(LB_face_footprint, height = default_height,elevation=default_elevation):
+def LB_face_footprint_to_lB_polyface3D_extruded_footprint(LB_face_footprint, height=default_height,
+                                                          elevation=default_elevation):
     """
     Extrude a ladybug geometry footprint to obtain the room envelop
     :param LB_face_footprint: ladybug geometry footprint
@@ -44,7 +45,8 @@ def LB_face_footprint_to_lB_polyface3D_extruded_footprint(LB_face_footprint, hei
     return extruded_face
 
 
-def make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint(LB_face_footprint,height = default_height,elevation=default_elevation):
+def make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint(LB_face_footprint, height=default_height,
+                                                                      elevation=default_elevation):
     """ Make Ladybug Polyface3D oriented bounding box from a Ladybug Face3D (mostly from the footprint of buildings)
     :param LB_face_footprint: Ladybug Face3D
     :param height: float : height of the building
@@ -97,7 +99,7 @@ def make_LB_Face3D_footprint_bounding_rectangle(LB_Face3D_footprint, angle=0):
     if angle != 0:  # rotate geometry to the bounding box
         center_of_rotation = LB_Face3D_footprint.vertices[0]
         oriented_LB_Face3D_footprint_list = _orient_geometry(geometries=[LB_Face3D_footprint], axis_angle=angle,
-                                                        center=center_of_rotation)
+                                                             center=center_of_rotation)
 
     else:
         oriented_LB_Face3D_footprint_list = [LB_Face3D_footprint]
@@ -166,8 +168,8 @@ def LB_footprint_to_df_building(LB_face_footprint, core_area_ratio=0.15, tol=0.0
     max_core_area = target_core_area * (1 + tol)
     min_core_area = target_core_area * (1 - tol)
     # list with the floor height between each floor
-    #TODO what do wanted to do here?
-    #floor_to_floor_heights = [self.floor_height for i in range(self.num_floor)]
+    # TODO what do wanted to do here?
+    # floor_to_floor_heights = [self.floor_height for i in range(self.num_floor)]
     # initialization of the dichotomy
     perimeter_offset_boundary_up = 20
     perimeter_offset_boundary_down = 1
@@ -206,7 +208,7 @@ def LB_footprint_to_df_building(LB_face_footprint, core_area_ratio=0.15, tol=0.0
             perimeter_offset_boundary_up = perimeter_offset
 
     if converged:
-        #TODO is this error appears only in my laptop? Sharon
+        # TODO is this error appears only in my laptop? Sharon
         self.DF_building = dragonfly.building.Building.from_footprint(identifier="Building_" + str(self.id),
                                                                       footprint=[LB_face_footprint],
                                                                       floor_to_floor_heights=floor_to_floor_heights,
@@ -283,6 +285,7 @@ def find_perimeter_offset_df_building(LB_face_footprint, core_area_ratio=0.15, t
             # last room is the core
             for i in range(len(self.DF_building.unique_stories[0].room_2ds) - nb_rooms_per_stories + 1):
                 self.DF_building.unique_stories[0].room_2ds[-i - 1].identifier = "core_" + str(i)
+
 
 def room2d_is_core(room_2d):
     """ check if a room is a core or not """
