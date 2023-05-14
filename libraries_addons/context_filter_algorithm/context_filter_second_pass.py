@@ -2,7 +2,7 @@
 
 """
 from libraries_addons.utils_libraries_addons import *
-from mains_tool.utils_general import default_number_of_rays_context_filter_second_pass
+from main_tool.utils_general import default_number_of_rays_context_filter_second_pass
 
 
 def select_non_obstructed_surfaces_of_context_HB_Model_for_target_LB_polyface3d(
