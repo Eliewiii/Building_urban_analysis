@@ -269,6 +269,20 @@ class UrbanCanopy:
                 list_of_all_buildings = list(self.building_dict.values())
                 building_obj.select_context_surfaces_for_shading_computation(context_building_list=list_of_all_buildings,minimum_vf_criterion=minimum_vf_criterion)
 
+    def make_Pyvista_Polydata_mesh_of_all_buildings(self):
+        """
+
+        :return:
+        """
+        # todo @Elie: test the function
+        # Make list of all the LB_Polyface3D_extruded_footprint of the buildings in the urban canopy
+        list_of_building_LB_Polyface3D_extruded_footprint = [building.LB_polyface3d_extruded_footprint for building in self.building_dict.values()]
+        # Convert to Pyvista Polydata
+        #todo @Elie: add th eimport and finish the function
+        # Pyvista_Polydata_mesh = make_Pyvista_Polydata_from_LB_Polyface3D_list(list_of_building_LB_Polyface3D_extruded_footprint)
+
+
+
     def compute_moving_vector_to_origin(self):
         """ Make the moving vector to move the urban canopy to the origin """
         # get the center of mass (Point3D) of the urban canopy on the x,y plane
