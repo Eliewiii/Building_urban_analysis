@@ -1,0 +1,12 @@
+{
+  "name" : ["name", "full_name_"],
+  "age" : {
+    "age" : "jjj",
+    "date": "lll"
+          },
+  "typology" : ["typo", "typology", "type", "Typology"],
+  "elevation" : ["minheight"],
+  "height" : ["height", "Height", "govasimple"],
+  "number of floor" : ["number_floor", "nb_floor", "mskomot"],
+  "group" : ["group"]
+}

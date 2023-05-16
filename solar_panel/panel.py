@@ -5,7 +5,10 @@ Panel class, modeling solar panels, to track the age and energy production of pa
 # todo @Julius and Elie, make a small documentation to explain how we compute the time of failure
 #  plus all the hypothesis
 
-from math import log,ceil
+from math import log, ceil
+import random
+
+from solar_panel.pvmaterial import PanelTechnology
 
 
 class Panel:
@@ -13,6 +16,7 @@ class Panel:
     def __init__(self, index):
         self.index = index
         self.failure_scenario_list = []
+        self.panel_technology_identifier = None
 
     def compute_failure_scenario(self, lambda_para, k, nb_of_year_building, number_of_scenario_to_compute):
         """
@@ -23,8 +27,7 @@ class Panel:
         for i in range(0, number_of_scenario_to_compute):
             panel_list = []
             while True:
-                y = random.random()
-                time_of_failure = math.ceil(lambda_para * (-(1 / k) * math.log(1 - y)) ** (1 / k))
+                time_of_failure = PanelTechnology.get_time_failure_of_a_panel()
                 if sum(panel_list) + time_of_failure <= nb_of_year_building:
                     panel_list.append(time_of_failure)
                 else:

@@ -26,7 +26,7 @@ efficiency_file = datafile["Efficiency development"]
 
 
 nb_of_years = 100
-list_b_type = [area_file.cell(i,3).value for i in range(4,5)]
+list_b_type = [area_file.cell(i, 3).value for i in range(4, 5)]
 list_scenario = ["roof_scenario", "env_scenario"]
 list_tech = ["rooftech", "envtech"]
 list_wb = ["regular loss", "early loss"]
