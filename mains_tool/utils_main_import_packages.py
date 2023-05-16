@@ -9,4 +9,3 @@ import argparse
 from datetime import datetime
 import json
 
-from urban_canopy.urban_canopy_methods import UrbanCanopy
