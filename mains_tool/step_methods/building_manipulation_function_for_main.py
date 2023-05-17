@@ -17,13 +17,13 @@ class SimulationBuildingManipulationFunctions:
             logging.info("Buildings have been moved to origin successfully")
 
     @staticmethod
-    def remove_building_list_from_urban_canopy(urban_canopy,building_list):
+    def remove_building_list_from_urban_canopy(urban_canopy,building_id_list):
         """
         Remove a list of buildings from the urban canopy
         :param urban_canopy:
         :param building_list:
         :return:
         """
-        for building_id in building_list:
+        for building_id in building_id_list:
             urban_canopy.remove_building_from_dict(building_id)
         logging.info("Building(s) removed from the urban canopy successfully")

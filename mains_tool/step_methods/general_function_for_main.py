@@ -3,31 +3,24 @@ Common methods to most of the simulations
 """
 
 from mains_tool.utils_general import *
-from mains_tool.step_methods.load_bat_file_arguments import LoadArguments
+from mains_tool.utils_main_import_scripts import *
 
 class SimulationCommonMethods:
-    global path_folder_simulation, path_additional_gis_attribute_key_dict, \
-            path_gis, move_buildings_to_origin, unit, make_hb_model_envelops, path_folder_hbjson, parser
     # todo @Sharon: should we really make global variables?, can it interfere with some parameters with the same name
     @staticmethod
-    def load_bat_file_user_arguments(parser):
-        """
-
-        :param parser:
-        :return:
-        """
-        LoadArguments.load_user_parameters(parser)
-        LoadArguments.load_user_simulation_steps(parser)
-        LoadArguments.parse_arguments(parser)
-
-        return parser
-
-    @staticmethod
     def make_simulation_folder(path_folder_simulation):
+        """ #todo @Elie"""
+        # make simulation folder
         os.makedirs(path_folder_simulation, exist_ok=True)
+        # make the folder that will contain the logs of the simulation for the components in Grasshopper
+        os.makedirs(os.path.join(path_folder_simulation,name_folder_gh_components_logs), exist_ok=True)
+        # make the folder that will contain the temporary files of the simulation
+        os.makedirs(os.path.join(path_folder_simulation,name_folder_temporary_files), exist_ok=True)
+
 
     @staticmethod
     def create_or_load_urban_canopy_object(path_folder_simulation):
+        # todo @Elie, correct the function
         path_urban_canopy_pkl = os.path.join(path_folder_simulation, "urban_canopy.pkl")
         if os.path.isfile(path_urban_canopy_pkl):
             urban_canopy = UrbanCanopy.make_urban_canopy_from_pkl(path_urban_canopy_pkl)
@@ -38,6 +31,8 @@ class SimulationCommonMethods:
         return urban_canopy
 
     @staticmethod
-    def save_urban_canopy_object_to_pickle(path_folder_simulation):
-        UrbanCanopy.export_urban_canopy_to_pkl(path_folder=path_folder_simulation)
+    def save_urban_canopy_object_to_pickle(path_folder_simulation,urban_canopy_object):
+        """ #todo"""
+        # todo @Elie, correct the function
+        urban_canopy_object.export_urban_canopy_to_pkl(path_folder=path_folder_simulation)
         logging.info("Urban canopy object saved successfully")
