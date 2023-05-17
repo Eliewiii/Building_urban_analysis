@@ -28,7 +28,16 @@ default_make_hb_model_envelops = False
 # Default values for the simulations - GIS
 default_path_gis = os.path.join(path_libraries_tool, "GIS", "gis_typo_id_extra_small")
 default_building_id_key_gis = "idbinyan"
-default_additional_gis_attribute_key_dict = None
+default_gis_attribute_key_dict = {
+    "building_id_key_gis": "none",
+    "name": ["name", "full_name_"],
+    "age": ["age", "date"],
+    "typology": ["typo", "typology", "type", "Typology"],
+    "elevation": ["minheight"],
+    "height": ["height", "Height", "govasimple"],
+    "number of floor": ["number_floor", "nb_floor", "mskomot"],
+    "group": ["group"]
+}
 default_unit_gis = "m"
 default_move_buildings_to_origin = False
 
