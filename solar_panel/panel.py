@@ -18,7 +18,7 @@ class Panel:
         self.failure_scenario_list = []
         self.panel_technology_identifier = None
 
-    def compute_failure_scenario(self, lambda_para, k, nb_of_year_building, number_of_scenario_to_compute):
+    def compute_failure_scenario(self, nb_of_year_building, number_of_scenario_to_compute=1):
         """
         Computes different failure scenarios for the panel and creates a list for each one
         """

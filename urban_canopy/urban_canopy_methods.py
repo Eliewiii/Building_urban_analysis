@@ -2,7 +2,7 @@
 Urban canopy class, containing and managing collections of buildings in urban areas.
 """
 
-from main_tool.utils_general import *
+from mains_tool.utils_general import *
 #from mains_tool.utils_general import default_minimum_vf_criterion_context_filter_first_pass_shading
 from urban_canopy.utils_urban_canopy import *
 

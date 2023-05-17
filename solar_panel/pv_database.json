@@ -1,12 +1,12 @@
 {
-  "name" : ["name", "full_name_"],
-  "age" : {
-    "age" : "jjj",
-    "date": "lll"
-          },
-  "typology" : ["typo", "typology", "type", "Typology"],
-  "elevation" : ["minheight"],
-  "height" : ["height", "Height", "govasimple"],
-  "number of floor" : ["number_floor", "nb_floor", "mskomot"],
-  "group" : ["group"]
+  "mitrex_roof c-Si" : {
+    "lifetime" : 30,
+    "shape" : 2.49,
+    "initial_roof_efficiency" : 19.20
+                        },
+    "metsolar_facades c-Si" : {
+    "lifetime" : 30,
+    "shape" : 2.49,
+    "initial_facades_efficiency" : 19
+                              }
 }
