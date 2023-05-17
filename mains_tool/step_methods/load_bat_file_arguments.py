@@ -32,11 +32,9 @@ class LoadArguments:
                             help="path to the additional key dictionary of the attributes in the GIS file", nargs='?',
                             default=None)
         parser.add_argument("--path_folder_hbjson",
-                            help="path to a folder containing several hbjson files", nargs='?',
-                            default=None)
+                            help="path to a folder containing several hbjson files", nargs='?', default=None)
         parser.add_argument("--path_file_hbjson",
-                            help="path to a single hbjson file", nargs='?',
-                            default=None)
+                            help="path to a single hbjson file", nargs='?', default=None)
 
         # Building manipulation parameters
         parser.add_argument("-l", "--building_id_list", help="path to the additional key dictionary", nargs='?',
@@ -74,7 +72,7 @@ class LoadArguments:
         :return:
         """
         # General features
-        parser.add_argument("--make_sim_folder", help="create the simulation folder if it doesn't exist", nargs='?',
+        parser.add_argument("--make_simulation_folder", help="create the simulation folder if it doesn't exist", nargs='?',
                             default=False)
         parser.add_argument("--create_or_load_urban_canopy_object", help="Load or create urban canopy objects",
                             nargs='?', default=False)
@@ -112,14 +110,21 @@ class LoadArguments:
         args = parser.parse_args()
         # Create a dictionary with the arguments and the name of their variable that will be imported in the main script
         # # todo @Elie, complete the dictionary with the new arguments through the development
-        # arguments_dictionary = {
-        #     "path_folder_simulation_para": args.folder,
-        #     "path_gis_para": args.gis,
-        #     "unit_gis_para": args.unit,
-        #     "path_additional_gis_attribute_key_dict_para": args.dic
-        #                         }
-        #
-        # return arguments_dictionary
+        step_dictionary = {
+            "run_make_simulation_folder": bool(int(args.make_simulation_folder)),
+            "run_create_or_load_urban_canopy_object": bool(int(args.create_or_load_urban_canopy_object)),
+            "run_save_urban_canopy_object_to_pickle": bool(int(args.save_urban_canopy_object_to_pickle)),
+            "run_save_urban_canopy_object_to_json": bool(int(args.save_urban_canopy_object_to_json)),
+            "run_extract_gis": bool(int(args.extract_gis)),
+            "run_extract_buildings_from_models_hbjson": bool(int(args.extract_buildings_from_models_hbjson)),
+            "run_move_buildings_to_origin": bool(int(args.move_buildings_to_origin)),
+            "run_remove_building_list_from_urban_canopy": bool(int(args.remove_building_list_from_urban_canopy)),
+            "run_generate_bounding_boxes": bool(int(args.generate_bounding_boxes)),
+            "run_perform_context_filtering": bool(int(args.perform_context_filtering)),
+            "run_generate_model_with_building_envelop": bool(int(args.generate_model_with_building_envelop))
+                                }
+
+        return step_dictionary
 
     @staticmethod
     def parse_arguments_and_add_them_to_variable_dict(parser):

@@ -7,8 +7,7 @@ from mains_tool.utils_general import *
 class SimulationLoadBuildingOrGeometry:
 
     @staticmethod
-    def add_2D_GIS_to_urban_canopy(urban_canopy, path_gis, path_additional_gis_attribute_key_dict, unit,
-                                   additional_gis_attribute_key_dict):
+    def add_2D_GIS_to_urban_canopy(urban_canopy, path_gis, path_additional_gis_attribute_key_dict, unit):
         """
         Add buildings in a 2D GIS to the urban canopy
         :param urban_canopy:
@@ -20,7 +19,7 @@ class SimulationLoadBuildingOrGeometry:
             path_additional_gis_attribute_key_dict)
         # Add the buildings from the GIS to the urban canopy
         urban_canopy.add_buildings_from_2D_GIS_to_dict(path_gis, building_id_key_gis, unit,
-                                                       additional_gis_attribute_key_dict)
+                                                       path_additional_gis_attribute_key_dict)
         logging.info("Builing geometries extracted from the GIS file successfully")
 
     @classmethod

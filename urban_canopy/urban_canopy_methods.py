@@ -13,6 +13,7 @@ class UrbanCanopy:
         self.building_dict = {}  # dictionary of the buildings in the urban canopy
         self.typology_dict = {}  # dictionary of the typologies loaded the urban canopy
         self.moving_vector_to_origin = None # moving vector of the urban canopy that moved the urban canopy to the origin
+        self.json_dict={} # dictionary containing relevant attrbutes of the urban canopy to be exported to json
 
         self.tolerance_default_value = 0.01  # todo : move this values to utils_general.py,
         # call it LBT_default_tolerance, it will be the same value for all the functions using LBT objects
@@ -101,7 +102,7 @@ class UrbanCanopy:
         self.building_dict.pop(building_id)
 
     def add_buildings_from_2D_GIS_to_dict(self, path_gis, building_id_key_gis="idbinyan", unit="m",
-                                          additional_gis_attribute_key_dict=None):
+                                          path_additional_gis_attribute_key_dict=None):
         """ Extract the data from a shp file and create the associated buildings objects"""
         # Read GIS file
         shape_file = extract_gis(path_gis)
@@ -115,6 +116,14 @@ class UrbanCanopy:
 
             raise
             building_id_key_gis = None
+
+        # Load the additional gis attribute key dict
+        if path_additional_gis_attribute_key_dict is not None:
+            #check if it exists
+            if os.path.exists(path_additional_gis_attribute_key_dict):
+                additional_gis_attribute_key_dict = load_additional_gis_attribute_key_dict(path_additional_gis_attribute_key_dict)
+            else:
+                additional_gis_attribute_key_dict =  None
 
         ## loop to create a building_obj for each footprint in the shp file
         number_of_buildings_in_shp_file = len(shape_file['geometry'])

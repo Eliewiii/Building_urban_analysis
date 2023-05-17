@@ -5,3 +5,6 @@ todo
 from urban_canopy.urban_canopy_methods import UrbanCanopy
 
 from mains_tool.step_methods.load_bat_file_arguments import LoadArguments
+from mains_tool.step_methods.load_building_or_geometry import SimulationLoadBuildingOrGeometry
+from mains_tool.step_methods.load_building_or_geometry import SimulationLoadBuildingOrGeometry
+from mains_tool.step_methods.general_function_for_main import SimulationCommonMethods
