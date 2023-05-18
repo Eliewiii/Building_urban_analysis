@@ -12,6 +12,9 @@ from libraries_addons.solar_radiations.hb_recipe_settings import hb_recipe_setti
 from libraries_addons.solar_radiations.annual_irradiance_simulation import hb_ann_irr_sim
 from libraries_addons.solar_radiations.annual_cumulative_value import hb_ann_cum_values
 
+from solar_panel.pvmaterial import PanelTechnology
+from solar_panel.panel import Panel
+
 
 class BuildingModeled(BuildingBasic):
     """BuildingBasic class, representing one building in an urban canopy."""
@@ -27,6 +30,7 @@ class BuildingModeled(BuildingBasic):
         self.HB_model_obj = None
         self.HB_model_dict = None
         self.sensor_grid_dict = {'Roof': None, 'Facades': None}
+        self.panels = {"Roof": None, "Facade": None}
         self.to_simulate = False
         self.is_target = False
 
@@ -224,8 +228,74 @@ class BuildingModeled(BuildingBasic):
                 project_folder = hb_ann_irr_sim(model_sensor_grid_facades, path_weather_file, settings)
             return hb_ann_cum_values([os.path.join(project_folder, "annual_irradiance", "results", "total")])
 
+    def load_panels_for_roof(self, identifier_roof, identifier_facades, path_json_file):
+        """ Link to every face of the mesh a PV in a list, on the roof
+        """
 
-    def post_process(self, path_folder_simulation):
-        path_file_values = os.path.join(path_folder_simulation, 'values.txt')
-        f = open(path_file_values)
-        values = [(int(i) / 1000) for i in f]
+        assert isinstance(self.HB_model_obj, Model), \
+            'Expected Honeybee Model. Got {}.'.format(type(self.HB_model_obj))
+
+        # we only add the panels if the sensor grid already exists
+        if self.sensor_grid_dict["Roof"] is not None and self.sensor_grid_dict["Facades"] is not None:
+            # get the sensor grid then the mesh from the dictionary
+            sensor_grid_roof = SensorGrid.from_dict(self.sensor_grid_dict["Roof"])
+            mesh_roof = sensor_grid_roof.mesh
+            # load the pv technology
+            pv_tech_roof = PanelTechnology.load_pv_technology(identifier_roof, path_json_file)
+            # initialize the list of panels
+            panels_roof = []
+            for face in mesh_roof.faces:
+                if face.area < pv_tech_roof.panel_area:
+                    logging.warning(f"The area of the mesh's faces is not big enough to contain the PV panels. "
+                                    f"Make a mesh with bigger faces")
+                panel_of_face = Panel(mesh_roof.faces.index(face), identifier_roof)
+                panels_roof.append(panel_of_face)
+            self.panels["Roof"] = panels_roof
+
+            # get the sensor grid then the mesh from the dictionary
+            sensor_grid_facades = SensorGrid.from_dict(self.sensor_grid_dict["Facades"])
+            mesh_facades = sensor_grid_facades.mesh
+            # load the pv technology
+            pv_tech_facades = PanelTechnology.load_pv_technology(identifier_facades, path_json_file)
+            # initialize the list of panels
+            panels_facades = []
+            for face in mesh_facades.faces:
+                if face.area < pv_tech_facades.panel_area:
+                    logging.warning(f"The area of the mesh's faces is not big enough to contain the PV panels. "
+                                    f"Make a mesh with bigger faces")
+                panel_of_face = Panel(mesh_facades.faces.index(face), identifier_facades)
+                panels_facades.append(panel_of_face)
+            self.panels["Facades"] = panels_facades
+
+        elif self.sensor_grid_dict["Roof"] is not None and self.sensor_grid_dict["Facades"] is None:
+            # get the sensor grid then the mesh from the dictionary
+            sensor_grid_roof = SensorGrid.from_dict(self.sensor_grid_dict["Roof"])
+            mesh_roof = sensor_grid_roof.mesh
+            # load the pv technology
+            pv_tech_roof = PanelTechnology.load_pv_technology(identifier_roof, path_json_file)
+            # initialize the list of panels
+            panels_roof = []
+            for face in mesh_roof.faces:
+                if face.area < pv_tech_roof.panel_area:
+                    logging.warning(f"The area of the mesh's faces is not big enough to contain the PV panels. "
+                                    f"Make a mesh with bigger faces")
+                panel_of_face = Panel(mesh_roof.faces.index(face), identifier_roof)
+                panels_roof.append(panel_of_face)
+            self.panels["Roof"] = panels_roof
+
+        elif self.sensor_grid_dict["Facades"] is not None and self.sensor_grid_dict["Roof"] is None:
+            # get the sensor grid then the mesh from the dictionary
+            sensor_grid_facades = SensorGrid.from_dict(self.sensor_grid_dict["Facades"])
+            mesh_facades = sensor_grid_facades.mesh
+            # load the pv technology
+            pv_tech_facades = PanelTechnology.load_pv_technology(identifier_facades, path_json_file)
+            # initialize the list of panels
+            panels_facades = []
+            for face in mesh_facades.faces:
+                if face.area < pv_tech_facades.panel_area:
+                    logging.warning(f"The area of the mesh's faces is not big enough to contain the PV panels. "
+                                    f"Make a mesh with bigger faces")
+                panel_of_face = Panel(mesh_facades.faces.index(face), identifier_facades)
+                panels_facades.append(panel_of_face)
+            self.panels["Facades"] = panels_facades
+

@@ -421,3 +421,4 @@ class UrbanCanopy:
                 if type(building) is BuildingModeled:
                     list_id.append(building.id)
         return list_id
+
