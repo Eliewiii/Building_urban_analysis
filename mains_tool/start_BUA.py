@@ -1,8 +1,8 @@
 from mains_tool.utils_general import *
 from mains_tool.utils_main_import_scripts import *
 
-def main():
 
+def main():
     # Create the logs todo: @Elie, check with Sharon where to put them
     # currentDirectory = os.getcwd()
     # Logspath = "/logs"
@@ -25,24 +25,75 @@ def main():
 
     # Run the simulations steps according to the user parameters
 
-
-
+    # Initialization #
     # Make simulation folder
     if simulation_step_dictionnary["run_make_simulation_folder"]:
-        SimulationCommonMethods.make_simulation_folder(path_folder_simulation=arguments_dictionary["path_folder_simulation_para"])
+        SimulationCommonMethods.make_simulation_folder(
+            path_folder_simulation=arguments_dictionary["path_folder_simulation_para"])
     # Create or load urban canopy object
     if simulation_step_dictionnary["run_create_or_load_urban_canopy_object"]:
-        urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object(path_folder_simulation=arguments_dictionary["path_folder_simulation_para"])
+        urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object(
+            path_folder_simulation=arguments_dictionary["path_folder_simulation_para"])
 
+    # Load Buildings #
     # Extract GIS data
     if simulation_step_dictionnary["run_extract_gis"]:
-        SimulationLoadBuildingOrGeometry.add_2D_GIS_to_urban_canopy(urban_canopy=urban_canopy_object, path_gis=arguments_dictionary["path_gis_para"], path_additional_gis_attribute_key_dict=arguments_dictionary["path_additional_gis_attribute_key_dict_para"], unit=arguments_dictionary["unit_gis_para"], additional_gis_attribute_key_dict)
+        SimulationLoadBuildingOrGeometry.add_2D_GIS_to_urban_canopy(urban_canopy=urban_canopy_object,
+                                                                    path_gis=arguments_dictionary["path_gis_para"],
+                                                                    path_additional_gis_attribute_key_dict=
+                                                                    arguments_dictionary[
+                                                                        "path_additional_gis_attribute_key_dict_para"],
+                                                                    unit=arguments_dictionary["unit_gis_para"])
+    # Load Buildings from json
+    #todo @Elie
 
 
+    # Building manipulation #
+    # Convert BuildingBasic obj tp BuildingModeled
+    # todo @Elie
+    # Remove Building from Urban canopy
+    # todo @Elie
+    #
+
+    # Move building to origin
+    # todo @Elie
+
+    # Context filtering #
+    # Generate bounding boxes
+    # todo @Elie
+    # Perform context filtering
+    # todo @Elie
+
+    # Solar radiation analysis #
+    # Perform Solar radiation
+
+    # LCA and DMFA #
+    # perform LCA and DMFA
+
+    # Microclimate weather files
+
+    # Preprocessing Longwave radiation #
 
 
+    # Building Energy Simulation #
+
+    # Postprocessing and plots #
+    # Generate Urban canopy envelop
+
+    #
+
+    # Exports #
+    # Export Urban canopy to pickle
+    if simulation_step_dictionnary["run_save_urban_canopy_object_to_pickle"]:
+        SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy=urban_canopy_object,
+                                                                   path_folder_simulation=arguments_dictionary[
+                                                                       "path_folder_simulation_para"])
+    # Export Urban canopy to json
+    if simulation_step_dictionnary["run_save_urban_canopy_object_to_json"]:
+        SimulationCommonMethods.save_urban_canopy_to_json(urban_canopy=urban_canopy_object,
+                                                          path_folder_simulation=arguments_dictionary[
+                                                              "path_folder_simulation_para"])
 
 
 if __name__ == "__main__":
-     main()
-
+    main()

@@ -37,6 +37,6 @@ class SimulationLoadBuildingOrGeometry:
         return building_id_key_gis
 
     @staticmethod
-    def add_buildings_in_hbjson_to_urban_canopy(urban_canopy, path_folder_hbjson):
+    def add_buildings_from_hbjson_to_urban_canopy(urban_canopy, path_folder_hbjson):
         urban_canopy.add_buildings_from_hbjson_to_dict(path_directory_hbjson=path_folder_hbjson)
         logging.info("Building(s) from hbjson added to the urban canopy successfully")

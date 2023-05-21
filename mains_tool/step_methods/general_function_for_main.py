@@ -31,8 +31,14 @@ class SimulationCommonMethods:
         return urban_canopy
 
     @staticmethod
-    def save_urban_canopy_object_to_pickle(path_folder_simulation,urban_canopy_object):
+    def save_urban_canopy_object_to_pickle(urban_canopy_object,path_folder_simulation):
         """ #todo"""
         # todo @Elie, correct the function
         urban_canopy_object.export_urban_canopy_to_pkl(path_folder=path_folder_simulation)
         logging.info("Urban canopy object saved successfully")
+
+    @staticmethod
+    def save_urban_canopy_to_json(urban_canopy_object,path_folder_simulation):
+        """ todo @Elie"""
+
+        # todo @Elie after checking/correcting the code of Hilany
