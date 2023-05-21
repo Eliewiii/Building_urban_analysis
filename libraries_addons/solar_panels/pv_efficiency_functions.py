@@ -1,5 +1,5 @@
-def linear_efficiency_loss(initial_efficiency, age):
-    return initial_efficiency - age * 0.75
+def linear_efficiency_loss(initial_efficiency, age, degrading_rate=0.75):
+    return initial_efficiency - age * degrading_rate
 
 
 def get_efficiency_loss_function_from_string(name_function):

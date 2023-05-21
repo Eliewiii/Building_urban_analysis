@@ -4,7 +4,7 @@
 from math import log, ceil
 import random
 import json
-from solar_panel.pv_efficiency_functions import get_efficiency_loss_function_from_string
+from libraries_addons.solar_panels.pv_efficiency_functions import get_efficiency_loss_function_from_string
 
 
 class PanelTechnology:
@@ -15,7 +15,7 @@ class PanelTechnology:
         self.efficiency_function = None
         self.weibull_law_failure_parameters = {"lifetime": None, "shape": None}
         self.DMFA = None  # per square meter
-        self.carbon_footprint = None  # per square meter
+        self.carbon_footprint_manufacturing = None  # per square meter
         self.panel_area = None  # in square meter
 
     @classmethod
@@ -26,10 +26,10 @@ class PanelTechnology:
             pv_tech = cls(identifier)
             pv_tech.efficiency_function = get_efficiency_loss_function_from_string(pv_dict_data[pv_tech.identifier]
                                                                                    ["efficiency_function"])
-            pv_tech.weibull_law_failure_parameters["lifetime"] = pv_dict_data[identifier]["lifetime"]
-            pv_tech.weibull_law_failure_parameters["shape"] = pv_dict_data[identifier]["shape"]
+            pv_tech.weibull_law_failure_parameters["lifetime"] = pv_dict_data[identifier]["weibull_lifetime"]
+            pv_tech.weibull_law_failure_parameters["shape"] = pv_dict_data[identifier]["weibull_shape"]
             pv_tech.DMFA = pv_dict_data[identifier]["DMFA"]
-            pv_tech.carbon_footprint = pv_dict_data[identifier]["carbon_footprint"]
+            pv_tech.carbon_footprint_manufacturing = pv_dict_data[identifier]["carbon_footprint_manufacturing"]
             pv_tech.panel_area = pv_dict_data[identifier]["panel_area"]
 
         return pv_tech
@@ -39,8 +39,8 @@ class PanelTechnology:
         the self"""
         with open(path_json_file) as f:
             pv_dict_data = json.load(f)
-            self.weibull_law_failure_parameters["lifetime"] = pv_dict_data[self.identifier]["lifetime"]
-            self.weibull_law_failure_parameters["shape"] = pv_dict_data[self.identifier]["shape"]
+            self.weibull_law_failure_parameters["lifetime"] = pv_dict_data[self.identifier]["weibull_lifetime"]
+            self.weibull_law_failure_parameters["shape"] = pv_dict_data[self.identifier]["weibull_shape"]
 
     def add_efficiency_function(self, path_json_file):
         """ Get the efficiency loss function
@@ -51,7 +51,7 @@ class PanelTechnology:
             self.efficiency_function = get_efficiency_loss_function_from_string(pv_dict_data[self.identifier]
                                                                                 ["efficiency_function"])
 
-    def get_time_failure_of_a_panel(self):
+    def get_life_expectancy_of_a_panel(self):
         """ Get the probabilistic time failure of a panel using the inverse of the quantile (inverse of the cumulative
         distribution0) function for the Weibull distribution"""
 
@@ -63,6 +63,6 @@ class PanelTechnology:
         y = random.random()  # we randomly choose a value between 0 and 1
         shape = self.weibull_law_failure_parameters["shape"]  # extract the failure parameters
         lifetime = self.weibull_law_failure_parameters["lifetime"]
-        time_of_failure = ceil(
+        life_expectancy = ceil(
             shape * (-log(1 - y)) ** (1 / lifetime))  # Quantile function for the Weibull distribution
-        return time_of_failure
+        return life_expectancy
