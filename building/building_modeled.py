@@ -12,8 +12,8 @@ from libraries_addons.solar_radiations.hb_recipe_settings import hb_recipe_setti
 from libraries_addons.solar_radiations.annual_irradiance_simulation import hb_ann_irr_sim
 from libraries_addons.solar_radiations.annual_cumulative_value import hb_ann_cum_values
 
-from solar_panel.pvmaterial import PanelTechnology
-from solar_panel.panel import Panel
+from solar_panel.pv_panel_technology import PanelTechnology
+from solar_panel.pv_panel import Panel
 
 from libraries_addons.solar_panels.useful_functions_solar_panel import load_panels_on_sensor_grid
 from libraries_addons.solar_panels import pv_efficiency_functions
