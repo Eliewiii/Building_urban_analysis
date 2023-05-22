@@ -124,6 +124,8 @@ class UrbanCanopy:
                 additional_gis_attribute_key_dict = load_additional_gis_attribute_key_dict(path_additional_gis_attribute_key_dict)
             else:
                 additional_gis_attribute_key_dict =  None
+        else:
+            additional_gis_attribute_key_dict = None
 
         ## loop to create a building_obj for each footprint in the shp file
         number_of_buildings_in_shp_file = len(shape_file['geometry'])

@@ -9,14 +9,14 @@ class LoadArguments:
     """ """
 
     @staticmethod
-    def load_user_parameters(parser):
+    def add_user_parameters_to_parser(parser):
         """
         Get the user parameters from the command line
         :param parser: parser object containing the user parameters
         :return parser: parser object with the argument added
         """
         # General user parameters
-        parser.add_argument("-f", "--folder", help="path to the simulation folder", nargs='?',
+        parser.add_argument("-f", "--path_simulation_folder", help="path to the simulation folder", nargs='?',
                             default=default_path_folder_simulation)
 
         # Grasshopper parameters
@@ -27,7 +27,7 @@ class LoadArguments:
         # Geometry parameters
         parser.add_argument("-g", "--path_gis_folder", help="path to gis folder containing all the sub gis files",
                             nargs='?', default=default_path_gis)
-        parser.add_argument("-u", "--unit", help="unit of the GIS", nargs='?', default=default_unit_gis)
+        parser.add_argument("-u", "--gis_unit", help="unit of the GIS", nargs='?', default=default_unit_gis)
         parser.add_argument("-d", "--path_dic_additional_gis_attribute_keys",
                             help="path to the additional key dictionary of the attributes in the GIS file", nargs='?',
                             default=None)
@@ -42,30 +42,13 @@ class LoadArguments:
         parser.add_argument("-t", "--are_buildings_target",
                             help="boolean (here '0' or '1') telling if the buildings inputed in the component are target ",
                             nargs='?',
-                            default=None)  # as no list can be sent through command line, it will be a string, with each id seperate by a space that will be parsed in the main script
+                            default=False)  # as no list can be sent through command line, it will be a string, with each id seperate by a space that will be parsed in the main script
 
         # Solar radiation parameters
 
-        # Parse the parser with the added arguments
-        args = parser.parse_args()
-
-        # post process of some arguments
-        buildings_id_list = parse_and_clean_building_id_list_from_argument_parser(args.building_id_list)
-        are_buildings_target = bool(int(args.are_buildings_target))  # to convert the string ("0" or "1") to a boolean
-
-        # Create a dictionary with the arguments and the name of their variable that will be imported in the main script
-        # todo @Elie, complete the dictionary with the new arguments through the development
-        arguments_dictionary = {
-            "path_folder_simulation_para": args.folder,
-            "path_gis_para": args.gis,
-            "unit_gis_para": args.unit,
-            "path_additional_gis_attribute_key_dict_para": args.dic
-        }
-
-        return arguments_dictionary
 
     @staticmethod
-    def load_user_simulation_features(parser):
+    def add_user_simulation_features_to_parser(parser):
         """
         Get the simulation steps to run from the command line
         :param parser:
@@ -106,8 +89,30 @@ class LoadArguments:
                             help="Make a HB model containing the envelop of all the buildings in the urban canopy object that will be stored in the json dic of the urban canopy object",
                             nargs='?', default=False)
 
+
+    @staticmethod
+    def parse_arguments_and_add_them_to_variable_dict(parser):
+        """
+        Parse the arguments
+        :param parser:
+        :return:
+        """
         # Parse the parser with the added arguments
         args = parser.parse_args()
+
+        # post process of some arguments
+        buildings_id_list = parse_and_clean_building_id_list_from_argument_parser(args.building_id_list)
+        are_buildings_target = bool(int(args.are_buildings_target))  # to convert the string ("0" or "1") to a boolean
+
+        # Create a dictionary with the arguments and the name of their variable that will be imported in the main script
+        # todo @Elie, complete the dictionary with the new arguments through the development
+        arguments_dictionary = {
+            "path_folder_simulation_para": args.path_simulation_folder,
+            "path_gis_para": args.path_gis_folder,
+            "unit_gis_para": args.gis_unit,
+            "path_additional_gis_attribute_key_dict_para": args.path_dic_additional_gis_attribute_keys
+        }
+
         # Create a dictionary with the arguments and the name of their variable that will be imported in the main script
         # # todo @Elie, complete the dictionary with the new arguments through the development
         step_dictionary = {
@@ -124,22 +129,9 @@ class LoadArguments:
             "run_generate_model_with_building_envelop": bool(int(args.generate_model_with_building_envelop))
                                 }
 
-        return step_dictionary
-
-    @staticmethod
-    def parse_arguments_and_add_them_to_variable_dict(parser):
-        """
-        Parse the arguments
-        :param parser:
-        :return:
-        """
-
-        args = parser.parse_args()
-        path_folder_simulation_para = args.folder
-
         # the rest todo
 
-        return args
+        return arguments_dictionary,step_dictionary
 
 
 # todo @Elie, this function is only used here, should it be moved somewhere else?

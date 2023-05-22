@@ -20,3 +20,4 @@ path_scripts_tool = os.path.join(path_tool, "Scripts")
 
 # Add the path of the scripts to the python path
 sys.path.append(path_scripts_tool)
+print(path_scripts_tool)

@@ -2,7 +2,7 @@
 
 """
 from mains_tool.utils_general import *
-
+from mains_tool.step_methods.utils_step_methods import *
 
 class SimulationLoadBuildingOrGeometry:
 
@@ -28,7 +28,7 @@ class SimulationLoadBuildingOrGeometry:
         # Initialize with default value
         building_id_key_gis = default_building_id_key_gis
         # Check if given in the additional_gis_attribute_key_dict
-        if os.path.isfile(path_additional_gis_attribute_key_dict):
+        if path_additional_gis_attribute_key_dict is not None and os.path.isfile(path_additional_gis_attribute_key_dict):
             # check if the file exist, it's not a mandatory input for the user
             with open(path_additional_gis_attribute_key_dict, "r") as f:
                 additional_gis_attribute_key_dict = json.load(f)
