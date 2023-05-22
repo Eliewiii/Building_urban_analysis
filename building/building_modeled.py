@@ -2,6 +2,7 @@
 BuildingModeled class, representing one building in an urban canopy that will be converted in HB models
 as they will be simulated
 """
+import os.path
 
 from building.utils_building import *
 from building.building_basic import \
@@ -15,9 +16,11 @@ from libraries_addons.solar_radiations.annual_cumulative_value import hb_ann_cum
 from solar_panel.pv_panel_technology import PanelTechnology
 from solar_panel.pv_panel import Panel
 
-from libraries_addons.solar_panels.useful_functions_solar_panel import load_panels_on_sensor_grid
+from libraries_addons.solar_panels.useful_functions_solar_panel import load_panels_on_sensor_grid, \
+    loop_over_the_years_for_solar_panels
 from libraries_addons.solar_panels import pv_efficiency_functions
 from libraries_addons.solar_panels import pv_efficiency_functions
+
 
 class BuildingModeled(BuildingBasic):
     """BuildingBasic class, representing one building in an urban canopy."""
@@ -257,4 +260,52 @@ class BuildingModeled(BuildingBasic):
         else:
             pass
 
+    def panels_simulation_roof(self, path_folder_simulation_building, pv_technologies_dictionary,
+                               study_duration_in_years=50, id_pv_tech="mitrex_roof c-Si",
+                               replacement_scenario="yearly", **kwargs):
+        pv_technology = pv_technologies_dictionary[id_pv_tech]
+        self.load_panels_roof(pv_technology)
+        if self.panels["Roofs"] is not None:
+            path_folder_roof_values_path = os.path.join(path_folder_simulation_building, "Roof",
+                                                        "annual_irradiance_values.txt")
+            with open(path_folder_roof_values_path, "r") as f:
+                data_values = f.read()
+                data_values_in_string = data_values.split(",")
+                radiation_values_in_list = list(map(float, data_values_in_string))
+            energy_production_per_year_list_roof, lca_energy_used_per_year_list_roof, \
+                dmfa_waste_generated_per_year_list_roof = loop_over_the_years_for_solar_panels(
+                self.panels["Roof"], radiation_values_in_list, study_duration_in_years, replacement_scenario, **kwargs)
+            return energy_production_per_year_list_roof, lca_energy_used_per_year_list_roof, \
+                dmfa_waste_generated_per_year_list_roof
 
+    def panels_simulation_facades(self, path_folder_simulation_building, pv_technologies_dictionary,
+                                  study_duration_in_years=50, id_pv_tech="metsolar_facades c-Si",
+                                  replacement_scenario="yearly", **kwargs):
+        pv_technology = pv_technologies_dictionary[id_pv_tech]
+        self.load_panels_facades(pv_technology)
+        if self.panels["Facades"] is not None:
+            path_folder_facades_values_path = os.path.join(path_folder_simulation_building, "Facades",
+                                                           "annual_irradiance_values.txt")
+            with open(path_folder_facades_values_path, "r") as f:
+                data_values = f.read()
+                data_values_in_string = data_values.split(",")
+                radiation_values_in_list = list(map(float, data_values_in_string))
+            energy_production_per_year_list_facades, lca_energy_used_per_year_list_facades, \
+                dmfa_waste_generated_per_year_list_facades = loop_over_the_years_for_solar_panels(
+                self.panels["Facades"], radiation_values_in_list, study_duration_in_years, replacement_scenario,
+                **kwargs)
+            return energy_production_per_year_list_facades, lca_energy_used_per_year_list_facades, \
+                dmfa_waste_generated_per_year_list_facades
+
+    def panel_simulation_building(self, path_folder_simulation_building, pv_technologies_dictionary,
+                                  study_duration_in_years=50, id_pv_tech_roof="mitrex_roof c-Si",
+                                  id_pv_tech_facades="metsolar_facades c-Si",
+                                  replacement_scenario="yearly", **kwargs):
+        roof_results = self.panels_simulation_roof(path_folder_simulation_building, pv_technologies_dictionary,
+                                                   study_duration_in_years, id_pv_tech_roof, replacement_scenario,
+                                                   **kwargs)
+        facades_results = self.panels_simulation_facades(path_folder_simulation_building, pv_technologies_dictionary,
+                                                         study_duration_in_years, id_pv_tech_facades,
+                                                         replacement_scenario, **kwargs)
+        total_results = [roof_results, facades_results, roof_results+facades_results]
+        return total_results

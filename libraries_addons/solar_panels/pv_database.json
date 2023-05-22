@@ -2,19 +2,19 @@
   "mitrex_roof c-Si": {
     "weibull_lifetime": 30,
     "weibull_shape": 2.49,
-    "initial_roof_efficiency": 19.20,
+    "initial_efficiency": 19.20,
     "panel_area": 1.46,
     "efficiency_function" : "linear_efficiency_loss",
     "DMFA" : null,
-    "carbon_footprint_manufacturing" : null
+    "energy_manufacturing" : null
                       },
   "metsolar_facades c-Si": {
     "weibull_lifetime": 30,
     "weibull_shape": 2.49,
-    "initial_facades_efficiency": 19,
+    "initial_efficiency": 19,
     "panel_area": 1.46,
     "efficiency_function" : "linear_efficiency_loss",
     "DMFA" : null,
-    "carbon_footprint_manufacturing" : null
+    "energy_manufacturing" : null
                             }
 }
