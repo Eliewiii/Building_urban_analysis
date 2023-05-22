@@ -47,7 +47,10 @@ def main():
                                                                         "path_additional_gis_attribute_key_dict_para"],
                                                                     unit=arguments_dictionary["unit_gis_para"])
     # Load Buildings from json
-    # todo @Elie
+    if simulation_step_dictionary["run_extract_buildings_from_hbjson_models"]:
+        SimulationLoadBuildingOrGeometry.add_buildings_from_hbjson_to_urban_canopy(
+            urban_canopy_object=urban_canopy_object,
+            path_folder_hbjson=arguments_dictionary["path_gis_para"])
 
     # Building manipulation #
     # Convert BuildingBasic obj tp BuildingModeled
@@ -57,7 +60,12 @@ def main():
     #
 
     # Move building to origin
-    # todo @Elie
+    if simulation_step_dictionary["run_move_buildings_to_origin"] or (
+            urban_canopy_object.moving_vector_to_origin is not None and False in [building_obj.moved_to_origin for
+                                                                                  building_obj in
+                                                                                  urban_canopy_object.building_dict.values()]):
+        # Move to origin if asked or if some buildings, but not all of them (a priori new ones), were moved to origin before
+        SimulationBuildingManipulationFunctions.move_buildings_to_origin(urban_canopy_object=urban_canopy_object)
 
     # Context filtering #
     # Generate bounding boxes
@@ -96,6 +104,13 @@ def main():
         SimulationCommonMethods.save_urban_canopy_to_json(urban_canopy_object=urban_canopy_object,
                                                           path_folder_simulation=arguments_dictionary[
                                                               "path_folder_simulation_para"])
+
+    # Save logs for the components
+    if arguments_dictionary["gh_component_name_para"] is not None:
+        SimulationCommonMethods.write_gh_component_user_logs(urban_canopy_object=urban_canopy_object,
+                                                             path_folder_simulation=arguments_dictionary[
+                                                                 "path_folder_simulation_para"],
+                                                             logs=None)  # add the logs
 
 
 if __name__ == "__main__":

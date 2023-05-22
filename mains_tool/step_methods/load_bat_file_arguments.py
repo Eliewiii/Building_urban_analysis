@@ -31,10 +31,10 @@ class LoadArguments:
         parser.add_argument("-d", "--path_dic_additional_gis_attribute_keys",
                             help="path to the additional key dictionary of the attributes in the GIS file", nargs='?',
                             default=None)
-        parser.add_argument("--path_folder_hbjson",
-                            help="path to a folder containing several hbjson files", nargs='?', default=None)
-        parser.add_argument("--path_file_hbjson",
-                            help="path to a single hbjson file", nargs='?', default=None)
+        parser.add_argument("--path_folder",
+                            help="path to a folder that will be useful for the simulation", nargs='?', default=None)
+        parser.add_argument("--path_file",
+                            help="path to a single file taht will be useful for the simuation", nargs='?', default=None)
 
         # Building manipulation parameters
         parser.add_argument("-l", "--building_id_list", help="path to the additional key dictionary", nargs='?',
@@ -46,7 +46,6 @@ class LoadArguments:
 
         # Solar radiation parameters
 
-
     @staticmethod
     def add_user_simulation_features_to_parser(parser):
         """
@@ -55,7 +54,8 @@ class LoadArguments:
         :return:
         """
         # General features
-        parser.add_argument("--make_simulation_folder", help="create the simulation folder if it doesn't exist", nargs='?',
+        parser.add_argument("--make_simulation_folder", help="create the simulation folder if it doesn't exist",
+                            nargs='?',
                             default=False)
         parser.add_argument("--create_or_load_urban_canopy_object", help="Load or create urban canopy objects",
                             nargs='?', default=False)
@@ -68,7 +68,7 @@ class LoadArguments:
         # geometry extraction features
         parser.add_argument("--extract_gis", help="Extract GIS file and add it to the urban canopy object",
                             nargs='?', default=False)
-        parser.add_argument("--extract_buildings_from_models_hbjson",
+        parser.add_argument("--extract_buildings_from_hbjson_models",
                             help="Extract buildings from hbjson files and add them to the urban canopy object",
                             nargs='?', default=False)
 
@@ -88,7 +88,6 @@ class LoadArguments:
         parser.add_argument("--generate_model_with_building_envelop",
                             help="Make a HB model containing the envelop of all the buildings in the urban canopy object that will be stored in the json dic of the urban canopy object",
                             nargs='?', default=False)
-
 
     @staticmethod
     def parse_arguments_and_add_them_to_variable_dict(parser):
@@ -110,7 +109,12 @@ class LoadArguments:
             "path_folder_simulation_para": args.path_simulation_folder,
             "path_gis_para": args.path_gis_folder,
             "unit_gis_para": args.gis_unit,
-            "path_additional_gis_attribute_key_dict_para": args.path_dic_additional_gis_attribute_keys
+            "path_additional_gis_attribute_key_dict_para": args.path_dic_additional_gis_attribute_keys,
+            "gh_component_name_para": args.gh_component_name,
+            "path_folder_para": args.path_folder,
+            "path_file_para": args.path_file,
+            "are_buildings_target_para": bool(int(args.are_buildings_target))
+
         }
 
         # Create a dictionary with the arguments and the name of their variable that will be imported in the main script
@@ -121,17 +125,17 @@ class LoadArguments:
             "run_save_urban_canopy_object_to_pickle": bool(int(args.save_urban_canopy_object_to_pickle)),
             "run_save_urban_canopy_object_to_json": bool(int(args.save_urban_canopy_object_to_json)),
             "run_extract_gis": bool(int(args.extract_gis)),
-            "run_extract_buildings_from_models_hbjson": bool(int(args.extract_buildings_from_models_hbjson)),
+            "run_extract_buildings_from_hbjson_models": bool(int(args.extract_buildings_from_hbjson_models)),
             "run_move_buildings_to_origin": bool(int(args.move_buildings_to_origin)),
             "run_remove_building_list_from_urban_canopy": bool(int(args.remove_building_list_from_urban_canopy)),
             "run_generate_bounding_boxes": bool(int(args.generate_bounding_boxes)),
             "run_perform_context_filtering": bool(int(args.perform_context_filtering)),
             "run_generate_model_with_building_envelop": bool(int(args.generate_model_with_building_envelop))
-                                }
+        }
 
         # the rest todo
 
-        return arguments_dictionary,step_dictionary
+        return arguments_dictionary, step_dictionary
 
 
 # todo @Elie, this function is only used here, should it be moved somewhere else?

@@ -5,16 +5,15 @@ from mains_tool.utils_general import *
 
 class SimulationBuildingManipulationFunctions:
     @staticmethod
-    def move_buildings_to_origin(urban_canopy,move_buildings_to_origin):
+    def move_buildings_to_origin(urban_canopy_object):
         """
         Move buildings to the origin of the plan (put the average elevation to 0)
         :param move_buildings_to_origin:
-        :param urban_canopy:
+        :param urban_canopy_object:
         :return:
         """
-        if move_buildings_to_origin or urban_canopy.moving_vector_to_origin is not None:
-            urban_canopy.move_buildings_to_origin()
-            logging.info("Buildings have been moved to origin successfully")
+        urban_canopy_object.move_buildings_to_origin()
+        logging.info("Buildings have been moved to origin successfully")
 
     @staticmethod
     def remove_building_list_from_urban_canopy(urban_canopy,building_id_list):

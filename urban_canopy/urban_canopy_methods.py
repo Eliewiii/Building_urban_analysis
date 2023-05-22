@@ -1,6 +1,7 @@
 """
 Urban canopy class, containing and managing collections of buildings in urban areas.
 """
+import os.path
 
 from mains_tool.utils_general import *
 #from mains_tool.utils_general import default_minimum_vf_criterion_context_filter_first_pass_shading
@@ -143,29 +144,33 @@ class UrbanCanopy:
             building.extract_building_attributes_from_GIS(shape_file, additional_gis_attribute_key_dict)
 
     # todo : New, to test
-    def add_buildings_from_hbjson_to_dict(self, path_directory_hbjson, are_buildings_targets=False):
+    def add_buildings_from_hbjson_to_dict(self, path_directory_hbjson=None,path_file_hbjson=None, are_buildings_targets=False):
         """ Add the buildings from the hb models in the folder
         :param path_directory_hbjson: path to the directory containing the hbjson files
+        :param path_file_hbjson: path to the hbjson file
+        :param are_buildings_targets: boolean, True if the buildings are targets, False if they are not
         :return: None
         """
-        # Get the list of the hbjson files
-        hbjson_files_list = [hbjson_file for hbjson_file in os.listdir(path_directory_hbjson) if hbjson_file.endswith(".hbjson")]
-        # Loop through the hbjson files
-        if hbjson_files_list:
-            for hbjson_file in hbjson_files_list:
-                if os.path.getsize(os.path.join(path_directory_hbjson, hbjson_file)) > 0: # hbjson_file should be the fullpath of json
-                    # Get the path to the hbjson file
-                    path_hbjson = os.path.join(path_directory_hbjson, hbjson_file)
-                    # Create the building object
-                    building_HB_model_obj, identifier = BuildingModeled.make_buildingmodeled_from_hbjson(
-                        path_hbjson=path_hbjson,is_target=are_buildings_targets)
-                    # Add the building to the urban canopy
-                    self.add_building_to_dict(identifier, building_HB_model_obj)
-                else:
-                    logging.info("The file is empty")
-        # todo @Sharon or @Elie : check that the list of the building ids is not empty or invalid - done # try catch?
-                    # todo: add a log in case it is not added!
-        # Add the new buildings to the UrbanCanopy building dict
+        if path_directory_hbjson is not None and os.path.isdir(path_directory_hbjson):
+            # Get the list of the hbjson files
+            hbjson_files_path_list = [os.path.join(path_directory_hbjson, hbjson_file) for hbjson_file in os.listdir(path_directory_hbjson) if hbjson_file.endswith(".hbjson")]
+        elif path_file_hbjson is not None and os.path.isfile(path_file_hbjson):
+            hbjson_files_path_list = [path_file_hbjson]
+        else:
+            logging.error("The path to the hbjson file or the path to the directory containing the hbjson files are not valid")
+            return
+        # loop over the hbjson files
+        for hbjson_file_path in hbjson_files_path_list:
+            # Check if the file is not empty
+            if os.path.getsize(hbjson_file_path) > 0: # hbjson_file should be the fullpath of json
+                # Create the building object
+                building_HB_model_obj, identifier = BuildingModeled.make_buildingmodeled_from_hbjson(
+                    path_hbjson=hbjson_file_path,is_target=are_buildings_targets)
+                # Add the building to the urban canopy
+                self.add_building_to_dict(identifier, building_HB_model_obj)
+            else:
+                logging.info("The file {} is empty".format(hbjson_file_path))
+
 
     def make_HB_model_envelops_from_buildings(self, path_folder=None):
         """ Make the hb model for the building envelop and save it to hbjson file if the path is provided """

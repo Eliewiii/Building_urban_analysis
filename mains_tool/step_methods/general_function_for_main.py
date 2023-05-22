@@ -42,3 +42,10 @@ class SimulationCommonMethods:
         """ todo @Elie"""
 
         # todo @Elie after checking/correcting the code of Hilany
+
+
+    @staticmethod
+    def write_gh_component_user_logs(path_folder_simulation, name_gh_component,logs):
+        """ todo @Elie"""
+        # todo @Elie, write th elogs in path_folder_simulation/gh_components_logs/name_gh_component.log
+        # gh_components_logs variable is defined in utils_general.py
