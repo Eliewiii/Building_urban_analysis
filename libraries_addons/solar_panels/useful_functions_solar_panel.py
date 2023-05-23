@@ -19,8 +19,6 @@ def load_panels_on_sensor_grid(sensor_grid, pv_technology_object):
     return panels
 
 
-
-
 def loop_over_the_years_for_solar_panels_2(pv_panel_obj_list, yearly_solar_radiation_values, study_duration_in_years,
                                            replacement_scenario="yearly", **kwargs):
     """
@@ -78,6 +76,7 @@ def loop_over_the_years_for_solar_panels_2(pv_panel_obj_list, yearly_solar_radia
 
     return energy_production_per_year_list, nb_of_panels_installed_list, nb_of_failed_panels_list
 
+
 def write_to_csv_list(list_of_int, file_path):
     with open(file_path, 'w') as f:
         writer = csv.writer(f)
@@ -88,8 +87,8 @@ def regular_calculation_manufacturing_energy_dmfa(nb_of_panels_installed_list, n
     panel_energy_manufacturing = pv_tech.energy_manufacturing
     panel_dmfa = pv_tech.DMFA
 
-    lca_energy_used_per_year_list = [i*panel_energy_manufacturing for i in nb_of_panels_installed_list]
-    dmfa_waste_generated_per_year_list = [i*panel_dmfa for i in nb_of_failed_panels_list]
+    lca_energy_used_per_year_list = [i * panel_energy_manufacturing for i in nb_of_panels_installed_list]
+    dmfa_waste_generated_per_year_list = [i * panel_dmfa for i in nb_of_failed_panels_list]
 
     return lca_energy_used_per_year_list, dmfa_waste_generated_per_year_list
 
