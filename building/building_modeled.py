@@ -235,11 +235,9 @@ class BuildingModeled(BuildingBasic):
             return hb_ann_cum_values([os.path.join(project_folder, "annual_irradiance", "results", "total")])
 
     def load_panels_roof(self, pv_tech_roof):
-        """ Load the panels to the building's meshes. We suppose that we load them both on the facades and on the roof,
-        as long as there is a sensor grid already loaded.
-        The pv_techs designed an object from the class PanelTechnology, they are usually different for the roof and the
-        facades.
-        We separated the functions so it would be easier to program
+        """
+        Load the panels to the mesh of the roof.
+        :param pv_tech_roof: PVPanelTechnology objectT
         """
         # we only add the panels if the sensor grid already exists
         if self.sensor_grid_dict["Roof"] is not None:
@@ -251,6 +249,10 @@ class BuildingModeled(BuildingBasic):
             pass
 
     def load_panels_facades(self, pv_tech_facades):
+        """
+        Load the panels to the mesh of the facades.
+        :param pv_tech_facades: PVPanelTechnology objectT
+        """
         # we only add the panels if the sensor grid already exist
         if self.sensor_grid_dict["Facades"] is not None:
             # get the sensor grid then the mesh from the dictionary

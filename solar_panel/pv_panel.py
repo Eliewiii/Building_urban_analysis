@@ -35,11 +35,6 @@ class PvPanel:
         Else, if its life expectancy is None, then the panel is not working (False)"""
         return self.life_expectancy is not None
 
-    def panel_not_in_last_year(self):
-        """ The PV is working but its also not in its last year of functioning, ie. it doesn't need to be switched
-        off"""
-        self.is_panel_working() and self.age < self.life_expectancy
-
     def initialize_or_replace_panel(self):
         """
         Initialize a panel or replace the panel with a new one, leading the LCA carbon footprint
@@ -54,16 +49,22 @@ class PvPanel:
 
         return lca_energy
 
-    def panel_failed(self):
+    def initialize_or_replace_panel_2(self):
+        """
+        Initialize the panel
+        """
+        # Get a life expectancy according to the life expectancy distribution of the pv technology
+        self.life_expectancy = self.panel_technology_object.get_life_expectancy_of_a_panel()
+        # put back the age to 0
+        self.age = 0
+
+    def panel_failed_2(self):
         """
         Switch off the panel by initializing its age and its life expectancy to None and return the dmfa caused by its
         failing
-        :return dmfa_waste: float: dmfa waste caused by the failing of the panel depending on its technology
         """
         self.age = None
         self.life_expectancy = None
-        dmfa_waste = self.panel_technology_object.DMFA
-        return dmfa_waste
 
     def energy_produced_in_one_year(self, solar_radiation_year_value, performance_ratio=0.75):
         """
@@ -79,9 +80,7 @@ class PvPanel:
                           * performance_ratio / 1000
         return energy_produced
 
-        # todo New functions to me (Elie)
-
-    def pass_year(self, year, solar_radiation_year_value):
+    def pass_year_2(self, year, solar_radiation_year_value):
         """
         Simulate a year passing for a panel
         :param year: year of the simulation, could impact the efficiency of the panel, if we assume that the efficiency
@@ -91,7 +90,7 @@ class PvPanel:
         :return energy_produced: float : energy produced by the panel through the year
         :return dmfa_waste: float : dmfa waste generate by the panel when it fails
         """
-        energy_produced, dmfa_waste = 0., 0.
+        energy_produced, panel_failed = 0., False
 
         if self.is_panel_working():
             # get the energy produced by the panel over the year with the proper efficiency
@@ -100,5 +99,6 @@ class PvPanel:
             self.age += 1
             # If panel reach life expectancy, it fails and generate dmfa waste
             if self.age is self.life_expectancy:
-                dmfa_waste = self.panel_failed()
-        return energy_produced, dmfa_waste
+                self.panel_failed()
+                panel_failed = True
+        return energy_produced, panel_failed
