@@ -16,7 +16,7 @@ def main():
     # Get the user parameters from the command line
     parser = argparse.ArgumentParser()
     # Parse the arguments and return them in a dictionary
-    LoadArguments.add_user_parameters_to_parser(parser)
+    LoadArguments.add_usermeters_to_parser(parser)
     LoadArguments.add_user_simulation_features_to_parser(parser)
     arguments_dictionary, simulation_step_dictionary = LoadArguments.parse_arguments_and_add_them_to_variable_dict(
         parser)
@@ -35,7 +35,7 @@ def main():
     # Create or load urban canopy object
     if simulation_step_dictionary["run_create_or_load_urban_canopy_object"]:
         urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object(
-            path_folder_simulation=arguments_dictionary["path_folder_simulation_para"])
+            path_folder_simulation=arguments_dictionary["path_folder_simulation"])
 
     # Load Buildings #
     # Extract GIS data
@@ -56,8 +56,12 @@ def main():
     # Convert BuildingBasic obj tp BuildingModeled
     # todo @Elie
     # Remove Building from Urban canopy
-    # todo @Elie
-    #
+    # if simulation_step_dictionary["run_move_buildings_to_origin"] or (
+    #         urban_canopy_object.moving_vector_to_origin is not None and False in [building_obj.moved_to_origin for
+    #                                                                               building_obj in
+    #                                                                               urban_canopy_object.building_dict.values()]):
+        # Move to origin if asked or if some buildings, but not all of them (a priori new ones), were moved to origin before
+        # SimulationBuildingManipulationFunctions.remove_building_list_from_urban_canopy(urban_canopy_object=urban_canopy_object,building_id_list=arguments_dictionary["path_folder_simulation_para"])
 
     # Move building to origin
     if simulation_step_dictionary["run_move_buildings_to_origin"] or (

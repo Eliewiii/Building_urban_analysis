@@ -106,14 +106,15 @@ class LoadArguments:
         # Create a dictionary with the arguments and the name of their variable that will be imported in the main script
         # todo @Elie, complete the dictionary with the new arguments through the development
         arguments_dictionary = {
-            "path_folder_simulation_para": args.path_simulation_folder,
-            "path_gis_para": args.path_gis_folder,
-            "unit_gis_para": args.gis_unit,
-            "path_additional_gis_attribute_key_dict_para": args.path_dic_additional_gis_attribute_keys,
-            "gh_component_name_para": args.gh_component_name,
-            "path_folder_para": args.path_folder,
-            "path_file_para": args.path_file,
-            "are_buildings_target_para": bool(int(args.are_buildings_target))
+            "path_folder_simulation": args.path_simulation_folder,
+            "path_gis": args.path_gis_folder,
+            "unit_gis": args.gis_unit,
+            "path_additional_gis_attribute_key_dict": args.path_dic_additional_gis_attribute_keys,
+            "gh_component_name": args.gh_component_name,
+            "path_folder": args.path_folder,
+            "path_file": args.path_file,
+            "building_id_list": args.building_id_list,
+            "are_buildings_target": bool(int(args.are_buildings_target))
 
         }
 

@@ -3,7 +3,7 @@ Common methods to most of the simulations
 """
 
 from mains_tool.utils_general import *
-from mains_tool.step_methods.utils_step_methods import *
+from step_methods.utils_step_methods import *
 
 class SimulationCommonMethods:
     # todo @Sharon: should we really make global variables?, can it interfere with some parameters with the same name
