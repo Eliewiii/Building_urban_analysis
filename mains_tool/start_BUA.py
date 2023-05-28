@@ -31,7 +31,7 @@ def main():
     # Make simulation folder
     if simulation_step_dictionary["run_make_simulation_folder"]:
         SimulationCommonMethods.make_simulation_folder(
-            path_folder_simulation=arguments_dictionary["path_folder_simulation_para"])
+            path_folder_simulation=arguments_dictionary["path_folder_simulation"])
     # Create or load urban canopy object
     if simulation_step_dictionary["run_create_or_load_urban_canopy_object"]:
         urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object(
@@ -41,27 +41,26 @@ def main():
     # Extract GIS data
     if simulation_step_dictionary["run_extract_gis"]:
         SimulationLoadBuildingOrGeometry.add_2D_GIS_to_urban_canopy(urban_canopy=urban_canopy_object,
-                                                                    path_gis=arguments_dictionary["path_gis_para"],
+                                                                    path_gis=arguments_dictionary["path_gis"],
                                                                     path_additional_gis_attribute_key_dict=
                                                                     arguments_dictionary[
-                                                                        "path_additional_gis_attribute_key_dict_para"],
-                                                                    unit=arguments_dictionary["unit_gis_para"])
+                                                                        "path_additional_gis_attribute_key_dict"],
+                                                                    unit=arguments_dictionary["unit_gis"])
     # Load Buildings from json
     if simulation_step_dictionary["run_extract_buildings_from_hbjson_models"]:
         SimulationLoadBuildingOrGeometry.add_buildings_from_hbjson_to_urban_canopy(
             urban_canopy_object=urban_canopy_object,
-            path_folder_hbjson=arguments_dictionary["path_gis_para"])
+            path_folder_hbjson=arguments_dictionary["path_gis"])
 
     # Building manipulation #
     # Convert BuildingBasic obj tp BuildingModeled
     # todo @Elie
     # Remove Building from Urban canopy
-    # if simulation_step_dictionary["run_move_buildings_to_origin"] or (
-    #         urban_canopy_object.moving_vector_to_origin is not None and False in [building_obj.moved_to_origin for
-    #                                                                               building_obj in
-    #                                                                               urban_canopy_object.building_dict.values()]):
-        # Move to origin if asked or if some buildings, but not all of them (a priori new ones), were moved to origin before
-        # SimulationBuildingManipulationFunctions.remove_building_list_from_urban_canopy(urban_canopy_object=urban_canopy_object,building_id_list=arguments_dictionary["path_folder_simulation_para"])
+    if simulation_step_dictionary["run_extract_buildings_from_hbjson_models"]:
+        SimulationBuildingManipulationFunctions.remove_building_list_from_urban_canopy(
+            urban_canopy_object=urban_canopy_object,
+            building_id_list=arguments_dictionary["building_id_list"])
+
 
     # Move building to origin
     if simulation_step_dictionary["run_move_buildings_to_origin"] or (
@@ -94,7 +93,7 @@ def main():
     if simulation_step_dictionary["run_generate_model_with_building_envelop"]:
         SimulationPostProcessingAndPlots.generate_hb_model_contains_all_building_envelopes_to_plot_Grasshopper(
             urban_canopy_object=urban_canopy_object,
-            path_folder_simulation=arguments_dictionary["path_folder_simulation_para"])
+            path_folder_simulation=arguments_dictionary["path_folder_simulation"])
     #
 
     # Exports #
@@ -102,18 +101,18 @@ def main():
     if simulation_step_dictionary["run_save_urban_canopy_object_to_pickle"]:
         SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,
                                                                    path_folder_simulation=arguments_dictionary[
-                                                                       "path_folder_simulation_para"])
+                                                                       "path_folder_simulation"])
     # Export Urban canopy to json
     if simulation_step_dictionary["run_save_urban_canopy_object_to_json"]:
         SimulationCommonMethods.save_urban_canopy_to_json(urban_canopy_object=urban_canopy_object,
                                                           path_folder_simulation=arguments_dictionary[
-                                                              "path_folder_simulation_para"])
+                                                              "path_folder_simulation"])
 
     # Save logs for the components
-    if arguments_dictionary["gh_component_name_para"] is not None:
+    if arguments_dictionary["gh_component_name"] is not None:
         SimulationCommonMethods.write_gh_component_user_logs(urban_canopy_object=urban_canopy_object,
                                                              path_folder_simulation=arguments_dictionary[
-                                                                 "path_folder_simulation_para"],
+                                                                 "path_folder_simulation"],
                                                              logs=None)  # add the logs
 
 
