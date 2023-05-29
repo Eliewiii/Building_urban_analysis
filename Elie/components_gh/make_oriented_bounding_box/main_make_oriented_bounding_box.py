@@ -46,7 +46,7 @@ if __name__ == "__main__":
         sys.path.append(os.path.join(path_tool, "Scripts"))
         # # Import libraries from the tool
     # Import libraries from the tool (after as we don't know if it runs from the tool or PyCharm)
-    from urban_canopy.urban_canopy_methods import UrbanCanopy
+    from urban_canopy.urban_canopy import UrbanCanopy
 
     # Create or load the urban canopy object
     path_urban_canopy_pkl = os.path.join(path_folder_simulation, "urban_canopy.pkl")

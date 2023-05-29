@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     # Import the urban canopy methods, needs to be after the update_script_path_venv(), otherwise it will not find the lib
     # when executed from Grasshopper
-    from urban_canopy.urban_canopy_methods import UrbanCanopy
+    from urban_canopy.urban_canopy import UrbanCanopy
 
     # Create or load the urban canopy object
     path_urban_canopy_pkl = os.path.join(path_folder_simulation, "urban_canopy.pkl")

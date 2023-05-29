@@ -29,7 +29,8 @@ local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 
 # Path to the bat file
-path_bat_file = os.path.join(path_tool, "Scripts", "components_gh" , "make_oriented_bounding_box", "make_oriented_bounding_box.bat")
+path_bat_file = os.path.join(path_tool, "Scripts", "components_gh", "make_oriented_bounding_box",
+                             "make_oriented_bounding_box.bat")
 
 
 # set default value for the simulation folder if not provided

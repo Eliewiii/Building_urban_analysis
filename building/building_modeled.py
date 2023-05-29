@@ -20,6 +20,8 @@ class BuildingModeled(BuildingBasic):
 
         self.HB_model_obj = None
         self.HB_model_dict = None
+        self.sensor_grid_dict = {'Roof': None, 'Facades': None}
+        self.panels = {"Roof": None, "Facades": None}
         self.to_simulate = False
         self.is_target = False
 
@@ -103,7 +105,7 @@ class BuildingModeled(BuildingBasic):
         HB_Face_surfaces_kept_second_pass = []
         # First pass
         for context_building_obj in context_building_list:
-            if context_building_obj.id != self.id: # does not take itself into account
+            if context_building_obj.id != self.id:  # does not take itself into account
                 if is_bounding_box_context_using_mvfc_criterion(
                         target_LB_polyface3d_extruded_footprint=self.LB_polyface3d_extruded_footprint,
                         context_LB_polyface3d_oriented_bounding_box=context_building_obj.LB_polyface3d_oriented_bounding_box,
@@ -141,3 +143,159 @@ class BuildingModeled(BuildingBasic):
         # make it moved
         self.HB_model_obj.move(Vector3D(vector[0], vector[1], vector[2]))  # the model is moved fully
         self.moved_to_origin = True
+
+    def add_sensor_grid_to_hb_model(self, name=None, grid_size=1, offset_dist=0.1, on_roof=True, on_facades=True):
+        """Create a HoneyBee SensorGrid from a HoneyBe model for the roof, the facades or both and add it to the
+        model"""
+        """Args :
+        name : Name 
+        grid_size : Number for the size of the test grid
+        offset_dist : Number for the distance to move points from the surfaces of the geometry of the model. Typically, this
+        should be a small positive number to ensure points are not blocked by the mesh.
+        name : Name """
+
+        assert isinstance(self.HB_model_obj, Model), \
+            'Expected Honeybee Model. Got {}.'.format(type(self.HB_model_obj))
+
+        if on_roof and on_facades:
+            faces_roof = get_hb_faces_roof(self.HB_model_obj)
+            mesh_roof = get_lb_mesh(faces_roof, grid_size, offset_dist)
+            sensor_grid_roof = create_sensor_grid_from_mesh(mesh_roof, name)
+            self.sensor_grid_dict['Roof'] = sensor_grid_roof.to_dict()
+
+            faces_facades = get_hb_faces_facades(self.HB_model_obj)
+            mesh_facades = get_lb_mesh(faces_facades, grid_size, offset_dist)
+            sensor_grid_facades = create_sensor_grid_from_mesh(mesh_facades, name)
+            self.sensor_grid_dict['Facades'] = sensor_grid_facades.to_dict()
+
+        elif on_roof and not on_facades:
+            faces_roof = get_hb_faces_roof(self.HB_model_obj)
+            mesh_roof = get_lb_mesh(faces_roof, grid_size, offset_dist)
+            sensor_grid_roof = create_sensor_grid_from_mesh(mesh_roof, name)
+            self.sensor_grid_dict['Roof'] = sensor_grid_roof.to_dict()
+
+        elif on_facades and not on_roof:
+            faces_facades = get_hb_faces_facades(self.HB_model_obj)
+            mesh_facades = get_lb_mesh(faces_facades, grid_size, offset_dist)
+            sensor_grid_facades = create_sensor_grid_from_mesh(mesh_facades, name)
+            self.sensor_grid_dict['Facades'] = sensor_grid_facades.to_dict()
+
+        else:
+            logging.warning(f"You did not precise whether you want to run the simulation on the roof, "
+                            f"the facades or both")
+
+    def solar_radiations(self, name, path_folder_simulation, path_weather_file, grid_size=1, offset_dist=0.1,
+                         on_roof=True, on_facades=True):
+        """Create and add a sensor grid to the HB model of the building then run the annual irradiance simulation on
+        it"""
+
+        # Add the sensor grids to the building modeled
+        self.add_sensor_grid_to_hb_model(name, grid_size, offset_dist, on_roof, on_facades)
+
+        if on_roof and not on_facades:
+            # generate the sensor grid from the dict
+            sensor_grid_roof = SensorGrid.from_dict(self.sensor_grid_dict['Roof'])
+            # duplicate the model so that no changes will be made on the original model
+            model_sensor_grid_roof = self.HB_model_obj.duplicate()
+            if len(sensor_grid_roof) != 0:
+                # add the sensor grid to the hb model duplicate
+                model_sensor_grid_roof.properties.radiance.add_sensor_grid(sensor_grid_roof)
+                # run the solar radiation simulation on the roof
+                path_folder_simulation_roof = os.path.join(path_folder_simulation, "Roof")
+                settings = hb_recipe_settings(path_folder_simulation_roof)
+                project_folder = hb_ann_irr_sim(model_sensor_grid_roof, path_weather_file, settings)
+            # todo @Hilany, do something if we don't have any sensor grid, the return will not work
+            return hb_ann_cum_values([os.path.join(project_folder, "annual_irradiance", "results", "total")])
+
+        elif on_facades and not on_roof:
+            # generate the sensor grid from the dict
+            sensor_grid_facades = SensorGrid.from_dict(self.sensor_grid_dict['Facades'])
+            # duplicate the model so that no changes will be made on the original model
+            model_sensor_grid_facades = self.HB_model_obj.duplicate()
+            if len(sensor_grid_facades) != 0:
+                # add the sensor grid to the hb model duplicate
+                model_sensor_grid_facades.properties.radiance.add_sensor_grid(sensor_grid_facades)
+                # run the solar radiation simulation on the roof
+                path_folder_simulation_facades = os.path.join(path_folder_simulation, "Facades")
+                settings = hb_recipe_settings(path_folder_simulation_facades)
+                project_folder = hb_ann_irr_sim(model_sensor_grid_facades, path_weather_file, settings)
+                # todo @Hilany, same as above
+            return hb_ann_cum_values([os.path.join(project_folder, "annual_irradiance", "results", "total")])
+
+    def load_panels_roof(self, pv_tech_roof):
+        """
+        Load the panels to the mesh of the roof.
+        :param pv_tech_roof: PVPanelTechnology objectT
+        """
+        # we only add the panels if the sensor grid already exists
+        if self.sensor_grid_dict["Roof"] is not None:
+            # get the sensor grid then load the panels
+            sensor_grid_roof = SensorGrid.from_dict(self.sensor_grid_dict["Roof"])
+            panels_roof = load_panels_on_sensor_grid(sensor_grid_roof, pv_tech_roof)
+            self.panels["Roof"] = panels_roof
+        else:
+            pass
+
+    def load_panels_facades(self, pv_tech_facades):
+        """
+        Load the panels to the mesh of the facades.
+        :param pv_tech_facades: PVPanelTechnology objectT
+        """
+        # we only add the panels if the sensor grid already exist
+        if self.sensor_grid_dict["Facades"] is not None:
+            # get the sensor grid then the mesh from the dictionary
+            sensor_grid_facades = SensorGrid.from_dict(self.sensor_grid_dict["Facades"])
+            panels_facades = load_panels_on_sensor_grid(sensor_grid_facades, pv_tech_facades)
+            self.panels["Facades"] = panels_facades
+        else:
+            pass
+
+    def panels_simulation_roof(self, path_folder_simulation_building, pv_technologies_dictionary,
+                               study_duration_in_years=50, id_pv_tech="mitrex_roof c-Si",
+                               replacement_scenario="yearly", **kwargs):
+        pv_technology = pv_technologies_dictionary[id_pv_tech]
+        self.load_panels_roof(pv_technology)
+        if self.panels["Roofs"] is not None:
+            path_folder_roof_values_path = os.path.join(path_folder_simulation_building, "Roof",
+                                                        "annual_irradiance_values.txt")
+            with open(path_folder_roof_values_path, "r") as f:
+                data_values = f.read()
+                data_values_in_string = data_values.split(",")
+                radiation_values_in_list = list(map(float, data_values_in_string))
+            energy_production_per_year_list_roof, lca_energy_used_per_year_list_roof, \
+                dmfa_waste_generated_per_year_list_roof = loop_over_the_years_for_solar_panels(
+                self.panels["Roof"], radiation_values_in_list, study_duration_in_years, replacement_scenario, **kwargs)
+            return energy_production_per_year_list_roof, lca_energy_used_per_year_list_roof, \
+                dmfa_waste_generated_per_year_list_roof
+
+    def panels_simulation_facades(self, path_folder_simulation_building, pv_technologies_dictionary,
+                                  study_duration_in_years=50, id_pv_tech="metsolar_facades c-Si",
+                                  replacement_scenario="yearly", **kwargs):
+        pv_technology = pv_technologies_dictionary[id_pv_tech]
+        self.load_panels_facades(pv_technology)
+        if self.panels["Facades"] is not None:
+            path_folder_facades_values_path = os.path.join(path_folder_simulation_building, "Facades",
+                                                           "annual_irradiance_values.txt")
+            with open(path_folder_facades_values_path, "r") as f:
+                data_values = f.read()
+                data_values_in_string = data_values.split(",")
+                radiation_values_in_list = list(map(float, data_values_in_string))
+            energy_production_per_year_list_facades, lca_energy_used_per_year_list_facades, \
+                dmfa_waste_generated_per_year_list_facades = loop_over_the_years_for_solar_panels(
+                self.panels["Facades"], radiation_values_in_list, study_duration_in_years, replacement_scenario,
+                **kwargs)
+            return energy_production_per_year_list_facades, lca_energy_used_per_year_list_facades, \
+                dmfa_waste_generated_per_year_list_facades
+
+    def panel_simulation_building(self, path_folder_simulation_building, pv_technologies_dictionary,
+                                  study_duration_in_years=50, id_pv_tech_roof="mitrex_roof c-Si",
+                                  id_pv_tech_facades="metsolar_facades c-Si",
+                                  replacement_scenario="yearly", **kwargs):
+        roof_results = self.panels_simulation_roof(path_folder_simulation_building, pv_technologies_dictionary,
+                                                   study_duration_in_years, id_pv_tech_roof, replacement_scenario,
+                                                   **kwargs)
+        facades_results = self.panels_simulation_facades(path_folder_simulation_building, pv_technologies_dictionary,
+                                                         study_duration_in_years, id_pv_tech_facades,
+                                                         replacement_scenario, **kwargs)
+        total_results = [roof_results, facades_results, roof_results+facades_results]
+        return total_results

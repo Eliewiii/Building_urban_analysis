@@ -31,7 +31,8 @@ local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 
 # Path to the bat file
-path_bat_file = os.path.join(path_tool, "Scripts", "components_gh", "add_building_from_hb_model", "add_hbjson_buildings.bat")
+path_bat_file = os.path.join(path_tool, "Scripts", "components_gh", "add_building_from_hb_model",
+                             "add_hbjson_buildings.bat")
 # name of the folder that will contain the hbjsons to add
 name_hbjson_directory = "hbjsons_to_add"
 
@@ -64,6 +65,8 @@ if _run:
     # Optional argument of the bat file/Python script
     if path_folder_simulation_ is not None:
         argument = argument + ' -f "{}"'.format(path_folder_simulation_)
+    if type(_are_targets_) is bool:
+        argument = argument + ' -tar "{}"'.format(_are_targets_)
     if make_hb_model_building_envelop_ is not None and type(make_hb_model_building_envelop_) == bool:
         argument = argument + ' -e "{}"'.format(int(make_hb_model_building_envelop_))
     output = os.system(command + argument)

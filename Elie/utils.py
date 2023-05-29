@@ -1,5 +1,5 @@
 import os
-from urban_canopy.urban_canopy_methods import UrbanCanopy
+from urban_canopy.urban_canopy import UrbanCanopy
 import logging
 import numpy as np
 

@@ -1,12 +1,14 @@
-import os
-import logging
-import pickle
+
+from mains_tool.utils_general import *
 
 from honeybee.model import Model
 from honeybee.room import Room
+
 from building.building_basic import BuildingBasic
 from building.building_modeled import BuildingModeled
-from Elie.gis.extract_gis import extract_gis
+
+from libraries_addons.extract_gis_files import extract_gis
+
 from typology.typology import Typology
 
 # Default values
