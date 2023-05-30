@@ -1,5 +1,5 @@
-from solar_panel.pv_panel import Panel
-from solar_panel.pv_panel_technology import PanelTechnology
+from solar_panel.pv_panel import PvPanel
+from solar_panel.pv_panel_technology import PvPanelTechnology
 from building.utils_building import *
 import csv
 
@@ -13,13 +13,13 @@ def load_panels_on_sensor_grid(sensor_grid, pv_technology_object):
         if face.area < pv_technology_object.panel_area:
             logging.warning(f"The area of the mesh's faces is not big enough to contain the PV panels. "
                             f"Make a mesh with bigger faces")
-        panel_of_face = Panel(mesh.faces.index(face), pv_technology_object)
+        panel_of_face = PvPanel(mesh.faces.index(face), pv_technology_object)
         panel_of_face.initialize_or_replace_panel()
         panels.append(panel_of_face)
     return panels
 
 
-def loop_over_the_years_for_solar_panels_2(pv_panel_obj_list, yearly_solar_radiation_values, study_duration_in_years,
+def loop_over_the_years_for_solar_panels(pv_panel_obj_list, yearly_solar_radiation_values, study_duration_in_years,
                                            replacement_scenario="yearly", **kwargs):
     """
     Loop over every year of the study duration to get the energy produced, the energy used and the dmfa waste produced

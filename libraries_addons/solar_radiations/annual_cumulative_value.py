@@ -1,30 +1,10 @@
 import os
 import subprocess
-
-try:
-    from ladybug.futil import write_to_file
-except ImportError as e:
-    raise ImportError('\nFailed to import ladybug:\n\t{}'.format(e))
-
-try:
-    from honeybee.config import folders
-except ImportError as e:
-    raise ImportError('\nFailed to import honeybee:\n\t{}'.format(e))
-
-try:
-    from honeybee_radiance.postprocess.annualdaylight import _process_input_folder
-except ImportError as e:
-    raise ImportError('\nFailed to import honeybee_radiance:\n\t{}'.format(e))
-
-try:
-    from pollination_handlers.outputs.helper import read_sensor_grid_result
-except ImportError as e:
-    raise ImportError('\nFailed to import pollination_handlers:\n\t{}'.format(e))
-
+from libraries_addons.utils_libraries_addons import *
 
 def parse_sun_up_hours(sun_up_hours, hoys, timestep):
     """Parse the sun-up hours from the result file .txt file.
-
+    @ credit LBT
     Args:
         sun_up_hours: A list of integers for the sun-up hours.
         hoys: A list of 8760 * timestep values for the hoys to select. If an empty
@@ -41,6 +21,7 @@ def parse_sun_up_hours(sun_up_hours, hoys, timestep):
 
 def cumulative_values(ill_file, su_pattern, timestep):
     """Compute average values for a given result file."""
+    # @ credit LBT
     cumul_vals = []
     with open(ill_file) as results:
         if su_pattern is None:  # no HOY filter on results
@@ -66,6 +47,8 @@ def hb_ann_cum_values(path_results, hoys=None, grid_filter=None):
     grid_filter : The name of a grid or a pattern to filter the grids. For instance, first_floor* will simulate only
     the sensor grids that have an identifier that starts with first_floor/ By default, all the grids will be processed.
     """
+    # @ credit LBT
+
     # set up the default values
     grid_filter_ = '*' if grid_filter is None else grid_filter
     hoys_ = [] if hoys is None else hoys

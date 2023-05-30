@@ -34,7 +34,6 @@ def is_roof(face):
     return (isinstance(face.type, RoofCeiling) and isinstance(face.boundary_condition, Outdoors))
 
 
-
 def get_hb_faces_facades(model):
     """Get the HB faces of the facades of our HB model"""
     faces_facades = []
@@ -74,7 +73,7 @@ def get_lb_mesh(faces, grid_size, offset_dist):
         lb_mesh = None
     elif len(lb_meshes) == 1:
         lb_mesh = lb_meshes[0]
-    elif len(lb_meshes) > 1:
+    else:  # which means : len(lb_meshes) > 1:
         lb_mesh = Mesh3D.join_meshes(lb_meshes)
     return lb_mesh
 
@@ -85,5 +84,3 @@ def create_sensor_grid_from_mesh(mesh, name=None):
     id = clean_rad_string(name) if '/' not in name else clean_rad_string(name.split('/')[0])
     sensor_grid = SensorGrid.from_mesh3d(id, mesh)
     return sensor_grid
-
-

@@ -146,16 +146,16 @@ def ray_list_from_emitter_to_receiver(face_emitter, face_receiver, exclude_surfa
     # z coordinate of the start and end of the rays
     z_receiver = receiver_Face3D.max.z  # maximum z coordinate of the max (Point3D) of the Face receiver
     z_emitter = min([emitter_Face3D.max.z, z_receiver])
-    # start vertices
-    start_point_l = convert_Point3D_to_list(emitter_Face3D.lower_left_corner)
-    start_point_r = convert_Point3D_to_list(emitter_Face3D.lower_right_corner)
-    start_point_c = [(start_point_l[0]+start_point_r[0])/2., (start_point_l[1]+start_point_r[1])/2., z_emitter]
-    start_point_l[2], start_point_l[2] = z_emitter, z_emitter  # correct the z coordinate
-    # end vertices
-    end_point_l = convert_Point3D_to_list(receiver_Face3D.lower_left_corner)
-    end_point_r = convert_Point3D_to_list(receiver_Face3D.lower_right_corner)
-    end_point_c = [(end_point_l[0]+end_point_r[0])/2., (end_point_l[1]+end_point_r[1])/2., z_receiver]
-    end_point_l[2], end_point_l[2] = z_receiver, z_receiver  # correct the z coordinate
+    # start vertices, numpy arrays
+    start_point_l = convert_Point3D_to_numpy_array(emitter_Face3D.lower_left_corner)
+    start_point_r = convert_Point3D_to_numpy_array(emitter_Face3D.lower_right_corner)
+    start_point_c = (start_point_l+start_point_r)/2.
+    start_point_l[2], start_point_l[2], start_point_c[2] = z_emitter, z_emitter, z_emitter  # correct the z coordinate
+    # end vertices, numpy arrays
+    end_point_l = convert_Point3D_to_numpy_array(receiver_Face3D.lower_left_corner)
+    end_point_r = convert_Point3D_to_numpy_array(receiver_Face3D.lower_right_corner)
+    end_point_c = (end_point_l + end_point_r) / 2.
+    end_point_l[2], end_point_l[2], end_point_c[2] = z_receiver, z_receiver, z_emitter  # correct the z coordinate
 
     # ray list
     ray_list = [
@@ -214,20 +214,27 @@ def ray_list_from_emitter_to_receiver(face_emitter, face_receiver, exclude_surfa
 #             ray_list[i] = excluding_surfaces_from_ray(start=ray_list[i][0], end=ray_list[i][1])
 #     return ray_list[:number_of_rays]
 
+"""
+        Return the start and end point of a ray reducing slightly the distance between the vertices to prevent
+        considering the sender and receiver in the raytracing obstruction detection
+"""
 
-def excluding_surfaces_from_ray(start, end):
+def excluding_surfaces_from_ray(start_point, end_point):
     """
         Return the start and end point of a ray reducing slightly the distance between the vertices to prevent
         considering the sender and receiver in the raytracing obstruction detection
+        :param start_point: numpy array, start point of the ray
+        :param end_point: numpy array, end point of the ray
+        :return: new_start_point, new_end_point: numpy arrays, new start and end points of the ray
     """
     # todo @Elie: update
-    ray_vector = end - start
+    ray_vector = end_point - start_point
     unit_vector = ray_vector / np.linalg.norm(ray_vector)  # normalize the vector with it's norm
     # Move the ray boundaries
-    new_start = start + unit_vector * 0.05  # move the start vertex by 10cm on the toward the end vertex
-    new_end = end - unit_vector * 0.05  # move the end vertex by 10cm on the toward the start vertex
+    new_start_point = start_point + unit_vector * 0.05  # move the start vertex by 5cm on the toward the end vertex
+    new_end_point = end_point - unit_vector * 0.05  # move the end vertex by 5cm on the toward the start vertex
 
-    return new_start, new_end
+    return new_start_point, new_end_point
 
 
 def adjust_lower_corners(pt_left, pt_right):
@@ -298,3 +305,9 @@ def make_Pyvista_Polydata_from_HB_Face_or_LB_Face3D(face_object):
     vertices = np.array(vertices)  # convert into numpy array, makes it faster for Pyvista to process
 
     return pv.PolyData(vertices, face)
+
+
+def convert_Point3D_to_numpy_array(pt_3d):
+    """ Convert LB Point3D to numpy array """
+
+    return (np.array([pt_3d.x, pt_3d.y, pt_3d.z]))

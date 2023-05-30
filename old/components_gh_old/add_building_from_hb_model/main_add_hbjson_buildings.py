@@ -18,6 +18,7 @@ parser = argparse.ArgumentParser()
 default_path_folder_simulation = os.path.join(path_tool, "Simulation_temp")
 default_make_hb_model_envelops = False
 default_run_by_the_tool = False
+default_are_buildings_target = True
 name_hbjson_directory = "hbjsons_to_add"
 
 
@@ -29,6 +30,10 @@ if __name__ == "__main__":
                         help="Boolean telling if a HB Model containing the envelop of all buildings should be generated",
                         nargs='?',
                         default=default_make_hb_model_envelops)
+    parser.add_argument("-tar", "--target",
+                        help="Boolean telling if the buildings to add are target buildings",
+                        nargs='?',
+                        default=default_are_buildings_target)
     parser.add_argument("-t", "--tool",
                         help="Boolean telling if the code is run from an editor or externally by the batch file",
                         nargs='?',
@@ -38,6 +43,7 @@ if __name__ == "__main__":
     path_folder_simulation = args.folder
     path_folder_hbjson = os.path.join(path_folder_simulation, name_hbjson_directory)
     make_hb_model_envelops = bool(args.hbenv)
+    are_buildings_targets = bool(args.target)
     run_by_the_tool = bool(args.tool)
 
     os.makedirs(path_folder_simulation, exist_ok=True)
@@ -69,12 +75,14 @@ if __name__ == "__main__":
 
 
     # Add the buildings in the hbjson files to the urban canopy
-    urban_canopy.add_buildings_from_hbjson_to_dict(path_directory_hbjson=path_folder_hbjson)
+    urban_canopy.add_buildings_from_hbjson_to_dict(path_directory_hbjson=path_folder_hbjson, are_buildings_targets=are_buildings_targets)
     logging.info("Building(s) from hbjson added to the urban canopy successfully")
     # generate the hb model that contains all the building envelopes to plot in Grasshopper
     if make_hb_model_envelops:
         urban_canopy.make_HB_model_envelops_from_buildings(path_folder=path_folder_simulation)
         logging.info("HB model for the building envelop created successfully")
+
+
     # save the urban canopy object in a pickle file in the temp folder
     urban_canopy.export_urban_canopy_to_pkl(path_folder=path_folder_simulation)
     logging.info("Urban canopy object saved successfully")

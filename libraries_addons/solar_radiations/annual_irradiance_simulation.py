@@ -1,7 +1,4 @@
-try:
-    from lbt_recipes.recipe import Recipe
-except ImportError as e:
-    raise ImportError('\nFailed to import lbt_recipes:\n\t{}'.format(e))
+from libraries_addons.utils_libraries_addons import *
 
 
 def hb_ann_irr_sim(model, path_weather_file, run_settings, timestep=1, visible=False, north=0,

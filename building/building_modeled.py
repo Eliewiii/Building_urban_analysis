@@ -2,29 +2,14 @@
 BuildingModeled class, representing one building in an urban canopy that will be converted in HB models
 as they will be simulated
 """
-import os.path
 
+from mains_tool.utils_general import *
 from building.utils_building import *
-from building.building_basic import \
-    BuildingBasic  # todo: cannot be imported from building.utils because of circular import (building.building_basic import utils)
-
-from libraries_addons.solar_radiations.add_sensorgrid_hb_model import *
-from libraries_addons.solar_radiations.hb_recipe_settings import hb_recipe_settings
-from libraries_addons.solar_radiations.annual_irradiance_simulation import hb_ann_irr_sim
-from libraries_addons.solar_radiations.annual_cumulative_value import hb_ann_cum_values
-
-from solar_panel.pv_panel_technology import PanelTechnology
-from solar_panel.pv_panel import Panel
-
-from libraries_addons.solar_panels.useful_functions_solar_panel import load_panels_on_sensor_grid, \
-    loop_over_the_years_for_solar_panels
-from libraries_addons.solar_panels import pv_efficiency_functions
-from libraries_addons.solar_panels import pv_efficiency_functions
+from building.building_basic import BuildingBasic  # todo: cannot be imported from building.utils because of circular import (building.building_basic import utils)
 
 
 class BuildingModeled(BuildingBasic):
     """BuildingBasic class, representing one building in an urban canopy."""
-
     # todo :make the LB_face_footprint optional in the BuildingBasic class
     def __init__(self, identifier, LB_face_footprint=None, urban_canopy=None, building_index_in_GIS=None, **kwargs):
         # Initialize with the inherited attributes from the BuildingBasic parent class
@@ -36,7 +21,7 @@ class BuildingModeled(BuildingBasic):
         self.HB_model_obj = None
         self.HB_model_dict = None
         self.sensor_grid_dict = {'Roof': None, 'Facades': None}
-        self.panels = {"Roof": None, "Facade": None}
+        self.panels = {"Roof": None, "Facades": None}
         self.to_simulate = False
         self.is_target = False
 
@@ -108,8 +93,7 @@ class BuildingModeled(BuildingBasic):
 
         return building_modeled_obj, identifier
 
-    def select_context_surfaces_for_shading_computation(self, context_building_list, full_urban_canopy_Pyvista_mesh,
-                                                        minimum_vf_criterion):
+    def select_context_surfaces_for_shading_computation(self, context_building_list,full_urban_canopy_Pyvista_mesh, minimum_vf_criterion):
         """ Select the context surfaces that will be used for the shading simulation of the current building.
         :param context_building_list: list of BuildingModeled objects
         :param minimum_vf_criterion: minimum view factor between surfaces to be considered as context surfaces
@@ -140,6 +124,8 @@ class BuildingModeled(BuildingBasic):
         #          if not is_HB_Face_context_surface_obstructed_for_target_LB_polyface3d(target_LB_polyface3d_extruded_footprint=self.LB_polyface3d_extruded_footprint , context_HB_Face_surface=HB_face_surface):
         #              None
         #             #todo
+
+
 
     def move(self, vector):
         """
@@ -218,6 +204,7 @@ class BuildingModeled(BuildingBasic):
                 path_folder_simulation_roof = os.path.join(path_folder_simulation, "Roof")
                 settings = hb_recipe_settings(path_folder_simulation_roof)
                 project_folder = hb_ann_irr_sim(model_sensor_grid_roof, path_weather_file, settings)
+            # todo @Hilany, do something if we don't have any sensor grid, the return will not work
             return hb_ann_cum_values([os.path.join(project_folder, "annual_irradiance", "results", "total")])
 
         elif on_facades and not on_roof:
@@ -232,6 +219,7 @@ class BuildingModeled(BuildingBasic):
                 path_folder_simulation_facades = os.path.join(path_folder_simulation, "Facades")
                 settings = hb_recipe_settings(path_folder_simulation_facades)
                 project_folder = hb_ann_irr_sim(model_sensor_grid_facades, path_weather_file, settings)
+                # todo @Hilany, same as above
             return hb_ann_cum_values([os.path.join(project_folder, "annual_irradiance", "results", "total")])
 
     def load_panels_roof(self, pv_tech_roof):
