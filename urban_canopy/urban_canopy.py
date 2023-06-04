@@ -15,8 +15,6 @@ class UrbanCanopy:
         self.building_dict = {}  # dictionary of the buildings in the urban canopy
         self.typology_dict = {}  # dictionary of the typologies loaded the urban canopy
         self.moving_vector_to_origin = None  # moving vector of the urban canopy that moved the urban canopy to the origin
-        self.json_dict = {}  # dictionary containing relevant attrbutes of the urban canopy to be exported to json
-        self.moving_vector_to_origin = None # moving vector of the urban canopy that moved the urban canopy to the origin
         self.json_dict={} # dictionary containing relevant attributes of the urban canopy to be exported to json
 
         self.tolerance_default_value = 0.01  # todo : move this values to utils_general.py,
