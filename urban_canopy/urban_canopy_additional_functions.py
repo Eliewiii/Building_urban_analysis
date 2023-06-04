@@ -9,18 +9,20 @@ from urban_canopy.utils_urban_canopy import *
 class UrbanCanopyAdditionalFunction:
 
     @classmethod
-    def add_hb_model_urban_canopy_envelop_to_json_dict(cls, json_dict, building_dict):
+    def add_hb_model_of_urban_canopy_envelop_to_json_dict(cls, json_dict, building_dict):
         """
             todo @Elie, change it, so tha it is writen in the json file
         """
         # Generate the HB model for the building envelops and convert it to dict
         building_envelops_hb_dict = cls.make_HB_model_dict_envelops_from_buildings(building_dict)
         # Add the HB model to the json dict
-        json_dict["hb_model_urban_canopy_envelop"] = building_envelops_hb_dict
+        json_dict["hb_model_of_urban_canopy_envelop"] = building_envelops_hb_dict
 
     @staticmethod
     def add_buildings_and_list_of_buildings_to_json_dict(json_dict, building_dict):
-        """ """
+        """
+        todo @Elie
+        """
         # Initialize empty dictionary for the buildings
         building_id_dict = {}
         # Get the list of building ids
@@ -39,7 +41,6 @@ class UrbanCanopyAdditionalFunction:
         Add the HB model of each building to the json dict
         :param json_dict:
         :param building_dict:
-        :return:
         """
         for building_id, building_object in building_dict.items():
             # Differentiate between the two types of buildings
@@ -53,11 +54,31 @@ class UrbanCanopyAdditionalFunction:
                 json_dict["buildings"][building_id]["HB_model"] = building_object.HB_model_dict()
 
     @staticmethod
+    def add_building_attributes_to_json_dict(json_dict, building_dict):
+        """
+        todo @Elie
+        :param json_dict:
+        :param building_dict:
+        :return:
+        """
+        for building_id, building_object in building_dict.items():
+            json_dict["buildings"][building_id]["Age"] = building_object.age
+            json_dict["buildings"][building_id]["Typology"] = building_object.typology
+
+            if type(building_object) is BuildingModeled:
+                json_dict["buildings"][building_id]["Is_target_building"] = building_object.is_target
+                json_dict["buildings"][building_id]["Is_to_simulate"] = building_object.to_simulate
+
+
+
+
+    @staticmethod
     def add_radiation_attributes_to_json_dict(json_dict, building_dict, path_folder_simulation):
         """
         todo @Elie
         Buildings were already added to the dictionary before this function is called
         :param json_dict:
+        :param building_dict:
         :param path_folder_simulation:
         :return:
         """

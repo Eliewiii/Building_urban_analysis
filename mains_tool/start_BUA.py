@@ -89,12 +89,15 @@ def main():
     # Building Energy Simulation #
 
     # Postprocessing and plots #
-    # Generate Urban canopy envelop
+    # Generate Urban canopy envelop #todo @Elie delete and replace by add_building_envelops_to_urban_canopy_json
     if simulation_step_dictionary["run_generate_model_with_building_envelop"]:
         SimulationPostProcessingAndPlots.generate_hb_model_contains_all_building_envelopes_to_plot_Grasshopper(
             urban_canopy_object=urban_canopy_object,
             path_folder_simulation=arguments_dictionary["path_folder_simulation"])
-    #
+
+    if simulation_step_dictionary["run_generate_model_with_building_envelop"]:
+        SimulationPostProcessingAndPlots.add_building_envelops_to_urban_canopy_json(
+            urban_canopy_object=urban_canopy_object)
 
     # Exports #
     # Export Urban canopy to pickle
