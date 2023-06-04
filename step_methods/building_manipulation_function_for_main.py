@@ -24,5 +24,5 @@ class SimulationBuildingManipulationFunctions:
         :return:
         """
         for building_id in building_id_list:
-            urban_canopy.remove_building_from_dict(building_id)
+            urban_canopy_object.remove_building_from_dict(building_id)
         logging.info("Building(s) removed from the urban canopy successfully")

@@ -42,7 +42,11 @@ class LoadArguments:
         parser.add_argument("-t", "--are_buildings_target",
                             help="boolean (here '0' or '1') telling if the buildings inputed in the component are target ",
                             nargs='?',
-                            default=False)  # as no list can be sent through command line, it will be a string, with each id seperate by a space that will be parsed in the main script
+                            default=False)  # as no list can be sent through command line, it will be a string,
+        # with each id seperate by a space that will be parsed in the main script
+        parser.add_argument("-w", "--path_weather_file", help="path to the weather file used",
+                            default=default_path_weather_file)
+        parser.add_argument("--list_id", help="")
 
         # Solar radiation parameters
 
@@ -86,8 +90,15 @@ class LoadArguments:
 
         # Generate objects for visualization
         parser.add_argument("--generate_model_with_building_envelop",
-                            help="Make a HB model containing the envelop of all the buildings in the urban canopy object that will be stored in the json dic of the urban canopy object",
+                            help="Make a HB model containing the envelop of all the buildings in the urban canopy "
+                                 "object that will be stored in the json dic of the urban canopy object",
                             nargs='?', default=False)
+
+        # Run the simulations
+        parser.add_argument("--do_radiation_simulation", help="On each building targeted in the urban canopy, "
+                                                              "run the solar simulation", default=False)
+        parser.add_argument("--do_panel_simulation", help="On each building targeted in the urban canopy, run the "
+                                                          "panel simulation", default=False)
 
     @staticmethod
     def parse_arguments_and_add_them_to_variable_dict(parser):
@@ -114,8 +125,13 @@ class LoadArguments:
             "path_folder": args.path_folder,
             "path_file": args.path_file,
             "building_id_list": args.building_id_list,
-            "are_buildings_target": bool(int(args.are_buildings_target))
-
+            "are_buildings_target": bool(int(args.are_buildings_target)),
+            "path_weather_file": args.path_weather_file,
+            "list_id": args.list_id,
+            "grid_size": args.grid_size,
+            "offset_dist": args.offset_dist,
+            "on_roof": args.on_roof,
+            "on_facades": args.on_facades
         }
 
         # Create a dictionary with the arguments and the name of their variable that will be imported in the main script
@@ -131,7 +147,9 @@ class LoadArguments:
             "run_remove_building_list_from_urban_canopy": bool(int(args.remove_building_list_from_urban_canopy)),
             "run_generate_bounding_boxes": bool(int(args.generate_bounding_boxes)),
             "run_perform_context_filtering": bool(int(args.perform_context_filtering)),
-            "run_generate_model_with_building_envelop": bool(int(args.generate_model_with_building_envelop))
+            "run_generate_model_with_building_envelop": bool(int(args.generate_model_with_building_envelop)),
+            "run_radiation_simulation": bool(int(args.do_radiation_simulation)),
+            "run_panel_simulation": bool(int(args.do_panel_simulation))
         }
 
         # the rest todo

@@ -1,5 +1,3 @@
-from solar_panel.pv_panel import PvPanel
-from solar_panel.pv_panel_technology import PvPanelTechnology
 from building.utils_building import *
 import csv
 
@@ -20,7 +18,7 @@ def load_panels_on_sensor_grid(sensor_grid, pv_technology_object):
 
 
 def loop_over_the_years_for_solar_panels(pv_panel_obj_list, yearly_solar_radiation_values, study_duration_in_years,
-                                           replacement_scenario="yearly", **kwargs):
+                                         replacement_scenario="yearly", **kwargs):
     """
     Loop over every year of the study duration to get the energy produced, the energy used and the dmfa waste produced
     every year
@@ -45,7 +43,7 @@ def loop_over_the_years_for_solar_panels(pv_panel_obj_list, yearly_solar_radiati
         # Initialize panels for year 0
         if year is 0:
             for panel_obj in pv_panel_obj_list:
-                panel_obj.initialize_or_replace_panel_2()
+                panel_obj.initialize_or_replace_panel()
                 nb_of_new_panels += 1
         # Increment of 1 year
         for panel_obj in pv_panel_obj_list:
@@ -60,13 +58,13 @@ def loop_over_the_years_for_solar_panels(pv_panel_obj_list, yearly_solar_radiati
             # the code inside each statement
             for panel_obj in pv_panel_obj_list:
                 if not panel_obj.is_panel_working():
-                    panel_obj.initialize_or_replace_panel_2()
+                    panel_obj.initialize_or_replace_panel()
                     nb_of_new_panels += 1
         elif replacement_scenario is "every_X_years":
             replacement_year = kwargs["replacement_year"]
             if year is not 0 and year % replacement_year is 0:
                 if not panel_obj.is_panel_working():
-                    panel_obj.initialize_or_replace_panel_2()
+                    panel_obj.initialize_or_replace_panel()
                     nb_of_new_panels += 1
 
         # other scenario, replace every thing every X years?
@@ -78,73 +76,63 @@ def loop_over_the_years_for_solar_panels(pv_panel_obj_list, yearly_solar_radiati
 
 
 def write_to_csv_list(list_of_int, file_path):
+    """
+    write a list of int to a csv file
+    :param list_of_int: list of integers
+    :param file_path: path to where the file should be written
+    """
     with open(file_path, 'w') as f:
         writer = csv.writer(f)
         writer.writerows(list_of_int)
 
 
-def regular_calculation_manufacturing_energy_dmfa(nb_of_panels_installed_list, nb_of_failed_panels_list, pv_tech):
+def beginning_end_of_life_lca_results_in_lists(energy_production_per_year_list, nb_of_panels_installed_list,
+                                               nb_of_failed_panels_list, pv_tech):
+    """
+    Take the results from function loop_over_the_years_for_solar_panels and use the pv_tech info to transform it to data
+    :param energy_production_per_year_list: list of floats: describes the energy production each year
+    :param nb_of_panels_installed_list: list of integers: describes how many panels are installed each year
+    :param nb_of_failed_panels_list: list of integers: describes how many panels fail each year
+    :param pv_tech: PVPanelTechnology object
+    :return energy_production_per_year_list: list of floats
+    :return lca_energy_list: list of floats: describes how much energy was used to manufacture the panels installed for
+    each year
+    :return lca_carbon_list: list of floats: describes how much carbon was released to manufacture the panels installed,
+    for each year
+    :return dmfa_list: list of floats: describes the dmfa caused by the failed panels, for each year
+    """
     panel_energy_manufacturing = pv_tech.energy_manufacturing
+    panel_carbon_manufacturing = pv_tech.carbon_manufacturing
     panel_dmfa = pv_tech.DMFA
 
-    lca_energy_used_per_year_list = [i * panel_energy_manufacturing for i in nb_of_panels_installed_list]
-    dmfa_waste_generated_per_year_list = [i * panel_dmfa for i in nb_of_failed_panels_list]
+    lca_energy_list = [i * panel_energy_manufacturing for i in nb_of_panels_installed_list]
+    lca_carbon_list = [i * panel_carbon_manufacturing for i in nb_of_panels_installed_list]
+    dmfa_list = [i * panel_dmfa for i in nb_of_failed_panels_list]
 
-    return lca_energy_used_per_year_list, dmfa_waste_generated_per_year_list
+    return energy_production_per_year_list, lca_energy_list, lca_carbon_list, dmfa_list
 
 
-'''
-def loop_over_the_years_for_solar_panels(pv_panel_obj_list, yearly_solar_radiation_values, study_duration_in_years,
-                                         replacement_scenario="yearly", **kwargs):
+def results_from_lists_to_dict(energy_production_per_year_list, lca_energy_list, lca_carbon_list, dmfa_list):
     """
-    Loop over every year of the study duration to get the energy produced, the energy used and the dmfa waste produced
-    every year
-    :param pv_panel_obj_list: list of panel objects
-    :param yearly_solar_radiation_values: list of floats: list of the yearly cumulative solar radiation got by the solar
-    radiation simulation in Wh/panel/year
-    :param study_duration_in_years: int: duration of the study in years
-    :param replacement_scenario: string: replacement scenario chosen
-    :return energy_production_per_year_list: list of floats in kWh/panel/year
-    :return lca_energy_used_per_year_list:
-    :return lca_energy_used_per_year_list:
+    Transform those results into a dictionary
+    :param energy_production_per_year_list: list of floats describes the energy production each year
+    :param lca_energy_list: list of floats: describes how much energy was used to manufacture the panels installed for
+    each year
+    :param lca_carbon_list: list of floats: describes how much carbon was released to manufacture the panels installed,
+    for each year
+    :param dmfa_list: list of floats: describes the dmfa caused by the failed panels, for each year
     """
-    energy_production_per_year_list = []
-    lca_energy_used_per_year_list = []
-    dmfa_waste_generated_per_year_list = []
 
-    for year in range(study_duration_in_years):
-        # initialize
-        energy_produced = 0.
-        lca_energy = 0.
-        dmfa_waste = 0.
-        # Initialize panels for year 0
-        if year is 0:
-            for panel_obj in pv_panel_obj_list:
-                lca_energy += panel_obj.replace_panel()
-        # Increment of 1 year
-        for panel_obj in pv_panel_obj_list:
-            index_panel = pv_panel_obj_list.index(panel_obj)
-            energy_produced_panel, dmfa_waste_panel = panel_obj.pass_year(yearly_solar_radiation_values[index_panel],
-                                                                          year=year)
-            energy_produced += energy_produced_panel
-            dmfa_waste += dmfa_waste_panel
-        # Replace according to replacement "scenario" \(- -)/
-        if replacement_scenario is "yearly":
-            # the code inside each statement
-            for panel_obj in pv_panel_obj_list:
-                if not panel_obj.is_panel_working():
-                    lca_energy += panel_obj.initialize_or_replace_panel()
-        elif replacement_scenario is "every_X_years":
-            replacement_year = kwargs["replacement_year"]
-            if year is not 0 and year % replacement_year is 0:
-                if not panel_obj.is_panel_working():
-                    lca_energy += panel_obj.initialize_or_replace_panel()
+    results_dict = {}
 
-        # other scenario, replace every thing every X years?
-        energy_production_per_year_list.append(energy_produced)
-        lca_energy_used_per_year_list.append(lca_energy)
-        dmfa_waste_generated_per_year_list.append(dmfa_waste)
+    results_dict["energy_produced"]["list"] = energy_production_per_year_list
+    results_dict["lca_energy"]["list"] = lca_energy_list
+    results_dict["lca_carbon"]["list"] = lca_carbon_list
+    results_dict["dmfa"]["list"] = dmfa_list
 
-    return energy_production_per_year_list, lca_energy_used_per_year_list, dmfa_waste_generated_per_year_list
+    results_dict["energy_produced"]["total"] = sum(energy_production_per_year_list)
+    results_dict["lca_energy"]["total"] = sum(lca_energy_list)
+    results_dict["lca_carbon"]["total"] = sum(lca_carbon_list)
+    results_dict["dmfa"]["total"] = sum(dmfa_list)
 
-'''
+    return results_dict

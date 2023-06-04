@@ -14,7 +14,7 @@ class UrbanCanopy:
         self.building_dict = {}  # dictionary of the buildings in the urban canopy
         self.typology_dict = {}  # dictionary of the typologies loaded the urban canopy
         self.moving_vector_to_origin = None # moving vector of the urban canopy that moved the urban canopy to the origin
-        self.json_dict={} # dictionary containing relevant attrbutes of the urban canopy to be exported to json
+        self.json_dict={} # dictionary containing relevant attributes of the urban canopy to be exported to json
 
         self.tolerance_default_value = 0.01  # todo : move this values to utils_general.py,
         # call it LBT_default_tolerance, it will be the same value for all the functions using LBT objects
@@ -338,8 +338,8 @@ class UrbanCanopy:
                 # Move by the opposite vector
                 building.move([-coordinate for coordinate in self.moving_vector_to_origin])
 
-    def radiation_simulation_urban_canopy(self, path_folder_simulation, path_weather_file, list_id=None, grid_size=1,
-                                          offset_dist=0.1, on_roof=True, on_facades=True):
+    def radiation_simulation_urban_canopy(self, path_folder_simulation, path_weather_file, list_id, grid_size,
+                                          offset_dist, on_roof, on_facades):
         for building in self.building_dict.values():  # for every building in the urban canopy
             if list_id is None:
                 if type(building) is BuildingModeled and building.is_target:
@@ -424,15 +424,6 @@ class UrbanCanopy:
                         file.close()
             print("Another radiation simulation was done")
 
-    def post_processing_urban_canopy(self, path_folder_simulation):
-
-        # todo @Hilany : I am not sur ewhat it is supposed to do
-        for building in self.building_dict.values():  # for every building in the urban canopy
-            # if type(building) is BuildingModeled and building.is_target:
-            if type(building) is BuildingModeled:
-                path_building = os.path.join(path_folder_simulation, building.id)
-                building.post_process(path_building)
-
     def get_list_id_buildings_urban_canopy(self, path_folder):
         path_json = os.path.join(path_folder, 'urban_canopy.json')
         if os.path.isfile(path_json):
@@ -445,4 +436,24 @@ class UrbanCanopy:
                 if type(building) is BuildingModeled:
                     list_id.append(building.id)
         return list_id
+
+    def run_panel_simulation(self, path_folder_simulation, pv_tech_dictionary, id_pv_tech_roof, id_pv_tech_facades,
+                             study_duration_in_years, replacement_scenario):
+        """
+        Run the panels simulation on the urban canopy
+        :param path_folder_simulation: path to the simulation folder
+        :param pv_tech_dictionary: dictionary containing all PVPanelTechnology objects
+        :param id_pv_tech_roof: string: id of the roof technology used, default = "mitrex_roof c-Si"
+        :param id_pv_tech_facades: string: id of the facade technology used, default = "metsolar_facades c-Si"
+        :param study_duration_in_years: integer: duration of the study in years, default = 50
+        :param replacement_scenario: string: scenario of replacements for the panels, default = 'yearly'
+        """
+        # load PVPanelTechnology
+        pv_tech_roof = pv_tech_dictionary[id_pv_tech_roof]
+        pv_tech_facades = pv_tech_dictionary[id_pv_tech_facades]
+        for building in self.building_dict.values():  # for every building in the urban canopy
+            if type(building) is BuildingModeled and building.is_target:
+                path_folder_building = os.path.join(path_folder_simulation, building.id)
+                building.panel_simulation_building(path_folder_building, pv_tech_dictionary, id_pv_tech_roof,
+                                                   id_pv_tech_facades, study_duration_in_years, replacement_scenario)
 

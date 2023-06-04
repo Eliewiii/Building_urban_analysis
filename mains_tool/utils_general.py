@@ -51,14 +51,18 @@ default_number_of_rays_context_filter_second_pass = 3
 # todo @Elie: add when coded
 # Default values for the simulations - Solar radiation calculation
 default_name_radiation_simulation_folder = 'Radiation Simulation'
-# todo @Elie: add when coded
-# Default values for the simulations - LCA
-# todo @Elie: add when coded
-# Default values for the simulations - LCA end of life
-# todo @Elie: add when coded
-# Default values for the simulations - building energy simulation
-# todo @Elie: add when coded
+default_path_weather_file = os.path.join(path_tool, "Libraries", "EPW", "IS_5280_A_Haifa.epw")
+default_list_id = None
+default_grid_size = 1  # todo check it !
+default_offset_dist = 0.1
+default_on_roof = True
+default_on_facades = True
 
+# Default values for panel simulatio
+default_id_pv_tech_roof = "mitrex_roof c-Si"
+default_id_pv_tech_facades = "metsolar_facades c-Si"
+default_study_duration_years = 50
+default_replacement_scenario = "yearly"
 
 # Export to json file
 default_tree_structure_per_building_urban_canopy_json_dict = {
@@ -74,6 +78,26 @@ default_tree_structure_per_building_urban_canopy_json_dict = {
         "Path_results": {
             "Annual": {"Roof": None, "Facades": None},
             "Timestep": {"Roof": None, "Facades": None}
+        },
+        "Panels_results": {
+            "Roof": {
+                "energy_produced": {"list": None, "total": None},
+                "lca_energy": {"list": None, "total": None},
+                "lca_carbon": {"list": None, "total": None},
+                "dmfa": {"list": None, "total": None}
+            },
+            "Facades": {
+                "energy_produced": {"list": None, "total": None},
+                "lca_energy": {"list": None, "total": None},
+                "lca_carbon": {"list": None, "total": None},
+                "dmfa": {"list": None, "total": None}
+            },
+            "Total": {
+                "energy_produced": {"list": None, "total": None},
+                "lca_energy": {"list": None, "total": None},
+                "lca_carbon": {"list": None, "total": None},
+                "dmfa": {"list": None, "total": None}
+            },
         }
     }
 }

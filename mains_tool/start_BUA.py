@@ -78,6 +78,12 @@ def main():
 
     # Solar radiation analysis #
     # Perform Solar radiation
+    if simulation_step_dictionary["run_radiation_simulation"]:
+        SolarOrPanelSimulation.solar_radiation_simulation(urban_canopy_object=urban_canopy_object,
+                                                          path_folder_simulation=arguments_dictionary["path_folder_simulation"],
+                                                          path_weather_file=default_path_weather_file,
+                                                          list_id=default_list_id,
+                                                          grid_size=default_grid_size)
 
     # LCA and DMFA #
     # perform LCA and DMFA

@@ -35,7 +35,7 @@ class PvPanel:
         Else, if its life expectancy is None, then the panel is not working (False)"""
         return self.life_expectancy is not None
 
-    def initialize_or_replace_panel(self):
+    def initialize_or_replace_panel_old(self):
         """
         Initialize a panel or replace the panel with a new one, leading the LCA carbon footprint
         :return lca_energy: float: the energy manufacturing this new panel caused
@@ -49,7 +49,7 @@ class PvPanel:
 
         return lca_energy
 
-    def initialize_or_replace_panel_2(self):
+    def initialize_or_replace_panel(self):
         """
         Initialize the panel
         """
@@ -58,7 +58,7 @@ class PvPanel:
         # put back the age to 0
         self.age = 0
 
-    def panel_failed_2(self):
+    def panel_failed(self):
         """
         Switch off the panel by initializing its age and its life expectancy to None and return the dmfa caused by its
         failing
@@ -80,7 +80,7 @@ class PvPanel:
                           * performance_ratio / 1000
         return energy_produced
 
-    def pass_year_2(self, year, solar_radiation_year_value):
+    def pass_year(self, year, solar_radiation_year_value):
         """
         Simulate a year passing for a panel
         :param year: year of the simulation, could impact the efficiency of the panel, if we assume that the efficiency

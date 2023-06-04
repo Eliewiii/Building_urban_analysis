@@ -17,6 +17,7 @@ class PvPanelTechnology:
         self.weibull_law_failure_parameters = {"lifetime": None, "shape": None}
         self.DMFA = None  # per square meter
         self.energy_manufacturing = None  # per square meter
+        self.carbon_manufacturing = None
         self.panel_area = None  # in square meter
 
     @classmethod
@@ -39,6 +40,7 @@ class PvPanelTechnology:
                 pv_tech.weibull_law_failure_parameters["shape"] = pv_dict_data[identifier_key]["weibull_shape"]
                 pv_tech.DMFA = pv_dict_data[identifier_key]["DMFA"]
                 pv_tech.energy_manufacturing = pv_dict_data[identifier_key]["energy_manufacturing"]
+                pv_tech.carbon_manufacturing = pv_dict_data[identifier_key]["carbon_manufacturing"]
                 pv_tech.panel_area = pv_dict_data[identifier_key]["panel_area"]
 
                 pv_technologies_dict[identifier_key] = pv_tech  # then we add this object to the dictionary containing

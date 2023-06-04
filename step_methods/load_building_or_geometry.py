@@ -20,7 +20,7 @@ class SimulationLoadBuildingOrGeometry:
         # Add the buildings from the GIS to the urban canopy
         urban_canopy.add_buildings_from_2D_GIS_to_dict(path_gis, building_id_key_gis, unit,
                                                        path_additional_gis_attribute_key_dict)
-        logging.info("Builing geometries extracted from the GIS file successfully")
+        logging.info("Building geometries extracted from the GIS file successfully")
 
     @classmethod
     def get_id_key_of_buildings_in_gis(cls, path_additional_gis_attribute_key_dict):
