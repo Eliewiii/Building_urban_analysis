@@ -28,7 +28,7 @@ default_building_id_key_gis = "idbinyan"
 default_gis_attribute_key_dict = {
     "building_id_key_gis": "none",
     "name": ["name", "full_name_"],
-    "age": ["age", "date"],
+    "age": ["age", "date", "year"],
     "typology": ["typo", "typology", "type", "Typology"],
     "elevation": ["minheight"],
     "height": ["height", "Height", "govasimple"],
@@ -63,10 +63,17 @@ default_id_pv_tech_roof = "mitrex_roof c-Si"
 default_id_pv_tech_facades = "metsolar_facades c-Si"
 default_study_duration_years = 50
 default_replacement_scenario = "yearly"
+# Exports
+urban_canopy_export_file_name = "urban_canopy"
+urban_canopy_export_file_name_pkl = urban_canopy_export_file_name + ".pkl"
+urban_canopy_export_file_name_json = urban_canopy_export_file_name + ".json"
 
 # Export to json file
 default_tree_structure_per_building_urban_canopy_json_dict = {
-    "Is_target_building": None, # Maybe add all the other attributes (height,age,typology,etc.)
+    "Is_target_building": False,  # Maybe add all the other attributes (height,age,typology,etc.)
+    "Is_to_simulate": False,
+    "Age": None,
+    "Typology": None,
     "Hb_model": {},
     "Hb_model_envelop": {},
     "Context_surfaces": {
