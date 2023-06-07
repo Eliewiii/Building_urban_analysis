@@ -1,6 +1,8 @@
 import os
 import subprocess
 from libraries_addons.utils_libraries_addons import *
+from honeybee_radiance.postprocess.annualdaylight import _process_input_folder
+
 
 def parse_sun_up_hours(sun_up_hours, hoys, timestep):
     """Parse the sun-up hours from the result file .txt file.
@@ -55,8 +57,7 @@ def hb_ann_cum_values(path_results, hoys=None, grid_filter=None):
     res_folder = os.path.dirname(path_results[0]) if os.path.isfile(path_results[0]) \
         else path_results[0]
 
-
-        # check to see if results use the newer numpy arrays
+    # check to see if results use the newer numpy arrays
     if os.path.isdir(os.path.join(res_folder, '__static_apertures__')):
         cmds = [folders.python_exe_path, '-m', 'honeybee_radiance_postprocess',
                 'post-process', 'cumulative-values', res_folder, '-sf', 'metrics']

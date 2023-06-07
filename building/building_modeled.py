@@ -5,11 +5,13 @@ as they will be simulated
 
 from mains_tool.utils_general import *
 from building.utils_building import *
-from building.building_basic import BuildingBasic  # todo: cannot be imported from building.utils because of circular import (building.building_basic import utils)
+from building.building_basic import \
+    BuildingBasic  # todo: cannot be imported from building.utils because of circular import (building.building_basic import utils)
 
 
 class BuildingModeled(BuildingBasic):
     """BuildingBasic class, representing one building in an urban canopy."""
+
     # todo :make the LB_face_footprint optional in the BuildingBasic class
     def __init__(self, identifier, LB_face_footprint=None, urban_canopy=None, building_index_in_GIS=None, **kwargs):
         # Initialize with the inherited attributes from the BuildingBasic parent class
@@ -94,7 +96,8 @@ class BuildingModeled(BuildingBasic):
 
         return building_modeled_obj, identifier
 
-    def select_context_surfaces_for_shading_computation(self, context_building_list,full_urban_canopy_Pyvista_mesh, minimum_vf_criterion):
+    def select_context_surfaces_for_shading_computation(self, context_building_list, full_urban_canopy_Pyvista_mesh,
+                                                        minimum_vf_criterion):
         """ Select the context surfaces that will be used for the shading simulation of the current building.
         :param context_building_list: list of BuildingModeled objects
         :param minimum_vf_criterion: minimum view factor between surfaces to be considered as context surfaces
@@ -125,8 +128,6 @@ class BuildingModeled(BuildingBasic):
         #          if not is_HB_Face_context_surface_obstructed_for_target_LB_polyface3d(target_LB_polyface3d_extruded_footprint=self.LB_polyface3d_extruded_footprint , context_HB_Face_surface=HB_face_surface):
         #              None
         #             #todo
-
-
 
     def move(self, vector):
         """
@@ -313,14 +314,17 @@ class BuildingModeled(BuildingBasic):
         :param study_duration_in_years: int: duration of the study, default = 50 years
         :param replacement_scenario: string: name of a replacement scenario, default = 'yearly'
         """
-        roof_results = self.panels_simulation_roof(path_folder_simulation_building, pv_technologies_dictionary,
-                                                   study_duration_in_years, id_pv_tech_roof, replacement_scenario,
+
+        pv_tech_roof = pv_technologies_dictionary[id_pv_tech_roof]
+        pv_tech_facades = pv_technologies_dictionary[id_pv_tech_facades]
+
+        roof_results = self.panels_simulation_roof(path_folder_simulation_building, pv_tech_roof,
+                                                   study_duration_in_years, replacement_scenario,
                                                    **kwargs)
         roof_results_lists = beginning_end_of_life_lca_results_in_lists(roof_results[0], roof_results[1],
                                                                         roof_results[2], id_pv_tech_roof)
-        facades_results = self.panels_simulation_facades(path_folder_simulation_building, pv_technologies_dictionary,
-                                                         study_duration_in_years, id_pv_tech_facades,
-                                                         replacement_scenario, **kwargs)
+        facades_results = self.panels_simulation_facades(path_folder_simulation_building, pv_tech_facades,
+                                                         study_duration_in_years, replacement_scenario, **kwargs)
         facades_results_lists = beginning_end_of_life_lca_results_in_lists(facades_results[0], facades_results[1],
                                                                            facades_results[2], id_pv_tech_facades)
 

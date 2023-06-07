@@ -58,7 +58,9 @@ default_offset_dist = 0.1
 default_on_roof = True
 default_on_facades = True
 
-# Default values for panel simulatio
+# Default values for panel simulation
+
+default_path_pv_tech_dictionary = os.path.join(path_tool, "Libraries", "Solar_panels", "pv_technologies.json")
 default_id_pv_tech_roof = "mitrex_roof c-Si"
 default_id_pv_tech_facades = "metsolar_facades c-Si"
 default_study_duration_years = 50

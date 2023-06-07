@@ -40,15 +40,34 @@ class LoadArguments:
         parser.add_argument("-l", "--building_id_list", help="path to the additional key dictionary", nargs='?',
                             default=None)
         parser.add_argument("-t", "--are_buildings_target",
-                            help="boolean (here '0' or '1') telling if the buildings inputed in the component are target ",
-                            nargs='?',
-                            default=False)  # as no list can be sent through command line, it will be a string,
+                            help="boolean (here '0' or '1') telling if the buildings inputed in the component are "
+                                 "target ", nargs='?', default=False)  # as no list can be sent through command line,
+        # it will be a string,
         # with each id seperate by a space that will be parsed in the main script
         parser.add_argument("-w", "--path_weather_file", help="path to the weather file used",
                             default=default_path_weather_file)
-        parser.add_argument("--list_id", help="")
-
         # Solar radiation parameters
+        parser.add_argument("--list_id", help="list of the names of the buildings in the urban canopy we want to run "
+                                              "the simulation on", default=default_list_id)
+        parser.add_argument("--grid_size", help="size of the grid of the mesh for the buildings, it should be about "
+                                                "the size of a panel + BOS", default=default_grid_size)
+        parser.add_argument("--offset_dist", help="Number for the distance to move points from the surfaces of the "
+                                                  "geometry of the model", default=default_offset_dist)
+        parser.add_argument("--on_roof", help="True if the simulation is to be run on the roof, else False",
+                            default=default_on_roof)
+        parser.add_argument("--on_facades", help="True if the simulation is to be run on the facades, else False",
+                            default=default_on_facades)
+        # Panel simulation parameters
+        parser.add_argument("--path_pv_tech_dictionary", help="path to the json containing the PVPanelTechnologies",
+                            default=default_path_pv_tech_dictionary)
+        parser.add_argument("--id_pv_tech_roof", help="name of the pv tech used on the roof",
+                            default=default_id_pv_tech_roof)
+        parser.add_argument("--id_pv_tech_facades", help="name of the pv tech used on the facades",
+                            default=default_id_pv_tech_facades)
+        parser.add_argument("--study_duration_years", help="duration of the study in years",
+                            default=default_study_duration_years)
+        parser.add_argument("--replacement_scenario", help="replacement scenario chosen for the failed panels",
+                            default=default_replacement_scenario)
 
     @staticmethod
     def add_user_simulation_features_to_parser(parser):
@@ -131,7 +150,12 @@ class LoadArguments:
             "grid_size": args.grid_size,
             "offset_dist": args.offset_dist,
             "on_roof": args.on_roof,
-            "on_facades": args.on_facades
+            "on_facades": args.on_facades,
+            "path_pv_tech_dictionary": args.path_pv_tech_dictionary,
+            "id_pv_tech_roof": args.id_pv_tech_roof,
+            "id_pv_tech_facades": args.id_pv_tech_facades,
+            "study_duration_years": args.study_duration_years,
+            "replacement_scenario": args.replacement_scenario
         }
 
         # Create a dictionary with the arguments and the name of their variable that will be imported in the main script

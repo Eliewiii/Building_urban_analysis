@@ -81,13 +81,23 @@ def main():
     if simulation_step_dictionary["run_radiation_simulation"]:
         SolarOrPanelSimulation.solar_radiation_simulation(urban_canopy_object=urban_canopy_object,
                                                           path_folder_simulation=arguments_dictionary["path_folder_simulation"],
-                                                          path_weather_file=default_path_weather_file,
-                                                          list_id=default_list_id,
-                                                          grid_size=default_grid_size)
+                                                          path_weather_file=arguments_dictionary["path_weather_file"],
+                                                          list_id=arguments_dictionary["list_id"],
+                                                          grid_size=arguments_dictionary["grid_size"],
+                                                          offset_dist=arguments_dictionary["offset_dist"],
+                                                          on_roof=arguments_dictionary["on_roof"],
+                                                          on_facades=arguments_dictionary["on_facades"])
 
     # LCA and DMFA #
     # perform LCA and DMFA
-
+    if simulation_step_dictionary["run_panel_simulation"]:
+        SolarOrPanelSimulation.panel_simulation(urban_canopy_object=urban_canopy_object,
+                                                path_folder_simulation=arguments_dictionary["path_folder_simulation"],
+                                                path_pv_tech_dictionary_json=arguments_dictionary["path_pv_tech_dictionary"],
+                                                id_pv_tech_roof=arguments_dictionary["id_pv_tech_roof"],
+                                                id_pv_tech_facades=arguments_dictionary["id_pv_tech_facades"],
+                                                study_duration_in_years=arguments_dictionary["study_duration_years"],
+                                                replacement_scenario=arguments_dictionary["replacement_scenario"])
     # Microclimate weather files
 
     # Preprocessing Longwave radiation #
