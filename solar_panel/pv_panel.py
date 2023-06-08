@@ -80,7 +80,7 @@ class PvPanel:
                           * performance_ratio / 1000
         return energy_produced
 
-    def pass_year(self, year, solar_radiation_year_value):
+    def pass_year(self, solar_radiation_year_value):
         """
         Simulate a year passing for a panel
         :param year: year of the simulation, could impact the efficiency of the panel, if we assume that the efficiency

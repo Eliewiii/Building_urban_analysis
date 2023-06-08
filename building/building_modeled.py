@@ -261,9 +261,9 @@ class BuildingModeled(BuildingBasic):
         :param replacement_scenario: string: name of a replacement scenario, default = 'yearly'
         """
         self.load_panels_roof(pv_tech)
-        if self.panels["Roofs"] is not None:
+        if self.panels["Roof"] is not None:
             path_folder_roof_values_path = os.path.join(path_folder_simulation_building, "Roof",
-                                                        "annual_irradiance_values.txt")
+                                                        "annual_radiation_values.txt")
             with open(path_folder_roof_values_path, "r") as f:
                 data_values = f.read()
                 data_values_in_string = data_values.split(",")
@@ -289,7 +289,7 @@ class BuildingModeled(BuildingBasic):
         self.load_panels_facades(pv_tech)
         if self.panels["Facades"] is not None:
             path_folder_facades_values_path = os.path.join(path_folder_simulation_building, "Facades",
-                                                           "annual_irradiance_values.txt")
+                                                           "annual_radiation_values.txt")
             with open(path_folder_facades_values_path, "r") as f:
                 data_values = f.read()
                 data_values_in_string = data_values.split(",")
@@ -322,13 +322,18 @@ class BuildingModeled(BuildingBasic):
                                                    study_duration_in_years, replacement_scenario,
                                                    **kwargs)
         roof_results_lists = beginning_end_of_life_lca_results_in_lists(roof_results[0], roof_results[1],
-                                                                        roof_results[2], id_pv_tech_roof)
+                                                                        roof_results[2], pv_tech_roof)
         facades_results = self.panels_simulation_facades(path_folder_simulation_building, pv_tech_facades,
                                                          study_duration_in_years, replacement_scenario, **kwargs)
         facades_results_lists = beginning_end_of_life_lca_results_in_lists(facades_results[0], facades_results[1],
-                                                                           facades_results[2], id_pv_tech_facades)
+                                                                           facades_results[2], pv_tech_facades)
 
-        total_results_lists = roof_results_lists + facades_results_lists
+        total_results_0 = [sum(i) for i in zip(roof_results_lists[0], facades_results_lists[0])]
+        total_results_1 = [sum(i) for i in zip(roof_results_lists[1], facades_results_lists[1])]
+        total_results_2 = [sum(i) for i in zip(roof_results_lists[2], facades_results_lists[2])]
+        total_results_3 = [sum(i) for i in zip(roof_results_lists[3], facades_results_lists[3])]
+
+        total_results_lists = [total_results_0, total_results_1, total_results_2, total_results_3]
 
         self.results_panels["Roof"] = results_from_lists_to_dict(roof_results_lists[0], roof_results_lists[1],
                                                                  roof_results_lists[2], roof_results_lists[3])

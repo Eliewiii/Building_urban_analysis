@@ -71,6 +71,8 @@ class UrbanCanopy:
         UrbanCanopyAdditionalFunction.add_radiation_attributes_to_json_dict(json_dict=self.json_dict,
                                                                             building_dict=self.building_dict,
                                                                             path_folder_simulation=path_folder_simulation)
+        UrbanCanopyAdditionalFunction.add_panel_attributes_to_json_dict(json_dict=self.json_dict,
+                                                                        building_dict=self.building_dict)
 
     def generate_building_envelop_and_add_it_to_json_dict(self):
         """"""
@@ -483,8 +485,7 @@ class UrbanCanopy:
         :param replacement_scenario: string: scenario of replacements for the panels, default = 'yearly'
         """
 
-        with open(path_pv_tech_dictionary_json) as f:
-            pv_tech_dictionary = json.load(f)
+        pv_tech_dictionary = PvPanelTechnology.load_pv_technologies_from_json_to_dictionary(path_pv_tech_dictionary_json)
 
         for building in self.building_dict.values():  # for every building in the urban canopy
             if type(building) is BuildingModeled and building.is_target:

@@ -33,8 +33,7 @@ class PvPanelTechnology:
             for identifier_key in pv_dict_data:  # for every technology in the json, we create and load the
                 # PVPanelTechnology object
                 pv_tech = cls(identifier_key)
-                pv_tech.efficiency_function = get_efficiency_loss_function_from_string(pv_dict_data[pv_tech.identifier]
-                                                                                       ["efficiency_function"])
+                pv_tech.efficiency_function = pv_dict_data[pv_tech.identifier]["efficiency_function"]
                 pv_tech.initial_efficiency = pv_dict_data[identifier_key]["initial_efficiency"]
                 pv_tech.weibull_law_failure_parameters["lifetime"] = pv_dict_data[identifier_key]["weibull_lifetime"]
                 pv_tech.weibull_law_failure_parameters["shape"] = pv_dict_data[identifier_key]["weibull_shape"]

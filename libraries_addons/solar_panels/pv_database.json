@@ -5,9 +5,9 @@
     "initial_efficiency": 19.20,
     "panel_area": 1.46,
     "efficiency_function" : "linear_efficiency_loss",
-    "DMFA" : null,
-    "energy_manufacturing" : null,
-    "carbon_manufacturing" : null
+    "DMFA" : 23,
+    "energy_manufacturing" : 6.2136,
+    "carbon_manufacturing" : 303.3296
                       },
   "metsolar_facades c-Si": {
     "weibull_lifetime": 30,
@@ -15,8 +15,8 @@
     "initial_efficiency": 19,
     "panel_area": 1.46,
     "efficiency_function" : "linear_efficiency_loss",
-    "DMFA" : null,
-    "energy_manufacturing" : null,
-    "carbon_manufacturing" : null
+    "DMFA" : 23,
+    "energy_manufacturing" : 6.2136,
+    "carbon_manufacturing" : 303.3296
                             }
 }

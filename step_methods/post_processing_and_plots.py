@@ -3,12 +3,15 @@
 """
 
 from mains_tool.utils_general import *
+from urban_canopy.utils_urban_canopy import *
 
 
 class SimulationPostProcessingAndPlots:
     """ todo @Elie"""
+
     @staticmethod
-    def generate_hb_model_contains_all_building_envelopes_to_plot_Grasshopper(urban_canopy_object,path_folder_simulation):
+    def generate_hb_model_contains_all_building_envelopes_to_plot_Grasshopper(urban_canopy_object,
+                                                                              path_folder_simulation):
         """
             todo @Elie, change it, so tha it is writen in the json file
         """
@@ -23,3 +26,9 @@ class SimulationPostProcessingAndPlots:
         """
         urban_canopy_object.add_hb_model_envelop_to_json_dict()
         logging.info(" ")  # todo
+
+    @staticmethod
+    def generate_csv_panels_simulation_results(urban_canopy_object, path_folder_simulation):
+        UrbanCanopyAdditionalFunction.write_to_csv_panels_simulation_results(json_dict=urban_canopy_object.json_dict,
+                                                                             building_dict=urban_canopy_object.building_dict,
+                                                                             path_folder_simulation=path_folder_simulation)

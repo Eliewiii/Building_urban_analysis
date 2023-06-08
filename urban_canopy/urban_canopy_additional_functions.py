@@ -4,7 +4,7 @@ Additional functions used by Urban canopy
 
 from mains_tool.utils_general import *
 from urban_canopy.utils_urban_canopy import *
-
+from libraries_addons.solar_panels.useful_functions_solar_panel import write_to_csv_arr
 
 class UrbanCanopyAdditionalFunction:
 
@@ -102,6 +102,15 @@ class UrbanCanopyAdditionalFunction:
                     # json_dict["buildings"][building_id]["Solar_radiation"]["Path_results"]["Timestep"]["Facades"] =
 
     @staticmethod
+    def add_panel_attributes_to_json_dict(json_dict, building_dict):
+
+        for building_id, building_object in building_dict.items():
+            if type(building_object) is BuildingModeled:
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"] = building_object.results_panels["Roof"]
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"] = building_object.results_panels["Facades"]
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"] = building_object.results_panels["Total"]
+
+    @staticmethod
     def make_HB_model_dict_envelops_from_buildings(building_dict):
         """ Make the hb model for the building envelop and save it to hbjson file if the path is provided """
         HB_room_envelop_list = []  # Initialize the list
@@ -120,3 +129,43 @@ class UrbanCanopyAdditionalFunction:
         HB_dict = HB_model.to_dict()
 
         return HB_dict
+
+    @staticmethod
+    def write_to_csv_panels_simulation_results(json_dict, building_dict, path_folder_simulation):
+        # todo change names lca energy/lca carbon ?
+        for building_id, building_object in building_dict.items():
+            path_folder_building = os.path.join(path_folder_simulation, building_id)
+            path_folder_panels_results_csv = os.path.join(path_folder_building, "panels_simulation_results.csv")
+            header = ["energy_produced_roof", "energy_produced_facades", "energy_produced_total",
+                      "primary_energy_roof", "primary_energy_facades", "primary_energy_total",
+                      "gh_gas_emissions_manufacturing_roof", "gh_gas_emissions_manufacturing_facades",
+                      "gh_gas_emissions_manufacturing__total",
+                      "dmfa_roof", "dmfa_facades", "dmfa_total"]
+            list1 = \
+            json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["energy_produced"]["list"]
+            list2 = \
+            json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["energy_produced"][
+                "list"]
+            list3 = \
+            json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["energy_produced"][
+                "list"]
+            list4 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["lca_energy"][
+                "list"]
+            list5 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["lca_energy"][
+                "list"]
+            list6 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["lca_energy"][
+                "list"]
+            list7 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["lca_carbon"][
+                "list"]
+            list8 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["lca_carbon"][
+                "list"]
+            list9 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["lca_carbon"][
+                "list"]
+            list10 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["dmfa"]["list"]
+            list11 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["dmfa"][
+                "list"]
+            list12 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["dmfa"]["list"]
+
+            array = numpy.transpose([list1, list2, list3, list4, list5, list6, list7, list8, list9, list10, list11, list12])
+
+            write_to_csv_arr(header, array, path_folder_panels_results_csv)
