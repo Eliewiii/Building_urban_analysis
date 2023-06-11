@@ -62,10 +62,11 @@ def loop_over_the_years_for_solar_panels(pv_panel_obj_list, yearly_solar_radiati
                     nb_of_new_panels += 1
         elif replacement_scenario == "every_X_years":
             replacement_year = kwargs["replacement_year"]
-            if year != 0 and year % replacement_year != 0:
-                if not panel_obj.is_panel_working():
-                    panel_obj.initialize_or_replace_panel()
-                    nb_of_new_panels += 1
+            if year != 0 and year % replacement_year == 0:
+                for panel_obj in pv_panel_obj_list:
+                    if not panel_obj.is_panel_working():
+                        panel_obj.initialize_or_replace_panel()
+                        nb_of_new_panels += 1
 
         # other scenario, replace every thing every X years?
         energy_production_per_year_list.append(energy_produced)
@@ -82,8 +83,8 @@ def write_to_csv_arr(header, arr, file_path):
     :param file_path: path to where the file should be written
     """
     with open(file_path, 'w') as f:
-        writer = csv.writer(f)
-        writer.writerows(header)
+        writer = csv.writer(f, lineterminator='\n')
+        writer.writerow(header)
         writer.writerows(arr)
 
 

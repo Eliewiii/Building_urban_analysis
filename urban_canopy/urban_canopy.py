@@ -474,7 +474,7 @@ class UrbanCanopy:
         return list_id
 
     def run_panel_simulation(self, path_folder_simulation, path_pv_tech_dictionary_json, id_pv_tech_roof,
-                             id_pv_tech_facades, study_duration_in_years, replacement_scenario):
+                             id_pv_tech_facades, study_duration_in_years, replacement_scenario, **kwargs):
         """
         Run the panels simulation on the urban canopy
         :param path_folder_simulation: path to the simulation folder
@@ -491,4 +491,4 @@ class UrbanCanopy:
             if type(building) is BuildingModeled and building.is_target:
                 path_folder_building = os.path.join(path_folder_simulation, building.id)
                 building.panel_simulation_building(path_folder_building, pv_tech_dictionary, id_pv_tech_roof,
-                                                   id_pv_tech_facades, study_duration_in_years, replacement_scenario)
+                                                   id_pv_tech_facades, study_duration_in_years, replacement_scenario, **kwargs)

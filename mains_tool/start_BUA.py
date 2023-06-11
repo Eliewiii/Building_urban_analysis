@@ -61,7 +61,6 @@ def main():
             urban_canopy_object=urban_canopy_object,
             building_id_list=arguments_dictionary["building_id_list"])
 
-
     # Move building to origin
     if simulation_step_dictionary["run_move_buildings_to_origin"] or (
             urban_canopy_object.moving_vector_to_origin is not None and False in [building_obj.moved_to_origin for
@@ -80,7 +79,8 @@ def main():
     # Perform Solar radiation
     if simulation_step_dictionary["run_radiation_simulation"]:
         SolarOrPanelSimulation.solar_radiation_simulation(urban_canopy_object=urban_canopy_object,
-                                                          path_folder_simulation=arguments_dictionary["path_folder_simulation"],
+                                                          path_folder_simulation=arguments_dictionary[
+                                                              "path_folder_simulation"],
                                                           path_weather_file=arguments_dictionary["path_weather_file"],
                                                           list_id=arguments_dictionary["list_id"],
                                                           grid_size=arguments_dictionary["grid_size"],
@@ -93,7 +93,8 @@ def main():
     if simulation_step_dictionary["run_panel_simulation"]:
         SolarOrPanelSimulation.panel_simulation(urban_canopy_object=urban_canopy_object,
                                                 path_folder_simulation=arguments_dictionary["path_folder_simulation"],
-                                                path_pv_tech_dictionary_json=arguments_dictionary["path_pv_tech_dictionary"],
+                                                path_pv_tech_dictionary_json=arguments_dictionary[
+                                                    "path_pv_tech_dictionary"],
                                                 id_pv_tech_roof=arguments_dictionary["id_pv_tech_roof"],
                                                 id_pv_tech_facades=arguments_dictionary["id_pv_tech_facades"],
                                                 study_duration_in_years=arguments_dictionary["study_duration_years"],
@@ -101,7 +102,8 @@ def main():
 
         SimulationPostProcessingAndPlots.generate_csv_panels_simulation_results(urban_canopy_object=urban_canopy_object,
                                                                                 path_folder_simulation=
-                                                                                arguments_dictionary["path_folder_simulation"])
+                                                                                arguments_dictionary[
+                                                                                    "path_folder_simulation"])
     # Microclimate weather files
 
     # Preprocessing Longwave radiation #
@@ -130,6 +132,12 @@ def main():
         SimulationCommonMethods.save_urban_canopy_to_json(urban_canopy_object=urban_canopy_object,
                                                           path_folder_simulation=arguments_dictionary[
                                                               "path_folder_simulation"])
+
+    # Post-processing panels
+    if simulation_step_dictionary["generate_panels_results_in_csv"]:
+        SimulationPostProcessingAndPlots.generate_csv_panels_simulation_results(urban_canopy_object=urban_canopy_object,
+                                                                                path_folder_simulation=
+                                                                                default_path_folder_simulation)
 
     # Save logs for the components
     if arguments_dictionary["gh_component_name"] is not None:

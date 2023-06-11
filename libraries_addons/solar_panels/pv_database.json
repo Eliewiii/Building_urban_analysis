@@ -6,7 +6,7 @@
     "panel_area": 1.46,
     "efficiency_function" : "linear_efficiency_loss",
     "DMFA" : 23,
-    "energy_manufacturing" : 6.2136,
+    "energy_manufacturing" : 277.78,
     "carbon_manufacturing" : 303.3296
                       },
   "metsolar_facades c-Si": {
@@ -16,7 +16,7 @@
     "panel_area": 1.46,
     "efficiency_function" : "linear_efficiency_loss",
     "DMFA" : 23,
-    "energy_manufacturing" : 6.2136,
+    "energy_manufacturing" : 277.78,
     "carbon_manufacturing" : 303.3296
                             }
 }

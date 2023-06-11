@@ -65,6 +65,7 @@ default_id_pv_tech_roof = "mitrex_roof c-Si"
 default_id_pv_tech_facades = "metsolar_facades c-Si"
 default_study_duration_years = 50
 default_replacement_scenario = "yearly"
+default_evey_X_years = 5
 # Exports
 urban_canopy_export_file_name = "urban_canopy"
 urban_canopy_export_file_name_pkl = urban_canopy_export_file_name + ".pkl"
