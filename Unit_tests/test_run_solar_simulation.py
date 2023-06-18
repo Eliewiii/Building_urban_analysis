@@ -24,7 +24,7 @@ SimulationLoadBuildingOrGeometry.add_buildings_from_hbjson_to_urban_canopy(urban
 SolarOrPanelSimulation.solar_radiation_simulation(urban_canopy_object=urban_canopy_object,
                                                   path_folder_simulation=default_path_folder_simulation,
                                                   path_weather_file=default_path_weather_file,
-                                                  list_id=default_list_id,
+                                                  list_id=None,
                                                   grid_size=default_grid_size,
                                                   offset_dist=default_offset_dist,
                                                   on_roof=default_on_roof,

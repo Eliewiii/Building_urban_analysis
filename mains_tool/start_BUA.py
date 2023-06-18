@@ -16,7 +16,7 @@ def main():
     # Get the user parameters from the command line
     parser = argparse.ArgumentParser()
     # Parse the arguments and return them in a dictionary
-    LoadArguments.add_usermeters_to_parser(parser)
+    LoadArguments.add_user_parameters_to_parser(parser)
     LoadArguments.add_user_simulation_features_to_parser(parser)
     arguments_dictionary, simulation_step_dictionary = LoadArguments.parse_arguments_and_add_them_to_variable_dict(
         parser)
@@ -82,7 +82,7 @@ def main():
                                                           path_folder_simulation=arguments_dictionary[
                                                               "path_folder_simulation"],
                                                           path_weather_file=arguments_dictionary["path_weather_file"],
-                                                          list_id=arguments_dictionary["list_id"],
+                                                          list_id=arguments_dictionary["building_id_list"],
                                                           grid_size=arguments_dictionary["grid_size"],
                                                           offset_dist=arguments_dictionary["offset_dist"],
                                                           on_roof=arguments_dictionary["on_roof"],

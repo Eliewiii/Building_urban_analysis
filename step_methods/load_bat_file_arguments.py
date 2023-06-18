@@ -37,8 +37,8 @@ class LoadArguments:
                             help="path to a single file taht will be useful for the simuation", nargs='?', default=None)
 
         # Building manipulation parameters
-        parser.add_argument("-l", "--building_id_list", help="path to the additional key dictionary", nargs='?',
-                            default=None)
+        parser.add_argument("-l", "--building_id_list", help="list of the names of the buildings in the urban canopy "
+                                                             "we want to run the simulation on", nargs='?', default=None)
         parser.add_argument("-t", "--are_buildings_target",
                             help="boolean (here '0' or '1') telling if the buildings inputed in the component are "
                                  "target ", nargs='?', default=False)  # as no list can be sent through command line,
@@ -47,8 +47,6 @@ class LoadArguments:
         parser.add_argument("-w", "--path_weather_file", help="path to the weather file used",
                             default=default_path_weather_file)
         # Solar radiation parameters
-        parser.add_argument("--list_id", help="list of the names of the buildings in the urban canopy we want to run "
-                                              "the simulation on", default=default_list_id)
         parser.add_argument("--grid_size", help="size of the grid of the mesh for the buildings, it should be about "
                                                 "the size of a panel + BOS", default=default_grid_size)
         parser.add_argument("--offset_dist", help="Number for the distance to move points from the surfaces of the "
@@ -135,7 +133,6 @@ class LoadArguments:
 
         # post process of some arguments
         buildings_id_list = parse_and_clean_building_id_list_from_argument_parser(args.building_id_list)
-        are_buildings_target = bool(int(args.are_buildings_target))  # to convert the string ("0" or "1") to a boolean
 
         # Create a dictionary with the arguments and the name of their variable that will be imported in the main script
         # todo @Elie, complete the dictionary with the new arguments through the development
@@ -147,20 +144,19 @@ class LoadArguments:
             "gh_component_name": args.gh_component_name,
             "path_folder": args.path_folder,
             "path_file": args.path_file,
-            "building_id_list": args.building_id_list,
+            "building_id_list": buildings_id_list,
             "are_buildings_target": bool(int(args.are_buildings_target)),
             "path_weather_file": args.path_weather_file,
-            "list_id": args.list_id,
-            "grid_size": args.grid_size,
-            "offset_dist": args.offset_dist,
-            "on_roof": args.on_roof,
-            "on_facades": args.on_facades,
+            "grid_size": int(args.grid_size),
+            "offset_dist": int(args.offset_dist),
+            "on_roof": bool(int(args.on_roof)),
+            "on_facades": bool(int(args.on_facades)),
             "path_pv_tech_dictionary": args.path_pv_tech_dictionary,
             "id_pv_tech_roof": args.id_pv_tech_roof,
             "id_pv_tech_facades": args.id_pv_tech_facades,
-            "study_duration_years": args.study_duration_years,
+            "study_duration_years": int(args.study_duration_years),
             "replacement_scenario": args.replacement_scenario,
-            "every_X_years": args.every_x_years
+            "every_X_years": int(args.every_x_years)
         }
 
         # Create a dictionary with the arguments and the name of their variable that will be imported in the main script

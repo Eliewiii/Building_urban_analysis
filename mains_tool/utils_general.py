@@ -52,7 +52,6 @@ default_number_of_rays_context_filter_second_pass = 3
 # Default values for the simulations - Solar radiation calculation
 default_name_radiation_simulation_folder = 'Radiation Simulation'
 default_path_weather_file = os.path.join(path_tool, "Libraries", "EPW", "IS_5280_A_Haifa.epw")
-default_list_id = None
 default_grid_size = 1.5  # todo check it !
 default_offset_dist = 0.1
 default_on_roof = True
