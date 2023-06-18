@@ -76,5 +76,5 @@ class PvPanelTechnology:
         shape = self.weibull_law_failure_parameters["shape"]  # extract the failure parameters
         lifetime = self.weibull_law_failure_parameters["lifetime"]
         # Quantile function for the Weibull distribution
-        life_expectancy = ceil(shape * (-log(1 - y)) ** (1 / lifetime))
+        life_expectancy = ceil(lifetime * (-log(1 - y)) ** (1 / shape))
         return life_expectancy

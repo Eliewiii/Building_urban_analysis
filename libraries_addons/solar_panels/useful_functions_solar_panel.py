@@ -46,13 +46,7 @@ def loop_over_the_years_for_solar_panels(pv_panel_obj_list, yearly_solar_radiati
             for panel_obj in pv_panel_obj_list:
                 panel_obj.initialize_or_replace_panel()
                 nb_of_new_panels += 1
-        # Increment of 1 year
-        for panel_obj in pv_panel_obj_list:
-            index_panel = pv_panel_obj_list.index(panel_obj)
-            energy_produced_panel, panel_failed = panel_obj.pass_year(yearly_solar_radiation_values[index_panel])
-            energy_produced += energy_produced_panel
-            if panel_failed:
-                nb_of_failed_panels += 1
+
         # Replace according to replacement "scenario" \(- -)/
         if replacement_scenario == "yearly":
             # the code inside each statement
@@ -68,7 +62,14 @@ def loop_over_the_years_for_solar_panels(pv_panel_obj_list, yearly_solar_radiati
                         panel_obj.initialize_or_replace_panel()
                         nb_of_new_panels += 1
 
-        # other scenario, replace every thing every X years?
+        # Increment of 1 year
+        for panel_obj in pv_panel_obj_list:
+            index_panel = pv_panel_obj_list.index(panel_obj)
+            energy_produced_panel, panel_failed = panel_obj.pass_year(yearly_solar_radiation_values[index_panel])
+            energy_produced += energy_produced_panel
+            if panel_failed:
+                nb_of_failed_panels += 1
+
         energy_production_per_year_list.append(energy_produced)
         nb_of_panels_installed_list.append(nb_of_new_panels)
         nb_of_failed_panels_list.append(nb_of_failed_panels)
