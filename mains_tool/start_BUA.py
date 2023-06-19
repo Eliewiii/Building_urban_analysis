@@ -100,10 +100,6 @@ def main():
                                                 study_duration_in_years=arguments_dictionary["study_duration_years"],
                                                 replacement_scenario=arguments_dictionary["replacement_scenario"])
 
-        SimulationPostProcessingAndPlots.generate_csv_panels_simulation_results(urban_canopy_object=urban_canopy_object,
-                                                                                path_folder_simulation=
-                                                                                arguments_dictionary[
-                                                                                    "path_folder_simulation"])
     # Microclimate weather files
 
     # Preprocessing Longwave radiation #
@@ -137,7 +133,8 @@ def main():
     if simulation_step_dictionary["generate_panels_results_in_csv"]:
         SimulationPostProcessingAndPlots.generate_csv_panels_simulation_results(urban_canopy_object=urban_canopy_object,
                                                                                 path_folder_simulation=
-                                                                                default_path_folder_simulation)
+                                                                                arguments_dictionary[
+                                                                                    "path_folder_simulation"])
 
     # Save logs for the components
     if arguments_dictionary["gh_component_name"] is not None:

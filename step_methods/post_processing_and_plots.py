@@ -30,5 +30,7 @@ class SimulationPostProcessingAndPlots:
     @staticmethod
     def generate_csv_panels_simulation_results(urban_canopy_object, path_folder_simulation):
         UrbanCanopyAdditionalFunction.write_to_csv_panels_simulation_results(json_dict=urban_canopy_object.json_dict,
-                                                                             building_dict=urban_canopy_object.building_dict,
-                                                                             path_folder_simulation=path_folder_simulation)
+                                                                             building_dict=urban_canopy_object.
+                                                                             building_dict,
+                                                                             path_folder_simulation=
+                                                                             path_folder_simulation)
