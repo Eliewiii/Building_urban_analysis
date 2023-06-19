@@ -12,7 +12,7 @@ class UrbanCanopyAdditionalFunction:
     @classmethod
     def add_hb_model_of_urban_canopy_envelop_to_json_dict(cls, json_dict, building_dict):
         """
-            todo @Elie, change it, so tha it is writen in the json file
+            todo @Elie, change it, so that it is writen in the json file
         """
         # Generate the HB model for the building envelops and convert it to dict
         building_envelops_hb_dict = cls.make_HB_model_dict_envelops_from_buildings(building_dict)

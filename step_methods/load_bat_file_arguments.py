@@ -133,6 +133,7 @@ class LoadArguments:
 
         # post process of some arguments
         buildings_id_list = parse_and_clean_building_id_list_from_argument_parser(args.building_id_list)
+        are_buildings_target = bool(int(args.are_buildings_target))  # to convert the string ("0" or "1") to a boolean
 
         # Create a dictionary with the arguments and the name of their variable that will be imported in the main script
         # todo @Elie, complete the dictionary with the new arguments through the development
