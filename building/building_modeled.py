@@ -22,11 +22,15 @@ class BuildingModeled(BuildingBasic):
 
         self.HB_model_obj = None
         self.HB_model_dict = None
+
+        self.to_simulate = False
+        self.is_target = False
+
+        self.first_pass_context_building_id_list = []
+
         self.sensor_grid_dict = {'Roof': None, 'Facades': None}
         self.panels = {"Roof": None, "Facades": None}
         self.results_panels = {"Roof": None, "Facades": None, "Total": None}
-        self.to_simulate = False
-        self.is_target = False
 
     def load_HB_attributes(self):
         """
@@ -46,28 +50,31 @@ class BuildingModeled(BuildingBasic):
         # todo : maybe add more properties to modify before pickling to avoid locked class issue
 
     @classmethod
-    def convert_buildingbasic_to_buildingmodeled(cls, building_obj, layout_from_typology=False,
-                                                 automatic_subdivision=True,
+    def convert_buildingbasic_to_buildingmodeled(cls, building_obj, is_target=False, is_simulated=True,
+                                                 layout_from_typology=False, automatic_subdivision=True,
                                                  properties_from_typology=True):
         """
         Create a BuildingModeled object from a BuildingBasic object
         :return: building_HB_model : BuildingModeled object
         """
-        # Make the HB model from the building object
-        # todo @Sharon : how to try to make the model ? and if it work we go further ? otherwise we return None ?
-        HB_model = building_obj.to_HB_model(layout_from_typology=layout_from_typology,
-                                            automatic_subdivision=automatic_subdivision,
-                                            properties_from_typology=properties_from_typology)
-        # get the attributes of the building_obj (it extract all attributes, even the ones that are used
-        # to create the object), but it doesn't matter, it is just a bit redundant
-        kwargs = {attr: getattr(building_obj, attr) for attr in dir(building_obj) if not attr.startswith('__')}
-        # create the BuildingModeled object from the BuildingBasic object
-        building_HB_model = cls(building_obj.id, building_obj.LB_face_footprint, building_obj.urban_canopy,
-                                building_obj.index_in_GIS, **kwargs)
-        # todo : @Sharon, check if the code is correct to create object from super class, should it be that way or though a to_buildingHBmodel function in the BuildingBasic class?
+        if isinstance(building_obj, cls):
+            return building_obj
+        else:
+            # Make the HB model from the building object
+            # todo @Sharon : how to try to make the model ? and if it work we go further ? otherwise we return None ?
+            HB_model = building_obj.to_HB_model(layout_from_typology=layout_from_typology,
+                                                automatic_subdivision=automatic_subdivision,
+                                                properties_from_typology=properties_from_typology)
+            # get the attributes of the building_obj (it extract all attributes, even the ones that are used
+            # to create the object), but it doesn't matter, it is just a bit redundant
+            kwargs = {attr: getattr(building_obj, attr) for attr in dir(building_obj) if not attr.startswith('__')}
+            # create the BuildingModeled object from the BuildingBasic object
+            building_HB_model = cls(building_obj.id, building_obj.LB_face_footprint, building_obj.urban_canopy,
+                                    building_obj.index_in_GIS, **kwargs)
+            # todo : @Sharon, check if the code is correct to create object from super class, should it be that way or though a to_buildingHBmodel function in the BuildingBasic class?
 
-        return building_HB_model
-        # todo : change if needed where the dictionary of the urban canopy is pointing, to point to the new object
+            return building_HB_model
+            # todo : change if needed where the dictionary of the urban canopy is pointing, to point to the new object
 
     @classmethod
     def make_buildingmodeled_from_hbjson(cls, path_hbjson, is_target=False, urban_canopy=None):
@@ -96,7 +103,9 @@ class BuildingModeled(BuildingBasic):
 
         return building_modeled_obj, identifier
 
-    def select_context_surfaces_for_shading_computation(self, context_building_list, full_urban_canopy_Pyvista_mesh,
+    @classmethod
+    def select_context_surfaces_for_shading_computation(cls, target_building_obj, context_building_list,
+                                                        full_urban_canopy_Pyvista_mesh,
                                                         minimum_vf_criterion):
         """ Select the context surfaces that will be used for the shading simulation of the current building.
         :param context_building_list: list of BuildingModeled objects
@@ -105,21 +114,26 @@ class BuildingModeled(BuildingBasic):
         """
         # todo @ Elie: finish the function
         # Initialize variables
-        list_building_kept_first_pass = []
+        list_building_obj_kept_first_pass = []
         HB_Face_surfaces_kept_second_pass = []
         # First pass
         for context_building_obj in context_building_list:
-            if context_building_obj.id != self.id:  # does not take itself into account
+            if context_building_obj.id != target_building_obj.id:  # does not take itself into account
                 if is_bounding_box_context_using_mvfc_criterion(
-                        target_LB_polyface3d_extruded_footprint=self.LB_polyface3d_extruded_footprint,
+                        target_LB_polyface3d_extruded_footprint=target_building_obj.LB_polyface3d_extruded_footprint,
                         context_LB_polyface3d_oriented_bounding_box=context_building_obj.LB_polyface3d_oriented_bounding_box,
                         minimum_vf_criterion=minimum_vf_criterion):
-                    None
-                    # todo @Elie : add the buoiliding to the list of building kept in the first pass
-                    # add the building to the list of building for the second path
+                    # add the building to the list of kept buildings
+                    list_building_obj_kept_first_pass.append(context_building_obj)
 
-                    # convert the buildingbasics into buildingmodeled (with typo identifier when it will work, put an empty function for now
-                    # use the honeybee model to have the proper caracteristics of the surfsace
+        for context_building_obj in list_building_obj_kept_first_pass:
+            cls.convert_buildingbasic_to_buildingmodeled(context_building_obj)
+
+            # todo @Elie : add the buoiliding to the list of building kept in the first pass
+            # add the building to the list of building for the second path
+
+            # convert the buildingbasics into buildingmodeled (with typo identifier when it will work, put an empty function for now
+            # use the honeybee model to have the proper caracteristics of the surfsace
 
         # Second pass
 
