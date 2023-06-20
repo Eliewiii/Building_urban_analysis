@@ -69,14 +69,15 @@ class PvPanel:
     def energy_produced_in_one_year(self, solar_radiation_year_value, performance_ratio=0.75):
         """
         Return the energy produced in one year by a functioning panel
-        :param solar_radiation_year_value: float: radiation received by a panel during an entire year in Wh/panel/year
+        :param solar_radiation_year_value: float: radiation received by a panel during an entire year in Wh/m2/year
         :param performance_ratio: float: performance ratio of the pv, on average equals to 0.75
         :return energy_produced: float: energy produced by the panel during the year, in kWh/panel/year
         """
         efficiency_loss_function = get_efficiency_loss_function_from_string(self.panel_technology_object.
                                                                             efficiency_function)
         initial_efficiency = self.panel_technology_object.initial_efficiency
-        energy_produced = efficiency_loss_function(initial_efficiency, self.age) * solar_radiation_year_value \
+        area = self.panel_technology_object.panel_area
+        energy_produced = efficiency_loss_function(initial_efficiency, self.age) * solar_radiation_year_value * area \
                           * performance_ratio / 1000
         return energy_produced
 
