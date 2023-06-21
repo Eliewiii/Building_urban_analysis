@@ -128,7 +128,7 @@ class BuildingModeled(BuildingBasic):
 
         for context_building_obj in list_building_obj_kept_first_pass:
             cls.convert_buildingbasic_to_buildingmodeled(context_building_obj)
-
+            # todo save them properluy and updat in Urbanb canopy
             # todo @Elie : add the buoiliding to the list of building kept in the first pass
             # add the building to the list of building for the second path
 
