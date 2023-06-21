@@ -38,8 +38,8 @@ class PvPanelTechnology:
                 pv_tech.weibull_law_failure_parameters["lifetime"] = pv_dict_data[identifier_key]["weibull_lifetime"]
                 pv_tech.weibull_law_failure_parameters["shape"] = pv_dict_data[identifier_key]["weibull_shape"]
                 pv_tech.DMFA = pv_dict_data[identifier_key]["DMFA"]
-                pv_tech.energy_manufacturing = pv_dict_data[identifier_key]["energy_manufacturing"]
-                pv_tech.carbon_manufacturing = pv_dict_data[identifier_key]["carbon_manufacturing"]
+                pv_tech.energy_manufacturing = pv_dict_data[identifier_key]["primary_energy_manufacturing_in_kWh_per_panel"]
+                pv_tech.carbon_manufacturing = pv_dict_data[identifier_key]["gh_gas_emissions_manufacturing_in_kgCO2eq_per_panel"]
                 pv_tech.panel_area = pv_dict_data[identifier_key]["panel_area"]
 
                 pv_technologies_dict[identifier_key] = pv_tech  # then we add this object to the dictionary containing

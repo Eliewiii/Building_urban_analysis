@@ -1,17 +1,26 @@
 """Run a solar radiation simulation for all the buildings in the urban canopy that are targeted
     Inputs:
-        building_id_list : list of buildings we want to run the simulation on
-        path_folder_simulation_: Path to the folder. By default, the code will be run in
-                                Appdata\Roaming\Building_urban_analysis\Simulation_temp
-        _path_weather_file : Path to the weather file.
-        _grid_size_ : Number for the distance to move points from the surfaces of the geometry of the model
-        _offset_dist_ :  Number for the distance to move points from the surfaces of the geometry of the model.
-        Typically, this should be a small positive number to ensure points are not blocked by the mesh.
-        on_roof_ : True if the the simulation is to be run on the roof, else False (Default = True)
-        on_facades_ : True if the the simulation is to be run on the facades, else False (Default = True)
+        path_folder_simulation_: Path to the folder. Default = Appdata\Roaming\Building_urban_analysis\Simulation_temp
+        _path_weather_file_: Path to the weather file. Default = AppData\Roaming\Building_urban_analysis\Libraries\EPW\IS_5280_A_Haifa
+        building_id_list_: list of ints: list of buildings we want to run the simulation on
+        grid_size_: int: Number for the distance to move points from the surfaces of the geometry of the model.
+                    Default = 1.5
+        offset_dist_: int:  Number for the distance to move points from the surfaces of the geometry of the model.
+                    Typically, this should be a small positive number to ensure points are not blocked by the mesh.
+                    Default = 0.1
+        on_roof_: Bool: True if the simulation is to be run on the roof, else False (Default = True)
+        on_facades_: Bool: True if the simulation is to be run on the facades, else False (Default = True)
+        path_pv_tech_dictionary_: path to the json file containing the dictionary of PV technologies
+                                Default = AppData\Roaming\Building_urban_analysis\Libraries\Solar_panels\pv_technologies.json
+        _id_pv_tech_roof_: str: name of the pv tech used on the roof. Default = "mitrex_roof c-Si"
+        _id_pv_tech_facades_: str: name of the pv tech used on the facades. Default = "metsolar_facades c-Si"
+        study_duration_years_: int: duration in years of the study. Default = 50
+        _replacement_scenario_: str: replacement scenario of the panels. Default = "yearly"
+        every_X_years: int: if _replacement_scenario_ = "every_X_years", then laps of time between each replacement of panels
         _run: Plug in a button to run the component
     Output:
-        a: The a output variable"""
+        out: report
+        path_folder_simulation_: Path to the folder."""
 
 import os
 import json
