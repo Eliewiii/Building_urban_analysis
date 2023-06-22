@@ -47,12 +47,12 @@ class UrbanCanopyAdditionalFunction:
             # Differentiate between the two types of buildings
             if type(building_object) is BuildingBasic:
                 HB_room_dict = building_object.export_building_to_elevated_HB_room_envelop().to_dict()
-                json_dict["buildings"][building_id]["hb_room_envelop"] = HB_room_dict
+                json_dict["buildings"][building_id]["HB_room_envelop"] = HB_room_dict
             elif type(building_object) is BuildingModeled:
                 HB_room_dict = building_object.export_building_to_elevated_HB_room_envelop().to_dict()
-                json_dict["buildings"][building_id]["hb_room_envelop"] = HB_room_dict
+                json_dict["buildings"][building_id]["HB_room_envelop"] = HB_room_dict
                 # at this stage of the simulation, the HB has already been turned into a dict (to avoid locked class issue)
-                json_dict["buildings"][building_id]["HB_model"] = building_object.HB_model_dict()
+                json_dict["buildings"][building_id]["HB_model"] = building_object.HB_model_dict
 
     @staticmethod
     def add_building_attributes_to_json_dict(json_dict, building_dict):
@@ -135,7 +135,7 @@ class UrbanCanopyAdditionalFunction:
     def write_to_csv_panels_simulation_results(json_dict, building_dict, path_folder_simulation):
         # todo change names lca energy/lca carbon ?
         for building_id, building_object in building_dict.items():
-            path_folder_building = os.path.join(path_folder_simulation, building_id)
+            path_folder_building = os.path.join(path_folder_simulation, default_name_radiation_simulation_folder, building_id)
             path_folder_panels_results_csv = os.path.join(path_folder_building, "panels_simulation_results.csv")
             header = ["energy_produced_roof (kWh)", "energy_produced_facades (kWh)", "energy_produced_total (kWh)",
                       "primary_energy_roof (kWh)", "primary_energy_facades (kWh)", "primary_energy_total (kWh)",

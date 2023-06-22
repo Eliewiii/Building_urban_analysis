@@ -22,6 +22,7 @@
         out: report
         path_folder_simulation_: Path to the folder."""
 
+
 import os
 import json
 
@@ -40,7 +41,6 @@ def clean_log_for_out(path_log_file):
         log_line_list = [line.split("[ERROR] ")[-1] for line in log_line_list]
     return (log_line_list)
 
-
 # Get Appdata\local folder
 local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
@@ -54,12 +54,12 @@ if _run:
     # argument =" -t 1"
     argument = " "
     # Steps to execute
-    argument = argument + "--make_simulation_folder 1 " + "--create_or_load_urban_canopy_object 1 " + "--save_urban_canopy_object_to_pickle 1 " + "--save_urban_canopy_object_to_json 1 " + "--generate_model_with_building_envelop 1 " + "--do_radiation_simulation 1 " + "--do_panel_simulation 1 " + "--generate_panels_results_in_csv 1 "
+    argument = argument + "--make_simulation_folder 1 " + "--create_or_load_urban_canopy_object 1 " + "--save_urban_canopy_object_to_pickle 1 " + "--save_urban_canopy_object_to_json 1 " + "--generate_model_with_building_envelop 1 " + "--do_radiation_simulation 1 " + "--do_panel_simulation1" + "--generate_panels_results_in_csv 1 "
     # OPtionnal argument of the bat file/Python script
     if path_folder_simulation_ is not None:
         argument = argument + ' -f "{}"'.format(path_folder_simulation_)
     if _path_weather_file_ is not None:
-        argument = argument + ' -w "{}""'.format(_path_weather_file_)
+        argument = argument + ' -w "{}"'.format(_path_weather_file_)
     if building_id_list_ is not None:
         argument = argument + ' --building_id_list "{}"'.format(building_id_list_)
     if grid_size_ is not None:
@@ -71,7 +71,7 @@ if _run:
     if on_facades_ is not None:
         argument = argument + ' --on_facades "{}"'.format(on_facades_)
     if path_pv_tech_dictionary_ is not None:
-        argument = argument + ' --path_pv_tech_dictionary "{}"'.format(path_pv_tech_dictionary_)
+        argument = argument + ' --path_pv_tech_dictionary "{}"'.format(path_pv_tech_dictionary_ )
     if _id_pv_tech_roof_ is not None:
         argument = argument + ' --id_pv_tech_roof "{}"'.format(_id_pv_tech_roof_)
     if _id_pv_tech_facades_ is not None:
@@ -83,7 +83,8 @@ if _run:
     if every_X_years_ is not None:
         argument = argument + ' --every_X_years_ "{}"'.format(every_X_years_)
 
-        # Execute the command
+
+    # Execute the command
     output = os.system(command + argument)
     print(command + argument)
 
