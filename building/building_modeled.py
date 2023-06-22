@@ -103,6 +103,8 @@ class BuildingModeled(BuildingBasic):
 
         return building_modeled_obj, identifier
 
+    def
+
     @classmethod
     def select_context_surfaces_for_shading_computation(cls, target_building_obj, context_building_list,
                                                         full_urban_canopy_Pyvista_mesh,
