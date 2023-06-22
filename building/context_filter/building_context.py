@@ -5,21 +5,24 @@ todo
 from building.context_filter.utils_libraries_context_filter import *
 from building.context_filter.utils_functions_context_filter import *
 
+from mains_tool.utils_general import default_mvfc_context_shading_selection
+
 
 class BuildingContext:
     """ todo """
 
-    def __init__(self):
-        self.min_VF_criterion = None
+    def __init__(self, min_VF_criterion=default_mvfc_context_shading_selection):
+        self.min_VF_criterion = min_VF_criterion
         self.context_building_id_list = []
 
     def select_context_buildings_using_the_mvfc(self, target_LB_polyface3d_extruded_footprint,
                                                 context_LB_polyface3d_oriented_bounding_box, context_building_id):
         """ todo"""
-        # Check if the bounding box of the tested context building verifies the mvf criterion
-        if self.is_bounding_box_context_using_mvfc_criterion(target_LB_polyface3d_extruded_footprint,
-                                                             context_LB_polyface3d_oriented_bounding_box,
-                                                             minimum_vf_criterion=self.min_VF_criterion):
+        # Check if the bounding box of the tested context building verifies the mvf criterion and is not already
+        if context_building_id not in self.context_building_id_list and self.is_bounding_box_context_using_mvfc_criterion(
+                target_LB_polyface3d_extruded_footprint,
+                context_LB_polyface3d_oriented_bounding_box,
+                minimum_vf_criterion=self.min_VF_criterion):
             # if it verifies the criterion we add it to the context building
             self.context_building_id_list.append(context_building_id)
 

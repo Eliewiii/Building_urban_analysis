@@ -26,6 +26,8 @@ class BuildingModeled(BuildingBasic):
         self.to_simulate = False
         self.is_target = False
 
+        self.shading_context_obj = None
+
         self.first_pass_context_building_id_list = []
 
         self.sensor_grid_dict = {'Roof': None, 'Facades': None}
@@ -73,6 +75,8 @@ class BuildingModeled(BuildingBasic):
                                     building_obj.index_in_GIS, **kwargs)
             # todo : @Sharon, check if the code is correct to create object from super class, should it be that way or though a to_buildingHBmodel function in the BuildingBasic class?
 
+            building_HB_model.HB_model_obj = HB_model
+
             return building_HB_model
             # todo : change if needed where the dictionary of the urban canopy is pointing, to point to the new object
 
@@ -103,7 +107,28 @@ class BuildingModeled(BuildingBasic):
 
         return building_modeled_obj, identifier
 
-    def
+    def initialize_shading_context(self, min_VF_criterion, number_of_rays):
+        """
+
+        :return:
+        """
+        self.shading_context_obj = BuildingContext(min_VF_criterion, number_of_rays)
+
+    def select_shading_context_buildings(self, building_dictionary, min_VF_criterion):
+        """
+
+        :param building_dictionary:
+        :param min_VF_criterion:
+        :return:
+        """
+        # Initialize if the building does not have a shading_context already or if the parameters are different
+        if self.shading_context_obj is None or self.shading_context_obj.min_VF_criterion != min_VF_criterion:
+            self.initialize_shading_context(min_VF_criterion)
+        for i, (building_obj, building_id) in enumerate(building_dictionary.items):
+            self.shading_context_obj.select_context_buildings_using_the_mvfc(
+                target_LB_polyface3d_extruded_footprint=self.LB_polyface3d_extruded_footprint,
+                context_LB_polyface3d_oriented_bounding_box=building_obj.LB_polyface3d_oriented_bounding_box,
+                context_building_id=building_id)
 
     @classmethod
     def select_context_surfaces_for_shading_computation(cls, target_building_obj, context_building_list,
@@ -130,7 +155,7 @@ class BuildingModeled(BuildingBasic):
 
         for context_building_obj in list_building_obj_kept_first_pass:
             cls.convert_buildingbasic_to_buildingmodeled(context_building_obj)
-            # todo save them properluy and updat in Urbanb canopy
+            # todo save them properluy and updat in Urban canopy
             # todo @Elie : add the buoiliding to the list of building kept in the first pass
             # add the building to the list of building for the second path
 
