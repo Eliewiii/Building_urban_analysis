@@ -14,7 +14,7 @@ SolarOrPanelSimulation.panel_simulation(urban_canopy_object=urban_canopy_object,
                                         study_duration_in_years=default_study_duration_years,
 #                                        replacement_scenario=default_replacement_scenario)
                                         replacement_scenario="every_X_years",
-                                        replacement_year=5)
+                                        replacement_year=10)
 
 # Export urban_canopy to pickle
 SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,

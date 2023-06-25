@@ -26,14 +26,14 @@ SimulationLoadBuildingOrGeometry.add_buildings_from_hbjson_to_urban_canopy(urban
                                                                            are_buildings_targets=True)
 
 # Run radiation simulation on the Urban Canopy
-SolarOrPanelSimulation.solar_radiation_simulation(urban_canopy_object=urban_canopy_object,
-                                                  path_folder_simulation=default_path_folder_simulation,
-                                                  path_weather_file=default_path_weather_file,
-                                                  list_id=None,
-                                                  grid_size=default_grid_size,
-                                                  offset_dist=default_offset_dist,
-                                                  on_roof=default_on_roof,
-                                                  on_facades=default_on_facades)
+# SolarOrPanelSimulation.solar_radiation_simulation(urban_canopy_object=urban_canopy_object,
+#                                                   path_folder_simulation=default_path_folder_simulation,
+#                                                   path_weather_file=default_path_weather_file,
+#                                                   list_id=None,
+#                                                   grid_size=default_grid_size,
+#                                                   offset_dist=default_offset_dist,
+#                                                   on_roof=False,
+#                                                   on_facades=default_on_facades)
 
 # Export urban_canopy to pickle
 SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,

@@ -165,19 +165,14 @@ def from_polygon_grid_BUA(face, x_dim, y_dim, generate_centroids=True):
     _pattern = [scaled_poly.is_point_inside(_v) for _v in _verts]
     print(_pattern)
 
-    list_bools = []
     if face.has_holes:
         for polygon_hole in face.hole_polygon2d:
-            poly_hole_min = polygon_hole.min
-            scaled_poly_hole = Polygon2D(tuple(pt.scale(1.000001, poly_hole_min) - tol_pt for pt in polygon_hole.vertices))
-            _pattern_bis = [scaled_poly_hole.is_point_inside(_v) for _v in _verts]
-            _pattern_bis_returned = [not (i) for i in _pattern_bis]
-            list_bools = add_list_bools(list_bools, _pattern_bis_returned)
+            # figure out how many x and y cells to make
+            for vert in _verts:
+                if polygon_hole.is_point_inside(vert) or polygon_hole.is_point_on_edge(vert, 0.5):
+                    _pattern[_verts.index(vert)] = False
 
-    _pattern = add_list_bools(_pattern, list_bools)
     print(_pattern)
-
-
     # build the mesh
     _mesh_init = Mesh2D(_verts, _faces)
     _mesh_init._face_centroids = _centroids
@@ -258,7 +253,7 @@ def get_lb_mesh(faces, grid_size, offset_dist):
     lb_meshes = []
     for face in faces:
         try:
-            lb_meshes.append(mesh_grid_BUA(face,grid_size, offset=offset_dist))
+            lb_meshes.append(mesh_grid_BUA(face, grid_size, offset=offset_dist))
         except AssertionError:  # tiny geometry not compatible with quad faces
             continue
     if len(lb_meshes) == 0:
