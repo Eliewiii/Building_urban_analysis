@@ -2,7 +2,7 @@
 BuildingLWRContext class, used to perform and store the result of the context filtering and view factor computation
 for the long wave radiation computation among buildings.
 """
-from building.context_filter.building_context import BuildingContext
+from building.context_filter.building_context import BuildingContext, default_mvfc_context_shading_selection
 
 from building.context_filter.utils_libraries_context_filter import *
 from building.context_filter.utils_functions_context_filter import *
@@ -10,12 +10,13 @@ from building.context_filter.utils_functions_context_filter import *
 default_number_of_rays_context_filter_second_pass = 3  # to move to utils
 
 
-class BuildingLWRContext(BuildingContext):
+class BuildingShadingContext(BuildingContext):
     """ todo """
 
-    def __init__(self, number_of_rays=default_number_of_rays_context_filter_second_pass):
+    def __init__(self, min_VF_criterion=default_mvfc_context_shading_selection,
+                 number_of_rays=default_number_of_rays_context_filter_second_pass):
         """ todo """
-        super().__init__()  # inherit from all the attributes of the super class
+        super().__init__(min_VF_criterion=min_VF_criterion)  # inherit from all the attributes of the super class
         self.number_of_rays = number_of_rays
         self.hb_face_context_list = []
 

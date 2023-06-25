@@ -297,6 +297,42 @@ class UrbanCanopy:
                              tolerance=self.tolerance_default_value)
             HB_model.to_hbjson(name=hbjson_name, folder=path_folder)
 
+    def initialize_shading_context_obj_of_buildings_to_simulate(self, min_VF_criterion, number_of_rays):
+        """
+        Initialize the shading context object of the buildings to simulate
+        :param min_VF_criterion: float, the minimum view factor criterion
+        :param number_of_rays: int, the number of rays to be used for raytracing to the shading context
+        """
+        for building_obj in self.building_dict.values():
+            if building_obj.to_simulate:
+                building_obj.initialize_shading_context_obj()
+
+    def perform_first_pass_context_filtering(self):
+        """
+        Perform the first pass context filtering on the BuildingModeled objects in the urban canopy that need to be simulated.
+        :return:
+        """
+        context_building_id_list = []  # Initialize the list
+        for building_obj in self.building_dict.values():
+            if building_obj.to_simulate:
+                context_building_id_list += building_obj.perform_first_pass_context_filtering(
+                    building_dictionary=self.building_dict)
+
+        return context_building_id_list
+
+    def convert_list_of_buildings_to_BuildingModeled(self, building_id_list_to_convert_to_BuildingModeled,
+                                                     automatic_floor_subdivision=False, layout_from_typology=False,
+                                                     automatic_subdivision=False,are_target=False, are_simulated=False):
+        """
+        Convert the buildings to BuildingModeled
+        :return:
+        """
+        # Convert the buildings to BuildingModeled
+        for building_id in building_id_list_to_convert_to_BuildingModeled:
+            building_obj = self.building_dict[building_id]
+            self.building_dict[building_id] = BuildingModeled.convert_building_to_BuildingModeled(
+                building_obj=building_obj, building_dictionary=self.building_dict)
+
     def perform_context_filtering_for_shading_on_buildingmodeled_to_simulate(self,
                                                                              minimum_vf_criterion=default_minimum_vf_criterion_context_filter_first_pass_shading):
         """
@@ -477,10 +513,12 @@ class UrbanCanopy:
         :param replacement_scenario: string: scenario of replacements for the panels, default = 'yearly'
         """
 
-        pv_tech_dictionary = PvPanelTechnology.load_pv_technologies_from_json_to_dictionary(path_pv_tech_dictionary_json)
+        pv_tech_dictionary = PvPanelTechnology.load_pv_technologies_from_json_to_dictionary(
+            path_pv_tech_dictionary_json)
 
         for building in self.building_dict.values():  # for every building in the urban canopy
             if type(building) is BuildingModeled and building.is_target:
                 path_folder_building = os.path.join(path_folder_simulation, building.id)
                 building.panel_simulation_building(path_folder_building, pv_tech_dictionary, id_pv_tech_roof,
-                                                   id_pv_tech_facades, study_duration_in_years, replacement_scenario, **kwargs)
+                                                   id_pv_tech_facades, study_duration_in_years, replacement_scenario,
+                                                   **kwargs)

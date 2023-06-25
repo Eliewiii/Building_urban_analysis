@@ -15,7 +15,7 @@ class BuildingContext:
         self.min_VF_criterion = min_VF_criterion
         self.context_building_id_list = []
 
-    def select_context_buildings_using_the_mvfc(self, target_LB_polyface3d_extruded_footprint,
+    def select_context_building_using_the_mvfc(self, target_LB_polyface3d_extruded_footprint,
                                                 context_LB_polyface3d_oriented_bounding_box, context_building_id):
         """ todo"""
         # Check if the bounding box of the tested context building verifies the mvf criterion and is not already
@@ -25,6 +25,7 @@ class BuildingContext:
                 minimum_vf_criterion=self.min_VF_criterion):
             # if it verifies the criterion we add it to the context building
             self.context_building_id_list.append(context_building_id)
+
 
     @staticmethod
     def is_bounding_box_context_using_mvfc_criterion(target_LB_polyface3d_extruded_footprint,

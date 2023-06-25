@@ -36,6 +36,7 @@ from libraries_addons.solar_panels import pv_efficiency_functions
 from libraries_addons.solar_panels import pv_efficiency_functions
 
 
-from building.context_filter.building_shading_context import BuildingContext
+from building.context_filter.building_shading_context import BuildingShadingContext
 from building.context_filter.building_lwr_context import BuildingLWRContext
+
 
