@@ -142,46 +142,6 @@ class BuildingModeled(BuildingBasic):
         return self.shading_context_obj.context_building_list
 
 
-    # @classmethod
-    #     def select_context_surfaces_for_shading_computation(cls, target_building_obj, context_building_list,
-    #                                                         full_urban_canopy_Pyvista_mesh,
-    #                                                         minimum_vf_criterion):
-    #         """ Select the context surfaces that will be used for the shading simulation of the current building.
-    #         :param context_building_list: list of BuildingModeled objects
-    #         :param minimum_vf_criterion: minimum view factor between surfaces to be considered as context surfaces
-    #         in the first pass of the algorithm
-    #         """
-    #         # todo @ Elie: finish the function
-    #         # Initialize variables
-    #         list_building_obj_kept_first_pass = []
-    #         HB_Face_surfaces_kept_second_pass = []
-    #         # First pass
-    #         for context_building_obj in context_building_list:
-    #             if context_building_obj.id != target_building_obj.id:  # does not take itself into account
-    #                 if is_bounding_box_context_using_mvfc_criterion(
-    #                         target_LB_polyface3d_extruded_footprint=target_building_obj.LB_polyface3d_extruded_footprint,
-    #                         context_LB_polyface3d_oriented_bounding_box=context_building_obj.LB_polyface3d_oriented_bounding_box,
-    #                         minimum_vf_criterion=minimum_vf_criterion):
-    #                     # add the building to the list of kept buildings
-    #                     list_building_obj_kept_first_pass.append(context_building_obj)
-    #
-    #         for context_building_obj in list_building_obj_kept_first_pass:
-    #             cls.convert_buildingbasic_to_buildingmodeled(context_building_obj)
-    #             # todo save them properluy and updat in Urban canopy
-    #             # todo @Elie : add the buoiliding to the list of building kept in the first pass
-    #             # add the building to the list of building for the second path
-    #
-    #             # convert the buildingbasics into buildingmodeled (with typo identifier when it will work, put an empty function for now
-    #             # use the honeybee model to have the proper caracteristics of the surfsace
-    #
-    #         # Second pass
-    #
-    #         # for context_building_obj in list_building_kept_first_pass:
-    #         #      for HB_face_surface in context_building_obj.HB_model_obj:
-    #         #          if not is_HB_Face_context_surface_obstructed_for_target_LB_polyface3d(target_LB_polyface3d_extruded_footprint=self.LB_polyface3d_extruded_footprint , context_HB_Face_surface=HB_face_surface):
-    #         #              None
-    #         #             #todo
-
 
     def move(self, vector):
         """

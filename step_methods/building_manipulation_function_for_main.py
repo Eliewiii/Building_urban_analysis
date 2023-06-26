@@ -26,3 +26,13 @@ class SimulationBuildingManipulationFunctions:
         for building_id in building_id_list:
             urban_canopy_object.remove_building_from_dict(building_id)
         logging.info("Building(s) removed from the urban canopy successfully")
+
+    @staticmethod
+    def make_oriented_bounding_boxes_of_buildings_in_urban_canopy(urban_canopy_object, overwrite=False):
+        """
+        Make oriented bounding boxes of buildings in the urban canopy
+        :param urban_canopy_object:
+        :return:
+        """
+        urban_canopy_object.make_oriented_bounding_boxes_of_buildings(overwrite=overwrite)
+        logging.info("Oriented bounding boxes of buildings in the urban canopy have been made successfully")

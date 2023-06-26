@@ -8,6 +8,7 @@ from building.context_filter.utils_libraries_context_filter import *
 from building.context_filter.utils_functions_context_filter import *
 
 default_number_of_rays_context_filter_second_pass = 3  # to move to utils
+possible_numbers_of_rays_list = [1, 3, 6, 9]
 
 
 class BuildingShadingContext(BuildingContext):
@@ -17,8 +18,15 @@ class BuildingShadingContext(BuildingContext):
                  number_of_rays=default_number_of_rays_context_filter_second_pass):
         """ todo """
         super().__init__(min_VF_criterion=min_VF_criterion)  # inherit from all the attributes of the super class
-        self.number_of_rays = number_of_rays
+        self.number_of_rays = self.set_number_of_rays(number_of_rays)
         self.hb_face_context_list = []
+
+    def set_number_of_rays(self, number_of_rays):
+        """ todo """
+        if isinstance(number_of_rays, int) and number_of_rays in possible_numbers_of_rays_list:
+            self.number_of_rays = number_of_rays
+        else:
+            self.number_of_rays = None
 
     def select_non_obstructed_context_faces_with_ray_tracing(self, target_LB_polyface3d_extruded_footprint,
                                                              context_HB_Model_list_to_test,
