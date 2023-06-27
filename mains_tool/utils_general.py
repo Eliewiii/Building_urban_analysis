@@ -79,14 +79,14 @@ default_tree_structure_per_building_urban_canopy_json_dict = {
     "Is_to_simulate": False,
     "Age": None,
     "Typology": None,
-    "Hb_model": {},
-    "Hb_model_envelop": {},
+    "HB_model": {},
+    "HB_room_envelop": {},
     "Context_surfaces": {
         "First_pass_filter": {},
         "Second_pass_filter": {}
     },
     "Solar_radiation": {
-        "Sensor_grids_dict": None,
+        "Sensor_grids_dict": {"Roof": None, "Facades": None},
         "Path_results": {
             "Annual": {"Roof": None, "Facades": None},
             "Timestep": {"Roof": None, "Facades": None}
@@ -96,19 +96,22 @@ default_tree_structure_per_building_urban_canopy_json_dict = {
                 "energy_produced": {"list": None, "total": None},
                 "lca_energy": {"list": None, "total": None},
                 "lca_carbon": {"list": None, "total": None},
-                "dmfa": {"list": None, "total": None}
+                "dmfa": {"list": None, "total": None},
+                "recycling_energy": {"list": None, "total": None}
             },
             "Facades": {
                 "energy_produced": {"list": None, "total": None},
                 "lca_energy": {"list": None, "total": None},
                 "lca_carbon": {"list": None, "total": None},
-                "dmfa": {"list": None, "total": None}
+                "dmfa": {"list": None, "total": None},
+                "recycling_energy": {"list": None, "total": None}
             },
             "Total": {
                 "energy_produced": {"list": None, "total": None},
                 "lca_energy": {"list": None, "total": None},
                 "lca_carbon": {"list": None, "total": None},
-                "dmfa": {"list": None, "total": None}
+                "dmfa": {"list": None, "total": None},
+                "recycling_energy": {"list": None, "total": None}
             },
         }
     }

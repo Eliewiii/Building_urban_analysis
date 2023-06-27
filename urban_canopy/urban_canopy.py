@@ -65,6 +65,9 @@ class UrbanCanopy:
         # Add buildings and list of buildings to the json dictionary
         UrbanCanopyAdditionalFunction.add_buildings_and_list_of_buildings_to_json_dict(json_dict=self.json_dict,
                                                                                        building_dict=self.building_dict)
+        # Add building envelop and model (room)
+        UrbanCanopyAdditionalFunction.add_building_HB_models_and_envelop_to_json_dict(json_dict=self.json_dict,
+                                                                                      building_dict=self.building_dict)
         # add the various attributes of the buildings to the json dictionary
         UrbanCanopyAdditionalFunction.add_building_attributes_to_json_dict(json_dict=self.json_dict,
                                                                            building_dict=self.building_dict)
@@ -416,10 +419,11 @@ class UrbanCanopy:
 
     def radiation_simulation_urban_canopy(self, path_folder_simulation, path_weather_file, list_id, grid_size,
                                           offset_dist, on_roof, on_facades):
+        path_folder_radiation_simulation = os.path.join(path_folder_simulation, default_name_radiation_simulation_folder)
         for building in self.building_dict.values():  # for every building in the urban canopy
             if list_id is None:
                 if type(building) is BuildingModeled and building.is_target:
-                    path_folder_building = os.path.join(path_folder_simulation, building.id)
+                    path_folder_building = os.path.join(path_folder_radiation_simulation, building.id)
                     if on_roof and on_facades:
                         # we run the radiation simulation on all the roofs of the buildings within the urban canopy
                         values_roof = building.solar_radiations(str(building.id), path_folder_building,
@@ -457,7 +461,7 @@ class UrbanCanopy:
                             f.write('{}'.format(tmp))
             else:
                 if type(building) is BuildingModeled and building.id in list_id:
-                    path_folder_building = os.path.join(path_folder_simulation, building.id)
+                    path_folder_building = os.path.join(path_folder_radiation_simulation, building.id)
                     if on_roof and on_facades:
                         # we run the radiation simulation on all the roofs of the buildings within the urban canopy
                         values_roof = building.solar_radiations(str(building.id), path_folder_building,
@@ -494,7 +498,7 @@ class UrbanCanopy:
                         with open(name_file, 'w') as f:
                             tmp = (','.join(str(n) for n in values_facades[0]))
                             f.write('{}'.format(tmp))
-            print("Another radiation simulation was done")
+                print("Another radiation simulation was done")
 
     def get_list_id_buildings_urban_canopy(self, path_folder):
         path_json = os.path.join(path_folder, 'urban_canopy.json')
@@ -526,7 +530,7 @@ class UrbanCanopy:
 
         for building in self.building_dict.values():  # for every building in the urban canopy
             if type(building) is BuildingModeled and building.is_target:
-                path_folder_building = os.path.join(path_folder_simulation, building.id)
+                path_folder_building = os.path.join(path_folder_simulation, default_name_radiation_simulation_folder, building.id)
                 building.panel_simulation_building(path_folder_building, pv_tech_dictionary, id_pv_tech_roof,
                                                    id_pv_tech_facades, study_duration_in_years, replacement_scenario,
                                                    **kwargs)

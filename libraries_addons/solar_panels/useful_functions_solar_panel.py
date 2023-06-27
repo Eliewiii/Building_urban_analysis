@@ -107,15 +107,18 @@ def beginning_end_of_life_lca_results_in_lists(energy_production_per_year_list, 
     panel_energy_manufacturing = pv_tech.energy_manufacturing
     panel_carbon_manufacturing = pv_tech.carbon_manufacturing
     panel_dmfa = pv_tech.DMFA
+    panel_energy_recycling = pv_tech.energy_recycling
 
-    lca_energy_list = [i * panel_energy_manufacturing for i in nb_of_panels_installed_list]
-    lca_carbon_list = [i * panel_carbon_manufacturing for i in nb_of_panels_installed_list]
+    manufacturing_energy_list = [i * panel_energy_manufacturing for i in nb_of_panels_installed_list]
+    manufacturing_carbon_list = [i * panel_carbon_manufacturing for i in nb_of_panels_installed_list]
     dmfa_list = [i * panel_dmfa for i in nb_of_failed_panels_list]
+    recycling_energy_list = [i * panel_energy_recycling for i in nb_of_failed_panels_list]
 
-    return energy_production_per_year_list, lca_energy_list, lca_carbon_list, dmfa_list
+    return energy_production_per_year_list, manufacturing_energy_list, manufacturing_carbon_list, dmfa_list, \
+        recycling_energy_list
 
 
-def results_from_lists_to_dict(energy_production_per_year_list, lca_energy_list, lca_carbon_list, dmfa_list):
+def results_from_lists_to_dict(energy_production_per_year_list, manufacturing_energy_list, manufacturing_carbon_list, dmfa_list, recycling_energy_list):
     """
     Transform those results into a dictionary
     :param energy_production_per_year_list: list of floats describes the energy production each year
@@ -128,13 +131,15 @@ def results_from_lists_to_dict(energy_production_per_year_list, lca_energy_list,
 
     results_dict = {}
     energy_produced_dict = {"list": energy_production_per_year_list, "total": sum(energy_production_per_year_list)}
-    lca_energy_dict = {"list": lca_energy_list, "total": sum(lca_energy_list)}
-    lca_carbon_dict = {"list": lca_carbon_list, "total": sum(lca_carbon_list)}
+    lca_energy_dict = {"list": manufacturing_energy_list, "total": sum(manufacturing_energy_list)}
+    lca_carbon_dict = {"list": manufacturing_carbon_list, "total": sum(manufacturing_carbon_list)}
     dmfa_dict = {"list": dmfa_list, "total": sum(dmfa_list)}
+    recycling_energy_dict = {"list": recycling_energy_list, "total": sum(recycling_energy_list)}
 
     results_dict["energy_produced"] = energy_produced_dict
     results_dict["lca_energy"] = lca_energy_dict
     results_dict["lca_carbon"] = lca_carbon_dict
     results_dict["dmfa"] = dmfa_dict
+    results_dict["recycling_energy"] = recycling_energy_dict
 
     return results_dict
