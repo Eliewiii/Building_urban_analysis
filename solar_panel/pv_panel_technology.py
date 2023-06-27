@@ -18,6 +18,7 @@ class PvPanelTechnology:
         self.DMFA = None  # per square meter
         self.energy_manufacturing = None  # per square meter
         self.carbon_manufacturing = None
+        self.energy_recycling = None
         self.panel_area = None  # in square meter
 
     @classmethod
@@ -41,6 +42,7 @@ class PvPanelTechnology:
                 pv_tech.energy_manufacturing = pv_dict_data[identifier_key]["primary_energy_manufacturing_in_kWh_per_panel"]
                 pv_tech.carbon_manufacturing = pv_dict_data[identifier_key]["gh_gas_emissions_manufacturing_in_kgCO2eq_per_panel"]
                 pv_tech.panel_area = pv_dict_data[identifier_key]["panel_area"]
+                pv_tech.energy_recycling = pv_dict_data[identifier_key]["end_of_life_energy_in_kWh_per_panel"]
 
                 pv_technologies_dict[identifier_key] = pv_tech  # then we add this object to the dictionary containing
                 # all the different technologies

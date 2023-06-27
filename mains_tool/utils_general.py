@@ -93,19 +93,22 @@ default_tree_structure_per_building_urban_canopy_json_dict = {
                 "energy_produced": {"list": None, "total": None},
                 "lca_energy": {"list": None, "total": None},
                 "lca_carbon": {"list": None, "total": None},
-                "dmfa": {"list": None, "total": None}
+                "dmfa": {"list": None, "total": None},
+                "recycling_energy": {"list": None, "total": None}
             },
             "Facades": {
                 "energy_produced": {"list": None, "total": None},
                 "lca_energy": {"list": None, "total": None},
                 "lca_carbon": {"list": None, "total": None},
-                "dmfa": {"list": None, "total": None}
+                "dmfa": {"list": None, "total": None},
+                "recycling_energy": {"list": None, "total": None}
             },
             "Total": {
                 "energy_produced": {"list": None, "total": None},
                 "lca_energy": {"list": None, "total": None},
                 "lca_carbon": {"list": None, "total": None},
-                "dmfa": {"list": None, "total": None}
+                "dmfa": {"list": None, "total": None},
+                "recycling_energy": {"list": None, "total": None}
             },
         }
     }

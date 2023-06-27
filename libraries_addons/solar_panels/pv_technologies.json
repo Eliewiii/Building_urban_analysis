@@ -7,7 +7,8 @@
     "efficiency_function" : "degrading_rate_efficiency_loss",
     "DMFA" : 23,
     "primary_energy_manufacturing_in_kWh_per_panel": 1574.975,
-    "gh_gas_emissions_manufacturing_in_kgCO2eq_per_panel" : 303.3296
+    "gh_gas_emissions_manufacturing_in_kgCO2eq_per_panel" : 303.3296,
+    "end_of_life_energy_in_kWh_per_panel" : null
                       },
   "metsolar_facades c-Si": {
     "weibull_lifetime": 30,
@@ -17,6 +18,7 @@
     "efficiency_function" : "degrading_rate_efficiency_loss",
     "DMFA" : 23,
     "primary_energy_manufacturing_in_kWh_per_panel": 1574.975,
-    "gh_gas_emissions_manufacturing_in_kgCO2eq_per_panel" : 303.3296
+    "gh_gas_emissions_manufacturing_in_kgCO2eq_per_panel" : 303.3296,
+    "end_of_life_energy_in_kWh_per_panel" : null
                             }
 }
