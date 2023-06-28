@@ -32,7 +32,7 @@ SolarOrPanelSimulation.solar_radiation_simulation(urban_canopy_object=urban_cano
                                                   list_id=None,
                                                   grid_size=default_grid_size,
                                                   offset_dist=default_offset_dist,
-                                                  on_roof=False,
+                                                  on_roof=default_on_roof,
                                                   on_facades=default_on_facades)
 
 # Export urban_canopy to pickle

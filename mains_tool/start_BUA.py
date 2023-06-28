@@ -98,8 +98,11 @@ def main():
                                                     "path_pv_tech_dictionary"],
                                                 id_pv_tech_roof=arguments_dictionary["id_pv_tech_roof"],
                                                 id_pv_tech_facades=arguments_dictionary["id_pv_tech_facades"],
+                                                minimum_ratio_energy_produced_on_used=arguments_dictionary["minimum_ratio_energy_produced_on_used"],
+                                                performance_ratio=arguments_dictionary["performance_ratio"],
                                                 study_duration_in_years=arguments_dictionary["study_duration_years"],
-                                                replacement_scenario=arguments_dictionary["replacement_scenario"])
+                                                replacement_scenario=arguments_dictionary["replacement_scenario"],
+                                                replacement_year=arguments_dictionary["every_X_years"])
 
     # Microclimate weather files
 

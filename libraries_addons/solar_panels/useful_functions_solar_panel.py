@@ -13,7 +13,7 @@ def load_panels_on_sensor_grid(sensor_grid, pv_technology_object, yearly_solar_r
     :param yearly_solar_radiation_values: list of floats: list of the yearly cumulative solar radiation got by the solar
     radiation simulation in Wh/panel/year
     :param minimum_ratio_energy_produced_on_used: float: minimum ratio between the energy produced during the panel's
-    lifetime and the energy necessary to produce, transport and recycle it
+    lifetime and the energy necessary to produce, transport and recycle it. Default=1.2
     :param performance_ratio: float: performance ratio of the PV, Default=0.75
     :return panels
     """

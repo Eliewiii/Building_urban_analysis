@@ -99,7 +99,7 @@ class LoadArguments:
                             default=default_study_duration_years)
         parser.add_argument("--replacement_scenario", help="replacement scenario chosen for the failed panels",
                             default=default_replacement_scenario)
-        parser.add_argument("--every_x_years", help="replacement every x years scenario", default=default_evey_X_years)
+        parser.add_argument("--every_X_years", help="replacement every x years scenario", default=default_evey_X_years)
 
     @staticmethod
     def add_user_simulation_features_to_parser(parser):
@@ -192,7 +192,7 @@ class LoadArguments:
             "performance_ratio": float(args.performance_ratio),
             "study_duration_years": int(args.study_duration_years),
             "replacement_scenario": args.replacement_scenario,
-            "every_X_years": int(args.every_x_years)
+            "every_X_years": int(args.every_X_years)
         }
 
         # Create a dictionary with the arguments and the name of their variable that will be imported in the main script
