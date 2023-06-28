@@ -38,16 +38,16 @@ class PvPanel:
     def initialize_or_replace_panel_old(self):
         """
         Initialize a panel or replace the panel with a new one, leading the LCA carbon footprint
-        :return lca_energy: float: the energy manufacturing this new panel caused
+        :return lca_craddle_to_installation_energy: float: the energy manufacturing this new panel caused
         """
         # Get a life expectancy according to the life expectancy distribution of the pv technology
         self.life_expectancy = self.panel_technology_object.get_life_expectancy_of_a_panel()
         # put back the age to 0
         self.age = 0
         # get the LCA carbon footprint for one panel according to its pv technology
-        lca_energy = self.panel_technology_object.energy_manufacturing
+        lca_craddle_to_installation_energy = self.panel_technology_object.energy_manufacturing
 
-        return lca_energy
+        return lca_craddle_to_installation_energy
 
     def initialize_or_replace_panel(self):
         """
@@ -81,7 +81,7 @@ class PvPanel:
                           * performance_ratio / 1000
         return energy_produced
 
-    def pass_year(self, solar_radiation_year_value):
+    def pass_year(self, solar_radiation_year_value, performance_ratio):
         """
         Simulate a year passing for a panel
         :param year: year of the simulation, could impact the efficiency of the panel, if we assume that the efficiency
@@ -95,7 +95,7 @@ class PvPanel:
 
         if self.is_panel_working():
             # get the energy produced by the panel over the year with the proper efficiency
-            energy_produced = self.energy_produced_in_one_year(solar_radiation_year_value)
+            energy_produced = self.energy_produced_in_one_year(solar_radiation_year_value, performance_ratio)
             # increase the age
             self.age += 1
             # If panel reach life expectancy, it fails and generate dmfa waste

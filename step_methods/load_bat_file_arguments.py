@@ -62,6 +62,11 @@ class LoadArguments:
                             default=default_id_pv_tech_roof)
         parser.add_argument("--id_pv_tech_facades", help="name of the pv tech used on the facades",
                             default=default_id_pv_tech_facades)
+        parser.add_argument("--minimum_ratio_energy_produced_on_used", help="minimum energy production during the first year for the"
+                                                                " panel to be installed",
+                            default=default_minimum_ratio_energy_produced_on_used)
+        parser.add_argument("--performance_ratio", help="performance ratio of the panels",
+                            default=default_performance_ratio)
         parser.add_argument("--study_duration_years", help="duration of the study in years",
                             default=default_study_duration_years)
         parser.add_argument("--replacement_scenario", help="replacement scenario chosen for the failed panels",
@@ -155,6 +160,8 @@ class LoadArguments:
             "path_pv_tech_dictionary": args.path_pv_tech_dictionary,
             "id_pv_tech_roof": args.id_pv_tech_roof,
             "id_pv_tech_facades": args.id_pv_tech_facades,
+            "minimum_ratio_energy_produced_on_used": int(args.minimum_ratio_energy_produced_on_used),
+            "performance_ratio": float(args.performance_ratio),
             "study_duration_years": int(args.study_duration_years),
             "replacement_scenario": args.replacement_scenario,
             "every_X_years": int(args.every_x_years)

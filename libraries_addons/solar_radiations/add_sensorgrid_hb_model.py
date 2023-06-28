@@ -163,7 +163,6 @@ def from_polygon_grid_BUA(face, x_dim, y_dim, generate_centroids=True):
         tuple(pt.scale(1.000001, _poly_min) - tol_pt for pt in polygon_face.vertices))
 
     _pattern = [scaled_poly.is_point_inside(_v) for _v in _verts]
-    print(_pattern)
 
     if face.has_holes:
         for polygon_hole in face.hole_polygon2d:
@@ -172,7 +171,6 @@ def from_polygon_grid_BUA(face, x_dim, y_dim, generate_centroids=True):
                 if polygon_hole.is_point_inside(vert) or polygon_hole.is_point_on_edge(vert, 0.5):
                     _pattern[_verts.index(vert)] = False
 
-    print(_pattern)
     # build the mesh
     _mesh_init = Mesh2D(_verts, _faces)
     _mesh_init._face_centroids = _centroids
