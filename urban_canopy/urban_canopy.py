@@ -285,20 +285,64 @@ class UrbanCanopy:
             HB_model.to_hbjson(name="buildings_envelops", folder=path_folder)
         return HB_dict, HB_model
 
-    def make_oriented_bounding_boxes_of_buildings(self, path_folder=None, hbjson_name=None):
+    def make_oriented_bounding_boxes_of_buildings(self, overwrite=False):
         """ Make the oriented bounding boxes of the buildings in the urban canopy
         and save it to hbjson file if the path is provided """
         for building in self.building_dict.values():
-            building.make_LB_polyface3d_oriented_bounding_box()
-        if path_folder is not None:
-            # List of the hb rooms representing the building envelops
-            bounding_boxes_HB_room_list = [
-                Room.from_polyface3d(identifier=str(building.id), polyface=building.LB_polyface3d_oriented_bounding_box)
-                for building in
-                self.building_dict.values()]
-            HB_model = Model(identifier="urban_canopy_bounding_boxes", rooms=bounding_boxes_HB_room_list,
-                             tolerance=self.tolerance_default_value)
-            HB_model.to_hbjson(name=hbjson_name, folder=path_folder)
+            building.make_LB_polyface3d_oriented_bounding_box(overwrite=overwrite)
+
+    def initialize_shading_context_obj_of_buildings_to_simulate(self, min_VF_criterion, number_of_rays):
+        """
+        Initialize the shading context object of the buildings to simulate
+        :param min_VF_criterion: float, the minimum view factor criterion
+        :param number_of_rays: int, the number of rays to be used for raytracing to the shading context
+        """
+        for building_obj in self.building_dict.values():
+            if building_obj.to_simulate:
+                building_obj.initialize_shading_context_obj()
+
+    def perform_first_pass_context_filtering_on_buildings(self, building_id_list=None, on_building_to_simulate=True):
+        """
+        Perform the first pass context filtering on the BuildingModeled objects in the urban canopy that need to be simulated.
+        :param building_id_list: list of str, the list of building id to perform the first pass context filtering on.
+        :param on_building_to_simulate: bool, if True, perform the first pass context filtering on the buildings to simulate.
+        :return:
+        """
+        context_building_id_list = []  # Initialize the list
+        # todo @Elie, make bounding boxes of all buildings if not done yet
+        self.make_oriented_bounding_boxes_of_buildings()
+        # if we specify the building no need to do it on all the simulated buildings
+        if building_id_list is not None and building_id_list != []:
+            on_building_to_simulate = False
+        # Loop over the buildings
+        for i, (building_id, building_obj) in enumerate(self.building_dict.items()):
+            if (on_building_to_simulate and building_obj.to_simulate) or building_id in building_id_list:
+                context_building_id_list += building_obj.perform_first_pass_context_filtering(
+                    building_dictionary=self.building_dict)
+
+        return context_building_id_list
+
+    def convert_list_of_buildings_to_BuildingModeled(self, building_id_list_to_convert_to_BuildingModeled,
+                                                     automatic_floor_subdivision=False, layout_from_typology=False,
+                                                     properties_from_typology=False,
+                                                     are_target=False, are_simulated=False):
+        """
+        Convert the buildings to BuildingModeled
+        :param building_id_list_to_convert_to_BuildingModeled: list of str, the list of building id to convert to BuildingModeled
+        :param automatic_floor_subdivision: bool, if True, perform the automatic floor subdivision
+        :param layout_from_typology: bool, if True, use the layout from the typology
+        :param properties_from_typology: bool, if True, use the properties from the typology
+        :param are_target: bool, if True, the buildings are target
+        :param are_simulated: bool, if True, the buildings are simulated
+        :return:
+        """
+        # Convert the buildings to BuildingModeled
+        for building_id in building_id_list_to_convert_to_BuildingModeled:
+            building_obj = self.building_dict[building_id]
+            self.building_dict[building_id] = BuildingModeled.convert_building_to_BuildingModeled(
+                building_obj=building_obj, is_target=are_target, is_simulated=are_simulated,
+                layout_from_typology=layout_from_typology, automatic_floor_subdivision=automatic_floor_subdivision,
+                properties_from_typology=properties_from_typology)
 
     def perform_context_filtering_for_shading_on_buildingmodeled_to_simulate(self,
                                                                              minimum_vf_criterion=default_minimum_vf_criterion_context_filter_first_pass_shading):

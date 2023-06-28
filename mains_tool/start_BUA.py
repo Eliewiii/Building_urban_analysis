@@ -49,14 +49,15 @@ def main():
     # Load Buildings from json
     if simulation_step_dictionary["run_extract_buildings_from_hbjson_models"]:
         SimulationLoadBuildingOrGeometry.add_buildings_from_hbjson_to_urban_canopy(
-            urban_canopy_object=urban_canopy_object,
-            path_folder_hbjson=arguments_dictionary["path_gis"])
+            urban_canopy_object=urban_canopy_object, path_folder_hbjson=arguments_dictionary["path_folder"],
+            path_file_hbjson=arguments_dictionary["path_file"],
+            are_buildings_targets=arguments_dictionary["are_buildings_target"])
 
     # Building manipulation #
     # Convert BuildingBasic obj tp BuildingModeled
     # todo @Elie
     # Remove Building from Urban canopy
-    if simulation_step_dictionary["run_extract_buildings_from_hbjson_models"]:
+    if simulation_step_dictionary["run_remove_building_list_from_urban_canopy"]:
         SimulationBuildingManipulationFunctions.remove_building_list_from_urban_canopy(
             urban_canopy_object=urban_canopy_object,
             building_id_list=arguments_dictionary["building_id_list"])
@@ -107,12 +108,6 @@ def main():
     # Building Energy Simulation #
 
     # Postprocessing and plots #
-    # Generate Urban canopy envelop #todo @Elie delete and replace by add_building_envelops_to_urban_canopy_json
-    if simulation_step_dictionary["run_generate_model_with_building_envelop"]:
-        SimulationPostProcessingAndPlots.generate_hb_model_contains_all_building_envelopes_to_plot_Grasshopper(
-            urban_canopy_object=urban_canopy_object,
-            path_folder_simulation=arguments_dictionary["path_folder_simulation"])
-
     if simulation_step_dictionary["run_generate_model_with_building_envelop"]:
         SimulationPostProcessingAndPlots.add_building_envelops_to_urban_canopy_json(
             urban_canopy_object=urban_canopy_object)

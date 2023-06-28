@@ -214,10 +214,6 @@ def ray_list_from_emitter_to_receiver(face_emitter, face_receiver, exclude_surfa
 #             ray_list[i] = excluding_surfaces_from_ray(start=ray_list[i][0], end=ray_list[i][1])
 #     return ray_list[:number_of_rays]
 
-"""
-        Return the start and end point of a ray reducing slightly the distance between the vertices to prevent
-        considering the sender and receiver in the raytracing obstruction detection
-"""
 
 def excluding_surfaces_from_ray(start_point, end_point):
     """

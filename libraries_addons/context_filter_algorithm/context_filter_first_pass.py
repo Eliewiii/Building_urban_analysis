@@ -10,7 +10,7 @@ def is_bounding_box_context_using_mvfc_criterion(target_LB_polyface3d_extruded_f
                                                  context_LB_polyface3d_oriented_bounding_box, minimum_vf_criterion):
     """
     Check if the bounding box of a context building is a context for the current building.
-    It correspond to the first pass of the
+    It corresponds to the first pass of the
     :param target_LB_polyface3d_extruded_footprint: LB polyface3d of the current building
     :param context_LB_polyface3d_oriented_bounding_box: LB polyface3d of the bounding box of the context building
     :param minimum_vf_criterion: minimum view factor between surfaces to be considered as context surfaces

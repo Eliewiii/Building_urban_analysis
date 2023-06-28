@@ -4,6 +4,8 @@
 
 from mains_tool.utils_general import *
 
+from mains_tool.utils_default_values_user_parameters import *
+
 
 class LoadArguments:
     """ """
@@ -38,12 +40,38 @@ class LoadArguments:
 
         # Building manipulation parameters
         parser.add_argument("-l", "--building_id_list", help="list of the names of the buildings in the urban canopy "
-                                                             "we want to run the simulation on", nargs='?', default=None)
+                                                             "we want to run the simulation on", nargs='?',
+                            default=None)
+        parser.add_argument("-s", "--are_buildings_simulated",
+                            help="boolean (here '0' or '1') telling if the buildings inputed in the component should"
+                                 " be turned to simulated buildings ", nargs='?', default=False)
         parser.add_argument("-t", "--are_buildings_target",
                             help="boolean (here '0' or '1') telling if the buildings inputed in the component are "
-                                 "target ", nargs='?', default=False)  # as no list can be sent through command line,
+                                 "target ", nargs='?', default=False)
         # it will be a string,
         # with each id seperate by a space that will be parsed in the main script
+        parser.add_argument("--run_on_building_to_simulate",
+                            help="boolean (here '0' or '1') telling if it should be run on all buildings to simulate",
+                            nargs='?', default=False)
+        parser.add_argument("--automatic_floor_subdivision",
+                            help="boolean (here '0' or '1') telling if it should be run on all buildings to simulate",
+                            nargs='?', default=False)
+        parser.add_argument("--use_layout_from_typology",
+                            help="boolean (here '0' or '1') telling if it should be run on all buildings to simulate",
+                            nargs='?', default=False)
+        parser.add_argument("--use_properties_from_typology",
+                            help="boolean (here '0' or '1') telling if it should be run on all buildings to simulate",
+                            nargs='?', default=False)
+
+        # Context filter algorithm parameters
+        parser.add_argument("--mvfc",
+                            help="float, value of the minimum view factor criterion", nargs='?',
+                            default=default_mvfc_context_shading_selection)
+        parser.add_argument("--nb_of_rays",
+                            help="int, number of rays used for the raytracing", nargs='?',
+                            default=default_number_of_rays)
+
+        # Weather parameters
         parser.add_argument("-w", "--path_weather_file", help="path to the weather file used",
                             default=default_path_weather_file)
         # Solar radiation parameters

@@ -26,6 +26,8 @@ class BuildingModeled(BuildingBasic):
         self.to_simulate = False
         self.is_target = False
 
+        self.shading_context_obj = None
+
         self.first_pass_context_building_id_list = []
 
         self.sensor_grid_dict = {'Roof': None, 'Facades': None}
@@ -50,8 +52,8 @@ class BuildingModeled(BuildingBasic):
         # todo : maybe add more properties to modify before pickling to avoid locked class issue
 
     @classmethod
-    def convert_buildingbasic_to_buildingmodeled(cls, building_obj, is_target=False, is_simulated=True,
-                                                 layout_from_typology=False, automatic_subdivision=True,
+    def convert_buildingbasic_to_buildingmodeled(cls, building_obj, is_target=False, is_simulated=False,
+                                                 layout_from_typology=False, automatic_floor_subdivision=False,
                                                  properties_from_typology=True):
         """
         Create a BuildingModeled object from a BuildingBasic object
@@ -63,7 +65,7 @@ class BuildingModeled(BuildingBasic):
             # Make the HB model from the building object
             # todo @Sharon : how to try to make the model ? and if it work we go further ? otherwise we return None ?
             HB_model = building_obj.to_HB_model(layout_from_typology=layout_from_typology,
-                                                automatic_subdivision=automatic_subdivision,
+                                                automatic_subdivision=automatic_floor_subdivision,
                                                 properties_from_typology=properties_from_typology)
             # get the attributes of the building_obj (it extract all attributes, even the ones that are used
             # to create the object), but it doesn't matter, it is just a bit redundant
@@ -72,6 +74,12 @@ class BuildingModeled(BuildingBasic):
             building_HB_model = cls(building_obj.id, building_obj.LB_face_footprint, building_obj.urban_canopy,
                                     building_obj.index_in_GIS, **kwargs)
             # todo : @Sharon, check if the code is correct to create object from super class, should it be that way or though a to_buildingHBmodel function in the BuildingBasic class?
+
+            #
+            building_HB_model.to_simulate = is_simulated
+            building_HB_model.is_target = is_target
+
+            building_HB_model.HB_model_obj = HB_model
 
             return building_HB_model
             # todo : change if needed where the dictionary of the urban canopy is pointing, to point to the new object
@@ -103,45 +111,37 @@ class BuildingModeled(BuildingBasic):
 
         return building_modeled_obj, identifier
 
-    @classmethod
-    def select_context_surfaces_for_shading_computation(cls, target_building_obj, context_building_list,
-                                                        full_urban_canopy_Pyvista_mesh,
-                                                        minimum_vf_criterion):
-        """ Select the context surfaces that will be used for the shading simulation of the current building.
-        :param context_building_list: list of BuildingModeled objects
-        :param minimum_vf_criterion: minimum view factor between surfaces to be considered as context surfaces
-        in the first pass of the algorithm
+    def initialize_shading_context_obj(self, min_VF_criterion, number_of_rays):
         """
-        # todo @ Elie: finish the function
-        # Initialize variables
-        list_building_obj_kept_first_pass = []
-        HB_Face_surfaces_kept_second_pass = []
-        # First pass
-        for context_building_obj in context_building_list:
-            if context_building_obj.id != target_building_obj.id:  # does not take itself into account
-                if is_bounding_box_context_using_mvfc_criterion(
-                        target_LB_polyface3d_extruded_footprint=target_building_obj.LB_polyface3d_extruded_footprint,
-                        context_LB_polyface3d_oriented_bounding_box=context_building_obj.LB_polyface3d_oriented_bounding_box,
-                        minimum_vf_criterion=minimum_vf_criterion):
-                    # add the building to the list of kept buildings
-                    list_building_obj_kept_first_pass.append(context_building_obj)
+        todo @Elie
+        todo @Elie
+        :return:
+        """
+        # Initialize if the building does not have a shading_context already or if the parameters are different
+        if self.shading_context_obj is None or self.shading_context_obj.min_VF_criterion != min_VF_criterion:
+            self.shading_context_obj = BuildingShadingContext(min_VF_criterion, number_of_rays)
+        elif self.shading_context_obj.number_of_rays != number_of_rays:
+            self.shading_context_obj.set_number_of_rays(number_of_rays)
+        else:
+            pass  # do nothing if the BuildingShadingContext already exist or if the parameters are the same
 
-        for context_building_obj in list_building_obj_kept_first_pass:
-            cls.convert_buildingbasic_to_buildingmodeled(context_building_obj)
-            # todo save them properluy and updat in Urbanb canopy
-            # todo @Elie : add the buoiliding to the list of building kept in the first pass
-            # add the building to the list of building for the second path
+    def select_shading_context_buildings(self, building_dictionary):
+        """
+        todo @Elie
+        :param building_dictionary: todo @Elie
+        :return:
+        """
 
-            # convert the buildingbasics into buildingmodeled (with typo identifier when it will work, put an empty function for now
-            # use the honeybee model to have the proper caracteristics of the surfsace
+        for i, (building_id,building_obj) in enumerate(building_dictionary.items()):
+            if building_id != self.id:
+                self.shading_context_obj.select_context_building_using_the_mvfc(
+                    target_LB_polyface3d_extruded_footprint=self.LB_polyface3d_extruded_footprint,
+                    context_LB_polyface3d_oriented_bounding_box=building_obj.LB_polyface3d_oriented_bounding_box,
+                    context_building_id=building_id)
 
-        # Second pass
+        return self.shading_context_obj.context_building_list
 
-        # for context_building_obj in list_building_kept_first_pass:
-        #      for HB_face_surface in context_building_obj.HB_model_obj:
-        #          if not is_HB_Face_context_surface_obstructed_for_target_LB_polyface3d(target_LB_polyface3d_extruded_footprint=self.LB_polyface3d_extruded_footprint , context_HB_Face_surface=HB_face_surface):
-        #              None
-        #             #todo
+
 
     def move(self, vector):
         """

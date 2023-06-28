@@ -46,6 +46,9 @@ default_is_simulated_building = True  # target building is always simulated
 default_tolerance_value = 0.01
 
 # Default values for the simulations - Context filter
+default_mvfc_context_shading_selection = 0.01
+default_mvfc_context_lwr_selection = 0.001
+
 default_minimum_vf_criterion_context_filter_first_pass_shading = 0.01
 default_number_of_rays_context_filter_second_pass = 3
 # todo @Elie: add when coded
