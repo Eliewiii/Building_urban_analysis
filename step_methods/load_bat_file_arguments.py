@@ -36,7 +36,7 @@ class LoadArguments:
         parser.add_argument("--path_folder",
                             help="path to a folder that will be useful for the simulation", nargs='?', default=None)
         parser.add_argument("--path_file",
-                            help="path to a single file taht will be useful for the simuation", nargs='?', default=None)
+                            help="path to a single file that will be useful for the simulation", nargs='?', default=None)
 
         # Building manipulation parameters
         parser.add_argument("-l", "--building_id_list", help="list of the names of the buildings in the urban canopy "
