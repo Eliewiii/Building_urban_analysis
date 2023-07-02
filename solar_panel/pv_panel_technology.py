@@ -50,7 +50,7 @@ class PvPanelTechnology:
                 pv_tech.carbon_transport = pv_dict_data[identifier_key]["carbon_transport_in_kgCO2_per_panel"]
                 pv_tech.DMFA = pv_dict_data[identifier_key]["DMFA"]
                 pv_tech.energy_recycling = pv_dict_data[identifier_key]["end_of_life_energy_in_kWh_per_panel"]
-                pv_tech.carbon_recycling = pv_dict_data[identifier_key]["end_of_life_energy_in_kgCO2ea_per_panel"]
+                pv_tech.carbon_recycling = pv_dict_data[identifier_key]["end_of_life_carbon_in_kgCO2_per_panel"]
 
                 pv_technologies_dict[identifier_key] = pv_tech  # then we add this object to the dictionary containing
                 # all the different technologies

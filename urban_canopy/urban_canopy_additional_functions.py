@@ -139,7 +139,7 @@ class UrbanCanopyAdditionalFunction:
             path_folder_building = os.path.join(path_folder_simulation, default_name_radiation_simulation_folder,
                                                 building_id)
             path_folder_panels_results_csv = os.path.join(path_folder_building, "panels_simulation_results.csv")
-            header = ["energy_produced_roof (kWh)", "energy_produced_facades (kWh)", "energy_produced_total (kWh)",
+            header = ["energy_harvested_roof (kWh)", "energy_harvested_facades (kWh)", "energy_harvested_total (kWh)",
                       "primary_energy_roof (kWh)", "primary_energy_facades (kWh)", "primary_energy_total (kWh)",
                       "gh_gas_emissions_manufacturing_roof (kgCO2eq)",
                       "gh_gas_emissions_manufacturing_facades (kgCO2eq)",
@@ -149,13 +149,13 @@ class UrbanCanopyAdditionalFunction:
                       "carbon_end_of_life_roof (kgCO2eq)", "carbon_end_of_life_facades (kgCO2eq)",
                       "carbon_end_of_life_total (kgCO2eq)"]
             list1 = \
-                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["energy_produced"][
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["energy_harvested"][
                     "list"]
             list2 = \
-                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["energy_produced"][
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["energy_harvested"][
                     "list"]
             list3 = \
-                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["energy_produced"][
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["energy_harvested"][
                     "list"]
             list4 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["lca_craddle_to_installation_energy"][
                 "list"]
@@ -183,13 +183,13 @@ class UrbanCanopyAdditionalFunction:
                 json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["lca_recycling_energy"][
                     "list"]
             list16 = \
-                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["lca_carbon_energy"][
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["lca_recycling_carbon"][
                     "list"]
             list17 = \
-                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["lca_carbon_energy"][
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["lca_recycling_carbon"][
                     "list"]
             list18 = \
-                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["lca_carbon_energy"][
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["lca_recycling_carbon"][
                     "list"]
 
             array = numpy.transpose(

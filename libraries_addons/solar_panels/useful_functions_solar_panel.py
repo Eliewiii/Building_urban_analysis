@@ -4,7 +4,7 @@ from libraries_addons.solar_panels.pv_efficiency_functions import get_efficiency
 
 
 def load_panels_on_sensor_grid(sensor_grid, pv_technology_object, yearly_solar_radiation_values,
-                               minimum_ratio_energy_produced_on_used, performance_ratio):
+                               minimum_ratio_energy_harvested_on_used, performance_ratio):
     """
     Take a sensor grid and create a list of panels that correspond to each face of the mesh of the sensor grid
     The panels are initialized as switched on
@@ -12,7 +12,7 @@ def load_panels_on_sensor_grid(sensor_grid, pv_technology_object, yearly_solar_r
     :param pv_technology_object: PVPanelTechnology object
     :param yearly_solar_radiation_values: list of floats: list of the yearly cumulative solar radiation got by the solar
     radiation simulation in Wh/panel/year
-    :param minimum_ratio_energy_produced_on_used: float: minimum ratio between the energy produced during the panel's
+    :param minimum_ratio_energy_harvested_on_used: float: minimum ratio between the energy harvested during the panel's
     lifetime and the energy necessary to produce, transport and recycle it. Default=1.2
     :param performance_ratio: float: performance ratio of the PV, Default=0.75
     :return panels
@@ -27,7 +27,7 @@ def load_panels_on_sensor_grid(sensor_grid, pv_technology_object, yearly_solar_r
     weibull_lifetime = pv_technology_object.weibull_law_failure_parameters["lifetime"]
 
     for face in mesh.faces:
-        energy_produced = sum([efficiency_loss_function(initial_efficiency, i) * yearly_solar_radiation_values[
+        energy_harvested = sum([efficiency_loss_function(initial_efficiency, i) * yearly_solar_radiation_values[
             mesh.faces.index(face)] * area * performance_ratio / 1000 for i in range(weibull_lifetime)])
         energy_used = \
             pv_technology_object.energy_manufacturing + pv_technology_object.energy_recycling + \
@@ -36,7 +36,7 @@ def load_panels_on_sensor_grid(sensor_grid, pv_technology_object, yearly_solar_r
         if face_areas[mesh.faces.index(face)] < pv_technology_object.panel_area:
             logging.warning("The area of the mesh's faces is not big enough to contain the PV panels. "
                             "Make a mesh with bigger faces")
-        elif (energy_produced / energy_used) <= minimum_ratio_energy_produced_on_used:
+        elif (energy_harvested / energy_used) <= minimum_ratio_energy_harvested_on_used:
             logging.warning("If a panel is put here, it won't produce enough energy to be profitable")
         else:
             panel_of_face = PvPanel(mesh.faces.index(face), pv_technology_object)
@@ -48,7 +48,7 @@ def load_panels_on_sensor_grid(sensor_grid, pv_technology_object, yearly_solar_r
 def loop_over_the_years_for_solar_panels(pv_panel_obj_list, yearly_solar_radiation_values, performance_ratio,
                                          study_duration_in_years, replacement_scenario="yearly", **kwargs):
     """
-    Loop over every year of the study duration to get the energy produced, the energy used and the dmfa waste produced
+    Loop over every year of the study duration to get the energy harvested, the energy used and the dmfa waste harvested
     every year
     :param pv_panel_obj_list: list of panel objects
     :param yearly_solar_radiation_values: list of floats: list of the yearly cumulative solar radiation got by the solar
@@ -66,7 +66,7 @@ def loop_over_the_years_for_solar_panels(pv_panel_obj_list, yearly_solar_radiati
 
     for year in range(study_duration_in_years):
         # initialize
-        energy_produced = 0.
+        energy_harvested = 0.
         nb_of_new_panels = 0
         nb_of_failed_panels = 0
         # Initialize panels for year 0
@@ -93,13 +93,13 @@ def loop_over_the_years_for_solar_panels(pv_panel_obj_list, yearly_solar_radiati
         # Increment of 1 year
         for panel_obj in pv_panel_obj_list:
             index_panel = pv_panel_obj_list.index(panel_obj)
-            energy_produced_panel, panel_failed = panel_obj.pass_year(yearly_solar_radiation_values[index_panel],
+            energy_harvested_panel, panel_failed = panel_obj.pass_year(yearly_solar_radiation_values[index_panel],
                                                                       performance_ratio)
-            energy_produced += energy_produced_panel
+            energy_harvested += energy_harvested_panel
             if panel_failed:
                 nb_of_failed_panels += 1
 
-        energy_production_per_year_list.append(energy_produced)
+        energy_production_per_year_list.append(energy_harvested)
         nb_of_panels_installed_list.append(nb_of_new_panels)
         nb_of_failed_panels_list.append(nb_of_failed_panels)
 
@@ -169,7 +169,7 @@ def results_from_lists_to_dict(energy_production_per_year_list, craddle_to_insta
     """
 
     results_dict = {}
-    energy_produced_dict = {"list": energy_production_per_year_list, "total": sum(energy_production_per_year_list)}
+    energy_harvested_dict = {"list": energy_production_per_year_list, "total": sum(energy_production_per_year_list)}
     lca_craddle_to_installation_energy_dict = {"list": craddle_to_installation_energy_list,
                                                "total": sum(craddle_to_installation_energy_list)}
     lca_craddle_to_installation_carbon_dict = {"list": craddle_to_installation_carbon_list,
@@ -178,7 +178,7 @@ def results_from_lists_to_dict(energy_production_per_year_list, craddle_to_insta
     lca_recycling_energy_dict = {"list": lca_recycling_energy_list, "total": sum(lca_recycling_energy_list)}
     lca_recycling_carbon_dict = {"list": lca_recycling_carbon_list, "total": sum(lca_recycling_carbon_list)}
 
-    results_dict["energy_produced"] = energy_produced_dict
+    results_dict["energy_harvested"] = energy_harvested_dict
     results_dict["lca_craddle_to_installation_energy"] = lca_craddle_to_installation_energy_dict
     results_dict["lca_craddle_to_installation_carbon"] = lca_craddle_to_installation_carbon_dict
     results_dict["dmfa"] = dmfa_dict
