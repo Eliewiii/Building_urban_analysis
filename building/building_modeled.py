@@ -2,6 +2,7 @@
 BuildingModeled class, representing one building in an urban canopy that will be converted in HB models
 as they will be simulated
 """
+import matplotlib.pyplot as plt
 
 from mains_tool.utils_general import *
 from building.utils_building import *
@@ -132,7 +133,7 @@ class BuildingModeled(BuildingBasic):
         :return:
         """
 
-        for i, (building_id,building_obj) in enumerate(building_dictionary.items()):
+        for i, (building_id, building_obj) in enumerate(building_dictionary.items()):
             if building_id != self.id:
                 self.shading_context_obj.select_context_building_using_the_mvfc(
                     target_LB_polyface3d_extruded_footprint=self.LB_polyface3d_extruded_footprint,
@@ -140,8 +141,6 @@ class BuildingModeled(BuildingBasic):
                     context_building_id=building_id)
 
         return self.shading_context_obj.context_building_list
-
-
 
     def move(self, vector):
         """
@@ -383,6 +382,7 @@ class BuildingModeled(BuildingBasic):
         total_results_2 = [sum(i) for i in zip(roof_results_lists[2], facades_results_lists[2])]
         total_results_3 = [sum(i) for i in zip(roof_results_lists[3], facades_results_lists[3])]
         total_results_4 = [sum(i) for i in zip(roof_results_lists[4], facades_results_lists[4])]
+        total_results_5 = [sum(i) for i in zip(roof_results_lists[5], facades_results_lists[5])]
 
         self.results_panels["Roof"] = results_from_lists_to_dict(roof_results_lists[0], roof_results_lists[1],
                                                                  roof_results_lists[2], roof_results_lists[3],
@@ -392,4 +392,128 @@ class BuildingModeled(BuildingBasic):
                                                                     facades_results_lists[2], facades_results_lists[3],
                                                                     facades_results_lists[4])
         self.results_panels["Total"] = results_from_lists_to_dict(total_results_0, total_results_1, total_results_2,
-                                                                  total_results_3, total_results_4)
+                                                                  total_results_3, total_results_4, total_results_5)
+
+    def plot_panels_energy_results(self, path_folder_simulation_building, study_duration_years):
+
+        # plot energy
+        cum_energy_produced_roof = get_cumul_values(self.results_panels["Roof"]["energy_produced"]["list"])
+        cum_energy_expended_roof = add_elements_of_two_list(
+            get_cumul_values(self.results_panels["Roof"]["lca_craddle_to_installation_energy"]["list"]),
+            get_cumul_values(self.results_panels["Roof"]["lca_recycling_energy"]["list"]))
+        cum_energy_produced_facades = get_cumul_values(self.results_panels["Roof"]["energy_produced"]["list"])
+        cum_energy_expended_facades = add_elements_of_two_list(
+            get_cumul_values(self.results_panels["Facades"]["lca_craddle_to_installation_energy"]["list"]),
+            get_cumul_values(self.results_panels["Facades"]["lca_recycling_energy"]["list"]))
+        cum_energy_produced_total = get_cumul_values(self.results_panels["Roof"]["energy_produced"]["list"])
+        cum_energy_expended_total = add_elements_of_two_list(
+            get_cumul_values(self.results_panels["Total"]["lca_craddle_to_installation_energy"]["list"]),
+            get_cumul_values(self.results_panels["Total"]["lca_recycling_energy"]["list"]))
+
+        years = list(range(study_duration_years))
+        plt.plot(years, cum_energy_produced_roof, 'g--', label="Cumulative energy produced on the roof")
+        plt.plot(years, cum_energy_produced_facades, 'gs', label="Cumulative energy produced on the facades")
+        plt.plot(years, cum_energy_produced_total, 'g^', label="Total cumulative energy produced")
+
+        plt.plot(years, cum_energy_expended_roof, 'r--', label="Cumulative energy expended on the roof")
+        plt.plot(years, cum_energy_expended_facades, 'rs', label="Cumulative energy expended on the facades")
+        plt.plot(years, cum_energy_expended_total, 'r^', label="Total cumulative energy expended")
+
+        plt.xlabel('Time (years)')
+        plt.ylabel('Energy (kWh)')
+        plt.title('Cumulative energy produced and expended by and for the BIPV during the study')
+        plt.grid(True)
+        plt.legend()
+        plt.show()
+        file_name = 'energy_plot.png'
+        plt.savefig(f'{path_folder_simulation_building}/{file_name}')
+
+    def plot_panels_ghg_results(self, path_folder_simulation_building, study_duration_years, country_ghe_cost):
+        # plot ghe
+        cum_carbon_emissions_roof = add_elements_of_two_list(
+            get_cumul_values(self.results_panels["Roof"]["lca_craddle_to_installation_carbon"]["list"]),
+            get_cumul_values(self.results_panels["Roof"]["lca_recycling_carbon"]["list"]))
+        avoided_carbon_emissions_list_roof = [i * country_ghe_cost for i in self.results_panels["Roof"][
+            "energy_produced"]["list"]]
+        cum_avoided_carbon_emissions_roof = get_cumul_values(avoided_carbon_emissions_list_roof)
+
+        cum_carbon_emissions_facades = add_elements_of_two_list(
+            get_cumul_values(self.results_panels["Facades"]["lca_craddle_to_installation_carbon"]["list"]),
+            get_cumul_values(self.results_panels["Facades"]["lca_recycling_carbon"]["list"]))
+        avoided_carbon_emissions_list_facades = [i * country_ghe_cost for i in self.results_panels["Facades"][
+            "energy_produced"]["list"]]
+        cum_avoided_carbon_emissions_facades = get_cumul_values(avoided_carbon_emissions_list_facades)
+
+        cum_carbon_emissions_total = add_elements_of_two_list(
+            get_cumul_values(self.results_panels["Total"]["lca_craddle_to_installation_carbon"]["list"]),
+            get_cumul_values(self.results_panels["Total"]["lca_recycling_carbon"]["list"]))
+        avoided_carbon_emissions_list_total = [i * country_ghe_cost for i in self.results_panels["Total"][
+            "energy_produced"]["list"]]
+        cum_avoided_carbon_emissions_total = get_cumul_values(avoided_carbon_emissions_list_total)
+
+        years = list(range(study_duration_years))
+        plt.plot(years, cum_avoided_carbon_emissions_roof, 'g--',
+                 label="Cumulative avoided GHG emissions thanks to the panels installed on the roof")
+        plt.plot(years, cum_avoided_carbon_emissions_facades, 'gs',
+                 label="Cumulative avoided GHG emissions thanks to the panels installed on the facades")
+        plt.plot(years, cum_avoided_carbon_emissions_total, 'g^',
+                 label="Total cumulative avoided GHG emissions thanks to the panels installed on the building")
+
+        plt.plot(years, cum_carbon_emissions_roof, 'r--',
+                 label="Cumulative GHG emissions caused by the panels installed on the roof")
+        plt.plot(years, cum_carbon_emissions_facades, 'rs',
+                 label="Cumulative GHG emissions caused by the panels installed on the facades")
+        plt.plot(years, cum_carbon_emissions_total, 'r^',
+                 label="Total cumulative GHG emissions caused by the panels installed on the building")
+        plt.xlabel('Time (years)')
+        plt.ylabel('GHE emissions (kgCO2eq)')
+        plt.title('Cumulative GHG emissions during the study ')
+        plt.grid(True)
+        plt.legend()
+        plt.show()
+        file_name = 'ghg_plot.png'
+        plt.savefig(f'{path_folder_simulation_building}/{file_name}')
+
+    def plot_panels_results_ghe_per_kwh(self, path_folder_simulation_building, study_duration_years):
+        # plot price in GHG emissions by kWh produced
+
+        cum_energy_expended_total = add_elements_of_two_list(
+            get_cumul_values(self.results_panels["Total"]["lca_craddle_to_installation_energy"]["list"]),
+            get_cumul_values(self.results_panels["Total"]["lca_recycling_energy"]["list"]))
+        cum_energy_produced_total = get_cumul_values(self.results_panels["Roof"]["energy_produced"]["list"])
+        cum_carbon_emissions_total = add_elements_of_two_list(
+            get_cumul_values(self.results_panels["Total"]["lca_craddle_to_installation_carbon"]["list"]),
+            get_cumul_values(self.results_panels["Total"]["lca_recycling_carbon"]["list"]))
+
+        net_energy = [x - y for x, y in zip(cum_energy_produced_total, cum_energy_expended_total)]
+        ghg_per_kWh = [x / y for x, y in zip(cum_carbon_emissions_total, net_energy)]
+
+        years = list(range(study_duration_years))
+        plt.plot(years, ghg_per_kWh)
+        plt.xlabel('Time (years)')
+        plt.ylabel('GHE emissions (kgCO2eq/kWh)')
+        plt.title("Evolution of the cost in GHG emissions for each kWh produced during the study")
+        plt.grid(True)
+        plt.show()
+        file_name = 'ghg_per_kWh_plot.png'
+        plt.savefig(f'{path_folder_simulation_building}/{file_name}')
+
+    def plot_panels_results_eroi(self, path_folder_simulation_building, study_duration_years):
+        # plot EROI
+        cum_energy_expended_total = add_elements_of_two_list(
+            get_cumul_values(self.results_panels["Total"]["lca_craddle_to_installation_energy"]["list"]),
+            get_cumul_values(self.results_panels["Total"]["lca_recycling_energy"]["list"]))
+        cum_energy_produced_total = get_cumul_values(self.results_panels["Roof"]["energy_produced"]["list"])
+        eroi = [x / y for x, y in zip(cum_energy_produced_total, cum_energy_expended_total)]
+
+        years = list(range(study_duration_years))
+        plt.plot(years, eroi)
+        plt.xlabel('Time (years)')
+        plt.ylabel('EROI')
+        plt.title("Evolution of the EROI during the study")
+        plt.grid(True)
+        plt.show()
+        file_name = 'eroi.png'
+        plt.savefig(f'{path_folder_simulation_building}/{file_name}')
+
+        plt.show()

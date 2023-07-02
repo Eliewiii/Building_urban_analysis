@@ -99,21 +99,24 @@ default_tree_structure_per_building_urban_canopy_json_dict = {
                 "lca_craddle_to_installation_energy": {"list": None, "total": None},
                 "lca_craddle_to_installation_carbon": {"list": None, "total": None},
                 "dmfa": {"list": None, "total": None},
-                "lca_recycling_energy": {"list": None, "total": None}
+                "lca_recycling_energy": {"list": None, "total": None},
+                "lca_recycling_carbon": {"list": None, "total": None}
             },
             "Facades": {
                 "energy_produced": {"list": None, "total": None},
                 "lca_craddle_to_installation_energy": {"list": None, "total": None},
                 "lca_craddle_to_installation_carbon": {"list": None, "total": None},
                 "dmfa": {"list": None, "total": None},
-                "lca_recycling_energy": {"list": None, "total": None}
+                "lca_recycling_energy": {"list": None, "total": None},
+                "lca_recycling_carbon": {"list": None, "total": None}
             },
             "Total": {
                 "energy_produced": {"list": None, "total": None},
                 "lca_craddle_to_installation_energy": {"list": None, "total": None},
                 "lca_craddle_to_installation_carbon": {"list": None, "total": None},
                 "dmfa": {"list": None, "total": None},
-                "lca_recycling_energy": {"list": None, "total": None}
+                "lca_recycling_energy": {"list": None, "total": None},
+                "lca_recycling_carbon": {"list": None, "total": None}
             },
         }
     }

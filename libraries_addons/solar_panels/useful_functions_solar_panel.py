@@ -36,7 +36,7 @@ def load_panels_on_sensor_grid(sensor_grid, pv_technology_object, yearly_solar_r
         if face_areas[mesh.faces.index(face)] < pv_technology_object.panel_area:
             logging.warning("The area of the mesh's faces is not big enough to contain the PV panels. "
                             "Make a mesh with bigger faces")
-        elif (energy_produced/energy_used) <= minimum_ratio_energy_produced_on_used:
+        elif (energy_produced / energy_used) <= minimum_ratio_energy_produced_on_used:
             logging.warning("If a panel is put here, it won't produce enough energy to be profitable")
         else:
             panel_of_face = PvPanel(mesh.faces.index(face), pv_technology_object)
@@ -139,18 +139,23 @@ def beginning_end_of_life_lca_results_in_lists(energy_production_per_year_list, 
     panel_carbon_craddle_to_installation = pv_tech.carbon_manufacturing + pv_tech.carbon_transport
     panel_dmfa = pv_tech.DMFA
     panel_energy_recycling = pv_tech.energy_recycling
+    panel_carbon_recycling = pv_tech.carbon_recycling
 
-    craddle_to_installation_energy_list = [i * panel_energy_craddle_to_installation for i in nb_of_panels_installed_list]
-    craddle_to_installation_carbon_list = [i * panel_carbon_craddle_to_installation for i in nb_of_panels_installed_list]
+    craddle_to_installation_energy_list = [i * panel_energy_craddle_to_installation for i in
+                                           nb_of_panels_installed_list]
+    craddle_to_installation_carbon_list = [i * panel_carbon_craddle_to_installation for i in
+                                           nb_of_panels_installed_list]
     dmfa_list = [i * panel_dmfa for i in nb_of_failed_panels_list]
     lca_recycling_energy_list = [i * panel_energy_recycling for i in nb_of_panels_installed_list]
+    lca_recycling_carbon_list = [i*panel_carbon_recycling for i in nb_of_panels_installed_list]
 
     return energy_production_per_year_list, craddle_to_installation_energy_list, craddle_to_installation_carbon_list, \
-        dmfa_list, lca_recycling_energy_list
+        dmfa_list, lca_recycling_energy_list, lca_recycling_carbon_list
 
 
 def results_from_lists_to_dict(energy_production_per_year_list, craddle_to_installation_energy_list,
-                               craddle_to_installation_carbon_list, dmfa_list, lca_recycling_energy_list):
+                               craddle_to_installation_carbon_list, dmfa_list, lca_recycling_energy_list,
+                               lca_recycling_carbon_list):
     """
     Transform those results into a dictionary
     :param energy_production_per_year_list: list of floats describes the energy production each year
@@ -171,11 +176,25 @@ def results_from_lists_to_dict(energy_production_per_year_list, craddle_to_insta
                                                "total": sum(craddle_to_installation_carbon_list)}
     dmfa_dict = {"list": dmfa_list, "total": sum(dmfa_list)}
     lca_recycling_energy_dict = {"list": lca_recycling_energy_list, "total": sum(lca_recycling_energy_list)}
+    lca_recycling_carbon_dict = {"list": lca_recycling_carbon_list, "total": sum(lca_recycling_carbon_list)}
 
     results_dict["energy_produced"] = energy_produced_dict
     results_dict["lca_craddle_to_installation_energy"] = lca_craddle_to_installation_energy_dict
     results_dict["lca_craddle_to_installation_carbon"] = lca_craddle_to_installation_carbon_dict
     results_dict["dmfa"] = dmfa_dict
     results_dict["lca_recycling_energy"] = lca_recycling_energy_dict
+    results_dict["lca_recycling_carbon"] = lca_recycling_carbon_dict
 
     return results_dict
+
+
+def get_cumul_values(list1):
+    list_cumul = [sum(list1[0:i]) for i in range(1, len(list1) + 1)]
+    return list_cumul
+
+
+def add_elements_of_two_list(list1, list2):
+    added_list = [sum(i) for i in zip(list1, list2)]
+    return added_list
+
+

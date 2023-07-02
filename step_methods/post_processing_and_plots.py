@@ -34,3 +34,10 @@ class SimulationPostProcessingAndPlots:
                                                                              building_dict,
                                                                              path_folder_simulation=
                                                                              path_folder_simulation)
+
+    @staticmethod
+    def plot_graphs(urban_canopy_object, path_folder_simulation, study_duration_years, country_ghe_cost):
+        urban_canopy_object.plot_graphs(path_folder_simulation=path_folder_simulation,
+                                        study_duration_years=study_duration_years,
+                                        country_ghe_cost=country_ghe_cost)
+

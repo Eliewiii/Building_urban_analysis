@@ -145,7 +145,9 @@ class UrbanCanopyAdditionalFunction:
                       "gh_gas_emissions_manufacturing_facades (kgCO2eq)",
                       "gh_gas_emissions_manufacturing_total (kgCO2eq)",
                       "dmfa_roof (kg)", "dmfa_facades (kg)", "dmfa_total (kg)", "energy_end_of_life_roof (kWh)",
-                      "energy_end_of_life_facades (kWh)", "energy_end_of_life_total (kWh)"]
+                      "energy_end_of_life_facades (kWh)", "energy_end_of_life_total (kWh)",
+                      "carbon_end_of_life_roof (kgCO2eq)", "carbon_end_of_life_facades (kgCO2eq)",
+                      "carbon_end_of_life_total (kgCO2eq)"]
             list1 = \
                 json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["energy_produced"][
                     "list"]
@@ -180,9 +182,18 @@ class UrbanCanopyAdditionalFunction:
             list15 = \
                 json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["lca_recycling_energy"][
                     "list"]
+            list16 = \
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["lca_carbon_energy"][
+                    "list"]
+            list17 = \
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["lca_carbon_energy"][
+                    "list"]
+            list18 = \
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["lca_carbon_energy"][
+                    "list"]
 
             array = numpy.transpose(
                 [list1, list2, list3, list4, list5, list6, list7, list8, list9, list10, list11, list12, list13, list14,
-                 list15])
+                 list15, list16, list17, list18])
 
             write_to_csv_arr(header, array, path_folder_panels_results_csv)

@@ -537,3 +537,15 @@ class UrbanCanopy:
                 building.panel_simulation_building(path_folder_building, pv_tech_dictionary, id_pv_tech_roof,
                                                    id_pv_tech_facades, minimum_ratio_energy_produced_on_used, performance_ratio,
                                                    study_duration_in_years, replacement_scenario, **kwargs)
+
+    def plot_graphs(self, path_folder_simulation, study_duration_years, country_ghe_cost):
+        for building in self.building_dict.values():
+            if type(building) is BuildingModeled and building.is_target:
+                if building.results_panels["Roof"] and building.results_panels["Facades"] and building.results_panels["Total"]:
+                    path_folder_simulation_building = os.path.join(path_folder_simulation,
+                                                                   default_name_radiation_simulation_folder, building.id)
+                    building.plot_panels_energy_results(path_folder_simulation_building, study_duration_years)
+                    # building.plot_panels_ghg_results(path_folder_simulation_building, study_duration_years,
+                    #                                  country_ghe_cost)
+                    # building.plot_panels_results_ghe_per_kwh(path_folder_simulation_building, study_duration_years)
+                    # building.plot_panels_results_eroi(path_folder_simulation_building, study_duration_years)
