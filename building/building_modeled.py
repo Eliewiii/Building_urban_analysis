@@ -236,14 +236,14 @@ class BuildingModeled(BuildingBasic):
                 # todo @Hilany, same as above
             return hb_ann_cum_values([os.path.join(project_folder, "annual_irradiance", "results", "total")])
 
-    def load_panels_roof(self, pv_tech_roof, list_irradiation_values_roof, minimum_ratio_energy_harvested_on_used,
+    def load_panels_roof(self, pv_tech_roof, list_irradiation_values_roof, minimum_ratio_energy_harvested_on_primary_energy,
                          performance_ratio):
         """
         Load the panels to the mesh of the roof.
         :param pv_tech_roof: PVPanelTechnology object
         :param list_irradiation_values_roof: list of int: list of the radiation values calculated by the solar
         radiation simulation
-        :param minimum_ratio_energy_harvested_on_used: int: production minimal during the first year for a panel to be installed at
+        :param minimum_ratio_energy_harvested_on_primary_energy: int: production minimal during the first year for a panel to be installed at
         this position, Default=1.2
         :param performance_ratio: float: performance ratio of the PV, Default=0.75
         """
@@ -252,19 +252,19 @@ class BuildingModeled(BuildingBasic):
             # get the sensor grid then load the panels
             sensor_grid_roof = SensorGrid.from_dict(self.sensor_grid_dict["Roof"])
             panels_roof = load_panels_on_sensor_grid(sensor_grid_roof, pv_tech_roof, list_irradiation_values_roof,
-                                                     minimum_ratio_energy_harvested_on_used, performance_ratio)
+                                                     minimum_ratio_energy_harvested_on_primary_energy, performance_ratio)
             self.panels["Roof"] = panels_roof
         else:
             pass
 
     def load_panels_facades(self, pv_tech_facades, list_irradiation_values_facades,
-                            minimum_ratio_energy_harvested_on_used, performance_ratio):
+                            minimum_ratio_energy_harvested_on_primary_energy, performance_ratio):
         """
         Load the panels to the mesh of the facades.
         :param pv_tech_facades: PVPanelTechnology object
         :param list_irradiation_values_facades: list of int: list of the radiation values calculated by the solar
         radiation simulation
-        :param minimum_ratio_energy_harvested_on_used: int: production minimal during the first year for a panel to be
+        :param minimum_ratio_energy_harvested_on_primary_energy: int: production minimal during the first year for a panel to be
         installed at this position, Default=1.2
         :param performance_ratio: float: performance ratio of the PV, Default=0.75
         """
@@ -274,20 +274,20 @@ class BuildingModeled(BuildingBasic):
             sensor_grid_facades = SensorGrid.from_dict(self.sensor_grid_dict["Facades"])
             panels_facades = load_panels_on_sensor_grid(sensor_grid_facades, pv_tech_facades,
                                                         list_irradiation_values_facades,
-                                                        minimum_ratio_energy_harvested_on_used, performance_ratio)
+                                                        minimum_ratio_energy_harvested_on_primary_energy, performance_ratio)
             self.panels["Facades"] = panels_facades
         else:
             pass
 
     def panels_simulation_roof(self, path_folder_simulation_building, pv_tech,
-                               minimum_ratio_energy_harvested_on_used=1.2,
+                               minimum_ratio_energy_harvested_on_primary_energy=1.2,
                                performance_ratio=0.75, study_duration_in_years=50,
                                replacement_scenario="yearly", **kwargs):
         """
         Run the panel simulation on the roof
         :param path_folder_simulation_building: path to the folder corresponding to the building
         :param pv_tech: PVPanelTechnology object
-        :param minimum_ratio_energy_harvested_on_used: int: production minimal during the first year for a panel to be installed at
+        :param minimum_ratio_energy_harvested_on_primary_energy: int: production minimal during the first year for a panel to be installed at
         this position, Default=1.2
         :param performance_ratio: float: performance ratio of the PV, Default=0.75
         :param study_duration_in_years: int: duration of the study, default = 50 years
@@ -301,7 +301,7 @@ class BuildingModeled(BuildingBasic):
                 data_values_in_string = data_values.split(",")
                 radiation_values_in_list = list(map(float, data_values_in_string))
 
-            self.load_panels_roof(pv_tech, radiation_values_in_list, minimum_ratio_energy_harvested_on_used,
+            self.load_panels_roof(pv_tech, radiation_values_in_list, minimum_ratio_energy_harvested_on_primary_energy,
                                   performance_ratio)
 
             if self.panels["Roof"] is not None:
@@ -313,14 +313,14 @@ class BuildingModeled(BuildingBasic):
         else:
             return [], [], []
 
-    def panels_simulation_facades(self, path_folder_simulation_building, pv_tech, minimum_ratio_energy_harvested_on_used,
+    def panels_simulation_facades(self, path_folder_simulation_building, pv_tech, minimum_ratio_energy_harvested_on_primary_energy,
                                   performance_ratio, study_duration_in_years=50,
                                   replacement_scenario="yearly", **kwargs):
         """
         Run the panel simulation on the facades
         :param path_folder_simulation_building: path to the folder corresponding to the building
         :param pv_tech: PVPanelTechnology object
-        :param minimum_ratio_energy_harvested_on_used: int: production minimal during the first year for a panel to be installed at
+        :param minimum_ratio_energy_harvested_on_primary_energy: int: production minimal during the first year for a panel to be installed at
         this position, Default=1.2
         :param performance_ratio: float: performance ratio of the PV, Default=0.75
         :param study_duration_in_years: int: duration of the study, default = 50 years
@@ -335,7 +335,7 @@ class BuildingModeled(BuildingBasic):
                 data_values_in_string = data_values.split(",")
                 radiation_values_in_list = list(map(float, data_values_in_string))
 
-            self.load_panels_facades(pv_tech, radiation_values_in_list, minimum_ratio_energy_harvested_on_used,
+            self.load_panels_facades(pv_tech, radiation_values_in_list, minimum_ratio_energy_harvested_on_primary_energy,
                                      performance_ratio)
             if self.panels["Facades"] is not None:
                 energy_production_per_year_list, nb_of_panels_installed_list, nb_of_failed_panels_list = \
@@ -347,7 +347,7 @@ class BuildingModeled(BuildingBasic):
             return [], [], []
 
     def panel_simulation_building(self, path_folder_simulation_building, pv_technologies_dictionary, id_pv_tech_roof,
-                                  id_pv_tech_facades, minimum_ratio_energy_harvested_on_used=1.2, performance_ratio=0.75,
+                                  id_pv_tech_facades, minimum_ratio_energy_harvested_on_primary_energy=1.2, performance_ratio=0.75,
                                   study_duration_in_years=50, replacement_scenario="yearly", **kwargs):
         """
         Run the panel simulation on the facades
@@ -355,7 +355,7 @@ class BuildingModeled(BuildingBasic):
         :param pv_technologies_dictionary: dictionary containing the technologies data
         :param id_pv_tech_roof: string: name of the pv tech used on the roof
         :param id_pv_tech_facades: string: name of the pv tech used on the facades
-        :param minimum_ratio_energy_harvested_on_used: int: production minimal during the first year for a panel to be
+        :param minimum_ratio_energy_harvested_on_primary_energy: int: production minimal during the first year for a panel to be
         installed at this position, Default=1.2
         :param performance_ratio: float: performance ratio of the PV, Default=0.75
         :param study_duration_in_years: int: duration of the study, default = 50 years
@@ -366,13 +366,13 @@ class BuildingModeled(BuildingBasic):
         pv_tech_facades = pv_technologies_dictionary[id_pv_tech_facades]
 
         roof_results = self.panels_simulation_roof(path_folder_simulation_building, pv_tech_roof,
-                                                   minimum_ratio_energy_harvested_on_used, performance_ratio,
+                                                   minimum_ratio_energy_harvested_on_primary_energy, performance_ratio,
                                                    study_duration_in_years, replacement_scenario,
                                                    **kwargs)
         roof_results_lists = beginning_end_of_life_lca_results_in_lists(roof_results[0], roof_results[1],
                                                                         roof_results[2], pv_tech_roof)
         facades_results = self.panels_simulation_facades(path_folder_simulation_building, pv_tech_facades,
-                                                         minimum_ratio_energy_harvested_on_used, performance_ratio,
+                                                         minimum_ratio_energy_harvested_on_primary_energy, performance_ratio,
                                                          study_duration_in_years, replacement_scenario, **kwargs)
         facades_results_lists = beginning_end_of_life_lca_results_in_lists(facades_results[0], facades_results[1],
                                                                            facades_results[2], pv_tech_facades)
@@ -398,38 +398,36 @@ class BuildingModeled(BuildingBasic):
 
         # plot energy
         cum_energy_harvested_roof = get_cumul_values(self.results_panels["Roof"]["energy_harvested"]["list"])
-        cum_energy_expended_roof = add_elements_of_two_list(
-            get_cumul_values(self.results_panels["Roof"]["lca_craddle_to_installation_energy"]["list"]),
-            get_cumul_values(self.results_panels["Roof"]["lca_recycling_energy"]["list"]))
+        cum_primary_energy_roof = add_elements_of_two_list(
+            get_cumul_values(self.results_panels["Roof"]["lca_craddle_to_installation_primary_energy"]["list"]),
+            get_cumul_values(self.results_panels["Roof"]["lca_recycling_primary_energy"]["list"]))
         cum_energy_harvested_facades = get_cumul_values(self.results_panels["Facades"]["energy_harvested"]["list"])
-        cum_energy_expended_facades = add_elements_of_two_list(
-            get_cumul_values(self.results_panels["Facades"]["lca_craddle_to_installation_energy"]["list"]),
-            get_cumul_values(self.results_panels["Facades"]["lca_recycling_energy"]["list"]))
-        cum_energy_harvested_total = get_cumul_values(self.results_panels["Total"]["energy_produced"]["list"])
-        cum_energy_expended_total = add_elements_of_two_list(
-            get_cumul_values(self.results_panels["Total"]["lca_craddle_to_installation_energy"]["list"]),
-            get_cumul_values(self.results_panels["Total"]["lca_recycling_energy"]["list"]))
+        cum_primary_energy_facades = add_elements_of_two_list(
+            get_cumul_values(self.results_panels["Facades"]["lca_craddle_to_installation_primary_energy"]["list"]),
+            get_cumul_values(self.results_panels["Facades"]["lca_recycling_primary_energy"]["list"]))
+        cum_energy_harvested_total = get_cumul_values(self.results_panels["Total"]["energy_harvested"]["list"])
+        cum_primary_energy_total = add_elements_of_two_list(
+            get_cumul_values(self.results_panels["Total"]["lca_craddle_to_installation_primary_energy"]["list"]),
+            get_cumul_values(self.results_panels["Total"]["lca_recycling_primary_energy"]["list"]))
 
         years = list(range(study_duration_years))
 
-        fig = plt.figure(figsize=(8, 6))
-        plt.plot(years, cum_energy_produced_roof, 'go', label="Cumulative energy harvested on the roof")
-        plt.plot(years, cum_energy_produced_facades, 'g^', label="Cumulative energy harvested on the facades")
-        plt.plot(years, cum_energy_produced_total, 'g', label="Total cumulative energy harvested")
+        fig = plt.figure()
+        plt.plot(years, cum_energy_harvested_roof, 'gd', markersize=4, label="Cumulative energy harvested on the roof")
+        plt.plot(years, cum_energy_harvested_facades, 'g.', label="Cumulative energy harvested on the facades")
+        plt.plot(years, cum_energy_harvested_total, 'g', label="Total cumulative energy harvested")
 
-        plt.plot(years, cum_energy_expended_roof, 'ro', label="Cumulative energy expended on the roof")
-        plt.plot(years, cum_energy_expended_facades, 'r^', label="Cumulative energy expended on the facades")
-        plt.plot(years, cum_energy_expended_total, 'r', label="Total cumulative energy expended")
+        plt.plot(years, cum_primary_energy_roof, 'rd', markersize=4, label="Cumulative primary energy, roof")
+        plt.plot(years, cum_primary_energy_facades, 'r.', label="Cumulative primary energy, facades")
+        plt.plot(years, cum_primary_energy_total, 'r', label="Total cumulative primary energy")
 
         plt.xlabel('Time (years)')
         plt.ylabel('Energy (kWh)')
         plt.title('Cumulative harvested energy and primary energy used during the study')
         plt.grid(True)
-        plt.legend()
-        file_name = 'cumulative_energy_harvested_and_primary_energy.png'
-        fig.savefig(f'{path_folder_simulation_building}/{file_name}')
-        plt.show()
-        plt.close()
+        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=2)
+        file_name = 'cumulative_energy_harvested_and_primary_energy.pdf'
+        fig.savefig(f'{path_folder_simulation_building}/{file_name}', bbox_inches='tight')
 
     def plot_panels_ghg_results(self, path_folder_simulation_building, study_duration_years, country_ghe_cost):
         # plot ghe
@@ -437,86 +435,86 @@ class BuildingModeled(BuildingBasic):
             get_cumul_values(self.results_panels["Roof"]["lca_craddle_to_installation_carbon"]["list"]),
             get_cumul_values(self.results_panels["Roof"]["lca_recycling_carbon"]["list"]))
         avoided_carbon_emissions_list_roof = [i * country_ghe_cost for i in self.results_panels["Roof"][
-            "energy_produced"]["list"]]
+            "energy_harvested"]["list"]]
         cum_avoided_carbon_emissions_roof = get_cumul_values(avoided_carbon_emissions_list_roof)
 
         cum_carbon_emissions_facades = add_elements_of_two_list(
             get_cumul_values(self.results_panels["Facades"]["lca_craddle_to_installation_carbon"]["list"]),
             get_cumul_values(self.results_panels["Facades"]["lca_recycling_carbon"]["list"]))
         avoided_carbon_emissions_list_facades = [i * country_ghe_cost for i in self.results_panels["Facades"][
-            "energy_produced"]["list"]]
+            "energy_harvested"]["list"]]
         cum_avoided_carbon_emissions_facades = get_cumul_values(avoided_carbon_emissions_list_facades)
 
         cum_carbon_emissions_total = add_elements_of_two_list(
             get_cumul_values(self.results_panels["Total"]["lca_craddle_to_installation_carbon"]["list"]),
             get_cumul_values(self.results_panels["Total"]["lca_recycling_carbon"]["list"]))
         avoided_carbon_emissions_list_total = [i * country_ghe_cost for i in self.results_panels["Total"][
-            "energy_produced"]["list"]]
+            "energy_harvested"]["list"]]
         cum_avoided_carbon_emissions_total = get_cumul_values(avoided_carbon_emissions_list_total)
 
         years = list(range(study_duration_years))
-        plt.plot(years, cum_avoided_carbon_emissions_roof, 'g--',
-                 label="Cumulative avoided GHG emissions thanks to the panels installed on the roof")
-        plt.plot(years, cum_avoided_carbon_emissions_facades, 'gs',
-                 label="Cumulative avoided GHG emissions thanks to the panels installed on the facades")
-        plt.plot(years, cum_avoided_carbon_emissions_total, 'g^',
-                 label="Total cumulative avoided GHG emissions thanks to the panels installed on the building")
+        fig = plt.figure(figsize=(8, 6))
+        plt.plot(years, cum_avoided_carbon_emissions_roof, 'gd', markersize=4,
+                 label="Cumulative avoided GHG emissions, roof")
+        plt.plot(years, cum_avoided_carbon_emissions_facades, 'go', markersize=4,
+                 label="Cumulative avoided GHG emissions, facades")
+        plt.plot(years, cum_avoided_carbon_emissions_total, 'g',
+                 label="Total cumulative avoided GHG emissions")
 
-        plt.plot(years, cum_carbon_emissions_roof, 'r--',
-                 label="Cumulative GHG emissions caused by the panels installed on the roof")
-        plt.plot(years, cum_carbon_emissions_facades, 'rs',
-                 label="Cumulative GHG emissions caused by the panels installed on the facades")
-        plt.plot(years, cum_carbon_emissions_total, 'r^',
-                 label="Total cumulative GHG emissions caused by the panels installed on the building")
+        plt.plot(years, cum_carbon_emissions_roof, 'rd', markersize=4,
+                 label="Cumulative GHG emissions, roof")
+        plt.plot(years, cum_carbon_emissions_facades, 'ro', markersize=4,
+                 label="Cumulative GHG emissions, facades")
+        plt.plot(years, cum_carbon_emissions_total, 'r',
+                 label="Total cumulative GHG emissions")
+
         plt.xlabel('Time (years)')
         plt.ylabel('GHE emissions (kgCO2eq)')
         plt.title('Cumulative GHG emissions during the study ')
         plt.grid(True)
-        plt.legend()
-        plt.show()
-        file_name = 'ghg_plot.png'
-        plt.savefig(f'{path_folder_simulation_building}/{file_name}')
+        plt.subplots_adjust(bottom=0.5)
+        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=2)
+        file_name = 'cumulative_ghg_emissions.pdf'
+        fig.savefig(f'{path_folder_simulation_building}/{file_name}', bbox_inches='tight')
 
     def plot_panels_results_ghe_per_kwh(self, path_folder_simulation_building, study_duration_years):
-        # plot price in GHG emissions by kWh produced
+        # plot price in GHG emissions by kWh harvested
 
-        cum_energy_expended_total = add_elements_of_two_list(
-            get_cumul_values(self.results_panels["Total"]["lca_craddle_to_installation_energy"]["list"]),
-            get_cumul_values(self.results_panels["Total"]["lca_recycling_energy"]["list"]))
-        cum_energy_produced_total = get_cumul_values(self.results_panels["Total"]["energy_produced"]["list"])
+        cum_primary_energy_total = add_elements_of_two_list(
+            get_cumul_values(self.results_panels["Total"]["lca_craddle_to_installation_primary_energy"]["list"]),
+            get_cumul_values(self.results_panels["Total"]["lca_recycling_primary_energy"]["list"]))
+        cum_energy_harvested_total = get_cumul_values(self.results_panels["Total"]["energy_harvested"]["list"])
         cum_carbon_emissions_total = add_elements_of_two_list(
             get_cumul_values(self.results_panels["Total"]["lca_craddle_to_installation_carbon"]["list"]),
             get_cumul_values(self.results_panels["Total"]["lca_recycling_carbon"]["list"]))
 
-        net_energy = [x - y for x, y in zip(cum_energy_produced_total, cum_energy_expended_total)]
-        ghg_per_kWh = [x / y for x, y in zip(cum_carbon_emissions_total, net_energy)]
+        net_energy = [abs(x - y) for x, y in zip(cum_energy_harvested_total, cum_primary_energy_total)]
+        ghg_per_kWh = [(x/y)*1000 for x, y in zip(cum_carbon_emissions_total, net_energy)]
 
         years = list(range(study_duration_years))
+        fig = plt.figure()
         plt.plot(years, ghg_per_kWh)
         plt.xlabel('Time (years)')
-        plt.ylabel('GHE emissions (kgCO2eq/kWh)')
-        plt.title("Evolution of the cost in GHG emissions for each kWh produced during the study")
+        plt.ylabel('GHE emissions (gCO2eq/kWh)')
+        plt.title("Evolution of the cost in GHG emissions for each kWh harvested during the study")
         plt.grid(True)
-        plt.show()
-        file_name = 'ghg_per_kWh_plot.png'
-        plt.savefig(f'{path_folder_simulation_building}/{file_name}')
+        file_name = 'ghg_per_kWh_plot.pdf'
+        fig.savefig(f'{path_folder_simulation_building}/{file_name}', bbox_inches='tight')
 
     def plot_panels_results_eroi(self, path_folder_simulation_building, study_duration_years):
         # plot EROI
-        cum_energy_expended_total = add_elements_of_two_list(
-            get_cumul_values(self.results_panels["Total"]["lca_craddle_to_installation_energy"]["list"]),
-            get_cumul_values(self.results_panels["Total"]["lca_recycling_energy"]["list"]))
-        cum_energy_produced_total = get_cumul_values(self.results_panels["Total"]["energy_produced"]["list"])
-        eroi = [x / y for x, y in zip(cum_energy_produced_total, cum_energy_expended_total)]
+        cum_primary_energy_total = add_elements_of_two_list(
+            get_cumul_values(self.results_panels["Total"]["lca_craddle_to_installation_primary_energy"]["list"]),
+            get_cumul_values(self.results_panels["Total"]["lca_recycling_primary_energy"]["list"]))
+        cum_energy_harvested_total = get_cumul_values(self.results_panels["Total"]["energy_harvested"]["list"])
+        eroi = [x / y for x, y in zip(cum_energy_harvested_total, cum_primary_energy_total)]
 
         years = list(range(study_duration_years))
+        fig = plt.figure()
         plt.plot(years, eroi)
         plt.xlabel('Time (years)')
         plt.ylabel('EROI')
         plt.title("Evolution of the EROI during the study")
         plt.grid(True)
-        plt.show()
-        file_name = 'eroi.png'
-        plt.savefig(f'{path_folder_simulation_building}/{file_name}')
-
-        plt.show()
+        file_name = 'eroi.pdf'
+        fig.savefig(f'{path_folder_simulation_building}/{file_name}', bbox_inches='tight')

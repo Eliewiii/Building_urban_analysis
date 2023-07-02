@@ -11,8 +11,8 @@ SolarOrPanelSimulation.panel_simulation(urban_canopy_object=urban_canopy_object,
                                         path_pv_tech_dictionary_json=default_path_pv_tech_dictionary,
                                         id_pv_tech_roof=default_id_pv_tech_roof,
                                         id_pv_tech_facades=default_id_pv_tech_facades,
-                                        minimum_ratio_energy_harvested_on_used=
-                                        default_minimum_ratio_energy_harvested_on_used,
+                                        minimum_ratio_energy_harvested_on_primary_energy=
+                                        default_minimum_ratio_energy_harvested_on_primary_energy,
                                         performance_ratio=default_performance_ratio,
                                         study_duration_in_years=default_study_duration_years,
 #                                        replacement_scenario=default_replacement_scenario)

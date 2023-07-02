@@ -157,11 +157,11 @@ class UrbanCanopyAdditionalFunction:
             list3 = \
                 json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["energy_harvested"][
                     "list"]
-            list4 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["lca_craddle_to_installation_energy"][
+            list4 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["lca_craddle_to_installation_primary_energy"][
                 "list"]
-            list5 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["lca_craddle_to_installation_energy"][
+            list5 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["lca_craddle_to_installation_primary_energy"][
                 "list"]
-            list6 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["lca_craddle_to_installation_energy"][
+            list6 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["lca_craddle_to_installation_primary_energy"][
                 "list"]
             list7 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["lca_craddle_to_installation_carbon"][
                 "list"]
@@ -174,13 +174,13 @@ class UrbanCanopyAdditionalFunction:
                 "list"]
             list12 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["dmfa"]["list"]
             list13 = \
-                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["lca_recycling_energy"][
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["lca_recycling_primary_energy"][
                     "list"]
             list14 = \
-                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["lca_recycling_energy"][
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["lca_recycling_primary_energy"][
                     "list"]
             list15 = \
-                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["lca_recycling_energy"][
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["lca_recycling_primary_energy"][
                     "list"]
             list16 = \
                 json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["lca_recycling_carbon"][

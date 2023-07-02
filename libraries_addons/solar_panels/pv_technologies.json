@@ -8,9 +8,9 @@
     "DMFA" : 23,
     "primary_energy_manufacturing_in_kWh_per_panel": 1574.975,
     "gh_gas_emissions_manufacturing_in_kgCO2eq_per_panel" : 303.3296,
-    "energy_transport_in_kWh_per_panel": 0,
+    "primary_energy_transport_in_kWh_per_panel": 0,
     "carbon_transport_in_kgCO2_per_panel": 0,
-    "end_of_life_energy_in_kWh_per_panel": 0,
+    "end_of_life_primary_energy_in_kWh_per_panel": 0,
     "end_of_life_carbon_in_kgCO2_per_panel": 0
                       },
   "metsolar_facades c-Si": {
@@ -22,9 +22,9 @@
     "DMFA" : 23,
     "primary_energy_manufacturing_in_kWh_per_panel": 1574.975,
     "gh_gas_emissions_manufacturing_in_kgCO2eq_per_panel" : 303.3296,
-    "energy_transport_in_kWh_per_panel": 0,
+    "primary_energy_transport_in_kWh_per_panel": 0,
     "carbon_transport_in_kgCO2_per_panel": 0,
-    "end_of_life_energy_in_kWh_per_panel": 0,
+    "end_of_life_primary_energy_in_kWh_per_panel": 0,
     "end_of_life_carbon_in_kgCO2_per_panel": 0
                             }
 }

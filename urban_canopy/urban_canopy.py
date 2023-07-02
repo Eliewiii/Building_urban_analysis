@@ -514,7 +514,7 @@ class UrbanCanopy:
         return list_id
 
     def run_panel_simulation(self, path_folder_simulation, path_pv_tech_dictionary_json, id_pv_tech_roof,
-                             id_pv_tech_facades, minimum_ratio_energy_harvested_on_used, performance_ratio, study_duration_in_years,
+                             id_pv_tech_facades, minimum_ratio_energy_harvested_on_primary_energy, performance_ratio, study_duration_in_years,
                              replacement_scenario, **kwargs):
         """
         Run the panels simulation on the urban canopy
@@ -522,7 +522,7 @@ class UrbanCanopy:
         :param path_pv_tech_dictionary_json: path to the json dictionary containing all PVPanelTechnology objects
         :param id_pv_tech_roof: string: id of the roof technology used, default = "mitrex_roof c-Si"
         :param id_pv_tech_facades: string: id of the facade technology used, default = "metsolar_facades c-Si"
-        :param minimum_ratio_energy_harvested_on_used: int: production minimal during the first year for a panel to be installed at
+        :param minimum_ratio_energy_harvested_on_primary_energy: int: production minimal during the first year for a panel to be installed at
         this position, Default0.5 kWh
         :param performance_ratio: float: performance ratio of the PV, Default=0.75
         :param study_duration_in_years: integer: duration of the study in years, default = 50
@@ -535,7 +535,7 @@ class UrbanCanopy:
             if type(building) is BuildingModeled and building.is_target:
                 path_folder_building = os.path.join(path_folder_simulation, default_name_radiation_simulation_folder, building.id)
                 building.panel_simulation_building(path_folder_building, pv_tech_dictionary, id_pv_tech_roof,
-                                                   id_pv_tech_facades, minimum_ratio_energy_harvested_on_used, performance_ratio,
+                                                   id_pv_tech_facades, minimum_ratio_energy_harvested_on_primary_energy, performance_ratio,
                                                    study_duration_in_years, replacement_scenario, **kwargs)
 
     def plot_graphs(self, path_folder_simulation, study_duration_years, country_ghe_cost):
@@ -545,7 +545,7 @@ class UrbanCanopy:
                     path_folder_simulation_building = os.path.join(path_folder_simulation,
                                                                    default_name_radiation_simulation_folder, building.id)
                     building.plot_panels_energy_results(path_folder_simulation_building, study_duration_years)
-                    # building.plot_panels_ghg_results(path_folder_simulation_building, study_duration_years,
-                    #                                  country_ghe_cost)
-                    # building.plot_panels_results_ghe_per_kwh(path_folder_simulation_building, study_duration_years)
-                    # building.plot_panels_results_eroi(path_folder_simulation_building, study_duration_years)
+                    building.plot_panels_ghg_results(path_folder_simulation_building, study_duration_years,
+                                                     country_ghe_cost)
+                    building.plot_panels_results_ghe_per_kwh(path_folder_simulation_building, study_duration_years)
+                    building.plot_panels_results_eroi(path_folder_simulation_building, study_duration_years)

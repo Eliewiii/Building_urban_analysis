@@ -65,7 +65,7 @@ default_on_facades = True
 default_path_pv_tech_dictionary = os.path.join(path_tool, "Libraries", "Solar_panels", "pv_technologies.json")
 default_id_pv_tech_roof = "mitrex_roof c-Si"
 default_id_pv_tech_facades = "metsolar_facades c-Si"
-default_minimum_ratio_energy_harvested_on_used = 1.2
+default_minimum_ratio_energy_harvested_on_primary_energy = 1.2
 default_performance_ratio = 0.75
 default_study_duration_years = 50
 default_replacement_scenario = "yearly"
@@ -96,26 +96,26 @@ default_tree_structure_per_building_urban_canopy_json_dict = {
         "Panels_results": {
             "Roof": {
                 "energy_harvested": {"list": None, "total": None},
-                "lca_craddle_to_installation_energy": {"list": None, "total": None},
+                "lca_craddle_to_installation_primary_energy": {"list": None, "total": None},
                 "lca_craddle_to_installation_carbon": {"list": None, "total": None},
                 "dmfa": {"list": None, "total": None},
-                "lca_recycling_energy": {"list": None, "total": None},
+                "lca_recycling_primary_energy": {"list": None, "total": None},
                 "lca_recycling_carbon": {"list": None, "total": None}
             },
             "Facades": {
                 "energy_harvested": {"list": None, "total": None},
-                "lca_craddle_to_installation_energy": {"list": None, "total": None},
+                "lca_craddle_to_installation_primary_energy": {"list": None, "total": None},
                 "lca_craddle_to_installation_carbon": {"list": None, "total": None},
                 "dmfa": {"list": None, "total": None},
-                "lca_recycling_energy": {"list": None, "total": None},
+                "lca_recycling_primary_energy": {"list": None, "total": None},
                 "lca_recycling_carbon": {"list": None, "total": None}
             },
             "Total": {
                 "energy_harvested": {"list": None, "total": None},
-                "lca_craddle_to_installation_energy": {"list": None, "total": None},
+                "lca_craddle_to_installation_primary_energy": {"list": None, "total": None},
                 "lca_craddle_to_installation_carbon": {"list": None, "total": None},
                 "dmfa": {"list": None, "total": None},
-                "lca_recycling_energy": {"list": None, "total": None},
+                "lca_recycling_primary_energy": {"list": None, "total": None},
                 "lca_recycling_carbon": {"list": None, "total": None}
             },
         }
