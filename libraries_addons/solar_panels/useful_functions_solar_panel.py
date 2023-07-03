@@ -197,3 +197,110 @@ def get_cumul_values(list1):
 def add_elements_of_two_list(list1, list2):
     added_list = [sum(i) for i in zip(list1, list2)]
     return added_list
+
+
+def find_intersection(x, y, line_function):
+    """
+    Finds the intersection point between a line and a data array.
+
+    Arguments:
+    x, y -- Arrays representing the x and y values of the data.
+    x_line, y_line -- Arrays representing the x and y values of the line.
+
+    Returns:
+    intersection_x -- x-value of the intersection point.
+    intersection_y -- y-value of the intersection point.
+    """
+    y_line = [line_function(i) for i in x]
+
+    # Perform linear interpolation to get the y-values of the line at the x-values of the data
+    y_line_interpolated = np.interp(x, x, y_line)
+
+    # Find the index of the first occurrence where the interpolated y-values and the data y-values are equal
+    index = np.where(y == y_line_interpolated)[0][0]
+
+    intersection_x = x[index]
+    intersection_y = y[index]
+
+    return intersection_x, intersection_y
+
+
+def transform_to_linear_function(x, y):
+    """
+    Transforms data into a linear function using linear regression.
+
+    Arguments:
+    x, y -- Arrays representing the x and y values of the data.
+
+    Returns:
+    slope -- Slope of the linear function.
+    intercept -- Intercept of the linear function.
+    """
+    # Convert x and y to NumPy arrays
+    x = np.array(x)
+    y = np.array(y)
+
+    # Calculate the slope and intercept
+    mean_x = np.mean(x)
+    mean_y = np.mean(y)
+    slope = np.sum((x - mean_x) * (y - mean_y)) / np.sum((x - mean_x) ** 2)
+    intercept = mean_y - slope * mean_x
+
+    return slope, intercept
+
+
+def generate_step_function(x_values, y_values):
+    """
+    Generates a step function from a set of x and y values.
+
+    Arguments:
+    x_values -- Array of x-values.
+    y_values -- Array of y-values.
+
+    Returns:
+    step_function -- A function that represents the step function.
+    """
+
+    def step_function(x):
+        # Find the index of the largest x-value that is less than or equal to the input x
+        idx = np.searchsorted(x_values, x, side='right') - 1
+
+        # Return the corresponding y-value
+        return y_values[idx]
+
+    return step_function
+
+
+def find_intersection_functions(func1, func2, x_start, x_end, tol=1e-3, max_iter=500):
+    """
+    Finds the intersection of two functions using the bisection method.
+
+    Arguments:
+    func1, func2 -- Functions to find the intersection of.
+    x_start, x_end -- Range of x-values to search for the intersection.
+    tol -- Tolerance for the intersection value (default: 1e-6).
+    max_iter -- Maximum number of iterations (default: 100).
+
+    Returns:
+    x_intersection -- Approximated x-value of the intersection.
+    y_intersection -- Approximated y-value of the intersection.
+    """
+    x_left = x_start
+    x_right = x_end
+
+    for _ in range(max_iter):
+        x_mid = (x_left + x_right) / 2
+        y_mid1 = func1(x_mid)
+        y_mid2 = func2(x_mid)
+
+        if abs(y_mid1 - y_mid2) < tol:
+            return x_mid, y_mid1
+
+        if y_mid1 > y_mid2:
+            x_right = x_mid
+        else:
+            x_left = x_mid
+
+    # If no intersection is found within the maximum iterations
+    raise RuntimeError("Intersection not found within the specified range and maximum iterations.")
+

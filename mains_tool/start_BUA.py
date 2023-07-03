@@ -134,6 +134,12 @@ def main():
                                                                                 arguments_dictionary[
                                                                                     "path_folder_simulation"])
 
+    if simulation_step_dictionary["plot_graph_results_building_panel_simulation"]:
+        SimulationPostProcessingAndPlots.plot_graphs(urban_canopy_object=urban_canopy_object,
+                                                     path_folder_simulation=default_path_folder_simulation,
+                                                     study_duration_years=default_study_duration_years,
+                                                     country_ghe_cost=default_country_ghe_cost)
+
     # Save logs for the components
     if arguments_dictionary["gh_component_name"] is not None:
         SimulationCommonMethods.write_gh_component_user_logs(urban_canopy_object=urban_canopy_object,

@@ -100,6 +100,8 @@ class LoadArguments:
         parser.add_argument("--replacement_scenario", help="replacement scenario chosen for the failed panels",
                             default=default_replacement_scenario)
         parser.add_argument("--every_X_years", help="replacement every x years scenario", default=default_evey_X_years)
+        parser.add_argument("--country_ghe_cost", help="Cost in gCO2eq per kWh depending on the country energy mix",
+                            efault=default_country_ghe_cost)
 
     @staticmethod
     def add_user_simulation_features_to_parser(parser):
@@ -153,6 +155,10 @@ class LoadArguments:
         # Post-processing
         parser.add_argument("--generate_panels_results_in_csv", help="Generate the csv file containing all the useful "
                                                                      "data calculated by the simulation", default=False)
+        parser.add_argument("--plot_graph_results_building_panel_simulation",
+                            help="Plot and save the graphs for each building", default=False)
+        parser.add_argument("--plot_graph_results_urban_canopy", help="Plot and save the graphs of the urban canopy",
+                            default=False)
 
     @staticmethod
     def parse_arguments_and_add_them_to_variable_dict(parser):
@@ -192,7 +198,8 @@ class LoadArguments:
             "performance_ratio": float(args.performance_ratio),
             "study_duration_years": int(args.study_duration_years),
             "replacement_scenario": args.replacement_scenario,
-            "every_X_years": int(args.every_X_years)
+            "every_X_years": int(args.every_X_years),
+            "country_ghe_cost": float(args.country_ghe_cost)
         }
 
         # Create a dictionary with the arguments and the name of their variable that will be imported in the main script
@@ -211,7 +218,9 @@ class LoadArguments:
             "run_generate_model_with_building_envelop": bool(int(args.generate_model_with_building_envelop)),
             "run_radiation_simulation": bool(int(args.do_radiation_simulation)),
             "run_panel_simulation": bool(int(args.do_panel_simulation)),
-            "generate_panels_results_in_csv": bool(int(args.generate_panels_results_in_csv))
+            "generate_panels_results_in_csv": bool(int(args.generate_panels_results_in_csv)),
+            "plot_graph_results_building_panel_simulation": bool(int(args.plot_graph_results_building_panel_simulation)),
+            "plot_graph_results_urban_canopy": bool(int(args.plot_graph_results_urban_canopy))
         }
 
         # the rest todo

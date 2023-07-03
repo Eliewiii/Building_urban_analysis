@@ -16,4 +16,4 @@ SimulationCommonMethods.save_urban_canopy_to_json(urban_canopy_object=urban_cano
 SimulationPostProcessingAndPlots.plot_graphs(urban_canopy_object=urban_canopy_object,
                                              path_folder_simulation=default_path_folder_simulation,
                                              study_duration_years=default_study_duration_years,
-                                             country_ghe_cost=0.57874)
+                                             country_ghe_cost=default_country_ghe_cost)

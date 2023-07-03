@@ -168,7 +168,7 @@ def from_polygon_grid_BUA(face, x_dim, y_dim, generate_centroids=True):
         for polygon_hole in face.hole_polygon2d:
             # figure out how many x and y cells to make
             for vert in _verts:
-                if polygon_hole.is_point_inside(vert) or polygon_hole.is_point_on_edge(vert, 0.5):
+                if polygon_hole.is_point_inside(vert) or polygon_hole.is_point_on_edge(vert, 0.1):
                     _pattern[_verts.index(vert)] = False
 
     # build the mesh

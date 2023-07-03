@@ -70,6 +70,7 @@ default_performance_ratio = 0.75
 default_study_duration_years = 50
 default_replacement_scenario = "yearly"
 default_evey_X_years = 5
+default_country_ghe_cost = 0.57874
 # Exports
 urban_canopy_export_file_name = "urban_canopy"
 urban_canopy_export_file_name_pkl = urban_canopy_export_file_name + ".pkl"
