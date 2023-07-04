@@ -11,7 +11,10 @@ path_folder_json = None
 path_file_json = None
 # path_file_json = "C:\\Users\\User\\OneDrive - Technion\\BUA\\Elie\\Samples\\hb_model\\sample_simple_hb_model.hbjson"
 # path_folder_json = "C:\\Users\\User\\OneDrive - Technion\\BUA\\Elie\\Samples\\hb_model"
-path_file_json = "C:\\Users\\User\\OneDrive - Technion\\BUA\\Hilany\\Samples\\model_with_shades_small_win_corr.hbjson"
+# path_file_json = "C:\\Users\\User\\OneDrive - Technion\\BUA\\Hilany\\Samples\\model_with_shades_small_win_corr.hbjson"
+path_file_json = "C:\\Users\\elie-medioni\\OneDrive\\OneDrive - Technion\\BUA\\Hilany\\Samples\\model_with_shades_small_win_corr.hbjson"
+path_file_json = "C:\\Users\\elie-medioni\\OneDrive\\OneDrive - Technion\\BUA\\Hilany\\Samples\\model_with_shades_small_win.hbjson"
+
 # path_folder_json = "C:\\Users\\User\\OneDrive - Technion\BUA\\Hilany\\Samples"
 # urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object(
 #    path_folder_simulation=path_folder_json)

@@ -101,7 +101,7 @@ class LoadArguments:
                             default=default_replacement_scenario)
         parser.add_argument("--every_X_years", help="replacement every x years scenario", default=default_evey_X_years)
         parser.add_argument("--country_ghe_cost", help="Cost in gCO2eq per kWh depending on the country energy mix",
-                            efault=default_country_ghe_cost)
+                            default=default_country_ghe_cost)
 
     @staticmethod
     def add_user_simulation_features_to_parser(parser):
