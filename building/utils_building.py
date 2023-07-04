@@ -6,6 +6,8 @@ import argparse
 import json
 import shapely
 from math import sqrt, isnan, log
+import matplotlib.pyplot as plt
+import numpy as np
 
 import dragonfly
 from honeybee.model import Model
@@ -30,8 +32,10 @@ from libraries_addons.solar_radiations.annual_cumulative_value import hb_ann_cum
 from solar_panel.pv_panel_technology import PvPanelTechnology
 from solar_panel.pv_panel import PvPanel
 
-from libraries_addons.solar_panels.useful_functions_solar_panel import load_panels_on_sensor_grid, \
-    loop_over_the_years_for_solar_panels, beginning_end_of_life_lca_results_in_lists, results_from_lists_to_dict
+from libraries_addons.solar_panels.useful_functions_solar_panel import *
+    # load_panels_on_sensor_grid, \
+    # loop_over_the_years_for_solar_panels, beginning_end_of_life_lca_results_in_lists, results_from_lists_to_dict, \
+    # get_cumul_values, add_elements_of_two_list
 from libraries_addons.solar_panels import pv_efficiency_functions
 from libraries_addons.solar_panels import pv_efficiency_functions
 

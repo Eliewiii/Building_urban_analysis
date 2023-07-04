@@ -38,16 +38,16 @@ class PvPanel:
     def initialize_or_replace_panel_old(self):
         """
         Initialize a panel or replace the panel with a new one, leading the LCA carbon footprint
-        :return lca_energy: float: the energy manufacturing this new panel caused
+        :return lca_craddle_to_installation_primary_energy: float: the energy manufacturing this new panel caused
         """
         # Get a life expectancy according to the life expectancy distribution of the pv technology
         self.life_expectancy = self.panel_technology_object.get_life_expectancy_of_a_panel()
         # put back the age to 0
         self.age = 0
         # get the LCA carbon footprint for one panel according to its pv technology
-        lca_energy = self.panel_technology_object.energy_manufacturing
+        lca_craddle_to_installation_primary_energy = self.panel_technology_object.primary_energy_manufacturing
 
-        return lca_energy
+        return lca_craddle_to_installation_primary_energy
 
     def initialize_or_replace_panel(self):
         """
@@ -66,40 +66,40 @@ class PvPanel:
         self.age = None
         self.life_expectancy = None
 
-    def energy_produced_in_one_year(self, solar_radiation_year_value, performance_ratio=0.75):
+    def energy_harvested_in_one_year(self, solar_radiation_year_value, performance_ratio=0.75):
         """
-        Return the energy produced in one year by a functioning panel
+        Return the energy harvested in one year by a functioning panel
         :param solar_radiation_year_value: float: radiation received by a panel during an entire year in Wh/m2/year
         :param performance_ratio: float: performance ratio of the pv, on average equals to 0.75
-        :return energy_produced: float: energy produced by the panel during the year, in kWh/panel/year
+        :return energy_harvested: float: energy harvested by the panel during the year, in kWh/panel/year
         """
         efficiency_loss_function = get_efficiency_loss_function_from_string(self.panel_technology_object.
                                                                             efficiency_function)
         initial_efficiency = self.panel_technology_object.initial_efficiency
         area = self.panel_technology_object.panel_area
-        energy_produced = efficiency_loss_function(initial_efficiency, self.age) * solar_radiation_year_value * area \
+        energy_harvested = efficiency_loss_function(initial_efficiency, self.age) * solar_radiation_year_value * area \
                           * performance_ratio / 1000
-        return energy_produced
+        return energy_harvested
 
-    def pass_year(self, solar_radiation_year_value):
+    def pass_year(self, solar_radiation_year_value, performance_ratio):
         """
         Simulate a year passing for a panel
         :param year: year of the simulation, could impact the efficiency of the panel, if we assume that the efficiency
         of the new panels is increasing every year
         #todo ask @elie about it
         :param solar_radiation_year_value: float: radiation received by a panel during an entire year in Wh/panel/year
-        :return energy_produced: float : energy produced by the panel through the year
+        :return energy_harvested: float : energy harvested by the panel through the year
         :return dmfa_waste: float : dmfa waste generate by the panel when it fails
         """
-        energy_produced, panel_failed = 0., False
+        energy_harvested, panel_failed = 0., False
 
         if self.is_panel_working():
-            # get the energy produced by the panel over the year with the proper efficiency
-            energy_produced = self.energy_produced_in_one_year(solar_radiation_year_value)
+            # get the energy harvested by the panel over the year with the proper efficiency
+            energy_harvested = self.energy_harvested_in_one_year(solar_radiation_year_value, performance_ratio)
             # increase the age
             self.age += 1
             # If panel reach life expectancy, it fails and generate dmfa waste
             if self.age is self.life_expectancy:
                 self.panel_failed()
                 panel_failed = True
-        return energy_produced, panel_failed
+        return energy_harvested, panel_failed

@@ -51,7 +51,8 @@ class UrbanCanopyAdditionalFunction:
             elif type(building_object) is BuildingModeled:
                 HB_room_dict = building_object.export_building_to_elevated_HB_room_envelop().to_dict()
                 json_dict["buildings"][building_id]["HB_room_envelop"] = HB_room_dict
-                # at this stage of the simulation, the HB has already been turned into a dict (to avoid locked class issue)
+                # at this stage of the simulation, the HB has already been turned into a dict (to avoid locked class
+                # issue)
                 json_dict["buildings"][building_id]["HB_model"] = building_object.HB_model_dict
 
     @staticmethod
@@ -105,11 +106,11 @@ class UrbanCanopyAdditionalFunction:
         for building_id, building_object in building_dict.items():
             if type(building_object) is BuildingModeled:
                 json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"] = \
-                building_object.results_panels["Roof"]
+                    building_object.results_panels["Roof"]
                 json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"] = \
-                building_object.results_panels["Facades"]
+                    building_object.results_panels["Facades"]
                 json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"] = \
-                building_object.results_panels["Total"]
+                    building_object.results_panels["Total"]
 
     @staticmethod
     def make_HB_model_dict_envelops_from_buildings(building_dict):
@@ -135,40 +136,64 @@ class UrbanCanopyAdditionalFunction:
     def write_to_csv_panels_simulation_results(json_dict, building_dict, path_folder_simulation):
         # todo change names lca energy/lca carbon ?
         for building_id, building_object in building_dict.items():
-            path_folder_building = os.path.join(path_folder_simulation, default_name_radiation_simulation_folder, building_id)
+            path_folder_building = os.path.join(path_folder_simulation, default_name_radiation_simulation_folder,
+                                                building_id)
             path_folder_panels_results_csv = os.path.join(path_folder_building, "panels_simulation_results.csv")
-            header = ["energy_produced_roof (kWh)", "energy_produced_facades (kWh)", "energy_produced_total (kWh)",
+            header = ["energy_harvested_roof (kWh)", "energy_harvested_facades (kWh)", "energy_harvested_total (kWh)",
                       "primary_energy_roof (kWh)", "primary_energy_facades (kWh)", "primary_energy_total (kWh)",
-                      "gh_gas_emissions_manufacturing_roof (kgCO2eq)", "gh_gas_emissions_manufacturing_facades (kgCO2eq)",
+                      "gh_gas_emissions_manufacturing_roof (kgCO2eq)",
+                      "gh_gas_emissions_manufacturing_facades (kgCO2eq)",
                       "gh_gas_emissions_manufacturing_total (kgCO2eq)",
-                      "dmfa_roof (kg)", "dmfa_facades (kg)", "dmfa_total (kg)"]
+                      "dmfa_roof (kg)", "dmfa_facades (kg)", "dmfa_total (kg)", "energy_end_of_life_roof (kWh)",
+                      "energy_end_of_life_facades (kWh)", "energy_end_of_life_total (kWh)",
+                      "carbon_end_of_life_roof (kgCO2eq)", "carbon_end_of_life_facades (kgCO2eq)",
+                      "carbon_end_of_life_total (kgCO2eq)"]
             list1 = \
-                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["energy_produced"][
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["energy_harvested"][
                     "list"]
             list2 = \
-                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["energy_produced"][
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["energy_harvested"][
                     "list"]
             list3 = \
-                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["energy_produced"][
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["energy_harvested"][
                     "list"]
-            list4 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["lca_energy"][
+            list4 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["lca_craddle_to_installation_primary_energy"][
                 "list"]
-            list5 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["lca_energy"][
+            list5 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["lca_craddle_to_installation_primary_energy"][
                 "list"]
-            list6 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["lca_energy"][
+            list6 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["lca_craddle_to_installation_primary_energy"][
                 "list"]
-            list7 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["lca_carbon"][
+            list7 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["lca_craddle_to_installation_carbon"][
                 "list"]
-            list8 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["lca_carbon"][
+            list8 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["lca_craddle_to_installation_carbon"][
                 "list"]
-            list9 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["lca_carbon"][
+            list9 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["lca_craddle_to_installation_carbon"][
                 "list"]
             list10 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["dmfa"]["list"]
             list11 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["dmfa"][
                 "list"]
             list12 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["dmfa"]["list"]
+            list13 = \
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["lca_recycling_primary_energy"][
+                    "list"]
+            list14 = \
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["lca_recycling_primary_energy"][
+                    "list"]
+            list15 = \
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["lca_recycling_primary_energy"][
+                    "list"]
+            list16 = \
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["lca_recycling_carbon"][
+                    "list"]
+            list17 = \
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["lca_recycling_carbon"][
+                    "list"]
+            list18 = \
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["lca_recycling_carbon"][
+                    "list"]
 
             array = numpy.transpose(
-                [list1, list2, list3, list4, list5, list6, list7, list8, list9, list10, list11, list12])
+                [list1, list2, list3, list4, list5, list6, list7, list8, list9, list10, list11, list12, list13, list14,
+                 list15, list16, list17, list18])
 
             write_to_csv_arr(header, array, path_folder_panels_results_csv)

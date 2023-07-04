@@ -98,8 +98,11 @@ def main():
                                                     "path_pv_tech_dictionary"],
                                                 id_pv_tech_roof=arguments_dictionary["id_pv_tech_roof"],
                                                 id_pv_tech_facades=arguments_dictionary["id_pv_tech_facades"],
+                                                minimum_ratio_energy_harvested_on_primary_energy=arguments_dictionary["minimum_ratio_energy_harvested_on_primary_energy"],
+                                                performance_ratio=arguments_dictionary["performance_ratio"],
                                                 study_duration_in_years=arguments_dictionary["study_duration_years"],
-                                                replacement_scenario=arguments_dictionary["replacement_scenario"])
+                                                replacement_scenario=arguments_dictionary["replacement_scenario"],
+                                                replacement_year=arguments_dictionary["every_X_years"])
 
     # Microclimate weather files
 
@@ -130,6 +133,12 @@ def main():
                                                                                 path_folder_simulation=
                                                                                 arguments_dictionary[
                                                                                     "path_folder_simulation"])
+
+    if simulation_step_dictionary["plot_graph_results_building_panel_simulation"]:
+        SimulationPostProcessingAndPlots.plot_graphs(urban_canopy_object=urban_canopy_object,
+                                                     path_folder_simulation=default_path_folder_simulation,
+                                                     study_duration_years=default_study_duration_years,
+                                                     country_ghe_cost=default_country_ghe_cost)
 
     # Save logs for the components
     if arguments_dictionary["gh_component_name"] is not None:

@@ -16,11 +16,13 @@ class SolarOrPanelSimulation:
 
     @staticmethod
     def panel_simulation(urban_canopy_object, path_folder_simulation, path_pv_tech_dictionary_json, id_pv_tech_roof,
-                         id_pv_tech_facades, study_duration_in_years, replacement_scenario, **kwargs):
+                         id_pv_tech_facades, minimum_ratio_energy_harvested_on_primary_energy, performance_ratio,
+                         study_duration_in_years, replacement_scenario, **kwargs):
         """
         Run panel simulation
         """
 
         urban_canopy_object.run_panel_simulation(path_folder_simulation, path_pv_tech_dictionary_json, id_pv_tech_roof,
-                                                 id_pv_tech_facades, study_duration_in_years, replacement_scenario, **kwargs)
+                                                 id_pv_tech_facades, minimum_ratio_energy_harvested_on_primary_energy,
+                                                 performance_ratio, study_duration_in_years, replacement_scenario, **kwargs)
         logging.info("The panel simulation was run on the buildings of the urban canopy")
