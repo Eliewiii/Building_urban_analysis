@@ -20,7 +20,8 @@ SimulationBuildingManipulationFunctions.move_buildings_to_origin(urban_canopy_ob
 path_folder_json = None
 path_file_json = None
 path_folder_json = "C:\\Users\\elie-medioni\\OneDrive\\OneDrive - Technion\\BUA\\Elie\\Samples\\hb_model"
-# path_file_json = "C:\\Users\\elie-medioni\\OneDrive\\OneDrive - Technion\\BUA\\Elie\\Samples\\hb_model\\sample_simple_hb_model.hbjson"
+# path_file_json = "C:\Users\elie-medioni\OneDrive\OneDrive - Technion\BUA\Hilany\Samples\model_with_shades_small_win_corr.hbjson"
+
 SimulationLoadBuildingOrGeometry.add_buildings_from_hbjson_to_urban_canopy(urban_canopy_object=urban_canopy_object,
                                                                            path_folder_hbjson=path_folder_json,
                                                                            path_file_hbjson=path_file_json,
