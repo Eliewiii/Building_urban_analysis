@@ -437,7 +437,7 @@ class BuildingModeled(BuildingBasic):
         intersection = find_intersection_functions(cum_energy_harvested_eq, cum_primary_energy_total_fun, years[0], years[-1])
         plt.axhline(round(intersection[1]), color='k')
         plt.axvline(intersection[0], color='k')
-        plt.text(-2, round(intersection[1], 1), f'y={round(intersection[1], 1)}', va='bottom', ha='left')
+        plt.text(-2, round(intersection[1]), f'y={round(intersection[1])}', va='bottom', ha='left')
         plt.text(round(intersection[0], 1), 0, f'x={round(intersection[0], 1)}', va='bottom', ha='left')
 
         # get the intersection point when all the energy used has been reimbursed
