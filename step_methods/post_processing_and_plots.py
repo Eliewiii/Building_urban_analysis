@@ -3,7 +3,7 @@
 """
 
 from mains_tool.utils_general import *
-from urban_canopy.utils_urban_canopy import *
+from urban_canopy_pack.utils_urban_canopy import *
 
 
 class SimulationPostProcessingAndPlots:
@@ -36,8 +36,14 @@ class SimulationPostProcessingAndPlots:
                                                                              path_folder_simulation)
 
     @staticmethod
-    def plot_graphs(urban_canopy_object, path_folder_simulation, study_duration_years, country_ghe_cost):
-        urban_canopy_object.plot_graphs(path_folder_simulation=path_folder_simulation,
-                                        study_duration_years=study_duration_years,
-                                        country_ghe_cost=country_ghe_cost)
+    def plot_graphs_each_building(urban_canopy_object, path_folder_simulation, study_duration_years, country_ghe_cost):
+        urban_canopy_object.plot_graphs_buildings(path_folder_simulation=path_folder_simulation,
+                                                  study_duration_years=study_duration_years,
+                                                  country_ghe_cost=country_ghe_cost)
 
+    @staticmethod
+    def plot_graphs_total_urban_canopy(urban_canopy_object, path_folder_simulation, study_duration_years,
+                                       country_ghe_cost):
+        urban_canopy_object.plot_graphs_urban_canopy(path_folder_simulation=path_folder_simulation,
+                                                     study_duration_years=study_duration_years,
+                                                     country_ghe_cost=country_ghe_cost)
