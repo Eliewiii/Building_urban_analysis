@@ -5,7 +5,7 @@ Additional functions used by Urban canopy
 from mains_tool.utils_general import *
 from urban_canopy_pack.utils_urban_canopy import *
 from libraries_addons.solar_panels.useful_functions_solar_panel import get_cumul_values, add_elements_of_two_lists, \
-    transform_to_linear_function, find_intersection_functions, generate_step_function
+    transform_to_linear_function, find_intersection_functions, generate_step_function, write_to_csv_arr
 
 
 class UrbanCanopyAdditionalFunction:
