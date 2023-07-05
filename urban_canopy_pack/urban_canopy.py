@@ -430,7 +430,7 @@ class UrbanCanopy:
                         values_roof = building.solar_radiations(str(building.id), path_folder_building,
                                                                 path_weather_file, grid_size, offset_dist,
                                                                 on_facades=False)
-                        name_file = os.path.join(path_folder_building, 'Roof', 'annual_radiation_values.txt')
+                        name_file = os.path.join(path_folder_building, "Roof", "annual_radiation_values.txt")
                         with open(name_file, 'w') as f:
                             tmp = (','.join(str(n) for n in values_roof[0]))
                             f.write('{}'.format(tmp))

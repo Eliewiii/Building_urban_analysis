@@ -195,8 +195,13 @@ def get_cumul_values(list1):
 
 
 def add_elements_of_two_lists(list1, list2):
-    added_list = [sum(i) for i in zip(list1, list2)]
-    return added_list
+    if not list1:
+        return list2
+    elif not list2:
+        return list1
+    else:
+        added_list = [sum(i) for i in zip(list1, list2)]
+        return added_list
 
 
 def transform_to_linear_function(x, y):

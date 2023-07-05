@@ -4,7 +4,8 @@ Additional functions used by Urban canopy
 
 from mains_tool.utils_general import *
 from urban_canopy_pack.utils_urban_canopy import *
-from libraries_addons.solar_panels.useful_functions_solar_panel import write_to_csv_arr
+from libraries_addons.solar_panels.useful_functions_solar_panel import get_cumul_values, add_elements_of_two_lists, \
+    transform_to_linear_function, find_intersection_functions, generate_step_function
 
 
 class UrbanCanopyAdditionalFunction:
@@ -270,7 +271,7 @@ class UrbanCanopyAdditionalFunction:
         cum_avoided_carbon_emissions_facades_uc = []
         cum_avoided_carbon_emissions_total_uc = []
 
-        for building in building_dict.items():
+        for building in building_dict.values():
             # get the carbon values
             cum_carbon_emissions_roof = add_elements_of_two_lists(
                 get_cumul_values(building.results_panels["Roof"]["lca_craddle_to_installation_carbon"]["list"]),
