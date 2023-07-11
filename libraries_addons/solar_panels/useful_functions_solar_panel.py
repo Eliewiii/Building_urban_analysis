@@ -194,35 +194,14 @@ def get_cumul_values(list1):
     return list_cumul
 
 
-def add_elements_of_two_list(list1, list2):
-    added_list = [sum(i) for i in zip(list1, list2)]
-    return added_list
-
-
-def find_intersection(x, y, line_function):
-    """
-    Finds the intersection point between a line and a data array.
-
-    Arguments:
-    x, y -- Arrays representing the x and y values of the data.
-    x_line, y_line -- Arrays representing the x and y values of the line.
-
-    Returns:
-    intersection_x -- x-value of the intersection point.
-    intersection_y -- y-value of the intersection point.
-    """
-    y_line = [line_function(i) for i in x]
-
-    # Perform linear interpolation to get the y-values of the line at the x-values of the data
-    y_line_interpolated = np.interp(x, x, y_line)
-
-    # Find the index of the first occurrence where the interpolated y-values and the data y-values are equal
-    index = np.where(y == y_line_interpolated)[0][0]
-
-    intersection_x = x[index]
-    intersection_y = y[index]
-
-    return intersection_x, intersection_y
+def add_elements_of_two_lists(list1, list2):
+    if not list1:
+        return list2
+    elif not list2:
+        return list1
+    else:
+        added_list = [sum(i) for i in zip(list1, list2)]
+        return added_list
 
 
 def transform_to_linear_function(x, y):

@@ -5,21 +5,7 @@ import os.path
 
 from mains_tool.utils_general import *
 # from mains_tool.utils_general import default_minimum_vf_criterion_context_filter_first_pass_shading
-from urban_canopy.utils_urban_canopy import *
-import logging
-
-user_logger = logging.getLogger(f"{__name__} user")
-dev_logger = logging.getLogger(f"{__name__} dev")
-user_logger.setLevel(logging.INFO)
-dev_logger.setLevel(logging.INFO)
-user_handler = logging.FileHandler(f'{component_name}.log')
-dev_handler = logging.FileHandler('dev_log.log')
-user_formatter = logging.Formatter('%(message)s')
-dev_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-user_handler.setFormatter(user_formatter)
-user_logger.addHandler(user_handler)
-dev_handler.setFormatter(dev_formatter)
-dev_logger.addHandler(dev_handler)
+from urban_canopy_pack.utils_urban_canopy import *
 
 
 class UrbanCanopy:
@@ -254,30 +240,20 @@ class UrbanCanopy:
         elif path_file_hbjson is not None and os.path.isfile(path_file_hbjson):
             hbjson_files_path_list = [path_file_hbjson]
         else:
-            # todo @Elie: is this an error or a warning? Should the process stop or continue?
-            user_logger.warning(
-                "The path to the hbjson file or the path to the directory containing the hbjson files are not valid")
-            dev_logger.warning(
+            logging.error(
                 "The path to the hbjson file or the path to the directory containing the hbjson files are not valid")
             return
         # loop over the hbjson files
         for hbjson_file_path in hbjson_files_path_list:
-            try:
-                # Check if the file is not empty
-                if os.path.getsize(hbjson_file_path) > 0:  # hbjson_file should be the fullpath of json
-                    # Create the building object
-                    building_HB_model_obj, identifier = BuildingModeled.make_buildingmodeled_from_hbjson(
-                        path_hbjson=hbjson_file_path, is_target=are_buildings_targets)
-                    # Add the building to the urban canopy
-                    self.add_building_to_dict(identifier, building_HB_model_obj)
-                else:
-                    logging.info("The file {} is empty".format(hbjson_file_path))
-            except: # Check if the program keeps running even though an error was raised in the lower level try-except block
-                # todo @Elie: Check if this is the correct message.
-                err_message = f"There was a problem loading  {hbjson_file_path}"
-                user_logger.error(err_message)
-                dev_logger.error(err_message, exc_info=True)
-                # raise AttributeError(err_message)
+            # Check if the file is not empty
+            if os.path.getsize(hbjson_file_path) > 0:  # hbjson_file should be the fullpath of json
+                # Create the building object
+                building_HB_model_obj, identifier = BuildingModeled.make_buildingmodeled_from_hbjson(
+                    path_hbjson=hbjson_file_path, is_target=are_buildings_targets)
+                # Add the building to the urban canopy
+                self.add_building_to_dict(identifier, building_HB_model_obj)
+            else:
+                logging.info("The file {} is empty".format(hbjson_file_path))
 
     def add_hb_model_envelop_to_json_dict(self):
         """
@@ -443,7 +419,8 @@ class UrbanCanopy:
 
     def radiation_simulation_urban_canopy(self, path_folder_simulation, path_weather_file, list_id, grid_size,
                                           offset_dist, on_roof, on_facades):
-        path_folder_radiation_simulation = os.path.join(path_folder_simulation, default_name_radiation_simulation_folder)
+        path_folder_radiation_simulation = os.path.join(path_folder_simulation,
+                                                        default_name_radiation_simulation_folder)
         for building in self.building_dict.values():  # for every building in the urban canopy
             if list_id is None:
                 if type(building) is BuildingModeled and building.is_target:
@@ -453,7 +430,7 @@ class UrbanCanopy:
                         values_roof = building.solar_radiations(str(building.id), path_folder_building,
                                                                 path_weather_file, grid_size, offset_dist,
                                                                 on_facades=False)
-                        name_file = os.path.join(path_folder_building, 'Roof', 'annual_radiation_values.txt')
+                        name_file = os.path.join(path_folder_building, "Roof", "annual_radiation_values.txt")
                         with open(name_file, 'w') as f:
                             tmp = (','.join(str(n) for n in values_roof[0]))
                             f.write('{}'.format(tmp))
@@ -538,7 +515,8 @@ class UrbanCanopy:
         return list_id
 
     def run_panel_simulation(self, path_folder_simulation, path_pv_tech_dictionary_json, id_pv_tech_roof,
-                             id_pv_tech_facades, minimum_ratio_energy_harvested_on_primary_energy, performance_ratio, study_duration_in_years,
+                             id_pv_tech_facades, minimum_ratio_energy_harvested_on_primary_energy, performance_ratio,
+                             study_duration_in_years,
                              replacement_scenario, **kwargs):
         """
         Run the panels simulation on the urban canopy
@@ -553,23 +531,68 @@ class UrbanCanopy:
         :param replacement_scenario: string: scenario of replacements for the panels, default = 'yearly'
         """
 
-        pv_tech_dictionary = PvPanelTechnology.load_pv_technologies_from_json_to_dictionary(path_pv_tech_dictionary_json)
+        pv_tech_dictionary = PvPanelTechnology.load_pv_technologies_from_json_to_dictionary(
+            path_pv_tech_dictionary_json)
 
         for building in self.building_dict.values():  # for every building in the urban canopy
             if type(building) is BuildingModeled and building.is_target:
-                path_folder_building = os.path.join(path_folder_simulation, default_name_radiation_simulation_folder, building.id)
+                path_folder_building = os.path.join(path_folder_simulation, default_name_radiation_simulation_folder,
+                                                    building.id)
                 building.panel_simulation_building(path_folder_building, pv_tech_dictionary, id_pv_tech_roof,
-                                                   id_pv_tech_facades, minimum_ratio_energy_harvested_on_primary_energy, performance_ratio,
+                                                   id_pv_tech_facades, minimum_ratio_energy_harvested_on_primary_energy,
+                                                   performance_ratio,
                                                    study_duration_in_years, replacement_scenario, **kwargs)
 
-    def plot_graphs(self, path_folder_simulation, study_duration_years, country_ghe_cost):
+    def plot_graphs_buildings(self, path_folder_simulation, study_duration_years, country_ghe_cost):
         for building in self.building_dict.values():
             if type(building) is BuildingModeled and building.is_target:
-                if building.results_panels["Roof"] and building.results_panels["Facades"] and building.results_panels["Total"]:
+                if building.results_panels["Roof"] and building.results_panels["Facades"] and \
+                        building.results_panels["Total"]:
                     path_folder_simulation_building = os.path.join(path_folder_simulation,
-                                                                   default_name_radiation_simulation_folder, building.id)
+                                                                   default_name_radiation_simulation_folder,
+                                                                   building.id)
                     building.plot_panels_energy_results(path_folder_simulation_building, study_duration_years)
                     building.plot_panels_ghg_results(path_folder_simulation_building, study_duration_years,
                                                      country_ghe_cost)
                     building.plot_panels_results_ghe_per_kwh(path_folder_simulation_building, study_duration_years)
                     building.plot_panels_results_eroi(path_folder_simulation_building, study_duration_years)
+
+    def plot_graphs_urban_canopy(self, path_folder_simulation, study_duration_years, country_ghe_cost):
+
+        energy_data = UrbanCanopyAdditionalFunction.get_energy_data_from_all_buildings(self.building_dict)
+        carbon_data = UrbanCanopyAdditionalFunction.get_carbon_data_from_all_buildings(self.building_dict,
+                                                                                       country_ghe_cost)
+
+        cum_energy_harvested_roof_uc, cum_energy_harvested_facades_uc, cum_energy_harvested_total_uc = energy_data[0], \
+            energy_data[1], energy_data[2]
+        cum_primary_energy_roof_uc, cum_primary_energy_facades_uc, cum_primary_energy_total_uc = energy_data[3], \
+            energy_data[4], energy_data[5]
+
+        cum_avoided_carbon_emissions_roof_uc, cum_avoided_carbon_emissions_facades_uc, \
+            cum_avoided_carbon_emissions_total_uc = carbon_data[0], carbon_data[1], carbon_data[2]
+        cum_carbon_emissions_roof_uc, cum_carbon_emissions_facades_uc, cum_carbon_emissions_total_uc = carbon_data[3], \
+            carbon_data[4], carbon_data[5]
+
+        years = list(range(study_duration_years))
+
+        UrbanCanopyAdditionalFunction.plot_energy_results_uc(path_folder_simulation, years,
+                                                             cum_energy_harvested_roof_uc,
+                                                             cum_energy_harvested_facades_uc,
+                                                             cum_energy_harvested_total_uc,
+                                                             cum_primary_energy_roof_uc, cum_primary_energy_facades_uc,
+                                                             cum_primary_energy_total_uc)
+
+        UrbanCanopyAdditionalFunction.plot_carbon_results_uc(path_folder_simulation, years,
+                                                             cum_avoided_carbon_emissions_roof_uc,
+                                                             cum_avoided_carbon_emissions_facades_uc,
+                                                             cum_avoided_carbon_emissions_total_uc,
+                                                             cum_carbon_emissions_roof_uc,
+                                                             cum_carbon_emissions_facades_uc,
+                                                             cum_carbon_emissions_total_uc)
+
+        UrbanCanopyAdditionalFunction.plot_ghe_per_kwh_uc(path_folder_simulation, years,
+                                                          cum_energy_harvested_total_uc,
+                                                          cum_carbon_emissions_total_uc)
+
+        UrbanCanopyAdditionalFunction.plot_results_eroi_uc(path_folder_simulation, years, cum_primary_energy_total_uc,
+                                                           cum_energy_harvested_total_uc)

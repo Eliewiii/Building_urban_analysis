@@ -251,6 +251,23 @@ def get_lb_mesh(faces, grid_size, offset_dist):
     lb_meshes = []
     for face in faces:
         try:
+            lb_meshes.append(face.mesh_grid(grid_size, offset=offset_dist))
+        except AssertionError:  # tiny geometry not compatible with quad faces
+            continue
+    if len(lb_meshes) == 0:
+        lb_mesh = None
+    elif len(lb_meshes) == 1:
+        lb_mesh = lb_meshes[0]
+    else:  # which means : len(lb_meshes) > 1:
+        lb_mesh = Mesh3D.join_meshes(lb_meshes)
+    return lb_mesh
+
+
+def get_lb_mesh_BUA(faces, grid_size, offset_dist):
+    """Create a Mesh3D from a list of HB faces"""
+    lb_meshes = []
+    for face in faces:
+        try:
             lb_meshes.append(mesh_grid_BUA(face, grid_size, offset=offset_dist))
         except AssertionError:  # tiny geometry not compatible with quad faces
             continue
