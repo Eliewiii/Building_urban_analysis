@@ -12,7 +12,7 @@ SimulationLoadBuildingOrGeometry.add_2D_GIS_to_urban_canopy(urban_canopy=urban_c
                                                             None,
                                                             unit=default_unit_gis)
 
-# make envelop
+# make envelope
 SimulationPostProcessingAndPlots.generate_hb_model_contains_all_building_envelopes_to_plot_Grasshopper(
     urban_canopy_object=urban_canopy_object,
     path_folder_simulation=default_path_folder_simulation)

@@ -26,12 +26,24 @@ def merge_facades_and_roof_faces_in_hb_model(HB_model, name):
             isinstance(face.type, Wall) or isinstance(face.type, RoofCeiling)) or isinstance(face.boundary_condition,
                                                                                              Ground))]
 
+    # todo @Elie,test !
+    # make a a new face and round the coordinates of the vertices for each face of lb_face3d_list
+    new_lb_face3d_list = []
+    for face in lb_face3d_list:
+        new_vertices = []
+        for vertex in face.vertices:
+            new_vertices.append(Point3D(round(vertex.x, 2), round(vertex.y, 2), round(vertex.z, 2)))
+        new_lb_face3d_list.append(Face3D(new_vertices))
+
+    lb_face3d_list= new_lb_face3d_list
+
     # Merge coplanar faces
     merged_multipolygon_and_matrix = []  # Initialize the list of merged faces
     used_faces = []  # Initialize the list of used faces
 
     # Loop through all the faces
     for index, face in enumerate(lb_face3d_list):
+        print(index)
         # Check if the face has been used already, and don't reuse it if so
         if index not in used_faces:
             plane = face.plane  # Get the plane of the face
@@ -58,13 +70,13 @@ def merge_facades_and_roof_faces_in_hb_model(HB_model, name):
                     pass
             # Add the merged polygon to the list of merged polygons
             merged_multipolygon_and_matrix.append(
-                (new_shapely_multipolygon_2d, rotation_matrix, origin_new_coordinate_system))
+                (new_shapely_multipolygon_2d, rotation_matrix, origin_new_coordinate_system,plane))
         else:
             pass
 
     # Convert back to LB Face3D format
     new_lb_face3d_list = []  # Initialize the list of new LB Face3D
-    for (obj, rotation_matrix, origin) in merged_multipolygon_and_matrix:
+    for (obj, rotation_matrix, origin,plane) in merged_multipolygon_and_matrix:
 
         if isinstance(obj, Polygon):
             new_lb_face3d_list.append(make_lb_face_from_shapely_2d_polygon(obj, rotation_matrix, origin, plane))
@@ -104,16 +116,22 @@ def merge_faces_except_roof_and_ground_in_hb_model(hb_model, name):
     # Collect all the LB Face3D of the HB model that are exterior walls
     lb_face3d_list = [face.geometry for face in hb_model.faces if isinstance(face.boundary_condition, Outdoors) and
                       isinstance(face.type, Wall)]
+
+
+
+
     # Collect all the LB Face3D of the HB model that are exterior walls
     roof_and_ground_face_list = [face.geometry for face in hb_model.faces if (
             isinstance(face.boundary_condition, Outdoors) and isinstance(face.type, RoofCeiling)) or isinstance(
         face.boundary_condition, Ground)]
+
     # Merge coplanar faces
     merged_multipolygon_and_matrix = []  # Initialize the list of merged faces
     used_faces = []  # Initialize the list of used faces
 
     # Loop through all the faces
     for index, face in enumerate(lb_face3d_list):
+
         # Check if the face has been used already, and don't reuse it if so
         if index not in used_faces:
             plane = face.plane  # Get the plane of the face
@@ -269,11 +287,11 @@ def make_lb_face_from_shapely_2d_polygon(polygon, rotation_matrix, origin_new_co
         np.dot(np.transpose(vertex), rotation_matrix_inverse) + np.transpose(np.array(origin_new_coordinate_system)) for
         vertex in point_list_outline]
 
-    point_3d_list = [Point3D(vertex[0], vertex[1], vertex[2]) for vertex in point_list_outline_origin_coordinate_system]
+    point_3d_list = [Point3D(vertex[0], vertex[1], vertex[2]) for vertex in point_list_outline_origin_coordinate_system[:-1]]
     # Convert the list of points to a Ladybug Face3D
     lb_face_footprint = Face3D(boundary=point_3d_list, plane=plane, enforce_right_hand=True)
     # Remove collinear vertices
-    lb_face_footprint = lb_face_footprint.remove_colinear_vertices(tolerance=tolerance)
+    lb_face_footprint = lb_face_footprint.remove_colinear_vertices(tolerance=0.001)
 
     return lb_face_footprint
 
@@ -293,22 +311,22 @@ def make_lb_face_from_shapely_2d_polygon(polygon, rotation_matrix, origin_new_co
 
 
 if __name__ == "__main__":
-    hb_model = Model.from_hbjson(
-        r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\BUA\Samples\Elie\hb_model\complex_hb_model.hbjson")
-    hb_model_merged = merge_faces_in_HB_Model(hb_model, "test_all")
-    hb_model_merged_seperate_roof_and_ground = merge_faces_except_roof_and_ground_in_hb_model(hb_model,
-                                                                                              "test_all_seperate_roof_and_ground")
-    hb_model_merged.to_hbjson(
-        r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\BUA\Samples\Elie\hb_model\complex_hb_model_merge_facades.hbjson")
-    hb_model_merged_seperate_roof_and_ground.to_hbjson(
-        r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\BUA\Samples\Elie\hb_model\complex_hb_model_merge_facades_sep_roof.hbjson")
+    # hb_model = Model.from_hbjson(
+    #     r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\BUA\Samples\Elie\hb_model\complex_hb_model.hbjson")
+    # hb_model_merged = merge_faces_in_HB_Model(hb_model, "test_all")
+    # hb_model_merged_seperate_roof_and_ground = merge_faces_except_roof_and_ground_in_hb_model(hb_model,
+    #                                                                                           "test_all_seperate_roof_and_ground")
+    # hb_model_merged.to_hbjson(
+    #     r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\BUA\Samples\Elie\hb_model\complex_hb_model_merge_facades.hbjson")
+    # hb_model_merged_seperate_roof_and_ground.to_hbjson(
+    #     r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\BUA\Samples\Elie\hb_model\complex_hb_model_merge_facades_sep_roof.hbjson")
 
     hb_model = Model.from_hbjson(
-        r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\BUA\Hilany\Samples\mesh_issue\model_with_shades_small_win_not_el.hbjson")
-    hb_model_merged = merge_faces_in_HB_Model(hb_model, "test_all")
-    hb_model_merged_seperate_roof_and_ground = merge_faces_except_roof_and_ground_in_hb_model(hb_model,
-                                                                                              "test_all_seperate_roof_and_ground")
+        r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\BUA\Samples\Grasshopper\Dragonfly_H-Building+Balconies+Context.hbjson")
+    hb_model_merged = merge_facades_and_roof_faces_in_hb_model(hb_model, "test_all")
+    # hb_model_merged_seperate_roof_and_ground = merge_faces_except_roof_and_ground_in_hb_model(hb_model,
+    #                                                                                           "test_all_seperate_roof_and_ground")
     hb_model_merged.to_hbjson(
-        r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\BUA\Hilany\Samples\mesh_issue\model_with_shades_small_win_corr.hbjson")
-    hb_model_merged_seperate_roof_and_ground.to_hbjson(
-        r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\BUA\Hilany\Samples\mesh_issue\model_with_shades_small_win_corr_sep_roof_and_ground.hbjson")
+        r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\BUA\Samples\Grasshopper\Dragonfly_H-Building+Balconies+Context_merged.hbjson")
+    # hb_model_merged_seperate_roof_and_ground.to_hbjson(
+    #     r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\BUA\Hilany\Samples\mesh_issue\complex_model_Abraham.hbjson")

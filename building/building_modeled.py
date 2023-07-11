@@ -6,8 +6,7 @@ import matplotlib.pyplot as plt
 
 from mains_tool.utils_general import *
 from building.utils_building import *
-from building.building_basic import \
-    BuildingBasic  # todo: cannot be imported from building.utils because of circular import (building.building_basic import utils)
+from building.building_basic import BuildingBasic
 import logging
 
 user_logger = logging.getLogger(f"{__name__} user")

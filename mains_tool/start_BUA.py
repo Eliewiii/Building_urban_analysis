@@ -69,6 +69,8 @@ def main():
     if simulation_step_dictionary["run_make_simulation_folder"]:
         SimulationCommonMethods.make_simulation_folder(
             path_folder_simulation=arguments_dictionary["path_folder_simulation"])
+
+
     # Create or load urban canopy object
     if simulation_step_dictionary["run_create_or_load_urban_canopy_object"]:
         urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object(
