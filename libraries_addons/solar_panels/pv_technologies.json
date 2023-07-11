@@ -16,7 +16,7 @@
   "metsolar_facades c-Si": {
     "weibull_lifetime": 30,
     "weibull_shape": 2.49,
-    "initial_efficiency": 0.19,
+    "initial_efficiency": 0.131,
     "panel_area": 1.46,
     "efficiency_function" : "degrading_rate_efficiency_loss",
     "DMFA" : 23,
