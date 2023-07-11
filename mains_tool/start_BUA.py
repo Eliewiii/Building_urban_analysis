@@ -1,5 +1,42 @@
 from mains_tool.utils_general import *
 from mains_tool.utils_main_import_scripts import *
+import logging
+
+user_logger = logging.getLogger(f"{__name__} user")
+dev_logger = logging.getLogger(f"{__name__} dev")
+user_logger.setLevel(logging.INFO)
+dev_logger.setLevel(logging.INFO)
+user_handler = logging.FileHandler(f'{component_name}.log')
+dev_handler = logging.FileHandler('dev_log.log')
+user_formatter = logging.Formatter('%(message)s')
+dev_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+user_handler.setFormatter(user_formatter)
+user_logger.addHandler(user_handler)
+dev_handler.setFormatter(dev_formatter)
+dev_logger.addHandler(dev_handler)
+
+
+# logging.basicConfig(level=logging.ERROR, filename=f"{component_name}.log", filemode="w", format='%(asctime)s - %(levelname)s - %(message)s') # rewriting the log file everytime
+# # For user no date or time
+
+# logger = logging.getLogger("name") # convention is to use __name__ as name
+# logger.setLevel(logging.INFO)
+
+# handler = logging.FileHandler('test.log')
+
+# formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+# handler.setFormatter(formatter)
+# logger.addHandler(handler)
+
+
+# # Either use these or use the line above only once
+# logging.debug() # not log to console
+# logging.info() # not log to console
+# logging.warning() # logs to console
+# logging.error() # logs to console
+# logging.critical() # logs to console
+# exc_info=True
+# logging.exception()
 
 
 def main():

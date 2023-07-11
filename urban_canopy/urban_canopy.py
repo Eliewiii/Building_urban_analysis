@@ -6,6 +6,20 @@ import os.path
 from mains_tool.utils_general import *
 # from mains_tool.utils_general import default_minimum_vf_criterion_context_filter_first_pass_shading
 from urban_canopy.utils_urban_canopy import *
+import logging
+
+user_logger = logging.getLogger(f"{__name__} user")
+dev_logger = logging.getLogger(f"{__name__} dev")
+user_logger.setLevel(logging.INFO)
+dev_logger.setLevel(logging.INFO)
+user_handler = logging.FileHandler(f'{component_name}.log')
+dev_handler = logging.FileHandler('dev_log.log')
+user_formatter = logging.Formatter('%(message)s')
+dev_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+user_handler.setFormatter(user_formatter)
+user_logger.addHandler(user_handler)
+dev_handler.setFormatter(dev_formatter)
+dev_logger.addHandler(dev_handler)
 
 
 class UrbanCanopy:
@@ -240,20 +254,30 @@ class UrbanCanopy:
         elif path_file_hbjson is not None and os.path.isfile(path_file_hbjson):
             hbjson_files_path_list = [path_file_hbjson]
         else:
-            logging.error(
+            # todo @Elie: is this an error or a warning? Should the process stop or continue?
+            user_logger.warning(
+                "The path to the hbjson file or the path to the directory containing the hbjson files are not valid")
+            dev_logger.warning(
                 "The path to the hbjson file or the path to the directory containing the hbjson files are not valid")
             return
         # loop over the hbjson files
         for hbjson_file_path in hbjson_files_path_list:
-            # Check if the file is not empty
-            if os.path.getsize(hbjson_file_path) > 0:  # hbjson_file should be the fullpath of json
-                # Create the building object
-                building_HB_model_obj, identifier = BuildingModeled.make_buildingmodeled_from_hbjson(
-                    path_hbjson=hbjson_file_path, is_target=are_buildings_targets)
-                # Add the building to the urban canopy
-                self.add_building_to_dict(identifier, building_HB_model_obj)
-            else:
-                logging.info("The file {} is empty".format(hbjson_file_path))
+            try:
+                # Check if the file is not empty
+                if os.path.getsize(hbjson_file_path) > 0:  # hbjson_file should be the fullpath of json
+                    # Create the building object
+                    building_HB_model_obj, identifier = BuildingModeled.make_buildingmodeled_from_hbjson(
+                        path_hbjson=hbjson_file_path, is_target=are_buildings_targets)
+                    # Add the building to the urban canopy
+                    self.add_building_to_dict(identifier, building_HB_model_obj)
+                else:
+                    logging.info("The file {} is empty".format(hbjson_file_path))
+            except: # Check if the program keeps running even though an error was raised in the lower level try-except block
+                # todo @Elie: Check if this is the correct message.
+                err_message = f"There was a problem loading  {hbjson_file_path}"
+                user_logger.error(err_message)
+                dev_logger.error(err_message, exc_info=True)
+                # raise AttributeError(err_message)
 
     def add_hb_model_envelop_to_json_dict(self):
         """
