@@ -2,11 +2,29 @@
 BuildingModeled class, representing one building in an urban canopy that will be converted in HB models
 as they will be simulated
 """
+
+import os
+import logging
 import matplotlib.pyplot as plt
 
-from mains_tool.utils_general import *
-from building.utils_building import *
+from ladybug_geometry.geometry3d import Vector3D
+from honeybee.model import Model
+from honeybee_radiance.sensorgrid import SensorGrid
+
 from building.building_basic import BuildingBasic
+from building.context_filter.building_shading_context import BuildingShadingContext
+# from building.context_filter.building_lwr_context import BuildingLWRContext  # Useful later
+
+from libraries_addons.hb_model_addons import HbAddons
+from libraries_addons.solar_radiations.add_sensorgrid_hb_model import get_hb_faces_facades,get_hb_faces_roof,get_lb_mesh,get_lb_mesh_BUA,create_sensor_grid_from_mesh
+from libraries_addons.solar_radiations.hb_recipe_settings import hb_recipe_settings
+from libraries_addons.solar_radiations.annual_irradiance_simulation import hb_ann_irr_sim
+from libraries_addons.solar_radiations.annual_cumulative_value import hb_ann_cum_values
+from libraries_addons.solar_panels.useful_functions_solar_panel import load_panels_on_sensor_grid, \
+    loop_over_the_years_for_solar_panels, beginning_end_of_life_lca_results_in_lists, results_from_lists_to_dict, \
+    get_cumul_values, add_elements_of_two_lists, transform_to_linear_function, find_intersection_functions, \
+    generate_step_function
+
 
 
 class BuildingModeled(BuildingBasic):
