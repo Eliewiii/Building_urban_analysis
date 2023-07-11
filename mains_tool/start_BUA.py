@@ -6,12 +6,9 @@ user_logger = logging.getLogger(f"{__name__} user")
 dev_logger = logging.getLogger(f"{__name__} dev")
 user_logger.setLevel(logging.INFO)
 dev_logger.setLevel(logging.INFO)
-user_handler = logging.FileHandler(f'{component_name}.log')
 dev_handler = logging.FileHandler('dev_log.log')
 user_formatter = logging.Formatter('%(message)s')
 dev_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-user_handler.setFormatter(user_formatter)
-user_logger.addHandler(user_handler)
 dev_handler.setFormatter(dev_formatter)
 dev_logger.addHandler(dev_handler)
 
@@ -69,7 +66,11 @@ def main():
     if simulation_step_dictionary["run_make_simulation_folder"]:
         SimulationCommonMethods.make_simulation_folder(
             path_folder_simulation=arguments_dictionary["path_folder_simulation"])
-
+    
+    # Create the log files for the user
+    user_handler = logging.FileHandler(os.path.join(arguments_dictionary['path_folder_simulation'], arguments_dictionary['gh_component_name']+".log"))
+    user_handler.setFormatter(user_formatter)
+    user_logger.addHandler(user_handler)
 
     # Create or load urban canopy object
     if simulation_step_dictionary["run_create_or_load_urban_canopy_object"]:
@@ -174,7 +175,7 @@ def main():
                                                                                     "path_folder_simulation"])
 
     if simulation_step_dictionary["plot_graph_results_building_panel_simulation"]:
-        SimulationPostProcessingAndPlots.plot_graphs_each_building(urban_canopy_object=urban_canopy_object,
+        SimulationPostProcessingAndPlots.plot_graphs(urban_canopy_object=urban_canopy_object,
                                                      path_folder_simulation=default_path_folder_simulation,
                                                      study_duration_years=default_study_duration_years,
                                                      country_ghe_cost=default_country_ghe_cost)
