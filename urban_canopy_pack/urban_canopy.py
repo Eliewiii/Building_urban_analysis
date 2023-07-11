@@ -5,7 +5,7 @@ import os.path
 
 from mains_tool.utils_general import *
 # from mains_tool.utils_general import default_minimum_vf_criterion_context_filter_first_pass_shading
-from urban_canopy_pack.utils_urban_canopy import *
+from urban_canopy.utils_urban_canopy import *
 
 
 class UrbanCanopy:
@@ -419,8 +419,7 @@ class UrbanCanopy:
 
     def radiation_simulation_urban_canopy(self, path_folder_simulation, path_weather_file, list_id, grid_size,
                                           offset_dist, on_roof, on_facades):
-        path_folder_radiation_simulation = os.path.join(path_folder_simulation,
-                                                        default_name_radiation_simulation_folder)
+        path_folder_radiation_simulation = os.path.join(path_folder_simulation, default_name_radiation_simulation_folder)
         for building in self.building_dict.values():  # for every building in the urban canopy
             if list_id is None:
                 if type(building) is BuildingModeled and building.is_target:
@@ -430,7 +429,7 @@ class UrbanCanopy:
                         values_roof = building.solar_radiations(str(building.id), path_folder_building,
                                                                 path_weather_file, grid_size, offset_dist,
                                                                 on_facades=False)
-                        name_file = os.path.join(path_folder_building, "Roof", "annual_radiation_values.txt")
+                        name_file = os.path.join(path_folder_building, 'Roof', 'annual_radiation_values.txt')
                         with open(name_file, 'w') as f:
                             tmp = (','.join(str(n) for n in values_roof[0]))
                             f.write('{}'.format(tmp))
@@ -515,8 +514,7 @@ class UrbanCanopy:
         return list_id
 
     def run_panel_simulation(self, path_folder_simulation, path_pv_tech_dictionary_json, id_pv_tech_roof,
-                             id_pv_tech_facades, minimum_ratio_energy_harvested_on_primary_energy, performance_ratio,
-                             study_duration_in_years,
+                             id_pv_tech_facades, minimum_ratio_energy_harvested_on_primary_energy, performance_ratio, study_duration_in_years,
                              replacement_scenario, **kwargs):
         """
         Run the panels simulation on the urban canopy
@@ -531,68 +529,23 @@ class UrbanCanopy:
         :param replacement_scenario: string: scenario of replacements for the panels, default = 'yearly'
         """
 
-        pv_tech_dictionary = PvPanelTechnology.load_pv_technologies_from_json_to_dictionary(
-            path_pv_tech_dictionary_json)
+        pv_tech_dictionary = PvPanelTechnology.load_pv_technologies_from_json_to_dictionary(path_pv_tech_dictionary_json)
 
         for building in self.building_dict.values():  # for every building in the urban canopy
             if type(building) is BuildingModeled and building.is_target:
-                path_folder_building = os.path.join(path_folder_simulation, default_name_radiation_simulation_folder,
-                                                    building.id)
+                path_folder_building = os.path.join(path_folder_simulation, default_name_radiation_simulation_folder, building.id)
                 building.panel_simulation_building(path_folder_building, pv_tech_dictionary, id_pv_tech_roof,
-                                                   id_pv_tech_facades, minimum_ratio_energy_harvested_on_primary_energy,
-                                                   performance_ratio,
+                                                   id_pv_tech_facades, minimum_ratio_energy_harvested_on_primary_energy, performance_ratio,
                                                    study_duration_in_years, replacement_scenario, **kwargs)
 
-    def plot_graphs_buildings(self, path_folder_simulation, study_duration_years, country_ghe_cost):
+    def plot_graphs(self, path_folder_simulation, study_duration_years, country_ghe_cost):
         for building in self.building_dict.values():
             if type(building) is BuildingModeled and building.is_target:
-                if building.results_panels["Roof"] and building.results_panels["Facades"] and \
-                        building.results_panels["Total"]:
+                if building.results_panels["Roof"] and building.results_panels["Facades"] and building.results_panels["Total"]:
                     path_folder_simulation_building = os.path.join(path_folder_simulation,
-                                                                   default_name_radiation_simulation_folder,
-                                                                   building.id)
+                                                                   default_name_radiation_simulation_folder, building.id)
                     building.plot_panels_energy_results(path_folder_simulation_building, study_duration_years)
                     building.plot_panels_ghg_results(path_folder_simulation_building, study_duration_years,
                                                      country_ghe_cost)
                     building.plot_panels_results_ghe_per_kwh(path_folder_simulation_building, study_duration_years)
                     building.plot_panels_results_eroi(path_folder_simulation_building, study_duration_years)
-
-    def plot_graphs_urban_canopy(self, path_folder_simulation, study_duration_years, country_ghe_cost):
-
-        energy_data = UrbanCanopyAdditionalFunction.get_energy_data_from_all_buildings(self.building_dict)
-        carbon_data = UrbanCanopyAdditionalFunction.get_carbon_data_from_all_buildings(self.building_dict,
-                                                                                       country_ghe_cost)
-
-        cum_energy_harvested_roof_uc, cum_energy_harvested_facades_uc, cum_energy_harvested_total_uc = energy_data[0], \
-            energy_data[1], energy_data[2]
-        cum_primary_energy_roof_uc, cum_primary_energy_facades_uc, cum_primary_energy_total_uc = energy_data[3], \
-            energy_data[4], energy_data[5]
-
-        cum_avoided_carbon_emissions_roof_uc, cum_avoided_carbon_emissions_facades_uc, \
-            cum_avoided_carbon_emissions_total_uc = carbon_data[0], carbon_data[1], carbon_data[2]
-        cum_carbon_emissions_roof_uc, cum_carbon_emissions_facades_uc, cum_carbon_emissions_total_uc = carbon_data[3], \
-            carbon_data[4], carbon_data[5]
-
-        years = list(range(study_duration_years))
-
-        UrbanCanopyAdditionalFunction.plot_energy_results_uc(path_folder_simulation, years,
-                                                             cum_energy_harvested_roof_uc,
-                                                             cum_energy_harvested_facades_uc,
-                                                             cum_energy_harvested_total_uc,
-                                                             cum_primary_energy_roof_uc, cum_primary_energy_facades_uc,
-                                                             cum_primary_energy_total_uc)
-
-        UrbanCanopyAdditionalFunction.plot_carbon_results_uc(path_folder_simulation, years,
-                                                             cum_avoided_carbon_emissions_roof_uc,
-                                                             cum_avoided_carbon_emissions_facades_uc,
-                                                             cum_avoided_carbon_emissions_total_uc,
-                                                             cum_carbon_emissions_roof_uc,
-                                                             cum_carbon_emissions_facades_uc,
-                                                             cum_carbon_emissions_total_uc)
-
-        UrbanCanopyAdditionalFunction.plot_ghe_per_kwh_uc(path_folder_simulation, years,
-                                                          cum_energy_harvested_total_uc,
-                                                          cum_carbon_emissions_total_uc)
-
-        UrbanCanopyAdditionalFunction.plot_results_eroi_uc(path_folder_simulation, years, cum_primary_energy_total_uc,
-                                                           cum_energy_harvested_total_uc)
