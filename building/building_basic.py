@@ -3,13 +3,14 @@ BuildingBasic class, representing one building in an urban canopy.
 """
 from mains_tool.utils_general import *
 
+import logging
 import shapely
 from math import isnan
 
 from ladybug_geometry.geometry3d import Vector3D
 from libraries_addons.lb_face_addons import make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint, \
     LB_face_footprint_to_lB_polyface3D_extruded_footprint
-from libraries_addons.hb_rooms_addons import RooomsAddons
+from libraries_addons.hb_rooms_addons import RoomsAddons
 from libraries_addons.function_for_gis_extraction_to_sort import polygon_to_LB_footprint,add_additional_attribute_keys_to_dict
 
 
@@ -287,10 +288,10 @@ class BuildingBasic:
         :return: HB Room envelop
         """
         # convert the envelop of the building to a HB Room
-        HB_room_envelop = RooomsAddons.LB_face_footprint_to_elevated_HB_room_envelop(LB_face_footprint=self.LB_face_footprint,
-                                                                        building_id=self.id,
-                                                                        height=self.height,
-                                                                        elevation=self.elevation)
+        HB_room_envelop = RoomsAddons.LB_face_footprint_to_elevated_HB_room_envelop(LB_face_footprint=self.LB_face_footprint,
+                                                                                    building_id=self.id,
+                                                                                    height=self.height,
+                                                                                    elevation=self.elevation)
         return HB_room_envelop
 
     def to_HB_model(self, layout_from_typology=False, automatic_subdivision=True, properties_from_typology=True):

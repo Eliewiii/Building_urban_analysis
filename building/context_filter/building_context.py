@@ -2,8 +2,7 @@
 todo
 """
 
-from building.context_filter.utils_libraries_context_filter import *
-from building.context_filter.utils_functions_context_filter import *
+from building.context_filter.utils_functions_context_filter import is_vector3D_vertical, majorized_VF_between_2_surfaces
 
 from mains_tool.utils_general import default_mvfc_context_shading_selection
 
@@ -16,7 +15,7 @@ class BuildingContext:
         self.context_building_id_list = []
 
     def select_context_building_using_the_mvfc(self, target_LB_polyface3d_extruded_footprint,
-                                                context_LB_polyface3d_oriented_bounding_box, context_building_id):
+                                               context_LB_polyface3d_oriented_bounding_box, context_building_id):
         """ todo"""
         # Check if the bounding box of the tested context building verifies the mvf criterion and is not already
         if context_building_id not in self.context_building_id_list and self.is_bounding_box_context_using_mvfc_criterion(
@@ -25,7 +24,6 @@ class BuildingContext:
                 minimum_vf_criterion=self.min_VF_criterion):
             # if it verifies the criterion we add it to the context building
             self.context_building_id_list.append(context_building_id)
-
 
     @staticmethod
     def is_bounding_box_context_using_mvfc_criterion(target_LB_polyface3d_extruded_footprint,

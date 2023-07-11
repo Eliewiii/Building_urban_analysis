@@ -1,11 +1,71 @@
 """
 Additional functions used by Urban canopy
 """
+import os
+import copy
 
-from mains_tool.utils_general import *
-from urban_canopy_pack.utils_urban_canopy import *
+
+import numpy
+import matplotlib.pyplot as plt
+
+from honeybee.model import Model
+
+from utils.utils_configuration import name_radiation_simulation_folder
+from utils.utils_default_values_user_parameters import lb_hb_df_tolerance_value
+from building.building_basic import BuildingBasic
+from building.building_modeled import BuildingModeled
+
+
+
 from libraries_addons.solar_panels.useful_functions_solar_panel import get_cumul_values, add_elements_of_two_lists, \
     transform_to_linear_function, find_intersection_functions, generate_step_function, write_to_csv_arr
+
+# Export to json file
+tree_structure_per_building_urban_canopy_json_dict = {
+    "Is_target_building": False,  # Maybe add all the other attributes (height,age,typology,etc.)
+    "Is_to_simulate": False,
+    "Age": None,
+    "Typology": None,
+    "HB_model": {},
+    "HB_room_envelop": {},
+    "Context_surfaces": {
+        "First_pass_filter": {},
+        "Second_pass_filter": {}
+    },
+    "Solar_radiation": {
+        "Sensor_grids_dict": {"Roof": None, "Facades": None},
+        "Path_results": {
+            "Annual": {"Roof": None, "Facades": None},
+            "Timestep": {"Roof": None, "Facades": None}
+        },
+        "Panels_results": {
+            "Roof": {
+                "energy_harvested": {"list": None, "total": None},
+                "lca_craddle_to_installation_primary_energy": {"list": None, "total": None},
+                "lca_craddle_to_installation_carbon": {"list": None, "total": None},
+                "dmfa": {"list": None, "total": None},
+                "lca_recycling_primary_energy": {"list": None, "total": None},
+                "lca_recycling_carbon": {"list": None, "total": None}
+            },
+            "Facades": {
+                "energy_harvested": {"list": None, "total": None},
+                "lca_craddle_to_installation_primary_energy": {"list": None, "total": None},
+                "lca_craddle_to_installation_carbon": {"list": None, "total": None},
+                "dmfa": {"list": None, "total": None},
+                "lca_recycling_primary_energy": {"list": None, "total": None},
+                "lca_recycling_carbon": {"list": None, "total": None}
+            },
+            "Total": {
+                "energy_harvested": {"list": None, "total": None},
+                "lca_craddle_to_installation_primary_energy": {"list": None, "total": None},
+                "lca_craddle_to_installation_carbon": {"list": None, "total": None},
+                "dmfa": {"list": None, "total": None},
+                "lca_recycling_primary_energy": {"list": None, "total": None},
+                "lca_recycling_carbon": {"list": None, "total": None}
+            },
+        }
+    }
+}
 
 
 class UrbanCanopyAdditionalFunction:
@@ -31,7 +91,7 @@ class UrbanCanopyAdditionalFunction:
         building_id_list = list(building_dict.keys())
         for building_id in building_id_list:
             # Initialize empty dictionary for each building
-            building_id_dict[building_id] = copy.deepcopy(default_tree_structure_per_building_urban_canopy_json_dict)
+            building_id_dict[building_id] = copy.deepcopy(tree_structure_per_building_urban_canopy_json_dict)
 
         # write the result on the json dict
         json_dict["buildings"] = building_id_dict
@@ -87,7 +147,7 @@ class UrbanCanopyAdditionalFunction:
                 json_dict["buildings"][building_id]["Solar_radiation"][
                     "Sensor_grids_dict"] = building_object.sensor_grid_dict
                 path_solar_radiation_folder = os.path.join(path_folder_simulation,
-                                                           default_name_radiation_simulation_folder)
+                                                           name_radiation_simulation_folder)
                 if building_object.sensor_grid_dict["Roof"] is not None:
                     json_dict["buildings"][building_id]["Solar_radiation"]["Path_results"]["Annual"][
                         "Roof"] = os.path.join(path_solar_radiation_folder, building_id, "Roof",
@@ -125,10 +185,10 @@ class UrbanCanopyAdditionalFunction:
                     HB_room_envelop_list.append(HB_room)
         # additional cleaning of the colinear vertices, might not be necessary
         for room in HB_room_envelop_list:
-            room.remove_colinear_vertices_envelope(tolerance=default_tolerance_value, delete_degenerate=True)
+            room.remove_colinear_vertices_envelope(tolerance=lb_hb_df_tolerance_value, delete_degenerate=True)
         # Make the hb model
         HB_model = Model(identifier="urban_canopy_building_envelops", rooms=HB_room_envelop_list,
-                         tolerance=default_tolerance_value)
+                         tolerance=lb_hb_df_tolerance_value)
         HB_dict = HB_model.to_dict()
 
         return HB_dict
@@ -137,7 +197,7 @@ class UrbanCanopyAdditionalFunction:
     def write_to_csv_panels_simulation_results(json_dict, building_dict, path_folder_simulation):
         # todo change names lca energy/lca carbon ?
         for building_id, building_object in building_dict.items():
-            path_folder_building = os.path.join(path_folder_simulation, default_name_radiation_simulation_folder,
+            path_folder_building = os.path.join(path_folder_simulation, name_radiation_simulation_folder,
                                                 building_id)
             path_folder_panels_results_csv = os.path.join(path_folder_building, "panels_simulation_results.csv")
             header = ["energy_harvested_roof (kWh)", "energy_harvested_facades (kWh)", "energy_harvested_total (kWh)",

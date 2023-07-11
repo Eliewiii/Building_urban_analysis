@@ -1,4 +1,10 @@
-from building.context_filter.utils_libraries_context_filter import *  # todo @ Ale is that ok if it's from my own imports ?
+"""
+todo @Elie
+"""
+import numpy as np
+import pyvista as pv
+
+from math import sqrt,atan,log,pi
 
 from honeybee.face import Face
 from ladybug_geometry.geometry3d import Face3D

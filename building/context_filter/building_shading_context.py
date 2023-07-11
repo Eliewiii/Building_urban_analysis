@@ -1,11 +1,9 @@
 """
-BuildingLWRContext class, used to perform and store the result of the context filtering and view factor computation
-for the long wave radiation computation among buildings.
+BuildingShadingContext class, used to perform and store the result of the context filtering for shading computation using the 2 pass filtering method
 """
 from building.context_filter.building_context import BuildingContext, default_mvfc_context_shading_selection
 
-from building.context_filter.utils_libraries_context_filter import *
-from building.context_filter.utils_functions_context_filter import *
+from building.context_filter.utils_functions_context_filter import is_vector3D_vertical, are_HB_Face_or_LB_Face3D_facing,ray_list_from_emitter_to_receiver
 
 default_number_of_rays_context_filter_second_pass = 3  # to move to utils
 possible_numbers_of_rays_list = [1, 3, 6, 9]
@@ -101,7 +99,7 @@ class BuildingShadingContext(BuildingContext):
                                                                    number_of_rays=default_number_of_rays_context_filter_second_pass):
         """
         Check if the context surface is obstructed for the target building
-        :param target_LB_polyface3d_extruded_footprint: LB polyface3d of the target building
+        :param target_LB_Face3D: LB polyface3d of the target building
         :param context_HB_Face_surface_to_test: HB face of the context surface to test
         :param full_urban_canopy_Pyvista_mesh: Pyvista mesh containing the envelopes of all the in the urban canopy
         :param number_of_rays: number of rays to be used for the ray tracing to check if the context surfaces are obstructed

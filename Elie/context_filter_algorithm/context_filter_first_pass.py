@@ -2,8 +2,8 @@
 
 """
 
-from libraries_addons.utils_libraries_addons import *
-from libraries_addons.context_filter_algorithm.utils_context_filter import *
+# from libraries_addons.utils_libraries_addons import *
+from Elie.context_filter_algorithm.utils_context_filter import *
 
 
 def is_bounding_box_context_using_mvfc_criterion(target_LB_polyface3d_extruded_footprint,

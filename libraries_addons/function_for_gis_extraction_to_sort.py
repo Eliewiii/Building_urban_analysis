@@ -2,7 +2,14 @@
 
 """
 
-from libraries_addons.utils_libraries_addons import *
+from math import sqrt
+from ladybug_geometry.geometry3d.pointvector import Point3D
+from ladybug_geometry.geometry3d.face import Face3D
+
+
+from libraries_addons.utils_libraries_addons import default_tolerance
+
+tolerance_redundant_vertices = 0.5
 
 def polygon_to_LB_footprint(polygon_obj, unit, tolerance=default_tolerance):
     """
@@ -81,7 +88,7 @@ def scale_point_list_according_to_unit(point_list, unit):
     # a priori the only units re degrees and meters. For meter not need to scale
     else:
         None
-def remove_redundant_vertices(point_list, tol=default_tol):
+def remove_redundant_vertices(point_list, tolerance=tolerance_redundant_vertices):
     """
     Check if the points of the footprint are too close to each other. If yes, delete one of the points.
     :param point_list: list of points, a point is a list of two coordinates
@@ -94,7 +101,7 @@ def remove_redundant_vertices(point_list, tol=default_tol):
     # Initialize the index
     i = 0
     while i <= number_of_points - 1:  # go over all points
-        if distance(point_list[i], point_list[i + 1]) < tol:
+        if distance(point_list[i], point_list[i + 1]) < tolerance:
             point_list.pop(i + 1)
         else:
             i += 1
@@ -102,7 +109,7 @@ def remove_redundant_vertices(point_list, tol=default_tol):
                 point_list) - 1:  # if we reach the end of the footprint, considering some points were removed, the loop ends
             break
     if distance(point_list[0],
-                point_list[-1]) < tol:  # check also with the first and last points in the footprint
+                point_list[-1]) < tolerance:  # check also with the first and last points in the footprint
         point_list.pop(-1)
 def distance(pt_1, pt_2):
     """

@@ -2,10 +2,25 @@
 Additional functions for Ladybug Face objects.
 """
 
-from libraries_addons.utils_libraries_addons import *
+
+import logging
+from math import pi
+
+from shapely.geometry import Polygon
+
+
+from ladybug_geometry.geometry3d.pointvector import Point3D, Vector3D
+from ladybug_geometry.geometry3d.face import Face3D
+from ladybug_geometry.geometry3d.polyface import Polyface3D
+from ladybug_geometry.bounding import bounding_domain_x, bounding_domain_y, bounding_rectangle_extents, _orient_geometry
+from honeybee.boundarycondition import Outdoors
+import dragonfly
+from dragonfly.building import Building
+
+
+from libraries_addons.utils_libraries_addons import default_tolerance,default_elevation,default_height
 
 # todo : for some rreason, the following import is necessary for _orient_geometry to work
-from ladybug_geometry.bounding import _orient_geometry
 
 
 def make_shapely_polygon_from_LB_face(LB_face):

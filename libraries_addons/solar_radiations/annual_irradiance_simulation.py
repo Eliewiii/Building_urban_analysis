@@ -1,4 +1,4 @@
-from libraries_addons.utils_libraries_addons import *
+from lbt_recipes.recipe import Recipe
 
 
 def hb_ann_irr_sim(model, path_weather_file, run_settings, timestep=1, visible=False, north=0,

@@ -4,17 +4,20 @@
 
 import os
 
-from utils.utils_configuration import path_tool, path_libraries_tool
+from utils.utils_configuration import path_tool, path_simulation_temp_folder, path_libraries_tool_folder
 
 # Default path to the simulation folder
-default_path_folder_simulation = os.path.join(path_tool, "Simulation_temp")
+default_path_folder_simulation = path_simulation_temp_folder
+
+# Ladybug, Honeybee and Dragonfly
+lb_hb_df_tolerance_value = 0.01
 
 # ???
 default_move_buildings_to_origin = False
 default_make_hb_model_envelops = False
 
-#GIS
-default_path_gis = os.path.join(path_libraries_tool, "GIS", "gis_typo_id_extra_small")
+# GIS
+default_path_gis = os.path.join(path_libraries_tool_folder, "GIS", "gis_typo_id_extra_small")
 default_building_id_key_gis = "idbinyan"
 default_gis_attribute_key_dict = {
     "building_id_key_gis": "none",
@@ -30,8 +33,6 @@ default_unit_gis = "m"
 
 # EPW weather file
 default_path_weather_file = os.path.join(path_tool, "Libraries", "EPW", "IS_5280_A_Haifa.epw")
-
-
 
 # Default values for the simulations - Context filter
 default_mvfc_context_shading_selection = 0.01

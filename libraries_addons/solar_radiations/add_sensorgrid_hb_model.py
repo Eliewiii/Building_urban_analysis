@@ -1,33 +1,17 @@
-try:
-    from ladybug_geometry.geometry3d.plane import Plane
-    from ladybug_geometry.geometry3d.face import Face3D
-    from ladybug_geometry.geometry3d.mesh import Mesh3D
-    from ladybug_geometry.geometry2d.mesh import Mesh2D
-    from ladybug_geometry.geometry2d.polygon import Polygon2D
-    from ladybug_geometry.geometry2d.pointvector import Vector2D
-    from ladybug_geometry.geometry2d.ray import Ray2D
-    from ladybug_geometry.intersection2d import does_intersection_exist_line2d
-except ImportError as e:
-    raise ImportError('\nFailed to import ladybug:\n\t{}'.format(e))
+"""
+todo
+"""
+from ladybug_geometry.geometry3d.mesh import Mesh3D
+from ladybug_geometry.geometry2d.mesh import Mesh2D
+from ladybug_geometry.geometry2d.polygon import Polygon2D
+from ladybug_geometry.geometry2d.pointvector import Vector2D
+from ladybug_geometry.geometry2d.ray import Ray2D
+from ladybug_geometry.intersection2d import does_intersection_exist_line2d
 
 from honeybee.boundarycondition import Outdoors
 from honeybee.facetype import Wall, RoofCeiling
-from honeybee.aperture import Aperture
-
-try:  # import the core honeybee dependencies
-    from honeybee.typing import clean_and_id_rad_string, clean_rad_string
-except ImportError as e:
-    raise ImportError('\nFailed to import honeybee:\n\t{}'.format(e))
-
-try:  # import the honeybee-radiance dependencies
-    from honeybee_radiance.sensorgrid import SensorGrid
-except ImportError as e:
-    raise ImportError('\nFailed to import honeybee_radiance:\n\t{}'.format(e))
-
-try:  # import core honeybee dependencies
-    from honeybee.model import Model
-except ImportError as e:
-    raise ImportError('\nFailed to import honeybee:\n\t{}'.format(e))
+from honeybee.typing import clean_and_id_rad_string, clean_rad_string
+from honeybee_radiance.sensorgrid import SensorGrid
 
 
 def is_facade(face):

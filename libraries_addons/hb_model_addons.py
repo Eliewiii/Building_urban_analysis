@@ -2,7 +2,16 @@
 Additional functions to apply on honeybee model
 """
 
-from libraries_addons.utils_libraries_addons import *
+import logging
+
+# Dragonfly
+import dragonfly.building as Building
+# Honeybee
+from honeybee.room import Room
+from honeybee_energy.lib.constructionsets import construction_set_by_identifier
+from honeybee_energy.lib.programtypes import program_type_by_identifier
+
+
 
 class HbAddons:
 

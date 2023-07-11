@@ -2,12 +2,15 @@
 This file contains the functions that create and modify the honeybee room objects
 """
 
-from libraries_addons.utils_libraries_addons import *
+from ladybug_geometry.geometry3d.polyface import Polyface3D
+from ladybug_geometry.geometry3d.pointvector import Vector3D
+
+from honeybee.room import Room
 
 
-class RooomsAddons:
+class RoomsAddons:
     @classmethod
-    def LB_face_footprint_to_elevated_HB_room_envelop(cls,LB_face_footprint, building_id, height, elevation):
+    def LB_face_footprint_to_elevated_HB_room_envelop(cls, LB_face_footprint, building_id, height, elevation):
         """
         Create a honeybee room with extruded footprints of the building and put it at the right elevation.
         :param LB_face_footprint: ladybug geometry footprint

@@ -2,7 +2,7 @@
 
 """
 
-from mains_tool.utils_main_import_packages import *
+import os
 
 # Get Appdata\local folder
 local_appdata = os.environ['LOCALAPPDATA']
@@ -53,7 +53,6 @@ default_minimum_vf_criterion_context_filter_first_pass_shading = 0.01
 default_number_of_rays_context_filter_second_pass = 3
 # todo @Elie: add when coded
 # Default values for the simulations - Solar radiation calculation
-default_name_radiation_simulation_folder = 'Radiation Simulation'
 default_path_weather_file = os.path.join(path_tool, "Libraries", "EPW", "IS_5280_A_Haifa.epw")
 default_grid_size = 1.5  # todo check it !
 default_offset_dist = 0.1
@@ -76,49 +75,4 @@ urban_canopy_export_file_name = "urban_canopy"
 urban_canopy_export_file_name_pkl = urban_canopy_export_file_name + ".pkl"
 urban_canopy_export_file_name_json = urban_canopy_export_file_name + ".json"
 
-# Export to json file
-default_tree_structure_per_building_urban_canopy_json_dict = {
-    "Is_target_building": False,  # Maybe add all the other attributes (height,age,typology,etc.)
-    "Is_to_simulate": False,
-    "Age": None,
-    "Typology": None,
-    "HB_model": {},
-    "HB_room_envelop": {},
-    "Context_surfaces": {
-        "First_pass_filter": {},
-        "Second_pass_filter": {}
-    },
-    "Solar_radiation": {
-        "Sensor_grids_dict": {"Roof": None, "Facades": None},
-        "Path_results": {
-            "Annual": {"Roof": None, "Facades": None},
-            "Timestep": {"Roof": None, "Facades": None}
-        },
-        "Panels_results": {
-            "Roof": {
-                "energy_harvested": {"list": None, "total": None},
-                "lca_craddle_to_installation_primary_energy": {"list": None, "total": None},
-                "lca_craddle_to_installation_carbon": {"list": None, "total": None},
-                "dmfa": {"list": None, "total": None},
-                "lca_recycling_primary_energy": {"list": None, "total": None},
-                "lca_recycling_carbon": {"list": None, "total": None}
-            },
-            "Facades": {
-                "energy_harvested": {"list": None, "total": None},
-                "lca_craddle_to_installation_primary_energy": {"list": None, "total": None},
-                "lca_craddle_to_installation_carbon": {"list": None, "total": None},
-                "dmfa": {"list": None, "total": None},
-                "lca_recycling_primary_energy": {"list": None, "total": None},
-                "lca_recycling_carbon": {"list": None, "total": None}
-            },
-            "Total": {
-                "energy_harvested": {"list": None, "total": None},
-                "lca_craddle_to_installation_primary_energy": {"list": None, "total": None},
-                "lca_craddle_to_installation_carbon": {"list": None, "total": None},
-                "dmfa": {"list": None, "total": None},
-                "lca_recycling_primary_energy": {"list": None, "total": None},
-                "lca_recycling_carbon": {"list": None, "total": None}
-            },
-        }
-    }
-}
+
