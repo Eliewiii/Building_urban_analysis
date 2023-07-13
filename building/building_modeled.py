@@ -7,20 +7,20 @@ import matplotlib.pyplot as plt
 from mains_tool.utils_general import *
 from building.utils_building import *
 from building.building_basic import BuildingBasic
-import logging
+# import logging
 
-user_logger = logging.getLogger(f"{__name__} user")
-dev_logger = logging.getLogger(f"{__name__} dev")
-user_logger.setLevel(logging.INFO)
-dev_logger.setLevel(logging.INFO)
-user_handler = logging.FileHandler(f'{component_name}.log')
-dev_handler = logging.FileHandler('dev_log.log')
-user_formatter = logging.Formatter('%(message)s')
-dev_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-user_handler.setFormatter(user_formatter)
-user_logger.addHandler(user_handler)
-dev_handler.setFormatter(dev_formatter)
-dev_logger.addHandler(dev_handler)
+# user_logger = logging.getLogger("user")
+# dev_logger = logging.getLogger("dev")
+# user_logger.setLevel(logging.INFO)
+# dev_logger.setLevel(logging.INFO)
+# user_handler = logging.FileHandler(f'{component_name}.log')
+# dev_handler = logging.FileHandler('dev_log.log')
+# user_formatter = logging.Formatter('%(message)s')
+# dev_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+# user_handler.setFormatter(user_formatter)
+# user_logger.addHandler(user_handler)
+# dev_handler.setFormatter(dev_formatter)
+# dev_logger.addHandler(dev_handler)
 
 
 class BuildingModeled(BuildingBasic):
@@ -113,18 +113,6 @@ class BuildingModeled(BuildingBasic):
         try:
             # Try to extract certain characteristics of the model from the HB_model
             elevation, height = HbAddons.elevation_and_height_from_HB_model(HB_model)
-            # raise KeyError
-        except:
-            # todo @Elie: Check if this is the correct message.
-            err_message = "Cannot extract eleveation and height from the Honeybee model."
-            user_logger.error(err_message)
-            dev_logger.error(err_message, exc_info=True)
-            raise AttributeError(err_message)
-        # Just to check if it works
-        try:
-            # Try to extract certain characteristics of the model from the HB_model
-            elevation, height = HbAddons.elevation_and_height_from_HB_model(HB_model)
-            raise KeyError
         except:
             # todo @Elie: Check if this is the correct message.
             err_message = "Cannot extract eleveation and height from the Honeybee model."
@@ -144,7 +132,7 @@ class BuildingModeled(BuildingBasic):
             # todo @Elie: Check if this is the correct message.
             err_message = "Cannot make the Ladybug face footprint from the Honeybee model."
             user_logger.error(err_message)
-            dev_logger.error(err_message, exc_info=True)
+            # dev_logger.error(err_message, exc_info=True)
             raise AttributeError(err_message)
         # todo @Elie : finish the function (and check if it works)
         building_modeled_obj.moved_to_origin = True  # we assumed that the HB model is already in the proper place within the urban canopy
@@ -234,7 +222,9 @@ class BuildingModeled(BuildingBasic):
             self.sensor_grid_dict['Facades'] = sensor_grid_facades.to_dict()
 
         else:
-            logging.warning(f"You did not precise whether you want to run the simulation on the roof, "
+            user_logger.warning(f"You did not precise whether you want to run the simulation on the roof, "
+                            f"the facades or both")
+            dev_logger.warning(f"You did not precise whether you want to run the simulation on the roof, "
                             f"the facades or both")
 
     def solar_radiations(self, name, path_folder_simulation, path_weather_file, grid_size=1, offset_dist=0.1,

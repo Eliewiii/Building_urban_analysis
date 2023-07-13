@@ -5,8 +5,10 @@ import os.path
 
 from mains_tool.utils_general import *
 # from mains_tool.utils_general import default_minimum_vf_criterion_context_filter_first_pass_shading
-from urban_canopy.utils_urban_canopy import *
+from urban_canopy_pack.utils_urban_canopy import *
 
+dev_logger = logging.getLogger("dev")
+user_logger = logging.getLogger("user")
 
 class UrbanCanopy:
 
@@ -160,7 +162,9 @@ class UrbanCanopy:
         """ Add a building to the urban canopy"""
         # check if the building id is already in the urban canopy
         if building_id in self.building_dict.keys():
-            logging.warning("The building id {building_id} is already in the urban canopy, "
+            user_logger.warning("The building id {building_id} is already in the urban canopy, "
+                            "it will not be added again to the urban canopy".format(building_id=building_id))
+            dev_logger.warning("The building id {building_id} is already in the urban canopy, "
                             "it will not be added again to the urban canopy".format(building_id=building_id))
         else:
             # add the building to the urban canopy

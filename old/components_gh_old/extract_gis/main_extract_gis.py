@@ -50,8 +50,8 @@ if __name__ == "__main__":
     # Configurate and make the logfile
     path_logger = os.path.join(path_folder_gis_extraction, "log_report.log")
 
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s",
-                        handlers=[logging.FileHandler(path_logger), logging.StreamHandler(sys.stdout)])
+    # logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s",
+    #                     handlers=[logging.FileHandler(path_logger), logging.StreamHandler(sys.stdout)])
 
     # logging.getLogger('name of the package').setLevel(logging.CRITICAL) todo for later
 
@@ -66,10 +66,12 @@ if __name__ == "__main__":
     path_urban_canopy_pkl = os.path.join(path_folder_gis_extraction, "urban_canopy.pkl")
     if os.path.isfile(path_urban_canopy_pkl):
         urban_canopy = UrbanCanopy.make_urban_canopy_from_pkl(path_urban_canopy_pkl)
-        logging.info(f"An urban canopy already exist in the simulation folder, the input GIS will be added to it")
+        user_logger.info(f"An urban canopy already exist in the simulation folder, the input GIS will be added to it")
+        dev_logger.info(f"An urban canopy already exist in the simulation folder, the input GIS will be added to it")
     else:
         urban_canopy = UrbanCanopy()
-        logging.info(f"New urban canopy object was created")
+        user_logger.info(f"New urban canopy object was created")
+        dev_logger.info(f"New urban canopy object was created")
 
     # Get the building_id_key_gis if it is given in the additional_gis_attribute_key_dict
     building_id_key_gis = "idbinyan"  # default value, todo: take it as an argument as well
@@ -83,14 +85,18 @@ if __name__ == "__main__":
 
     # Add the 2D GIS to the urban canopy
     urban_canopy.add_buildings_from_2D_GIS_to_dict(path_gis, building_id_key_gis, unit, additional_gis_attribute_key_dict)
-    logging.info(f"Builing geometries extracted from the GIS file successfully")
+    user_logger.info(f"Builing geometries extracted from the GIS file successfully")
+    dev_logger.info(f"Builing geometries extracted from the GIS file successfully")
     # Move the buildings to the origin if asked
     if move_buildings_to_origin or urban_canopy.moving_vector_to_origin is not None:
         urban_canopy.move_buildings_to_origin()
-        logging.info("Buildings have been moved to origin successfully")
+        user_logger.info("Buildings have been moved to origin successfully")
+        dev_logger.info("Buildings have been moved to origin successfully")
     # generate the hb model that contains all the building envelopes to plot in Grasshopper
     urban_canopy.make_HB_model_envelops_from_buildings(path_folder=path_folder_gis_extraction)
-    logging.info(f"HB model for the building envelop created successfully")
+    user_logger.info(f"HB model for the building envelop created successfully")
+    dev_logger.info(f"HB model for the building envelop created successfully")
     # save the urban canopy object in a pickle file in the temp folder
     urban_canopy.export_urban_canopy_to_pkl(path_folder=path_folder_gis_extraction)
-    logging.info(f"Urban canopy object saved successfully")
+    user_logger.info(f"Urban canopy object saved successfully")
+    dev_logger.info(f"Urban canopy object saved successfully")

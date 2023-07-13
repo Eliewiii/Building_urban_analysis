@@ -5,7 +5,8 @@ Deals with the context filtering
 
 from Elie.utils import *
 
-
+dev_logger = logging.getLogger("dev")
+user_logger = logging.getLogger("user")
 
 
 class Mixin:
@@ -115,13 +116,15 @@ class Mixin:
         timer = time()
         self.prepare_building_face_for_context_new()
         timer = time() - timer
-        logging.warning(" Preprocessing of surfaces for context filtering second pass duration :{round(timer, 4)}s")
+        user_logger.warning(f" Preprocessing of surfaces for context filtering second pass duration :{round(timer, 4)}s")
+        dev_logger.warning(f" Preprocessing of surfaces for context filtering second pass duration :{round(timer, 4)}s")
         ## Prepare Bounding Box
         timer = time()
         self.prepare_bounding_box_faces_for_context()
         timer = time() - timer
         pre_processed_bb_building_dict = self.generate_pre_processed_bb_building_surface_dict()
-        logging.warning(" Preprocessing of bounding boxes for context filtering second pass duration :{round(timer, 4)}s")
+        user_logger.warning(f" Preprocessing of bounding boxes for context filtering second pass duration :{round(timer, 4)}s")
+        dev_logger.warning(f" Preprocessing of bounding boxes for context filtering second pass duration :{round(timer, 4)}s")
 
         ## Loop over all the target buildings
         for id_target in self.building_to_simulate:

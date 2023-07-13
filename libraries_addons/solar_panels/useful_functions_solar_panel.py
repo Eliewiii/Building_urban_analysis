@@ -34,10 +34,13 @@ def load_panels_on_sensor_grid(sensor_grid, pv_technology_object, yearly_solar_r
             pv_technology_object.primary_energy_transport
 
         if face_areas[mesh.faces.index(face)] < pv_technology_object.panel_area:
-            logging.warning("The area of the mesh's faces is not big enough to contain the PV panels. "
+            user_logger.warning("The area of the mesh's faces is not big enough to contain the PV panels. "
+                            "Make a mesh with bigger faces")
+            dev_logger.warning("The area of the mesh's faces is not big enough to contain the PV panels. "
                             "Make a mesh with bigger faces")
         elif (energy_harvested / primary_energy) <= minimum_ratio_energy_harvested_on_primary_energy:
-            logging.warning("If a panel is put here, it won't produce enough energy to be profitable")
+            user_logger.warning("If a panel is put here, it won't produce enough energy to be profitable")
+            dev_logger.warning("If a panel is put here, it won't produce enough energy to be profitable")
         else:
             panel_of_face = PvPanel(mesh.faces.index(face), pv_technology_object)
             panel_of_face.initialize_or_replace_panel()

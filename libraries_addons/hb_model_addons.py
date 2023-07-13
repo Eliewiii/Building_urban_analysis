@@ -4,6 +4,9 @@ Additional functions to apply on honeybee model
 
 from libraries_addons.utils_libraries_addons import *
 
+dev_logger = logging.getLogger("dev")
+user_logger = logging.getLogger("user")
+
 class HbAddons:
 
     @staticmethod
@@ -30,11 +33,13 @@ class HbAddons:
         # get the footprint
         LB_footprint_list = dragonfly_building.footprint()
         if len(LB_footprint_list) > 1:
-            logging.warning("The HB model has more than one footprint, an oriented bounded box will be used to represent the footprint")
+            user_logger.warning("The HB model has more than one footprint, an oriented bounded box will be used to represent the footprint")
+            dev_logger.warning("The HB model has more than one footprint, an oriented bounded box will be used to represent the footprint")
             # todo : @Elie : convert the function that makes the oriented bounded box from LB
 
         elif len(LB_footprint_list) == 0:
-            logging.warning("The HB model has no footprint")
+            user_logger.warning("The HB model has no footprint")
+            dev_logger.warning("The HB model has no footprint")
             # todo : @Elie : convert the function that makes the oriented bounded box from LB
         else:
             return LB_footprint_list[0]

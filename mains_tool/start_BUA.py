@@ -2,8 +2,8 @@ from mains_tool.utils_general import *
 from mains_tool.utils_main_import_scripts import *
 import logging
 
-user_logger = logging.getLogger(f"{__name__} user")
-dev_logger = logging.getLogger(f"{__name__} dev")
+user_logger = logging.getLogger("user")
+dev_logger = logging.getLogger("dev")
 user_logger.setLevel(logging.INFO)
 dev_logger.setLevel(logging.INFO)
 dev_handler = logging.FileHandler('dev_log.log')
@@ -68,7 +68,7 @@ def main():
             path_folder_simulation=arguments_dictionary["path_folder_simulation"])
     
     # Create the log files for the user
-    user_handler = logging.FileHandler(os.path.join(arguments_dictionary['path_folder_simulation'], arguments_dictionary['gh_component_name']+".log"))
+    user_handler = logging.FileHandler(os.path.join(arguments_dictionary['path_folder_simulation'],name_folder_gh_components_logs, arguments_dictionary['gh_component_name']+".log"))
     user_handler.setFormatter(user_formatter)
     user_logger.addHandler(user_handler)
 

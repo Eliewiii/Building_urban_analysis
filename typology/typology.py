@@ -5,6 +5,9 @@ todo: adapt the code to the new structure of the tool
 import os
 import logging
 
+user_logger = logging.getLogger("user")  # f"{__name__} user"
+dev_logger = logging.getLogger("dev")  # f"{__name__} dev"
+
 import json
 from enum import Enum
 from honeybee_energy.lib.constructionsets import construction_set_by_identifier
@@ -89,7 +92,8 @@ class Typology:
         # todo @Sharon and @Elie: for now let's assume that the json file are properly made
         #  (but later full verification), let's just check that the constructions and programs are available
         #  in the honeybee library
-        logging.info("extracting typology with path file :" + path_folder_typology)
+        user_logger.info("extracting typology with path file :" + path_folder_typology)
+        dev_logger.info("extracting typology with path file :" + path_folder_typology)
         path_typo_details_json = os.path.join(path_folder_typology, "typo_details.json")
         with open(path_typo_details_json, 'r') as f:
             # load json file
@@ -126,7 +130,10 @@ class Typology:
             try:
                 json_dict["building shape type"]
             except:
-                logging.info(
+                user_logger.info(
+                    'Typology "{}" does not have building type, it will be set as "residential" by default'.format(
+                        typo_obj.identifier))
+                dev_logger.info(
                     'Typology "{}" does not have building type, it will be set as "residential" by default'.format(
                         typo_obj.identifier))
                 typo_obj.building_shape_type = BuildingShapeType.square.name
@@ -134,7 +141,10 @@ class Typology:
                 if json_dict["building shape type"] in BuildingShapeType._member_names_:
                     typo_obj.building_shape_type = json_dict["building shape type"]
                 else:
-                    logging.info(
+                    user_logger.info(
+                        'Typology "{}" building type is not correct, it will be set as "residential" by default'.format(
+                            typo_obj.identifier))
+                    dev_logger.info(
                         'Typology "{}" building type is not correct, it will be set as "residential" by default'.format(
                             typo_obj.identifier))
                     typo_obj.building_shape_type = BuildingShapeType.square.name
@@ -142,7 +152,9 @@ class Typology:
             try:
                 json_dict["year"]
             except:
-                logging.info(
+                user_logger.info(
+                    'Typology "{}" does not have a year, it will be set as 2000 by default'.format(typo_obj.identifier))
+                dev_logger.info(
                     'Typology "{}" does not have a year, it will be set as 2000 by default'.format(typo_obj.identifier))
                 typo_obj.year = 2000
 
@@ -154,7 +166,9 @@ class Typology:
                     0] > 0 and json_dict["year"][0] > 0:
                     typo_obj.year = json_dict["year"]
                 else:
-                    logging.info('Typology "{}" year is not correct, it will be set as 2000 by default'.format(
+                    user_logger.info('Typology "{}" year is not correct, it will be set as 2000 by default'.format(
+                        typo_obj.identifier))
+                    dev_logger.info('Typology "{}" year is not correct, it will be set as 2000 by default'.format(
                         typo_obj.identifier))
                     typo_obj.year = 2000
 
@@ -162,57 +176,62 @@ class Typology:
             try:
                 json_dict["nb apartments per floor"]
             except:
-                logging.info(
-                    'Typology "{}" does not have number of apartment per floor, it will be set as None by default'.format(
-                        typo_obj.identifier))
+                user_logger.info(
+                    f'Typology "{typo_obj.identifier}" does not have number of apartment per floor, it will be set as None by default')
+                dev_logger.info(
+                    f'Typology "{typo_obj.identifier}" does not have number of apartment per floor, it will be set as None by default')
                 typo_obj.nb_apartments_per_floor = None
             else:
                 if isinstance(json_dict["nb apartments per floor"], int) and json_dict["nb apartments per floor"] >= 0:
                     typo_obj.nb_apartments_per_floor = json_dict["nb apartments per floor"]
                 else:
-                    logging.info(
-                        'Typology "{}" number of apartment per floor is not correct, it will be set as None by default'.format(
-                            typo_obj.identifier))
+                    user_logger.info(
+                        f'Typology "{typo_obj.identifier}" number of apartment per floor is not correct, it will be set as None by default')
+                    dev_logger.info(
+                        f'Typology "{typo_obj.identifier}" number of apartment per floor is not correct, it will be set as None by default')
                     typo_obj.nb_apartments_per_floor = None
             ### nb_cores_per_floor ###
             try:
                 json_dict["nb cores per floor"]
             except:
-                logging.info(
-                    'Typology "{}" does not have a nb_cores_per_floor, it will be set as None by default'.format(
-                        typo_obj.identifier))
+                user_logger.info(
+                    f'Typology "{typo_obj.identifier}" does not have a nb_cores_per_floor, it will be set as None by default')
+                dev_logger.info(
+                    f'Typology "{typo_obj.identifier}" does not have a nb_cores_per_floor, it will be set as None by default')
                 typo_obj.nb_cores_per_floor = None
             else:
                 if isinstance(json_dict["nb cores per floor"], int) and json_dict["nb cores per floor"] >= 0:
                     typo_obj.nb_cores_per_floor = json_dict["nb cores per floor"]
                 else:
-                    logging.info(
-                        'Typology "{}" nb_cores_per_floor is not correct, it will be set as None by default'.format(
-                            typo_obj.identifier))
+                    user_logger.info(
+                        f'Typology "{typo_obj.identifier}" nb_cores_per_floor is not correct, it will be set as None by default')
+                    dev_logger.info(
+                        f'Typology "{typo_obj.identifier}" nb_cores_per_floor is not correct, it will be set as None by default')
                     typo_obj.nb_cores_per_floor = None
             ### use ###
             try:
                 json_dict["use"]
             except:
-                logging.info(
-                    'Typology "{}" does not have building type, it will be set as "residential" by default'.format(
-                        typo_obj.identifier))
+                user_logger.info(
+                    f'Typology "{typo_obj.identifier}" does not have building type, it will be set as "residential" by default')
+                dev_logger.info(
+                    f'Typology "{typo_obj.identifier}" does not have building type, it will be set as "residential" by default')
                 typo_obj.use = BuildingUse.residential.name
             else:
                 if json_dict["use"] in BuildingUse._member_names_:
                     typo_obj.use = json_dict["use"]
                 else:
-                    logging.info(
-                        'Typology "{}" building type is not correct, it will be set as "residential" by default'.format(
-                            typo_obj.identifier))
+                    user_logger.info(f'Typology "{typo_obj.identifier}" building type is not correct, it will be set as "residential" by default')
+                    dev_logger.info(f'Typology "{typo_obj.identifier}" building type is not correct, it will be set as "residential" by default')
                     typo_obj.use = BuildingUse.residential.name
             ### HB_sets ###
             try:
                 json_dict["HB sets"]
             except:
-                logging.info(
-                    'Typology "{}" does not have HB sets, it will be set with the defaults values for building in Israel by default'.format(
-                        typo_obj.identifier))
+                user_logger.info(
+                    f'Typology "{typo_obj.identifier}" does not have HB sets, it will be set with the defaults values for building in Israel by default')
+                dev_logger.info(
+                    f'Typology "{typo_obj.identifier}" does not have HB sets, it will be set with the defaults values for building in Israel by default')
                 typo_obj.constructions_set_id = "constructions set identifier"  # to add
                 typo_obj.program_type_apartment_id = "IS_Residential_5282_Program"
                 typo_obj.program_type_core_id = "IS_Residential_5282_Program"  # to modify with schedules without loads
@@ -221,9 +240,8 @@ class Typology:
                 try:
                     construction_set_by_identifier(json_dict["HB sets"]["constructions set identifier"])
                 except:
-                    logging.info(
-                        'Typology "{}" constructions set is not in the HB library, it will be set with the default value fpr building in Israel'.format(
-                            typo_obj.identifier))
+                    user_logger.info(f'Typology "{typo_obj.identifier}" constructions set is not in the HB library, it will be set with the default value for building in Israel')
+                    dev_logger.info(f'Typology "{typo_obj.identifier}" constructions set is not in the HB library, it will be set with the default value for building in Israel')
                     typo_obj.constructions_set_id = "constructions set identifier"  # to add
                 else:
                     typo_obj.constructions_set_id = json_dict["HB sets"]["constructions set identifier"]
@@ -231,9 +249,10 @@ class Typology:
                 try:
                     program_type_by_identifier(json_dict["HB sets"]["program type apartment identifier"])
                 except:
-                    logging.info(
-                        'Typology "{}" constructions set is not in the HB library, it will be set with the default value fpr building in Israel'.format(
-                            typo_obj.identifier))
+                    user_logger.info(
+                        f'Typology "{typo_obj.identifier}" constructions set is not in the HB library, it will be set with the default value fpr building in Israel')
+                    dev_logger.info(
+                        f'Typology "{typo_obj.identifier}" constructions set is not in the HB library, it will be set with the default value fpr building in Israel')
                     typo_obj.program_type_apartment_id = "constructions set identifier"  # to add
                 else:
                     typo_obj.program_type_apartment_id = json_dict["HB sets"]["program type apartment identifier"]
@@ -241,9 +260,10 @@ class Typology:
                 try:
                     program_type_by_identifier(json_dict["HB sets"]["program type core identifier"])
                 except:
-                    logging.info(
-                        'Typology "{}" constructions set is not in the HB library, it will be set with the default value fpr building in Israel'.format(
-                            typo_obj.identifier))
+                    user_logger.info(
+                        f'Typology "{typo_obj.identifier}" constructions set is not in the HB library, it will be set with the default value fpr building in Israel')
+                    dev_logger.info(
+                        f'Typology "{typo_obj.identifier}" constructions set is not in the HB library, it will be set with the default value fpr building in Israel')
                     typo_obj.program_type_core_id = "constructions set identifier"  # to add
                 else:
                     typo_obj.program_type_core_id = json_dict["HB sets"]["program type core identifier"]
@@ -252,9 +272,10 @@ class Typology:
             try:
                 json_dict["window/floor area per direction"]
             except:
-                logging.info(
-                    'Typology "{}" does not have window_floor_area_ratio_per_direction, it will be set as [0,0,0.1,0] by default'.format(
-                        typo_obj.identifier))
+                user_logger.info(
+                    f'Typology "{typo_obj.identifier}" does not have window_floor_area_ratio_per_direction, it will be set as [0,0,0.1,0] by default')
+                dev_logger.info(
+                    f'Typology "{typo_obj.identifier}" does not have window_floor_area_ratio_per_direction, it will be set as [0,0,0.1,0] by default')
                 typo_obj.window_floor_area_ratio_per_direction = {"north": 0, "east": 0.2, "south": 0, "west": 0}
             else:
                 try:
@@ -263,9 +284,10 @@ class Typology:
                     json_dict["window/floor area per direction"]["south"]
                     json_dict["window/floor area per direction"]["west"]
                 except:
-                    logging.info(
-                        'Typology "{}" window_floor_area_ratio_per_direction is not correct, it will be set as [0,0,0.1,0] by default'.format(
-                            typo_obj.identifier))
+                    user_logger.info(
+                        f'Typology "{typo_obj.identifier}" window_floor_area_ratio_per_direction is not correct, it will be set as [0,0,0.1,0] by default')
+                    dev_logger.info(
+                        f'Typology "{typo_obj.identifier}" window_floor_area_ratio_per_direction is not correct, it will be set as [0,0,0.1,0] by default')
                     typo_obj.window_floor_area_ratio_per_direction = {"north": 0, "east": 0.2, "south": 0, "west": 0}
                 else:
                     if json_dict["window/floor area per direction"]["north"] >= 0 and \
@@ -274,9 +296,10 @@ class Typology:
                             json_dict["window/floor area per direction"]["west"] >= 0:
                         typo_obj.window_floor_area_ratio_per_direction = json_dict["window/floor area per direction"]
                     else:
-                        logging.info(
-                            'Typology "{}" window_floor_area_ratio_per_direction is not correct, it will be set as [0,0,0.1,0] by default'.format(
-                                typo_obj.identifier))
+                        user_logger.info(
+                            f'Typology "{typo_obj.identifier}" window_floor_area_ratio_per_direction is not correct, it will be set as [0,0,0.1,0] by default')
+                        dev_logger.info(
+                            f'Typology "{typo_obj.identifier}" window_floor_area_ratio_per_direction is not correct, it will be set as [0,0,0.1,0] by default')
                         typo_obj.window_floor_area_ratio_per_direction = {"north": 0, "east": 0.2, "south": 0,
                                                                           "west": 0}
 
@@ -284,9 +307,10 @@ class Typology:
             try:
                 json_dict["internal mass"]
             except:
-                logging.info(
-                    'Typology "{}" does not have internal, it will be set with the defaults values for building in Israel by default'.format(
-                        typo_obj.identifier))
+                user_logger.info(
+                    f'Typology "{typo_obj.identifier}" does not have internal, it will be set with the defaults values for building in Israel by default')
+                dev_logger.info(
+                    f'Typology "{typo_obj.identifier}" does not have internal, it will be set with the defaults values for building in Israel by default')
                 typo_obj.construction_int_wall_int_mass = "IS_InternalWall_Residential+OfficeRef"
                 typo_obj.int_mass_surface_ratio = 1.5
             else:
@@ -295,9 +319,10 @@ class Typology:
                     opaque_construction_by_identifier(
                         json_dict["internal mass"]["internal mass internal wall construction id"])
                 except:
-                    logging.info(
-                        'Typology "{}" internal mass construction is not in the library or is not mentioned, it will be set with the default value fpr building in Israel'.format(
-                            typo_obj.identifier))
+                    user_logger.info(
+                        f'Typology "{typo_obj.identifier}" internal mass construction is not in the library or is not mentioned, it will be set with the default value fpr building in Israel')
+                    dev_logger.info(
+                        f'Typology "{typo_obj.identifier}" internal mass construction is not in the library or is not mentioned, it will be set with the default value fpr building in Israel')
                     typo_obj.construction_int_wall_int_mass = "IS_InternalWall_Residential+OfficeRef"
                 else:
                     typo_obj.construction_int_wall_int_mass = json_dict["internal mass"][
@@ -306,9 +331,10 @@ class Typology:
                 try:
                     json_dict["internal mass"]["internal mass internal wall/floor surface ratio"]
                 except:
-                    logging.info(
-                        'Typology "{}" does not have internal mass surface ratio, it will be set with the default value fpr building in Israel'.format(
-                            typo_obj.identifier))
+                    user_logger.info(
+                        f'Typology "{typo_obj.identifier}" does not have internal mass surface ratio, it will be set with the default value fpr building in Israel')
+                    dev_logger.info(
+                        f'Typology "{typo_obj.identifier}" does not have internal mass surface ratio, it will be set with the default value fpr building in Israel')
                     typo_obj.int_mass_surface_ratio = 1.5
                 else:
                     if (isinstance(json_dict["internal mass"]["internal mass internal wall/floor surface ratio"],
@@ -318,9 +344,10 @@ class Typology:
                         typo_obj.int_mass_surface_ratio = json_dict["internal mass"][
                             "internal mass internal wall/floor surface ratio"]
                     else:
-                        logging.info(
-                            'Typology "{}" internal mass surface ratio format is not correct, it will be set with the default value fpr building in Israel'.format(
-                                typo_obj.identifier))
+                        user_logger.info(
+                            f'Typology "{typo_obj.identifier}" internal mass surface ratio format is not correct, it will be set with the default value fpr building in Israel')
+                        dev_logger.info(
+                            f'Typology "{typo_obj.identifier}" internal mass surface ratio format is not correct, it will be set with the default value fpr building in Israel')
                         typo_obj.int_mass_surface_ratio = 1.5
 
             ### shade parameters ###
@@ -333,17 +360,19 @@ class Typology:
                 try:
                     json_dict["shade parameters"]["shading type"]
                 except:
-                    logging.info(
-                        'Typology "{}" does not have shading type, it will be set as "no_shading" by default'.format(
-                            typo_obj.identifier))
+                    user_logger.info(
+                        f'Typology "{typo_obj.identifier}" does not have shading type, it will be set as "no_shading" by default')
+                    dev_logger.info(
+                        f'Typology "{typo_obj.identifier}" does not have shading type, it will be set as "no_shading" by default')
                     typo_obj.use = ShadeType.no_shade.name
                 else:
                     if json_dict["shade parameters"]["shading type"] in ShadeType._member_names_:
                         typo_obj.use = json_dict["shade parameters"]["shading type"]
                     else:
-                        logging.info(
-                            'Typology "{}" shading type is not correct, it will be set as "no_shading" by default'.format(
-                                typo_obj.identifier))
+                        user_logger.info(
+                            f'Typology "{typo_obj.identifier}" shading type is not correct, it will be set as "no_shading" by default')
+                        dev_logger.info(
+                            f'Typology "{typo_obj.identifier}" shading type is not correct, it will be set as "no_shading" by default')
                         typo_obj.use = ShadeType.no_shade.name
                     # blind material and schedule
                     if typo_obj.use == ShadeType.blinds.name:
@@ -353,9 +382,10 @@ class Typology:
                                 window_material_by_identifier(position["material"])
                                 schedule_by_identifier(position["schedule"])
                         except:
-                            logging.info(
-                                'Typology "{}" blinds are not defined properly or not in the library, it will be set with the default value fpr building in Israel'.format(
-                                    typo_obj.identifier))
+                            user_logger.info(
+                                f'Typology "{typo_obj.identifier}" blinds are not defined properly or not in the library, it will be set with the default value fpr building in Israel')
+                            dev_logger.info(
+                                f'Typology "{typo_obj.identifier}" blinds are not defined properly or not in the library, it will be set with the default value fpr building in Israel')
                             # typo_obj.construction_int_wall_int_mass = "IS_InternalWall_Residential+OfficeRef"
                             # to do
                         else:
