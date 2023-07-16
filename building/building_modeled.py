@@ -4,6 +4,7 @@ as they will be simulated
 """
 
 import os
+import logging
 import matplotlib.pyplot as plt
 
 from ladybug_geometry.geometry3d import Vector3D
@@ -24,10 +25,9 @@ from libraries_addons.solar_panels.useful_functions_solar_panel import load_pane
     get_cumul_values, add_elements_of_two_lists, transform_to_linear_function, find_intersection_functions, \
     generate_step_function
 
-# import logging
 
-# user_logger = logging.getLogger("user")
-# dev_logger = logging.getLogger("dev")
+user_logger = logging.getLogger("user")
+dev_logger = logging.getLogger("dev")
 
 
 

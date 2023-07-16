@@ -20,7 +20,7 @@ class SolarOrPanelSimulation:
         dev_logger.info("The solar radiation simulation was run on the buildings of the urban canopy")
 
 
-@staticmethod
+    @staticmethod
     def panel_simulation(urban_canopy_object, path_folder_simulation, path_pv_tech_dictionary_json,
                          id_pv_tech_roof, id_pv_tech_facades,
                          minimum_ratio_energy_harvested_on_primary_energy,

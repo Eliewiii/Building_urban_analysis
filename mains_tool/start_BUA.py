@@ -1,4 +1,6 @@
+import os
 import argparse
+import logging
 
 from step_methods.building_manipulation_function_for_main import SimulationBuildingManipulationFunctions
 from step_methods.general_function_for_main import SimulationCommonMethods
@@ -6,6 +8,8 @@ from step_methods.load_bat_file_arguments import LoadArguments
 from step_methods.load_building_or_geometry import SimulationLoadBuildingOrGeometry
 from step_methods.post_processing_and_plots import SimulationPostProcessingAndPlots
 from step_methods.run_simulations import SolarOrPanelSimulation
+
+from utils.utils_configuration import name_gh_components_logs_folder
 
 user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")
@@ -72,7 +76,7 @@ def main():
             path_folder_simulation=arguments_dictionary["path_folder_simulation"])
 
     # Create the log files for the user
-    user_handler = logging.FileHandler(os.path.join(arguments_dictionary['path_folder_simulation'],name_folder_gh_components_logs, arguments_dictionary['gh_component_name']+".log"))
+    user_handler = logging.FileHandler(os.path.join(arguments_dictionary['path_folder_simulation'],name_gh_components_logs_folder, arguments_dictionary['gh_component_name']+".log"))
     user_handler.setFormatter(user_formatter)
     user_logger.addHandler(user_handler)
 
@@ -180,9 +184,12 @@ def main():
 
     if simulation_step_dictionary["plot_graph_results_building_panel_simulation"]:
         SimulationPostProcessingAndPlots.plot_graphs(urban_canopy_object=urban_canopy_object,
-                                                     path_folder_simulation=default_path_folder_simulation,
-                                                     study_duration_years=default_study_duration_years,
-                                                     country_ghe_cost=default_country_ghe_cost)
+                                                     path_folder_simulation=arguments_dictionary[
+                                                                                    "path_folder_simulation"],
+                                                     study_duration_years=arguments_dictionary[
+                                                                                    "study_duration_years"],
+                                                     country_ghe_cost=arguments_dictionary[
+                                                                                    "country_ghe_cost"])
 
     # Save logs for the components
     if arguments_dictionary["gh_component_name"] is not None:
