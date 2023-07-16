@@ -53,3 +53,8 @@ class SimulationPostProcessingAndPlots:
         urban_canopy_object.plot_graphs_urban_canopy(path_folder_simulation=path_folder_simulation,
                                                      study_duration_years=study_duration_years,
                                                      country_ghe_cost=country_ghe_cost)
+
+    def plot_graphs(self):
+        """
+            todo @Elie
+        """
