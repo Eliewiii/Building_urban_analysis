@@ -7,6 +7,9 @@ import sys
 import logging
 import argparse
 
+dev_logger = logging.getLogger("dev")
+user_logger = logging.getLogger("user")
+
 # Get Appdata\local folder
 local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
@@ -38,8 +41,8 @@ if __name__ == "__main__":
     # Configurate and make the logfile
     path_logger = os.path.join(path_folder_simulation, "log_report.log")
 
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s",
-                        handlers=[logging.FileHandler(path_logger), logging.StreamHandler(sys.stdout)])
+    # logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s",
+    #                     handlers=[logging.FileHandler(path_logger), logging.StreamHandler(sys.stdout)])
 
     # Add the path of scripts in the tool to sys so that the lib can be used
     if run_by_the_tool:
@@ -52,16 +55,20 @@ if __name__ == "__main__":
     path_urban_canopy_pkl = os.path.join(path_folder_simulation, "urban_canopy.pkl")
     if os.path.isfile(path_urban_canopy_pkl):
         urban_canopy = UrbanCanopy.make_urban_canopy_from_pkl(path_urban_canopy_pkl)
-        logging.info(f"An urban canopy already exist in the simulation folder, the input GIS will be added to it")
+        user_logger.info(f"An urban canopy already exist in the simulation folder, the input GIS will be added to it")
+        dev_logger.info(f"An urban canopy already exist in the simulation folder, the input GIS will be added to it")
     else:
         urban_canopy = UrbanCanopy()
-        logging.info(f"New urban canopy object was created")
+        user_logger.info(f"New urban canopy object was created")
+        dev_logger.info(f"New urban canopy object was created")
 
     # Add the buildings in the hbjson files to the urban canopy
     urban_canopy.make_oriented_bounding_boxes_of_buildings(path_folder=path_folder_simulation,
                                                            hbjson_name=name_bounding_box_hbjson)
-    logging.info("The bounding boxes of the buildings were created successfully")
+    user_logger.info("The bounding boxes of the buildings were created successfully")
+    dev_logger.info("The bounding boxes of the buildings were created successfully")
     # save the urban canopy object in a pickle file in the temp folder
     urban_canopy.export_urban_canopy_to_pkl(path_folder=path_folder_simulation)
-    logging.info("Urban canopy object saved successfully")
+    user_logger.info("Urban canopy object saved successfully")
+    dev_logger.info("Urban canopy object saved successfully")
     # test

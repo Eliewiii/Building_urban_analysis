@@ -4,7 +4,6 @@ as they will be simulated
 """
 
 import os
-import logging
 import matplotlib.pyplot as plt
 
 from ladybug_geometry.geometry3d import Vector3D
@@ -24,6 +23,11 @@ from libraries_addons.solar_panels.useful_functions_solar_panel import load_pane
     loop_over_the_years_for_solar_panels, beginning_end_of_life_lca_results_in_lists, results_from_lists_to_dict, \
     get_cumul_values, add_elements_of_two_lists, transform_to_linear_function, find_intersection_functions, \
     generate_step_function
+
+# import logging
+
+# user_logger = logging.getLogger("user")
+# dev_logger = logging.getLogger("dev")
 
 
 
@@ -114,16 +118,30 @@ class BuildingModeled(BuildingBasic):
         identifier = HB_model.identifier
         # create the BuildingModeled object from the HB model
         building_modeled_obj = cls(identifier)
-        # Try to extract certain characteristics of the model from the HB_model
-        elevation, height = HbAddons.elevation_and_height_from_HB_model(HB_model)
+        try:
+            # Try to extract certain characteristics of the model from the HB_model
+            elevation, height = HbAddons.elevation_and_height_from_HB_model(HB_model)
+        except:
+            # todo @Elie: Check if this is the correct message.
+            err_message = "Cannot extract eleveation and height from the Honeybee model."
+            user_logger.error(err_message)
+            dev_logger.error(err_message, exc_info=True)
+            raise AttributeError(err_message)
         # # set the attributes of the BuildingModeled object
         building_modeled_obj.HB_model_obj = HB_model
         building_modeled_obj.urban_canopy = urban_canopy
         building_modeled_obj.elevation = elevation
         building_modeled_obj.height = height
         building_modeled_obj.is_target = is_target
-        # todo @Elie : make the LB_face_footprint from the HB_model
-        building_modeled_obj.LB_face_footprint = HbAddons.make_LB_face_footprint_from_HB_model(HB_model=HB_model)
+        try:
+            # todo @Elie : make the LB_face_footprint from the HB_model
+            building_modeled_obj.LB_face_footprint = HbAddons.make_LB_face_footprint_from_HB_model(HB_model=HB_model)
+        except:
+            # todo @Elie: Check if this is the correct message.
+            err_message = "Cannot make the Ladybug face footprint from the Honeybee model."
+            user_logger.error(err_message)
+            # dev_logger.error(err_message, exc_info=True)
+            raise AttributeError(err_message)
         # todo @Elie : finish the function (and check if it works)
         building_modeled_obj.moved_to_origin = True  # we assumed that the HB model is already in the proper place within the urban canopy
 
@@ -212,7 +230,9 @@ class BuildingModeled(BuildingBasic):
             self.sensor_grid_dict['Facades'] = sensor_grid_facades.to_dict()
 
         else:
-            logging.warning(f"You did not precise whether you want to run the simulation on the roof, "
+            user_logger.warning(f"You did not precise whether you want to run the simulation on the roof, "
+                            f"the facades or both")
+            dev_logger.warning(f"You did not precise whether you want to run the simulation on the roof, "
                             f"the facades or both")
 
     def solar_radiations(self, name, path_folder_simulation, path_weather_file, grid_size=1, offset_dist=0.1,

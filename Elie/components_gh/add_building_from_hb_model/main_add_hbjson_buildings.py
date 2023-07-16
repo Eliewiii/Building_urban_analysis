@@ -8,6 +8,8 @@ import logging
 import argparse
 import json
 
+dev_logger = logging.getLogger("dev")
+user_logger = logging.getLogger("user")
 
 # Get Appdata\local folder
 local_appdata = os.environ['LOCALAPPDATA']
@@ -43,8 +45,8 @@ if __name__ == "__main__":
     os.makedirs(path_folder_simulation, exist_ok=True)
     path_logger = os.path.join(path_folder_simulation, "log_report.log")
 
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s",
-                        handlers=[logging.FileHandler(path_logger), logging.StreamHandler(sys.stdout)])
+    # logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s",
+    #                     handlers=[logging.FileHandler(path_logger), logging.StreamHandler(sys.stdout)])
 
     #add_path_to_scripts in the tool to sys so that the lib can be used
     def update_script_path_venv():
@@ -61,21 +63,26 @@ if __name__ == "__main__":
     path_urban_canopy_pkl = os.path.join(path_folder_simulation, "urban_canopy.pkl")
     if os.path.isfile(path_urban_canopy_pkl):
         urban_canopy = UrbanCanopy.make_urban_canopy_from_pkl(path_urban_canopy_pkl)
-        logging.info("An urban canopy already exist in the simulation folder, the input GIS will be added to it")
+        user_logger.info("An urban canopy already exist in the simulation folder, the input GIS will be added to it")
+        dev_logger.info("An urban canopy already exist in the simulation folder, the input GIS will be added to it")
     else:
         urban_canopy = UrbanCanopy()
-        logging.info("New urban canopy object was created")
+        user_logger.info("New urban canopy object was created")
+        dev_logger.info("New urban canopy object was created")
 
 
 
     # Add the buildings in the hbjson files to the urban canopy
     urban_canopy.add_buildings_from_hbjson_to_dict(path_directory_hbjson=path_folder_hbjson)
-    logging.info("Building(s) from hbjson added to the urban canopy successfully")
+    user_logger.info("Building(s) from hbjson added to the urban canopy successfully")
+    dev_logger.info("Building(s) from hbjson added to the urban canopy successfully")
     # generate the hb model that contains all the building envelopes to plot in Grasshopper
     if make_hb_model_envelops:
         urban_canopy.make_HB_model_envelops_from_buildings(path_folder=path_folder_simulation)
-        logging.info("HB model for the building envelop created successfully")
+        user_logger.info("HB model for the building envelop created successfully")
+        dev_logger.info("HB model for the building envelop created successfully")
     # save the urban canopy object in a pickle file in the temp folder
     urban_canopy.export_urban_canopy_to_pkl(path_folder=path_folder_simulation)
-    logging.info("Urban canopy object saved successfully")
+    user_logger.info("Urban canopy object saved successfully")
+    dev_logger.info("Urban canopy object saved successfully")
     # test

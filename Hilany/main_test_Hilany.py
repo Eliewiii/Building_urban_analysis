@@ -8,6 +8,9 @@ import os
 from honeybee.model import Model
 import logging
 
+dev_logger = logging.getLogger("dev")
+user_logger = logging.getLogger("user")
+
 try:
     from ladybug_geometry.geometry3d.plane import Plane
     from ladybug_geometry.geometry3d.face import Face3D
@@ -46,7 +49,8 @@ hb_model_facades = Model.from_hbjson(hb_model_facades_hbjson_path)
 hb_model_roofs = Model.from_hbjson(hb_model_roofs_hbjson_path)
 
 # context = Model.from_hbjson(context_hbjsom_path)
-logging.info("Extraction of context and hb_model complete")
+user_logger.info("Extraction of context and hb_model complete")
+dev_logger.info("Extraction of context and hb_model complete")
 
 # Since we suppose that we already have a hb_building, we suppose all the shades, faces, roofs are already defined
 
@@ -56,7 +60,8 @@ model_sensorgrid_roofs=  hb_model_to_hb_SensorGrid_roofs("SensorGrid_Roofs", hb_
 # Facades
 model_sensorgrid_facades = hb_model_to_hb_SensorGrid_facades("SensorGrid_Facades", hb_model_facades, 3, 0.1, True)
 
-logging.info("Pre-processing complete")
+user_logger.info("Pre-processing complete")
+dev_logger.info("Pre-processing complete")
 
 # Run simulation
 

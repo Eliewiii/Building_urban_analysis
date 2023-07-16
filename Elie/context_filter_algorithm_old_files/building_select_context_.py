@@ -5,6 +5,9 @@ Deals with the context selection of the context.
 
 from Elie.utils import *
 
+dev_logger = logging.getLogger("dev")
+user_logger = logging.getLogger("user")
+
 
 class Mixin:
 
@@ -95,7 +98,8 @@ class Mixin:
             first_pass [boolean]: True if we want to use the first pass, False if not.
             second_pass [boolean]: True if we want to use the second pass, False if not.
         """
-        logging.warning(" building_{self.id} : start context filering")
+        dev_logger.warning(f" building_{self.id} : start context filering")
+        user_logger.warning(f" building_{self.id} : start context filering")
         building_surfaces_dict_to_test = copy.deepcopy(pre_processed_bb_building_surface_dict)
 
         ## Initialization
@@ -112,7 +116,8 @@ class Mixin:
             first_pass_duration = time.time()
             kept_building_first_pass = self.shading_context_bb_first_pass(building_surfaces_dict_to_test, mvfc)
             first_pass_duration = time.time() - first_pass_duration
-            logging.warning(" building_{self.id} :  first pass duration :{round(first_pass_duration, 4)}s")
+            user_logger.warning(" building_{self.id} :  first pass duration :{round(first_pass_duration, 4)}s")
+            dev_logger.warning(" building_{self.id} :  first pass duration :{round(first_pass_duration, 4)}s")
             # conversion into surface dict list
             kept_surfaces_dict_list = context_building_to_surface_kept(building_surfaces_dict_to_test,
                                                                        kept_building_first_pass)
@@ -141,7 +146,8 @@ class Mixin:
                 second_pass_duration = time.time()
                 kept_surfaces_dict_list = self.shading_context_second_pass(kept_surfaces_dict_list)
                 second_pass_duration = time.time() - second_pass_duration
-                logging.warning(" building_{self.id} :  second pass duration :{round(second_pass_duration, 4)}s")
+                user_logger.warning(" building_{self.id} :  second pass duration :{round(second_pass_duration, 4)}s")
+                dev_logger.warning(" building_{self.id} :  second pass duration :{round(second_pass_duration, 4)}s")
 
                 kept_surface_second_pass = surface_dict_to_hb_faces(kept_surfaces_dict_list)
                 # remove the surface kept in the second pass from the first pass
@@ -157,7 +163,8 @@ class Mixin:
             second_pass_duration = time.time()
             kept_surfaces_dict_list = self.shading_context_second_pass(all_context_surface_dict_list)
             second_pass_duration = time.time() - second_pass_duration
-            logging.warning(" building_{self.id} :  second pass duration :{round(second_pass_duration, 4)}s")
+            user_logger.warning(" building_{self.id} :  second pass duration :{round(second_pass_duration, 4)}s")
+            dev_logger.warning(" building_{self.id} :  second pass duration :{round(second_pass_duration, 4)}s")
             kept_surface_second_pass = surface_dict_to_hb_faces(kept_surfaces_dict_list)
             if keep_all_context:
                 all_context_hb_faces = surface_dict_to_hb_faces(all_context_surface_dict_list)
@@ -190,7 +197,8 @@ class Mixin:
             first_pass [boolean]: True if we want to use the first pass, False if not.
             second_pass [boolean]: True if we want to use the second pass, False if not.
         """
-        logging.warning(" building_{self.id} : start context filering")
+        user_logger.warning(" building_{self.id} : start context filering")
+        dev_logger.warning(" building_{self.id} : start context filering")
         surface_to_test = copy.deepcopy(pre_processed_surface_list)
 
         ## Initialization
@@ -206,7 +214,8 @@ class Mixin:
             first_pass_duration = time.time()
             kept_surfaces_dict_list = self.shading_context_first_pass(surface_to_test, mvfc)
             first_pass_duration = time.time() - first_pass_duration
-            logging.warning(" building_{self.id} :  first pass duration :{round(first_pass_duration, 4)}s")
+            user_logger.warning(f" building_{self.id} :  first pass duration :{round(first_pass_duration, 4)}s")
+            dev_logger.warning(f" building_{self.id} :  first pass duration :{round(first_pass_duration, 4)}s")
             kept_surface_first_pass = surface_dict_to_hb_faces(kept_surfaces_dict_list)
             if keep_first_pass:
                 self.context_hb_kept_first_pass = list(kept_surface_first_pass)
@@ -223,7 +232,8 @@ class Mixin:
                 second_pass_duration = time.time()
                 kept_surfaces_dict_list = self.shading_context_second_pass(kept_surfaces_dict_list)
                 second_pass_duration = time.time() - second_pass_duration
-                logging.warning(" building_{self.id} :  second pass duration :{round(second_pass_duration, 4)}s")
+                user_logger.warning(f" building_{self.id} :  second pass duration :{round(second_pass_duration, 4)}s")
+                dev_logger.warning(f" building_{self.id} :  second pass duration :{round(second_pass_duration, 4)}s")
 
                 kept_surface_second_pass = surface_dict_to_hb_faces(kept_surfaces_dict_list)
                 # remove the surface kept in the second pass from the first pass
@@ -237,7 +247,8 @@ class Mixin:
             second_pass_duration = time.time()
             kept_surfaces_dict_list = self.shading_context_second_pass(surface_to_test)
             second_pass_duration = time.time() - second_pass_duration
-            logging.warning(" building_{self.id} :  second pass duration :{round(second_pass_duration, 4)}s")
+            user_logger.warning(f" building_{self.id} :  second pass duration :{round(second_pass_duration, 4)}s")
+            dev_logger.warning(f" building_{self.id} :  second pass duration :{round(second_pass_duration, 4)}s")
             kept_surface_second_pass = surface_dict_to_hb_faces(kept_surfaces_dict_list)
 
         hb_context_faces = surface_dict_to_hb_faces(kept_surfaces_dict_list)

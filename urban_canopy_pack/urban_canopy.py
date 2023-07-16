@@ -19,6 +19,8 @@ from solar_panel.pv_panel_technology import PvPanelTechnology
 from utils.utils_configuration import name_urban_canopy_export_file_pkl, name_urban_canopy_export_file_json, \
     name_radiation_simulation_folder
 
+dev_logger = logging.getLogger("dev")
+user_logger = logging.getLogger("user")
 
 class UrbanCanopy:
 
@@ -183,7 +185,9 @@ class UrbanCanopy:
         """ Add a building to the urban canopy"""
         # check if the building id is already in the urban canopy
         if building_id in self.building_dict.keys():
-            logging.warning("The building id {building_id} is already in the urban canopy, "
+            user_logger.warning("The building id {building_id} is already in the urban canopy, "
+                            "it will not be added again to the urban canopy".format(building_id=building_id))
+            dev_logger.warning("The building id {building_id} is already in the urban canopy, "
                             "it will not be added again to the urban canopy".format(building_id=building_id))
         else:
             # add the building to the urban canopy
@@ -461,7 +465,7 @@ class UrbanCanopy:
                         values_roof = building.solar_radiations(str(building.id), path_folder_building,
                                                                 path_weather_file, grid_size, offset_dist,
                                                                 on_facades=False)
-                        name_file = os.path.join(path_folder_building, "Roof", "annual_radiation_values.txt")
+                        name_file = os.path.join(path_folder_building, 'Roof', 'annual_radiation_values.txt')
                         with open(name_file, 'w') as f:
                             tmp = (','.join(str(n) for n in values_roof[0]))
                             f.write('{}'.format(tmp))
@@ -567,8 +571,7 @@ class UrbanCanopy:
         :param replacement_scenario: string: scenario of replacements for the panels, default = 'yearly'
         """
 
-        pv_tech_dictionary = PvPanelTechnology.load_pv_technologies_from_json_to_dictionary(
-            path_pv_tech_dictionary_json)
+        pv_tech_dictionary = PvPanelTechnology.load_pv_technologies_from_json_to_dictionary(path_pv_tech_dictionary_json)
 
         for building in self.building_dict.values():  # for every building in the urban canopy
             if type(building) is BuildingModeled and building.is_target:
@@ -581,11 +584,10 @@ class UrbanCanopy:
                                                    performance_ratio,
                                                    study_duration_in_years, replacement_scenario, **kwargs)
 
-    def plot_graphs_buildings(self, path_folder_simulation, study_duration_years, country_ghe_cost):
+    def plot_graphs(self, path_folder_simulation, study_duration_years, country_ghe_cost):
         for building in self.building_dict.values():
             if type(building) is BuildingModeled and building.is_target:
-                if building.results_panels["Roof"] and building.results_panels["Facades"] and \
-                        building.results_panels["Total"]:
+                if building.results_panels["Roof"] and building.results_panels["Facades"] and building.results_panels["Total"]:
                     path_folder_simulation_building = os.path.join(path_folder_simulation,
                                                                    name_radiation_simulation_folder,
                                                                    building.id)

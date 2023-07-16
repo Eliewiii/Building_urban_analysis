@@ -9,6 +9,9 @@ import json
 from utils.utils_default_values_user_parameters import default_path_gis, default_unit_gis, \
     default_building_id_key_gis
 
+user_logger = logging.getLogger("user")  # f"{__name__} user"
+dev_logger = logging.getLogger("dev")  # f"{__name__} dev"
+
 
 class SimulationLoadBuildingOrGeometry:
 
@@ -30,7 +33,8 @@ class SimulationLoadBuildingOrGeometry:
         # Add the buildings from the GIS to the urban canopy
         urban_canopy.add_buildings_from_2D_GIS_to_dict(path_gis, building_id_key_gis, unit,
                                                        path_additional_gis_attribute_key_dict)
-        logging.info("Building geometries extracted from the GIS file successfully")
+        user_logger.info("Building geometries extracted from the GIS file successfully")
+        dev_logger.info("Building geometries extracted from the GIS file successfully")
 
     @classmethod
     def get_id_key_of_buildings_in_gis(cls, path_additional_gis_attribute_key_dict):
@@ -58,4 +62,5 @@ class SimulationLoadBuildingOrGeometry:
         urban_canopy_object.add_buildings_from_hbjson_to_dict(path_directory_hbjson=path_folder_hbjson,
                                                               path_file_hbjson=path_file_hbjson,
                                                               are_buildings_targets=are_buildings_targets)
-        logging.info("Building(s) from hbjson added to the urban canopy successfully")
+        user_logger.info("Building(s) from hbjson added to the urban canopy successfully")
+        dev_logger.info("Building(s) from hbjson added to the urban canopy successfully")
