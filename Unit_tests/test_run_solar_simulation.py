@@ -1,5 +1,4 @@
-from mains_tool.utils_general import *
-from mains_tool.utils_main_import_scripts import *
+from Unit_tests.utils_main_import_scripts import *
 
 # Create urban_canopy
 # urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object(

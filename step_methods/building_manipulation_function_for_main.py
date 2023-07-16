@@ -1,7 +1,7 @@
 """
 
 """
-from mains_tool.utils_general import *
+import logging
 
 class SimulationBuildingManipulationFunctions:
     @staticmethod

@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from honeybee.model import Model
 
 from utils.utils_configuration import name_radiation_simulation_folder
-from utils.utils_default_values_user_parameters import lb_hb_df_tolerance_value
+from utils.utils_constants import TOLERANCE_LBT
 from building.building_basic import BuildingBasic
 from building.building_modeled import BuildingModeled
 
@@ -185,10 +185,10 @@ class UrbanCanopyAdditionalFunction:
                     HB_room_envelop_list.append(HB_room)
         # additional cleaning of the colinear vertices, might not be necessary
         for room in HB_room_envelop_list:
-            room.remove_colinear_vertices_envelope(tolerance=lb_hb_df_tolerance_value, delete_degenerate=True)
+            room.remove_colinear_vertices_envelope(tolerance=TOLERANCE_LBT, delete_degenerate=True)
         # Make the hb model
         HB_model = Model(identifier="urban_canopy_building_envelops", rooms=HB_room_envelop_list,
-                         tolerance=lb_hb_df_tolerance_value)
+                         tolerance=TOLERANCE_LBT)
         HB_dict = HB_model.to_dict()
 
         return HB_dict

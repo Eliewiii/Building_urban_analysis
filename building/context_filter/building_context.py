@@ -4,13 +4,13 @@ todo
 
 from building.context_filter.utils_functions_context_filter import is_vector3D_vertical, majorized_VF_between_2_surfaces
 
-from mains_tool.utils_general import default_mvfc_context_shading_selection
+
 
 
 class BuildingContext:
     """ todo """
 
-    def __init__(self, min_VF_criterion=default_mvfc_context_shading_selection):
+    def __init__(self, min_VF_criterion):
         self.min_VF_criterion = min_VF_criterion
         self.context_building_id_list = []
 

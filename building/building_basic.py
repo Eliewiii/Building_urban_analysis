@@ -1,7 +1,7 @@
 """
 BuildingBasic class, representing one building in an urban canopy.
 """
-from mains_tool.utils_general import *
+
 
 import logging
 import shapely
@@ -14,6 +14,16 @@ from libraries_addons.hb_rooms_addons import RoomsAddons
 from libraries_addons.function_for_gis_extraction_to_sort import polygon_to_LB_footprint,add_additional_attribute_keys_to_dict
 
 
+default_gis_attribute_key_dict = {
+    "building_id_key_gis": "none",
+    "name": ["name", "full_name_"],
+    "age": ["age", "date", "year"],
+    "typology": ["typo", "typology", "type", "Typology"],
+    "elevation": ["minheight"],
+    "height": ["height", "Height", "govasimple"],
+    "number of floor": ["number_floor", "nb_floor", "mskomot"],
+    "group": ["group"]
+}
 
 
 class BuildingBasic:

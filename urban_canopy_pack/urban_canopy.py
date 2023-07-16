@@ -6,40 +6,19 @@ import pickle
 import json
 import logging
 
-
-from mains_tool.utils_general import *
-
-# from urban_canopy_pack.utils_urban_canopy import *
-
-
-
-import numpy
-import matplotlib.pyplot as plt
-import numpy as np
-
 from honeybee.model import Model
-from honeybee.room import Room
-
-from building.building_basic import BuildingBasic
-from building.building_modeled import BuildingModeled
-
-from libraries_addons.extract_gis_files import extract_gis
-
-from typology.typology import Typology
 
 from urban_canopy_pack.urban_canopy_additional_functions import UrbanCanopyAdditionalFunction
 
-from solar_panel.pv_panel import PvPanel
+from building.building_basic import BuildingBasic
+from building.building_modeled import BuildingModeled
+from libraries_addons.extract_gis_files import extract_gis
+from typology.typology import Typology
 from solar_panel.pv_panel_technology import PvPanelTechnology
 
-from libraries_addons.solar_panels.useful_functions_solar_panel import load_panels_on_sensor_grid, \
-    loop_over_the_years_for_solar_panels, beginning_end_of_life_lca_results_in_lists, results_from_lists_to_dict, \
-    get_cumul_values, add_elements_of_two_lists, transform_to_linear_function, find_intersection_functions, \
-    generate_step_function
+from utils.utils_configuration import name_urban_canopy_export_file_pkl, name_urban_canopy_export_file_json, \
+    name_radiation_simulation_folder
 
-# Default values
-default_minimum_vf_criterion_for_shadow_calculation = 0.01  # minimum view factor between surfaces to be considered
-# as context surfaces in the first pass of the algorithm for shading computation
 
 class UrbanCanopy:
 
@@ -75,7 +54,7 @@ class UrbanCanopy:
         # Turn certain attribute HB objects into dictionary to enable pickling (see the function)
         self.pickle_building_HB_attributes()
         # Write pkl file
-        with open(os.path.join(path_folder_simulation, urban_canopy_export_file_name_pkl), 'wb') as pkl_file:
+        with open(os.path.join(path_folder_simulation, name_urban_canopy_export_file_pkl), 'wb') as pkl_file:
             pickle.dump(self, pkl_file)
 
     def export_urban_canopy_to_json(self, path_folder_simulation):
@@ -83,7 +62,7 @@ class UrbanCanopy:
         # Transform the data from the urban canopy in the json dictionary
         self.write_json_dictionary(path_folder_simulation=path_folder_simulation)
         # Write json file
-        with open(os.path.join(path_folder_simulation, urban_canopy_export_file_name_json), 'w') as json_file:
+        with open(os.path.join(path_folder_simulation, name_urban_canopy_export_file_json), 'w') as json_file:
             json.dump(self.json_dict, json_file)
 
     def reinitialize_json_dict(self):
@@ -96,11 +75,13 @@ class UrbanCanopy:
     def write_json_dictionary(self, path_folder_simulation):
         """ Create a dictionary which will contain certain useful attributes of the urban canopy and the buildings """
         # Add buildings and list of buildings to the json dictionary
-        UrbanCanopyAdditionalFunction.add_buildings_and_list_of_buildings_to_json_dict(json_dict=self.json_dict,
-                                                                                       building_dict=self.building_dict)
+        UrbanCanopyAdditionalFunction.add_buildings_and_list_of_buildings_to_json_dict(
+            json_dict=self.json_dict,
+            building_dict=self.building_dict)
         # Add building envelop and model (room)
-        UrbanCanopyAdditionalFunction.add_building_HB_models_and_envelop_to_json_dict(json_dict=self.json_dict,
-                                                                                      building_dict=self.building_dict)
+        UrbanCanopyAdditionalFunction.add_building_HB_models_and_envelop_to_json_dict(
+            json_dict=self.json_dict,
+            building_dict=self.building_dict)
         # add the various attributes of the buildings to the json dictionary
         UrbanCanopyAdditionalFunction.add_building_attributes_to_json_dict(json_dict=self.json_dict,
                                                                            building_dict=self.building_dict)
@@ -112,8 +93,9 @@ class UrbanCanopy:
 
     def generate_building_envelop_and_add_it_to_json_dict(self):
         """"""
-        UrbanCanopyAdditionalFunction.add_hb_model_of_urban_canopy_envelop_to_json_dict(json_dict=self.json_dict,
-                                                                                        building_dict=self.building_dict)
+        UrbanCanopyAdditionalFunction.add_hb_model_of_urban_canopy_envelop_to_json_dict(
+            json_dict=self.json_dict,
+            building_dict=self.building_dict)
 
     def load_typologies(self, typology_folder_path):
         """ Load the typologies from the folder
@@ -127,7 +109,8 @@ class UrbanCanopy:
         # loop through the typology folders list
         for typology in typology_folders_list:
             path_to_typology = os.path.join(typology_folder_path, typology)  # path to the given typology
-            typology_obj = Typology.from_json(path_to_typology)  # make typology object from the json file in the folder
+            typology_obj = Typology.from_json(
+                path_to_typology)  # make typology object from the json file in the folder
             # todo: have a tuple as a key, ex: (year, shape_type), and the year might even be an interval,
             # key_tuple = (key, year)
             # where is the keys list or where can I get the value of the key
@@ -159,23 +142,30 @@ class UrbanCanopy:
         for building in self.building_dict.values():
             if type(building) is BuildingModeled:
                 path_building = os.path.join(path_folder, 'Radiation Simulation', building.id)
-                if building.sensor_grid_dict['Roof'] is not None and building.sensor_grid_dict['Facades'] is not None:
-                    path_building_roof_values = os.path.join(path_building, 'Roof', 'annual_radiation_values.txt')
-                    path_building_facades_values = os.path.join(path_building, 'Facades', 'annual_radiation_values.txt')
+                if building.sensor_grid_dict['Roof'] is not None and building.sensor_grid_dict[
+                    'Facades'] is not None:
+                    path_building_roof_values = os.path.join(path_building, 'Roof',
+                                                             'annual_radiation_values.txt')
+                    path_building_facades_values = os.path.join(path_building, 'Facades',
+                                                                'annual_radiation_values.txt')
                     building_attributes_dict = {'SensorGrid_dict': building.sensor_grid_dict,
                                                 'HB_model_dict': building.HB_model_dict,
                                                 'path_values_roof': path_building_roof_values,
                                                 'path_values_facades': path_building_facades_values}
 
-                elif building.sensor_grid_dict['Roof'] is not None and building.sensor_grid_dict['Facades'] is None:
-                    path_building_roof_values = os.path.join(path_building, 'Roof', 'annual_radiation_values.txt')
+                elif building.sensor_grid_dict['Roof'] is not None and building.sensor_grid_dict[
+                    'Facades'] is None:
+                    path_building_roof_values = os.path.join(path_building, 'Roof',
+                                                             'annual_radiation_values.txt')
                     building_attributes_dict = {'SensorGrid_dict': building.sensor_grid_dict,
                                                 'HB_model_dict': building.HB_model_dict,
                                                 'path_values_roof': path_building_roof_values,
                                                 'path_values_facades': None}
 
-                elif building.sensor_grid_dict['Roof'] is None and building.sensor_grid_dict['Facades'] is not None:
-                    path_building_facades_values = os.path.join(path_building, 'Facades', 'annual_radiation_values.txt')
+                elif building.sensor_grid_dict['Roof'] is None and building.sensor_grid_dict[
+                    'Facades'] is not None:
+                    path_building_facades_values = os.path.join(path_building, 'Facades',
+                                                                'annual_radiation_values.txt')
                     building_attributes_dict = {'SensorGrid_dict': building.sensor_grid_dict,
                                                 'HB_model_dict': building.HB_model_dict,
                                                 'path_values_roof': None,
@@ -248,7 +238,8 @@ class UrbanCanopy:
             # create the building object
             building_id_list, building_obj_list = BuildingBasic.make_buildingbasic_from_GIS(self, shape_file,
                                                                                             building_index_in_GIS,
-                                                                                            building_id_key_gis, unit)
+                                                                                            building_id_key_gis,
+                                                                                            unit)
             # add the building to the urban canopy
             if building_obj_list is not None:
                 self.add_list_of_buildings_to_dict(building_id_list, building_obj_list)
@@ -293,8 +284,9 @@ class UrbanCanopy:
 
         :return:
         """
-        UrbanCanopyAdditionalFunction.add_hb_model_of_urban_canopy_envelop_to_json_dict(json_dict=self.json_dict,
-                                                                                        building_dict=self.building_dict)
+        UrbanCanopyAdditionalFunction.add_hb_model_of_urban_canopy_envelop_to_json_dict(
+            json_dict=self.json_dict,
+            building_dict=self.building_dict)
 
     def make_HB_model_envelops_from_buildings(self, path_folder=None):
         """ Make the hb model for the building envelop and save it to hbjson file if the path is provided """
@@ -304,12 +296,14 @@ class UrbanCanopy:
         for building in self.building_dict.values():
             if type(building) is BuildingBasic:  # Make an HB room by extruding the footprint
                 HB_room_envelop_list.append(building.export_building_to_elevated_HB_room_envelop())
-            elif type(building) is BuildingModeled:  # Extract the rooms from the HB model attribute of the building
+            elif type(
+                    building) is BuildingModeled:  # Extract the rooms from the HB model attribute of the building
                 for HB_room in building.HB_model_obj.rooms:
                     HB_room_envelop_list.append(HB_room)
         # additional cleaning of the colinear vertices, might not be necessary
         for room in HB_room_envelop_list:
-            room.remove_colinear_vertices_envelope(tolerance=self.tolerance_default_value, delete_degenerate=True)
+            room.remove_colinear_vertices_envelope(tolerance=self.tolerance_default_value,
+                                                   delete_degenerate=True)
         # Make the hb model
         HB_model = Model(identifier="urban_canopy_building_envelops", rooms=HB_room_envelop_list,
                          tolerance=self.tolerance_default_value)
@@ -334,7 +328,8 @@ class UrbanCanopy:
             if building_obj.to_simulate:
                 building_obj.initialize_shading_context_obj()
 
-    def perform_first_pass_context_filtering_on_buildings(self, building_id_list=None, on_building_to_simulate=True):
+    def perform_first_pass_context_filtering_on_buildings(self, building_id_list=None,
+                                                          on_building_to_simulate=True):
         """
         Perform the first pass context filtering on the BuildingModeled objects in the urban canopy that need to be simulated.
         :param building_id_list: list of str, the list of building id to perform the first pass context filtering on.
@@ -356,7 +351,8 @@ class UrbanCanopy:
         return context_building_id_list
 
     def convert_list_of_buildings_to_BuildingModeled(self, building_id_list_to_convert_to_BuildingModeled,
-                                                     automatic_floor_subdivision=False, layout_from_typology=False,
+                                                     automatic_floor_subdivision=False,
+                                                     layout_from_typology=False,
                                                      properties_from_typology=False,
                                                      are_target=False, are_simulated=False):
         """
@@ -374,11 +370,11 @@ class UrbanCanopy:
             building_obj = self.building_dict[building_id]
             self.building_dict[building_id] = BuildingModeled.convert_building_to_BuildingModeled(
                 building_obj=building_obj, is_target=are_target, is_simulated=are_simulated,
-                layout_from_typology=layout_from_typology, automatic_floor_subdivision=automatic_floor_subdivision,
+                layout_from_typology=layout_from_typology,
+                automatic_floor_subdivision=automatic_floor_subdivision,
                 properties_from_typology=properties_from_typology)
 
-    def perform_context_filtering_for_shading_on_buildingmodeled_to_simulate(self,
-                                                                             minimum_vf_criterion=default_minimum_vf_criterion_context_filter_first_pass_shading):
+    def perform_context_filtering_for_shading_on_buildingmodeled_to_simulate(self, minimum_vf_criterion):
         """
         Perform the context filtering on the BuildingModeled objects in the urban canopy that need to be simulated.
 
@@ -411,7 +407,8 @@ class UrbanCanopy:
         """
         # todo @Elie: test the function
         # Make list of all the LB_Polyface3D_extruded_footprint of the buildings in the urban canopy
-        list_of_building_LB_Polyface3D_extruded_footprint = [building.LB_polyface3d_extruded_footprint for building in
+        list_of_building_LB_Polyface3D_extruded_footprint = [building.LB_polyface3d_extruded_footprint for
+                                                             building in
                                                              self.building_dict.values()]
         # Convert to Pyvista Polydata
         # todo @Elie: add the mport and finish the function
@@ -432,8 +429,9 @@ class UrbanCanopy:
         """ Move the buildings to the origin if the the urban canopy has not already been moved to the origin"""
         # Check if the the urban canopy has already been moved to the origin
         if self.moving_vector_to_origin is not None:
-            logging.info("The urban canopy has already been moved to the origin, the building will be moved back and"
-                         " then moved again to the origin with the new buildings")
+            logging.info(
+                "The urban canopy has already been moved to the origin, the building will be moved back and"
+                " then moved again to the origin with the new buildings")
             # Move back the buildings to their original position
             self.move_back_buildings()
         # Compute the moving vector
@@ -453,7 +451,7 @@ class UrbanCanopy:
     def radiation_simulation_urban_canopy(self, path_folder_simulation, path_weather_file, list_id, grid_size,
                                           offset_dist, on_roof, on_facades):
         path_folder_radiation_simulation = os.path.join(path_folder_simulation,
-                                                        default_name_radiation_simulation_folder)
+                                                        name_radiation_simulation_folder)
         for building in self.building_dict.values():  # for every building in the urban canopy
             if list_id is None:
                 if type(building) is BuildingModeled and building.is_target:
@@ -471,7 +469,8 @@ class UrbanCanopy:
                         values_facades = building.solar_radiations(str(building.id), path_folder_building,
                                                                    path_weather_file, grid_size, offset_dist,
                                                                    on_roof=False)
-                        name_file = os.path.join(path_folder_building, 'Facades', 'annual_radiation_values.txt')
+                        name_file = os.path.join(path_folder_building, 'Facades',
+                                                 'annual_radiation_values.txt')
                         with open(name_file, 'w') as f:
                             tmp = (','.join(str(n) for n in values_facades[0]))
                             f.write('{}'.format(tmp))
@@ -489,7 +488,8 @@ class UrbanCanopy:
                         values_facades = building.solar_radiations(str(building.id), path_folder_building,
                                                                    path_weather_file, grid_size, offset_dist,
                                                                    on_roof=False)
-                        name_file = os.path.join(path_folder_building, 'Facades', 'annual_radiation_values.txt')
+                        name_file = os.path.join(path_folder_building, 'Facades',
+                                                 'annual_radiation_values.txt')
                         with open(name_file, 'w') as f:
                             tmp = (','.join(str(n) for n in values_facades[0]))
                             f.write('{}'.format(tmp))
@@ -509,7 +509,8 @@ class UrbanCanopy:
                         values_facades = building.solar_radiations(str(building.id), path_folder_building,
                                                                    path_weather_file
                                                                    , grid_size, offset_dist, on_roof=False)
-                        name_file = os.path.join(path_folder_building, 'Facades', 'annual_radiation_values.txt')
+                        name_file = os.path.join(path_folder_building, 'Facades',
+                                                 'annual_radiation_values.txt')
                         with open(name_file, 'w') as f:
                             tmp = (','.join(str(n) for n in values_facades[0]))
                             f.write('{}'.format(tmp))
@@ -528,7 +529,8 @@ class UrbanCanopy:
                         values_facades = building.solar_radiations(str(building.id), path_folder_building,
                                                                    path_weather_file
                                                                    , grid_size, offset_dist, on_roof=False)
-                        name_file = os.path.join(path_folder_building, 'Facades', 'annual_radiation_values.txt')
+                        name_file = os.path.join(path_folder_building, 'Facades',
+                                                 'annual_radiation_values.txt')
                         with open(name_file, 'w') as f:
                             tmp = (','.join(str(n) for n in values_facades[0]))
                             f.write('{}'.format(tmp))
@@ -548,7 +550,8 @@ class UrbanCanopy:
         return list_id
 
     def run_panel_simulation(self, path_folder_simulation, path_pv_tech_dictionary_json, id_pv_tech_roof,
-                             id_pv_tech_facades, minimum_ratio_energy_harvested_on_primary_energy, performance_ratio,
+                             id_pv_tech_facades, minimum_ratio_energy_harvested_on_primary_energy,
+                             performance_ratio,
                              study_duration_in_years,
                              replacement_scenario, **kwargs):
         """
@@ -569,10 +572,12 @@ class UrbanCanopy:
 
         for building in self.building_dict.values():  # for every building in the urban canopy
             if type(building) is BuildingModeled and building.is_target:
-                path_folder_building = os.path.join(path_folder_simulation, default_name_radiation_simulation_folder,
+                path_folder_building = os.path.join(path_folder_simulation,
+                                                    name_radiation_simulation_folder,
                                                     building.id)
                 building.panel_simulation_building(path_folder_building, pv_tech_dictionary, id_pv_tech_roof,
-                                                   id_pv_tech_facades, minimum_ratio_energy_harvested_on_primary_energy,
+                                                   id_pv_tech_facades,
+                                                   minimum_ratio_energy_harvested_on_primary_energy,
                                                    performance_ratio,
                                                    study_duration_in_years, replacement_scenario, **kwargs)
 
@@ -582,12 +587,13 @@ class UrbanCanopy:
                 if building.results_panels["Roof"] and building.results_panels["Facades"] and \
                         building.results_panels["Total"]:
                     path_folder_simulation_building = os.path.join(path_folder_simulation,
-                                                                   default_name_radiation_simulation_folder,
+                                                                   name_radiation_simulation_folder,
                                                                    building.id)
                     building.plot_panels_energy_results(path_folder_simulation_building, study_duration_years)
                     building.plot_panels_ghg_results(path_folder_simulation_building, study_duration_years,
                                                      country_ghe_cost)
-                    building.plot_panels_results_ghe_per_kwh(path_folder_simulation_building, study_duration_years)
+                    building.plot_panels_results_ghe_per_kwh(path_folder_simulation_building,
+                                                             study_duration_years)
                     building.plot_panels_results_eroi(path_folder_simulation_building, study_duration_years)
 
     def plot_graphs_urban_canopy(self, path_folder_simulation, study_duration_years, country_ghe_cost):
@@ -596,15 +602,18 @@ class UrbanCanopy:
         carbon_data = UrbanCanopyAdditionalFunction.get_carbon_data_from_all_buildings(self.building_dict,
                                                                                        country_ghe_cost)
 
-        cum_energy_harvested_roof_uc, cum_energy_harvested_facades_uc, cum_energy_harvested_total_uc = energy_data[0], \
-            energy_data[1], energy_data[2]
-        cum_primary_energy_roof_uc, cum_primary_energy_facades_uc, cum_primary_energy_total_uc = energy_data[3], \
+        cum_energy_harvested_roof_uc, cum_energy_harvested_facades_uc, cum_energy_harvested_total_uc = \
+            energy_data[0], \
+                energy_data[1], energy_data[2]
+        cum_primary_energy_roof_uc, cum_primary_energy_facades_uc, cum_primary_energy_total_uc = energy_data[
+            3], \
             energy_data[4], energy_data[5]
 
         cum_avoided_carbon_emissions_roof_uc, cum_avoided_carbon_emissions_facades_uc, \
             cum_avoided_carbon_emissions_total_uc = carbon_data[0], carbon_data[1], carbon_data[2]
-        cum_carbon_emissions_roof_uc, cum_carbon_emissions_facades_uc, cum_carbon_emissions_total_uc = carbon_data[3], \
-            carbon_data[4], carbon_data[5]
+        cum_carbon_emissions_roof_uc, cum_carbon_emissions_facades_uc, cum_carbon_emissions_total_uc = \
+            carbon_data[3], \
+                carbon_data[4], carbon_data[5]
 
         years = list(range(study_duration_years))
 
@@ -612,7 +621,8 @@ class UrbanCanopy:
                                                              cum_energy_harvested_roof_uc,
                                                              cum_energy_harvested_facades_uc,
                                                              cum_energy_harvested_total_uc,
-                                                             cum_primary_energy_roof_uc, cum_primary_energy_facades_uc,
+                                                             cum_primary_energy_roof_uc,
+                                                             cum_primary_energy_facades_uc,
                                                              cum_primary_energy_total_uc)
 
         UrbanCanopyAdditionalFunction.plot_carbon_results_uc(path_folder_simulation, years,
@@ -627,5 +637,6 @@ class UrbanCanopy:
                                                           cum_energy_harvested_total_uc,
                                                           cum_carbon_emissions_total_uc)
 
-        UrbanCanopyAdditionalFunction.plot_results_eroi_uc(path_folder_simulation, years, cum_primary_energy_total_uc,
+        UrbanCanopyAdditionalFunction.plot_results_eroi_uc(path_folder_simulation, years,
+                                                           cum_primary_energy_total_uc,
                                                            cum_energy_harvested_total_uc)

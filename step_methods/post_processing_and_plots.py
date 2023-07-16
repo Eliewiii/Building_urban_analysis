@@ -2,9 +2,9 @@
 
 """
 
-from mains_tool.utils_general import *
-from urban_canopy_pack.utils_urban_canopy import *
+import logging
 
+from urban_canopy_pack.urban_canopy_additional_functions import UrbanCanopyAdditionalFunction
 
 class SimulationPostProcessingAndPlots:
     """ todo @Elie"""

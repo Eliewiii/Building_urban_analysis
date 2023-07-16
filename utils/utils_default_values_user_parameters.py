@@ -9,9 +9,6 @@ from utils.utils_configuration import path_tool, path_simulation_temp_folder, pa
 # Default path to the simulation folder
 default_path_folder_simulation = path_simulation_temp_folder
 
-# Ladybug, Honeybee and Dragonfly
-lb_hb_df_tolerance_value = 0.01
-
 # ???
 default_move_buildings_to_origin = False
 default_make_hb_model_envelops = False
@@ -34,10 +31,18 @@ default_unit_gis = "m"
 # EPW weather file
 default_path_weather_file = os.path.join(path_tool, "Libraries", "EPW", "IS_5280_A_Haifa.epw")
 
+# Creation of BuildingModeled objects
+default_automatic_floor_subdivision_for_new_BuildingModeled = False
+default_use_layout_from_typology_for_new_BuildingModeled = False
+default_use_properties_from_typology_for_new_BuildingModeled = False
+default_make_new_BuildingModeled_simulated = False
+
 # Default values for the simulations - Context filter
 default_mvfc_context_shading_selection = 0.01
 default_mvfc_context_lwr_selection = 0.001
 default_shading_number_of_rays_context_filter_second_pass = 3
+default_perform_context_filtering_on_building_to_simulate = True
+
 
 # Default values for the simulations - Solar radiation calculation
 default_name_radiation_simulation_folder = 'Radiation Simulation'

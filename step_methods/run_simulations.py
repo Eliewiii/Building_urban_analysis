@@ -1,28 +1,32 @@
-from mains_tool.utils_general import *
+import logging
 
 
 class SolarOrPanelSimulation:
 
     @staticmethod
-    def solar_radiation_simulation(urban_canopy_object, path_folder_simulation, path_weather_file, list_id, grid_size,
-                                   offset_dist, on_roof, on_facades):
+    def solar_radiation_simulation(urban_canopy_object, path_folder_simulation, path_weather_file, list_id,
+                                   grid_size, offset_dist, on_roof, on_facades):
         """
         Run solar radiation simulation
         """
 
-        urban_canopy_object.radiation_simulation_urban_canopy(path_folder_simulation, path_weather_file, list_id,
-                                                              grid_size, offset_dist, on_roof, on_facades)
+        urban_canopy_object.radiation_simulation_urban_canopy(path_folder_simulation, path_weather_file,
+                                                              list_id, grid_size, offset_dist, on_roof,
+                                                              on_facades)
         logging.info("The solar radiation simulation was run on the buildings of the urban canopy")
 
     @staticmethod
-    def panel_simulation(urban_canopy_object, path_folder_simulation, path_pv_tech_dictionary_json, id_pv_tech_roof,
-                         id_pv_tech_facades, minimum_ratio_energy_harvested_on_primary_energy, performance_ratio,
-                         study_duration_in_years, replacement_scenario, **kwargs):
+    def panel_simulation(urban_canopy_object, path_folder_simulation, path_pv_tech_dictionary_json,
+                         id_pv_tech_roof, id_pv_tech_facades,
+                         minimum_ratio_energy_harvested_on_primary_energy,
+                         performance_ratio, study_duration_in_years, replacement_scenario, **kwargs):
         """
         Run panel simulation
         """
 
-        urban_canopy_object.run_panel_simulation(path_folder_simulation, path_pv_tech_dictionary_json, id_pv_tech_roof,
-                                                 id_pv_tech_facades, minimum_ratio_energy_harvested_on_primary_energy,
-                                                 performance_ratio, study_duration_in_years, replacement_scenario, **kwargs)
+        urban_canopy_object.run_panel_simulation(path_folder_simulation, path_pv_tech_dictionary_json,
+                                                 id_pv_tech_roof, id_pv_tech_facades,
+                                                 minimum_ratio_energy_harvested_on_primary_energy,
+                                                 performance_ratio, study_duration_in_years,
+                                                 replacement_scenario, **kwargs)
         logging.info("The panel simulation was run on the buildings of the urban canopy")

@@ -17,8 +17,10 @@ from honeybee.boundarycondition import Outdoors
 import dragonfly
 from dragonfly.building import Building
 
+from utils.utils_constants import TOLERANCE_LBT
 
-from libraries_addons.utils_libraries_addons import default_tolerance,default_elevation,default_height
+default_elevation = 0.
+default_height = 9.
 
 # todo : for some rreason, the following import is necessary for _orient_geometry to work
 
@@ -30,7 +32,7 @@ def make_shapely_polygon_from_LB_face(LB_face):
     return Polygon(list_tuple_vertices_2d)
 
 
-def make_LB_face_from_shapely_polygon(polygon, tolerance=default_tolerance):
+def make_LB_face_from_shapely_polygon(polygon, tolerance=TOLERANCE_LBT):
     """Convert a Ladybug Face to a Shapely Polygon."""
     # convert vertices into tuples
     point_list_outline = [list(point) for point in polygon.exterior.__geo_interface__['coordinates']]

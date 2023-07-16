@@ -1,7 +1,5 @@
-try:
-    from lbt_recipes.settings import RecipeSettings
-except ImportError as e:
-    raise ImportError('\nFailed to import lbt_recipes:\n\t{}'.format(e))
+from lbt_recipes.settings import RecipeSettings
+
 
 
 def hb_recipe_settings(path_folder, workers=None, reload_old=True, report_out=False):

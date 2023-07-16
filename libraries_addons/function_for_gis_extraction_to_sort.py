@@ -6,12 +6,11 @@ from math import sqrt
 from ladybug_geometry.geometry3d.pointvector import Point3D
 from ladybug_geometry.geometry3d.face import Face3D
 
-
-from libraries_addons.utils_libraries_addons import default_tolerance
+from utils.utils_constants import TOLERANCE_LBT
 
 tolerance_redundant_vertices = 0.5
 
-def polygon_to_LB_footprint(polygon_obj, unit, tolerance=default_tolerance):
+def polygon_to_LB_footprint(polygon_obj, unit, tolerance=TOLERANCE_LBT):
     """
         Transform a Polygon object to a Ladybug footprint.
         Args:

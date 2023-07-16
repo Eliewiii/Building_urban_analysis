@@ -2,20 +2,25 @@
 Common methods to most of the simulations
 """
 
-from mains_tool.utils_general import *
-from step_methods.utils_step_methods import *
+import os
+import logging
+
+from urban_canopy_pack.urban_canopy import UrbanCanopy
+from utils.utils_configuration import path_simulation_temp_folder,name_gh_components_logs_folder,name_temporary_files_folder
+
+
 
 class SimulationCommonMethods:
     # todo @Sharon: should we really make global variables?, can it interfere with some parameters with the same name
     @staticmethod
-    def make_simulation_folder(path_folder_simulation):
+    def make_simulation_folder(path_folder_simulation = path_simulation_temp_folder):
         """ #todo @Elie"""
         # make simulation folder
         os.makedirs(path_folder_simulation, exist_ok=True)
         # make the folder that will contain the logs of the simulation for the components in Grasshopper
-        os.makedirs(os.path.join(path_folder_simulation,name_folder_gh_components_logs), exist_ok=True)
+        os.makedirs(os.path.join(path_folder_simulation,name_gh_components_logs_folder), exist_ok=True)
         # make the folder that will contain the temporary files of the simulation
-        os.makedirs(os.path.join(path_folder_simulation,name_folder_temporary_files), exist_ok=True)
+        os.makedirs(os.path.join(path_folder_simulation,name_temporary_files_folder), exist_ok=True)
 
 
     @staticmethod
