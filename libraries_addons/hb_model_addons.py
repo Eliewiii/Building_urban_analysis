@@ -5,7 +5,7 @@ Additional functions to apply on honeybee model
 import logging
 
 # Dragonfly
-import dragonfly.building as Building
+from dragonfly.building import Building
 # Honeybee
 from honeybee.room import Room
 from honeybee_energy.lib.constructionsets import construction_set_by_identifier
