@@ -14,8 +14,8 @@ from libraries_addons.hb_rooms_addons import RoomsAddons
 from libraries_addons.function_for_gis_extraction_to_sort import polygon_to_LB_footprint,add_additional_attribute_keys_to_dict
 
 
-user_logger = logging.getLogger("user")  # f"{__name__} user"
-dev_logger = logging.getLogger("dev")  # f"{__name__} dev"
+user_logger = logging.getLogger("user")  
+dev_logger = logging.getLogger("dev")  
 
 default_gis_attribute_key_dict = {
     "building_id_key_gis": "none",

@@ -9,8 +9,8 @@ import json
 from utils.utils_default_values_user_parameters import default_path_gis, default_unit_gis, \
     default_building_id_key_gis
 
-user_logger = logging.getLogger("user")  # f"{__name__} user"
-dev_logger = logging.getLogger("dev")  # f"{__name__} dev"
+user_logger = logging.getLogger("user")  
+dev_logger = logging.getLogger("dev")  
 
 
 class SimulationLoadBuildingOrGeometry:

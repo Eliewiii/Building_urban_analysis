@@ -10,8 +10,8 @@ from solar_panel.pv_panel import PvPanel
 import csv
 from libraries_addons.solar_panels.pv_efficiency_functions import get_efficiency_loss_function_from_string
 
-user_logger = logging.getLogger("user")  # f"{__name__} user"
-dev_logger = logging.getLogger("dev")  # f"{__name__} dev"
+user_logger = logging.getLogger("user")  
+dev_logger = logging.getLogger("dev")  
 
 def load_panels_on_sensor_grid(sensor_grid, pv_technology_object, yearly_solar_radiation_values,
                                minimum_ratio_energy_harvested_on_primary_energy, performance_ratio):

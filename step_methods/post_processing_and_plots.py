@@ -6,8 +6,8 @@ import logging
 
 from urban_canopy_pack.urban_canopy_additional_functions import UrbanCanopyAdditionalFunction
 
-user_logger = logging.getLogger("user")  # f"{__name__} user"
-dev_logger = logging.getLogger("dev")  # f"{__name__} dev"
+user_logger = logging.getLogger("user")  
+dev_logger = logging.getLogger("dev")  
 
 
 class SimulationPostProcessingAndPlots:

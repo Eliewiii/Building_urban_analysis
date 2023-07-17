@@ -3,8 +3,8 @@
 """
 from generate_ML_data.sample_and_test_data import *
 
-user_logger = logging.getLogger("user")  # f"{__name__} user"
-dev_logger = logging.getLogger("dev")  # f"{__name__} dev"
+user_logger = logging.getLogger("user")  
+dev_logger = logging.getLogger("dev")  
 
 
 def generate_sample_ml(building_type, training_or_test):
