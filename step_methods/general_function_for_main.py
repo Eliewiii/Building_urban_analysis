@@ -8,8 +8,8 @@ import logging
 from urban_canopy_pack.urban_canopy import UrbanCanopy
 from utils.utils_configuration import path_simulation_temp_folder,name_gh_components_logs_folder,name_temporary_files_folder
 
-user_logger = logging.getLogger("user")  # f"{__name__} user"
-dev_logger = logging.getLogger("dev")  # f"{__name__} dev"
+user_logger = logging.getLogger("user")  
+dev_logger = logging.getLogger("dev")  
 
 class SimulationCommonMethods:
     # todo @Sharon: should we really make global variables?, can it interfere with some parameters with the same name

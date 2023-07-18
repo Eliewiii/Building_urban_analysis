@@ -5,8 +5,8 @@ todo: adapt the code to the new structure of the tool
 import os
 import logging
 
-user_logger = logging.getLogger("user")  # f"{__name__} user"
-dev_logger = logging.getLogger("dev")  # f"{__name__} dev"
+user_logger = logging.getLogger("user")  
+dev_logger = logging.getLogger("dev")  
 
 import json
 from enum import Enum
