@@ -3,7 +3,7 @@ Additional methods for the Urban_canopy class.
 Deals with the context filtering
 """
 
-from Elie.utils import *
+from Other.Elie.utils import *
 
 dev_logger = logging.getLogger("dev")
 user_logger = logging.getLogger("user")

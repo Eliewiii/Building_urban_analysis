@@ -1,7 +1,7 @@
 """
 test, add building HB model to Urban Canopy
 """
-from Elie.utils import *
+from Other.Elie.utils import *
 
 '''
 # Inputs

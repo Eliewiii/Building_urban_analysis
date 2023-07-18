@@ -2,7 +2,7 @@
 
 """
 from libraries_addons.utils_libraries_addons import *
-from Elie.context_filter_algorithm.utils_context_filter import *
+from Other.Elie.context_filter_algorithm.utils_context_filter import *
 
 from mains_tool.utils_general import default_number_of_rays_context_filter_second_pass
 

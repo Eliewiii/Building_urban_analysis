@@ -29,11 +29,11 @@ try:  # import the honeybee-radiance dependencies
 except ImportError as e:
     raise ImportError('\nFailed to import honeybee_radiance:\n\t{}'.format(e))
 
-from Hilany.component_GH.HB_model_to_HB_SensorGrid_facades import hb_model_to_hb_SensorGrid_facades
-from Hilany.component_GH.HB_model_to_HB_SensorGrid_roofs import hb_model_to_hb_SensorGrid_roofs
-from Hilany.component_GH.HB_Annual_Irradiance_Simulation import hb_ann_irr_sim
+from Other.Hilany.component_GH.HB_model_to_HB_SensorGrid_facades import hb_model_to_hb_SensorGrid_facades
+from Other.Hilany.component_GH.HB_model_to_HB_SensorGrid_roofs import hb_model_to_hb_SensorGrid_roofs
+from Other.Hilany.component_GH.HB_Annual_Irradiance_Simulation import hb_ann_irr_sim
 from libraries_addons.solar_radiations.hb_recipe_settings import hb_recipe_settings
-from Hilany.component_GH.HB_Annual_Cumulative_Values import hb_ann_cum_values
+from Other.Hilany.component_GH.HB_Annual_Cumulative_Values import hb_ann_cum_values
 
 # Import EPW, context, hb model
 
