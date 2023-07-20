@@ -11,15 +11,15 @@ from step_methods.run_simulations import SolarOrPanelSimulation
 
 from utils.utils_configuration import name_gh_components_logs_folder
 
-user_logger = logging.getLogger("user")
-dev_logger = logging.getLogger("dev")
-user_logger.setLevel(logging.INFO)
-dev_logger.setLevel(logging.INFO)
-dev_handler = logging.FileHandler('dev_log.log')
-user_formatter = logging.Formatter('%(message)s')
-dev_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-dev_handler.setFormatter(dev_formatter)
-dev_logger.addHandler(dev_handler)
+# user_logger = logging.getLogger("user")
+# dev_logger = logging.getLogger("dev")
+# user_logger.setLevel(logging.INFO)
+# dev_logger.setLevel(logging.INFO)
+# dev_handler = logging.FileHandler('./dev_log.log')
+# user_formatter = logging.Formatter('%(message)s')
+# dev_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+# dev_handler.setFormatter(dev_formatter)
+# dev_logger.addHandler(dev_handler)
 
 def main():
 
@@ -37,10 +37,10 @@ def main():
         SimulationCommonMethods.make_simulation_folder(
             path_folder_simulation=arguments_dictionary["path_folder_simulation"])
 
-    # Create the log files for the user
-    user_handler = logging.FileHandler(os.path.join(arguments_dictionary['path_folder_simulation'],name_gh_components_logs_folder, arguments_dictionary['gh_component_name']+".log"))
-    user_handler.setFormatter(user_formatter)
-    user_logger.addHandler(user_handler)
+    # # Create the log files for the user
+    # user_handler = logging.FileHandler(os.path.join(arguments_dictionary['path_folder_simulation'],name_gh_components_logs_folder, arguments_dictionary['gh_component_name']+".log"))
+    # user_handler.setFormatter(user_formatter)
+    # user_logger.addHandler(user_handler)
 
     # Create or load urban canopy object
     if simulation_step_dictionary["run_create_or_load_urban_canopy_object"]:

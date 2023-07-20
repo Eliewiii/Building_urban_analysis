@@ -220,7 +220,7 @@ class UrbanCanopy:
             shape_file[building_id_key_gis]
         except KeyError:
             logging.error(
-                "The key {building_id_key_gis} is not an attribute of the shape file, the id will be generated automatically")
+                f"The key {building_id_key_gis} is not an attribute of the shape file, the id will be generated automatically")
 
             raise
             building_id_key_gis = None
