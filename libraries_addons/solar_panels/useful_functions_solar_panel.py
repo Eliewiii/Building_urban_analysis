@@ -148,6 +148,7 @@ def beginning_end_of_life_lca_results_in_lists(energy_production_per_year_list, 
     :return dmfa_list: list of floats: describes the dmfa caused by the failed panels, for each year
     :return lca_recycling_primary_energy_list: list of float: describes how much energy was used to recycle the panels having failed
     """
+    # todo: add comments
     panel_energy_craddle_to_installation = pv_tech.primary_energy_manufacturing + pv_tech.primary_energy_transport
     panel_carbon_craddle_to_installation = pv_tech.carbon_manufacturing + pv_tech.carbon_transport
     panel_dmfa = pv_tech.DMFA
@@ -180,7 +181,7 @@ def results_from_lists_to_dict(energy_production_per_year_list, craddle_to_insta
     :param lca_recycling_primary_energy_list: list of floats: describes how much energy is used to recycle the panels
     :return results_dict: dictionary containing all the data
     """
-
+    # todo: add comments
     results_dict = {}
     energy_harvested_dict = {"list": energy_production_per_year_list, "total": sum(energy_production_per_year_list)}
     lca_craddle_to_installation_primary_energy_dict = {"list": craddle_to_installation_primary_energy_list,

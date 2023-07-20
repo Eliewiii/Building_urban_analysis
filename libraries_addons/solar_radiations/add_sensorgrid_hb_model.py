@@ -1,6 +1,9 @@
 """
 todo
 """
+
+import logging
+
 from ladybug_geometry.geometry3d.mesh import Mesh3D
 from ladybug_geometry.geometry2d.mesh import Mesh2D
 from ladybug_geometry.geometry2d.polygon import Polygon2D
@@ -12,6 +15,9 @@ from honeybee.boundarycondition import Outdoors
 from honeybee.facetype import Wall, RoofCeiling
 from honeybee.typing import clean_and_id_rad_string, clean_rad_string
 from honeybee_radiance.sensorgrid import SensorGrid
+
+user_logger = logging.getLogger("user")
+dev_logger = logging.getLogger("dev")
 
 
 def is_facade(face):
@@ -249,10 +255,62 @@ def get_lb_mesh(faces, grid_size, offset_dist):
 
 def get_lb_mesh_BUA(faces, grid_size, offset_dist):
     """Create a Mesh3D from a list of HB faces"""
+    # todo @Elie, to delete and replace by the one with grid size on y direction
     lb_meshes = []
     for face in faces:
         try:
             lb_meshes.append(mesh_grid_BUA(face, grid_size, offset=offset_dist))
+        except AssertionError:  # tiny geometry not compatible with quad faces
+            continue
+    if len(lb_meshes) == 0:
+        lb_mesh = None
+    elif len(lb_meshes) == 1:
+        lb_mesh = lb_meshes[0]
+    else:  # which means : len(lb_meshes) > 1:
+        lb_mesh = Mesh3D.join_meshes(lb_meshes)
+    return lb_mesh
+
+
+def generate_sensorgrid_dict_on_hb_model(hb_model_obj, grid_size_x, grid_size_y, offset_dist, surface_type):
+    """
+    :param hb_model_obj: Honeybee Model object
+    :param grid_size_x: float : size of the grid in the x direction in meter
+    :param grid_size_y: float : size of the grid in the y direction in meter
+    :param offset_dist: float : offset distance on the border of the face to generate the mesh
+    :param surface_type: str : Surface type to generate the Sensorgrid on, either "Roof" or "Facade"
+
+    :return sensorgrid_dict:
+    """
+
+    if surface_type not in ["Roof", "Facade"]:
+        dev_logger.critical(f"the surface_type is either not specified or incorrect, please check")
+        # TODO @Ale, what to do to stop the program here
+    elif surface_type == "Roof":
+        hb_face_list = get_hb_faces_roof(hb_model_obj)
+    else:
+        hb_face_list = get_hb_faces_facades(hb_model_obj)
+
+    # generate Ladybug Mesh on the Honeybee Face
+    lb_mesh_obj = get_lb_mesh_BUA_grid_y(hb_face_list, grid_size_x, grid_size_y, offset_dist)
+    # Generate a SensorGrid object out of the mesh
+    sensor_grid_obj = create_sensor_grid_from_mesh(lb_mesh_obj)
+
+    return sensor_grid_obj.to_dict()
+
+
+
+def get_lb_mesh_BUA_grid_y(hb_face_list, grid_size_x, grid_size_y, offset_dist):
+    """
+    Create a Mesh3D from a list of HB faces
+    :param hb_face_list: list of Honeybee Face
+    :param grid_size_x: float : size of the grid in the x direction in meter
+    :param grid_size_y: float : size of the grid in the y direction in meter
+    :param offset_dist: float : offset distance on the border of the face to generate the mesh
+    """
+    lb_meshes = []
+    for face in hb_face_list:
+        try:
+            lb_meshes.append(mesh_grid_BUA(face, grid_size_x, grid_size_y, offset=offset_dist))
         except AssertionError:  # tiny geometry not compatible with quad faces
             continue
     if len(lb_meshes) == 0:
