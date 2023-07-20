@@ -21,39 +21,7 @@ dev_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 dev_handler.setFormatter(dev_formatter)
 dev_logger.addHandler(dev_handler)
 
-# TODO @Ale: delete this ?
-# logging.basicConfig(level=logging.ERROR, filename=f"{component_name}.log", filemode="w", format='%(asctime)s - %(levelname)s - %(message)s') # rewriting the log file everytime
-# # For user no date or time
-
-# logger = logging.getLogger("name") # convention is to use __name__ as name
-# logger.setLevel(logging.INFO)
-
-# handler = logging.FileHandler('test.log')
-
-# formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-# handler.setFormatter(formatter)
-# logger.addHandler(handler)
-
-
-# # Either use these or use the line above only once
-# logging.debug() # not log to console
-# logging.info() # not log to console
-# logging.warning() # logs to console
-# logging.error() # logs to console
-# logging.critical() # logs to console
-# exc_info=True
-# logging.exception()
-
 def main():
-    # Create the logs todo: @Elie, check with Sharon where to put them
-    # currentDirectory = os.getcwd()
-    # Logspath = "/logs"
-    # isExist = os.path.exists(currentDirectory + Logspath)
-    # if not isExist:
-    #    os.makedirs(currentDirectory + Logspath)
-    #
-    # LOG_FILENAME = datetime.now().strftime(currentDirectory + Logspath + '/logfile_%H_%M_%S_%d_%m_%Y.log')
-    # logging.basicConfig(filename=LOG_FILENAME, level=logging.INFO)
 
     # Get the user parameters from the command line
     parser = argparse.ArgumentParser()
@@ -62,12 +30,6 @@ def main():
     LoadArguments.add_user_simulation_features_to_parser(parser)
     arguments_dictionary, simulation_step_dictionary = LoadArguments.parse_arguments_and_add_them_to_variable_dict(
         parser)
-
-    # todo @Elie, check if to do it like this, a it creates global variables, or just use the dictionary as it is
-    # # Import the variables the arguments in the main script
-    # globals().update(arguments_dictionary)
-
-    # Run the simulations steps according to the user parameters
 
     # Initialization #
     # Make simulation folder
