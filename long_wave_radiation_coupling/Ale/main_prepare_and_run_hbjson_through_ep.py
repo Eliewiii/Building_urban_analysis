@@ -10,7 +10,7 @@ from long_wave_radiation_coupling.Ale.util_functions.simulaton_ep import run_idf
 
 # dir_to_write_idf_in = "C:\\Users\\elie-medioni\\OneDrive\\OneDrive - Technion\\BUA\\test_elie"  # Elie
 
-dir_to_write_idf_in = ""  # TODO @Ale, add the path to the directory where you want to write the idf file
+dir_to_write_idf_in = "C:\\Users\\alejandro.s\\Documents\\sim_ep"  # TODO @Ale, add the path to the directory where you want to write the idf file
 
 (path_osm, path_idf) = from_hbjson_to_idf(dir_to_write_idf_in, path_hbjson_file, path_epw_file,
                                           path_simulation_parameter)

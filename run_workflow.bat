@@ -1,0 +1,2 @@
+C:
+"C:\Program Files\ladybug_tools\openstudio\bin\openstudio.exe" -I "C:\Program Files\ladybug_tools\resources\measures\honeybee_openstudio_gem\lib" run -m -w "C:\Users\alejandro.s\AppData\Local\Building_urban_analysis\Scripts\workflow.osw"

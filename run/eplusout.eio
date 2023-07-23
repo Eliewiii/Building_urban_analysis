@@ -1,0 +1,178 @@
+Program Version,EnergyPlus, Version 23.1.0-87ed9199d4, YMD=2023.07.23 12:45
+! <Version>, Version ID
+ Version, 22.2
+! <Timesteps per Hour>, #TimeSteps, Minutes per TimeStep {minutes}
+ Timesteps per Hour,  6, 10
+! <System Convergence Limits>, Minimum System TimeStep {minutes}, Max HVAC Iterations, Minimum Plant Iterations, Maximum Plant Iterations
+ System Convergence Limits, 1, 20, 2, 8
+! <Simulation Control>, Do Zone Sizing, Do System Sizing, Do Plant Sizing, Do Design Days, Do Weather Simulation, Do HVAC Sizing Simulation
+ Simulation Control, Yes, Yes, Yes, No, Yes, No
+! <Performance Precision Tradeoffs>, Use Coil Direct Simulation, Zone Radiant Exchange Algorithm, Override Mode, Number of Timestep In Hour, Force Euler Method, Minimum Number of Warmup Days, Force Suppress All Begin Environment Resets, Minimum System Timestep, MaxZoneTempDiff, MaxAllowedDelTemp
+ Performance Precision Tradeoffs, No, ScriptF, Normal, 6, No, 1, No, 1.0, 0.300, 2.0000E-003
+! <Output Reporting Tolerances>, Tolerance for Time Heating Setpoint Not Met, Tolerance for Zone Cooling Setpoint Not Met Time
+ Output Reporting Tolerances, 0.200, 0.200, 
+! <Site:GroundTemperature:BuildingSurface>,Jan{C},Feb{C},Mar{C},Apr{C},May{C},Jun{C},Jul{C},Aug{C},Sep{C},Oct{C},Nov{C},Dec{C}
+ Site:GroundTemperature:BuildingSurface,  18.00,  18.00,  18.00,  18.00,  18.00,  18.00,  18.00,  18.00,  18.00,  18.00,  18.00,  18.00
+! <Site:GroundTemperature:FCfactorMethod>,Jan{C},Feb{C},Mar{C},Apr{C},May{C},Jun{C},Jul{C},Aug{C},Sep{C},Oct{C},Nov{C},Dec{C}
+ Site:GroundTemperature:FCfactorMethod,  15.51,  14.94,  15.94,  17.52,  21.64,  24.83,  26.97,  27.63,  26.51,  24.04,  20.74,  17.68
+! <Site:GroundTemperature:Shallow>,Jan{C},Feb{C},Mar{C},Apr{C},May{C},Jun{C},Jul{C},Aug{C},Sep{C},Oct{C},Nov{C},Dec{C}
+ Site:GroundTemperature:Shallow,  13.00,  13.00,  13.00,  13.00,  13.00,  13.00,  13.00,  13.00,  13.00,  13.00,  13.00,  13.00
+! <Site:GroundTemperature:Deep>,Jan{C},Feb{C},Mar{C},Apr{C},May{C},Jun{C},Jul{C},Aug{C},Sep{C},Oct{C},Nov{C},Dec{C}
+ Site:GroundTemperature:Deep,  16.00,  16.00,  16.00,  16.00,  16.00,  16.00,  16.00,  16.00,  16.00,  16.00,  16.00,  16.00
+! <Site:GroundReflectance>,Jan{dimensionless},Feb{dimensionless},Mar{dimensionless},Apr{dimensionless},May{dimensionless},Jun{dimensionless},Jul{dimensionless},Aug{dimensionless},Sep{dimensionless},Oct{dimensionless},Nov{dimensionless},Dec{dimensionless}
+ Site:GroundReflectance,  0.20,  0.20,  0.20,  0.20,  0.20,  0.20,  0.20,  0.20,  0.20,  0.20,  0.20,  0.20
+! <Site:GroundReflectance:SnowModifier>, Normal, Daylighting {dimensionless}
+ Site:GroundReflectance:SnowModifier,   1.000,   1.000
+! <Site:GroundReflectance:Snow>,Jan{dimensionless},Feb{dimensionless},Mar{dimensionless},Apr{dimensionless},May{dimensionless},Jun{dimensionless},Jul{dimensionless},Aug{dimensionless},Sep{dimensionless},Oct{dimensionless},Nov{dimensionless},Dec{dimensionless}
+ Site:GroundReflectance:Snow,  0.20,  0.20,  0.20,  0.20,  0.20,  0.20,  0.20,  0.20,  0.20,  0.20,  0.20,  0.20
+! <Site:GroundReflectance:Snow:Daylighting>,Jan{dimensionless},Feb{dimensionless},Mar{dimensionless},Apr{dimensionless},May{dimensionless},Jun{dimensionless},Jul{dimensionless},Aug{dimensionless},Sep{dimensionless},Oct{dimensionless},Nov{dimensionless},Dec{dimensionless}
+ Site:GroundReflectance:Snow:Daylighting,  0.20,  0.20,  0.20,  0.20,  0.20,  0.20,  0.20,  0.20,  0.20,  0.20,  0.20,  0.20
+! <Environment:Weather Station>,Wind Sensor Height Above Ground {m},Wind Speed Profile Exponent {},Wind Speed Profile Boundary Layer Thickness {m},Air Temperature Sensor Height Above Ground {m},Wind Speed Modifier Coefficient-Internal,Temperature Modifier Coefficient-Internal
+Environment:Weather Station,10.000,0.140,270.000,1.500,1.586,9.750E-003
+! <Site:Location>, Location Name, Latitude {N+/S- Deg}, Longitude {E+/W- Deg},  Time Zone Number {GMT+/-}, Elevation {m},  Standard Pressure at Elevation {Pa}, Standard RhoAir at Elevation
+Site:Location,Haifa.AP Z ISR SRC-TMYx WMO#=401550,32.80,35.05,2.00,8.50,101223,1.2031
+! <Site Water Mains Temperature Information>,Calculation Method{},Water Mains Temperature Schedule Name{},Annual Average Outdoor Air Temperature{C},Maximum Difference In Monthly Average Outdoor Air Temperatures{deltaC},Fixed Default Water Mains Temperature{C}
+Site Water Mains Temperature Information,CorrelationFromWeatherFile,NA,21.31,14.05,NA
+! <Building Information>, Building Name,North Axis {deg},Terrain,  Loads Convergence Tolerance Value,Temperature Convergence Tolerance Value,  Solar Distribution,Maximum Number of Warmup Days,Minimum Number of Warmup Days
+ Building Information,Building 1,0.000,City,4.00000E-002,0.40000,FullExteriorWithReflectionsFromExteriorSurfaces,25,1
+! <Inside Convection Algorithm>, Algorithm {Simple | TARP | CeilingDiffuser | AdaptiveConvectionAlgorithm}
+Inside Convection Algorithm,TARP
+! <Outside Convection Algorithm>, Algorithm {SimpleCombined | TARP | MoWitt | DOE-2 | AdaptiveConvectionAlgorithm}
+Outside Convection Algorithm,DOE-2
+! <Sky Radiance Distribution>, Value {Anisotropic}
+Sky Radiance Distribution,Anisotropic
+! <Zone Air Solution Algorithm>, Algorithm {ThirdOrderBackwardDifference | AnalyticalSolution | EulerMethod}, Space Heat Balance Sizing, Space Heat Balance Simulation
+ Zone Air Solution Algorithm, ThirdOrderBackwardDifference, No, No
+! <Zone Air Carbon Dioxide Balance Simulation>, Simulation {Yes/No}, Carbon Dioxide Concentration
+ Zone Air Carbon Dioxide Balance Simulation, No,N/A
+! <Zone Air Generic Contaminant Balance Simulation>, Simulation {Yes/No}, Generic Contaminant Concentration
+ Zone Air Generic Contaminant Balance Simulation, No,N/A
+! <Zone Air Mass Flow Balance Simulation>, Enforce Mass Balance, Adjust Zone Mixing and Return {AdjustMixingOnly | AdjustReturnOnly | AdjustMixingThenReturn | AdjustReturnThenMixing | None}, Adjust Zone Infiltration {AddInfiltration | AdjustInfiltration | None}, Infiltration Zones {MixingSourceZonesOnly | AllZones}
+ Zone Air Mass Flow Balance Simulation, No,N/A,N/A,N/A
+! <HVACSystemRootFindingAlgorithm>, Value {RegulaFalsi | Bisection | BisectionThenRegulaFalsi | RegulaFalsiThenBisection}
+ HVACSystemRootFindingAlgorithm, RegulaFalsi
+! <Environment:Site Atmospheric Variation>,Wind Speed Profile Exponent {},Wind Speed Profile Boundary Layer Thickness {m},Air Temperature Gradient Coefficient {K/m}
+Environment:Site Atmospheric Variation,0.330,460.000,6.500000E-003
+! <Surface Geometry>,Starting Corner,Vertex Input Direction,Coordinate System,Daylight Reference Point Coordinate System,Rectangular (Simple) Surface Coordinate System
+ Surface Geometry,UpperLeftCorner,Counterclockwise,RelativeCoordinateSystem,RelativeCoordinateSystem,RelativeToZoneOrigin
+! <ShadingProperty Reflectance>,Shading Surface Name,Shading Type,Diffuse Solar Reflectance, Diffuse Visible Reflectance,Surface Glazing Fraction,Surface Glazing Contruction
+! <Surface Heat Transfer Algorithm>, Value {CTF - ConductionTransferFunction | EMPD - MoisturePenetrationDepthConductionTransferFunction | CondFD - ConductionFiniteDifference | HAMT - CombinedHeatAndMoistureFiniteElement} - Description,Inside Surface Max Temperature Limit{C}, Surface Convection Coefficient Lower Limit {W/m2-K}, Surface Convection Coefficient Upper Limit {W/m2-K}
+Surface Heat Transfer Algorithm, CTF - ConductionTransferFunction,200,0.10,1000.0
+! <Shading Summary>, Number of Fixed Detached Shades, Number of Building Detached Shades, Number of Attached Shades
+ Shading Summary,0,0,0
+! <Zone Summary>, Number of Zones, Number of Zone Surfaces, Number of SubSurfaces
+ Zone Summary,5,50,20
+! <Zone Information>,Zone Name,North Axis {deg},Origin X-Coordinate {m},Origin Y-Coordinate {m},Origin Z-Coordinate {m},Centroid X-Coordinate {m},Centroid Y-Coordinate {m},Centroid Z-Coordinate {m},Type,Zone Multiplier,Zone List Multiplier,Minimum X {m},Maximum X {m},Minimum Y {m},Maximum Y {m},Minimum Z {m},Maximum Z {m},Ceiling Height {m},Volume {m3},Zone Inside Convection Algorithm {Simple-Detailed-CeilingDiffuser-TrombeWall},Zone Outside Convection Algorithm {Simple-Detailed-Tarp-MoWitt-DOE-2-BLAST}, Floor Area {m2},Exterior Gross Wall Area {m2},Exterior Net Wall Area {m2},Exterior Window Area {m2}, Number of Surfaces, Number of SubSurfaces, Number of Shading SubSurfaces,  Part of Total Building Area
+ Zone Information, ROOM_10_8E3690E3,0.0,0.00,0.00,0.00,9.09,5.50,10.50,1,1,1,3.30,14.89,-0.29,11.30,9.00,12.00,3.00,300.00,TARP,DOE-2,100.00,120.00,93.00,27.00,6,4,0,Yes
+ Zone Information, ROOM_11_1C9851CA,0.0,0.00,0.00,0.00,9.09,5.50,13.50,1,1,1,3.30,14.89,-0.29,11.30,12.00,15.00,3.00,300.00,TARP,DOE-2,100.00,120.00,93.00,27.00,6,4,0,Yes
+ Zone Information, ROOM_7_AB183AA5,0.0,0.00,0.00,0.00,9.09,5.50,1.50,1,1,1,3.30,14.89,-0.29,11.30,0.00,3.00,3.00,300.00,TARP,DOE-2,100.00,120.00,93.00,27.00,6,4,0,Yes
+ Zone Information, ROOM_8_6173059B,0.0,0.00,0.00,0.00,9.09,5.50,4.50,1,1,1,3.30,14.89,-0.29,11.30,3.00,6.00,3.00,300.00,TARP,DOE-2,100.00,120.00,93.00,27.00,6,4,0,Yes
+ Zone Information, ROOM_9_B9CCD289,0.0,0.00,0.00,0.00,9.09,5.50,7.50,1,1,1,3.30,14.89,-0.29,11.30,6.00,9.00,3.00,300.00,TARP,DOE-2,100.00,120.00,93.00,27.00,6,4,0,Yes
+! <Zone Internal Gains Nominal>,Zone Name, Floor Area {m2},# Occupants,Area per Occupant {m2/person},Occupant per Area {person/m2},Interior Lighting {W/m2},Electric Load {W/m2},Gas Load {W/m2},Other Load {W/m2},Hot Water Eq {W/m2},Steam Equipment {W/m2},Sum Loads per Area {W/m2},Outdoor Controlled Baseboard Heat
+ Zone Internal Gains Nominal, ROOM_10_8E3690E3,100.00,5.7,17.699,5.650E-002,10.550,10.330,0.000,0.000,0.000,0.000,20.880,No
+ Zone Internal Gains Nominal, ROOM_11_1C9851CA,100.00,5.7,17.699,5.650E-002,10.550,10.330,0.000,0.000,0.000,0.000,20.880,No
+ Zone Internal Gains Nominal, ROOM_7_AB183AA5,100.00,5.7,17.699,5.650E-002,10.550,10.330,0.000,0.000,0.000,0.000,20.880,No
+ Zone Internal Gains Nominal, ROOM_8_6173059B,100.00,5.7,17.699,5.650E-002,10.550,10.330,0.000,0.000,0.000,0.000,20.880,No
+ Zone Internal Gains Nominal, ROOM_9_B9CCD289,100.00,5.7,17.699,5.650E-002,10.550,10.330,0.000,0.000,0.000,0.000,20.880,No
+! <People Internal Gains Nominal>,Name,Schedule Name,Zone Name,Zone Floor Area {m2},# Zone Occupants,Number of People {},People/Floor Area {person/m2},Floor Area per person {m2/person},Fraction Radiant,Fraction Convected,Sensible Fraction Calculation,Activity level,ASHRAE 55 Warnings,Carbon Dioxide Generation Rate,Nominal Minimum Number of People,Nominal Maximum Number of People
+ People Internal Gains Nominal, ROOM_7_AB183AA5_SPACE GENERIC OFFICE PEOPLE,GENERIC OFFICE OCCUPANCY,ROOM_7_AB183AA5,100.00,5.7,5.7,5.650E-002,17.699,0.300,0.700,AutoCalculate,SEATED ADULT ACTIVITY,No,3.8200E-008,0,6
+ People Internal Gains Nominal, ROOM_8_6173059B_SPACE GENERIC OFFICE PEOPLE,GENERIC OFFICE OCCUPANCY,ROOM_8_6173059B,100.00,5.7,5.7,5.650E-002,17.699,0.300,0.700,AutoCalculate,SEATED ADULT ACTIVITY,No,3.8200E-008,0,6
+ People Internal Gains Nominal, ROOM_9_B9CCD289_SPACE GENERIC OFFICE PEOPLE,GENERIC OFFICE OCCUPANCY,ROOM_9_B9CCD289,100.00,5.7,5.7,5.650E-002,17.699,0.300,0.700,AutoCalculate,SEATED ADULT ACTIVITY,No,3.8200E-008,0,6
+ People Internal Gains Nominal, ROOM_10_8E3690E3_SPACE GENERIC OFFICE PEOPLE,GENERIC OFFICE OCCUPANCY,ROOM_10_8E3690E3,100.00,5.7,5.7,5.650E-002,17.699,0.300,0.700,AutoCalculate,SEATED ADULT ACTIVITY,No,3.8200E-008,0,6
+ People Internal Gains Nominal, ROOM_11_1C9851CA_SPACE GENERIC OFFICE PEOPLE,GENERIC OFFICE OCCUPANCY,ROOM_11_1C9851CA,100.00,5.7,5.7,5.650E-002,17.699,0.300,0.700,AutoCalculate,SEATED ADULT ACTIVITY,No,3.8200E-008,0,6
+! <Lights Internal Gains Nominal>,Name,Schedule Name,Zone Name,Zone Floor Area {m2},# Zone Occupants,Lighting Level {W},Lights/Floor Area {W/m2},Lights per person {W/person},Fraction Return Air,Fraction Radiant,Fraction Short Wave,Fraction Convected,Fraction Replaceable,End-Use Category,Nominal Minimum Lighting Level {W},Nominal Maximum Lighting Level {W}
+ Lights Internal Gains Nominal, ROOM_7_AB183AA5_SPACE GENERIC OFFICE LIGHTING,GENERIC OFFICE LIGHTING,ROOM_7_AB183AA5,100.00,5.7,1055.000,10.550,186.726,0.000,0.700,0.200,0.100,1.000,General,0.000,1055.000
+ Lights Internal Gains Nominal, ROOM_8_6173059B_SPACE GENERIC OFFICE LIGHTING,GENERIC OFFICE LIGHTING,ROOM_8_6173059B,100.00,5.7,1055.000,10.550,186.726,0.000,0.700,0.200,0.100,1.000,General,0.000,1055.000
+ Lights Internal Gains Nominal, ROOM_9_B9CCD289_SPACE GENERIC OFFICE LIGHTING,GENERIC OFFICE LIGHTING,ROOM_9_B9CCD289,100.00,5.7,1055.000,10.550,186.726,0.000,0.700,0.200,0.100,1.000,General,0.000,1055.000
+ Lights Internal Gains Nominal, ROOM_10_8E3690E3_SPACE GENERIC OFFICE LIGHTING,GENERIC OFFICE LIGHTING,ROOM_10_8E3690E3,100.00,5.7,1055.000,10.550,186.726,0.000,0.700,0.200,0.100,1.000,General,0.000,1055.000
+ Lights Internal Gains Nominal, ROOM_11_1C9851CA_SPACE GENERIC OFFICE LIGHTING,GENERIC OFFICE LIGHTING,ROOM_11_1C9851CA,100.00,5.7,1055.000,10.550,186.726,0.000,0.700,0.200,0.100,1.000,General,0.000,1055.000
+! <ElectricEquipment Internal Gains Nominal>,Name,Schedule Name,Zone Name,Zone Floor Area {m2},# Zone Occupants,Equipment Level {W},Equipment/Floor Area {W/m2},Equipment per person {W/person},Fraction Latent,Fraction Radiant,Fraction Lost,Fraction Convected,End-Use SubCategory,Nominal Minimum Equipment Level {W},Nominal Maximum Equipment Level {W}
+ ElectricEquipment Internal Gains Nominal, ROOM_7_AB183AA5_SPACE GENERIC OFFICE EQUIPMENT,GENERIC OFFICE EQUIPMENT,ROOM_7_AB183AA5,100.00,5.7,1033.000,10.330,182.832,0.000,0.500,0.000,0.500,Electric Equipment,0.000,1033.000
+ ElectricEquipment Internal Gains Nominal, ROOM_8_6173059B_SPACE GENERIC OFFICE EQUIPMENT,GENERIC OFFICE EQUIPMENT,ROOM_8_6173059B,100.00,5.7,1033.000,10.330,182.832,0.000,0.500,0.000,0.500,Electric Equipment,0.000,1033.000
+ ElectricEquipment Internal Gains Nominal, ROOM_9_B9CCD289_SPACE GENERIC OFFICE EQUIPMENT,GENERIC OFFICE EQUIPMENT,ROOM_9_B9CCD289,100.00,5.7,1033.000,10.330,182.832,0.000,0.500,0.000,0.500,Electric Equipment,0.000,1033.000
+ ElectricEquipment Internal Gains Nominal, ROOM_10_8E3690E3_SPACE GENERIC OFFICE EQUIPMENT,GENERIC OFFICE EQUIPMENT,ROOM_10_8E3690E3,100.00,5.7,1033.000,10.330,182.832,0.000,0.500,0.000,0.500,Electric Equipment,0.000,1033.000
+ ElectricEquipment Internal Gains Nominal, ROOM_11_1C9851CA_SPACE GENERIC OFFICE EQUIPMENT,GENERIC OFFICE EQUIPMENT,ROOM_11_1C9851CA,100.00,5.7,1033.000,10.330,182.832,0.000,0.500,0.000,0.500,Electric Equipment,0.000,1033.000
+! <Shadowing/Sun Position Calculations Annual Simulations>, Shading Calculation Method, Shading Calculation Update Frequency Method, Shading Calculation Update Frequency {days}, Maximum Figures in Shadow Overlap Calculations {}, Polygon Clipping Algorithm, Pixel Counting Resolution, Sky Diffuse Modeling Algorithm, Output External Shading Calculation Results, Disable Self-Shading Within Shading Zone Groups, Disable Self-Shading From Shading Zone Groups to Other Zones
+Shadowing/Sun Position Calculations Annual Simulations,PolygonClipping,Periodic,30,15000,SutherlandHodgman,512,SimpleSkyDiffuseModeling,No,No,No
+! <ZoneInfiltration Airflow Stats Nominal>,Name,Schedule Name,Zone Name, Zone Floor Area {m2}, # Zone Occupants,Design Volume Flow Rate {m3/s},Volume Flow Rate/Floor Area {m3/s-m2},Volume Flow Rate/Exterior Surface Area {m3/s-m2},ACH - Air Changes per Hour,Equation A - Constant Term Coefficient {},Equation B - Temperature Term Coefficient {1/C},Equation C - Velocity Term Coefficient {s/m}, Equation D - Velocity Squared Term Coefficient {s2/m2}
+ ZoneInfiltration Airflow Stats Nominal, ROOM_7_AB183AA5_SPACE GENERIC OFFICE INFILTRATION,GENERIC OFFICE INFILTRATION,ROOM_7_AB183AA5,100.00,5.7,2.719E-002,2.719E-004,2.266E-004,0.326,1.000,0.000,0.000,0.000
+ ZoneInfiltration Airflow Stats Nominal, ROOM_8_6173059B_SPACE GENERIC OFFICE INFILTRATION,GENERIC OFFICE INFILTRATION,ROOM_8_6173059B,100.00,5.7,2.719E-002,2.719E-004,2.266E-004,0.326,1.000,0.000,0.000,0.000
+ ZoneInfiltration Airflow Stats Nominal, ROOM_9_B9CCD289_SPACE GENERIC OFFICE INFILTRATION,GENERIC OFFICE INFILTRATION,ROOM_9_B9CCD289,100.00,5.7,2.719E-002,2.719E-004,2.266E-004,0.326,1.000,0.000,0.000,0.000
+ ZoneInfiltration Airflow Stats Nominal, ROOM_10_8E3690E3_SPACE GENERIC OFFICE INFILTRATION,GENERIC OFFICE INFILTRATION,ROOM_10_8E3690E3,100.00,5.7,2.719E-002,2.719E-004,2.266E-004,0.326,1.000,0.000,0.000,0.000
+ ZoneInfiltration Airflow Stats Nominal, ROOM_11_1C9851CA_SPACE GENERIC OFFICE INFILTRATION,GENERIC OFFICE INFILTRATION,ROOM_11_1C9851CA,100.00,5.7,4.985E-002,4.985E-004,2.266E-004,0.598,1.000,0.000,0.000,0.000
+! <AirFlow Model>, Simple
+ AirFlow Model, Simple
+! <RoomAir Model>, Zone Name, Mixing/Mundt/UCSDDV/UCSDCV/UCSDUFI/UCSDUFE/User Defined
+RoomAir Model,ROOM_10_8E3690E3,Mixing/Well-Stirred
+RoomAir Model,ROOM_11_1C9851CA,Mixing/Well-Stirred
+RoomAir Model,ROOM_7_AB183AA5,Mixing/Well-Stirred
+RoomAir Model,ROOM_8_6173059B,Mixing/Well-Stirred
+RoomAir Model,ROOM_9_B9CCD289,Mixing/Well-Stirred
+! <AirflowNetwork Model:Control>, No Multizone or Distribution/Multizone with Distribution/Multizone without Distribution/Multizone with Distribution only during Fan Operation
+AirflowNetwork Model:Control,NoMultizoneOrDistribution
+! <Zone Volume Capacitance Multiplier>, Sensible Heat Capacity Multiplier, Moisture Capacity Multiplier, Carbon Dioxide Capacity Multiplier, Generic Contaminant Capacity Multiplier
+Zone Volume Capacitance Multiplier,   1.000 ,   1.000,   1.000,   1.000
+! <Load Timesteps in Zone Design Calculation Averaging Window>, Value
+ Load Timesteps in Zone Design Calculation Averaging Window,    6
+! <Heating Sizing Factor Information>, Sizing Factor ID, Value
+ Heating Sizing Factor Information, Global,   1.2500    
+ Heating Sizing Factor Information, Zone ROOM_10_8E3690E3,   1.2500    
+ Heating Sizing Factor Information, Zone ROOM_11_1C9851CA,   1.2500    
+ Heating Sizing Factor Information, Zone ROOM_7_AB183AA5,   1.2500    
+ Heating Sizing Factor Information, Zone ROOM_8_6173059B,   1.2500    
+ Heating Sizing Factor Information, Zone ROOM_9_B9CCD289,   1.2500    
+! <Cooling Sizing Factor Information>, Sizing Factor ID, Value
+ Cooling Sizing Factor Information, Global,   1.1500    
+ Cooling Sizing Factor Information, Zone ROOM_10_8E3690E3,   1.1500    
+ Cooling Sizing Factor Information, Zone ROOM_11_1C9851CA,   1.1500    
+ Cooling Sizing Factor Information, Zone ROOM_7_AB183AA5,   1.1500    
+ Cooling Sizing Factor Information, Zone ROOM_8_6173059B,   1.1500    
+ Cooling Sizing Factor Information, Zone ROOM_9_B9CCD289,   1.1500    
+! <Zone Sizing Information>, Zone Name, Load Type, Calc Des Load {W}, User Des Load {W}, Calc Des Air Flow Rate {m3/s}, User Des Air Flow Rate {m3/s}, Design Day Name, Date/Time of Peak, Temperature at Peak {C}, Humidity Ratio at Peak {kgWater/kgDryAir}, Floor Area {m2}, # Occupants, Calc Outdoor Air Flow Rate {m3/s}, Calc DOAS Heat Addition Rate {W}
+ Zone Sizing Information, ROOM_10_8E3690E3, Cooling, 5856.97894, 6735.52579, 0.47705, 0.54860, HAIFA.AP COOLING DESIGN DAY 0.4% CONDNS DB=>MWB, 8/21 14:50:00, 32.00000, 1.15384E-002, 100.00000, 5.65000, 4.38340E-002, 0.00000
+ Zone Sizing Information, ROOM_10_8E3690E3, Heating, 2268.51694, 2835.64617, 9.63453E-002, 0.12043, HAIFA.AP HEATING DESIGN DAY 99.6% CONDNS DB, 1/21 08:00:00, 8.00000, 6.66272E-003, 100.00000, 5.65000, 4.38340E-002, 0.00000
+ Zone Sizing Information, ROOM_11_1C9851CA, Cooling, 6041.20478, 6947.38550, 0.49206, 0.56587, HAIFA.AP COOLING DESIGN DAY 0.4% CONDNS DB=>MWB, 8/21 15:00:00, 32.00000, 1.15384E-002, 100.00000, 5.65000, 4.38340E-002, 0.00000
+ Zone Sizing Information, ROOM_11_1C9851CA, Heating, 2768.98302, 3461.22877, 0.11778, 0.14722, HAIFA.AP HEATING DESIGN DAY 99.6% CONDNS DB, 1/21 08:00:00, 8.00000, 6.66272E-003, 100.00000, 5.65000, 4.38340E-002, 0.00000
+ Zone Sizing Information, ROOM_7_AB183AA5, Cooling, 4846.52962, 5573.50906, 0.39475, 0.45396, HAIFA.AP COOLING DESIGN DAY 0.4% CONDNS DB=>MWB, 8/21 14:50:00, 32.00000, 1.15384E-002, 100.00000, 5.65000, 4.38340E-002, 0.00000
+ Zone Sizing Information, ROOM_7_AB183AA5, Heating, 1969.35097, 2461.68871, 8.35392E-002, 0.10442, HAIFA.AP HEATING DESIGN DAY 99.6% CONDNS DB, 1/21 08:00:00, 8.00000, 6.66272E-003, 100.00000, 5.65000, 4.38340E-002, 0.00000
+ Zone Sizing Information, ROOM_8_6173059B, Cooling, 5772.69033, 6638.59388, 0.47018, 0.54071, HAIFA.AP COOLING DESIGN DAY 0.4% CONDNS DB=>MWB, 8/21 14:50:00, 32.00000, 1.15384E-002, 100.00000, 5.65000, 4.38340E-002, 0.00000
+ Zone Sizing Information, ROOM_8_6173059B, Heating, 2174.37261, 2717.96576, 9.23113E-002, 0.11539, HAIFA.AP HEATING DESIGN DAY 99.6% CONDNS DB, 1/21 08:00:00, 8.00000, 6.66272E-003, 100.00000, 5.65000, 4.38340E-002, 0.00000
+ Zone Sizing Information, ROOM_9_B9CCD289, Cooling, 5842.77318, 6719.18916, 0.47589, 0.54727, HAIFA.AP COOLING DESIGN DAY 0.4% CONDNS DB=>MWB, 8/21 14:50:00, 32.00000, 1.15384E-002, 100.00000, 5.65000, 4.38340E-002, 0.00000
+ Zone Sizing Information, ROOM_9_B9CCD289, Heating, 2195.18938, 2743.98673, 9.32034E-002, 0.11650, HAIFA.AP HEATING DESIGN DAY 99.6% CONDNS DB, 1/21 08:00:00, 8.00000, 6.66272E-003, 100.00000, 5.65000, 4.38340E-002, 0.00000
+! <Component Sizing Information>, Component Type, Component Name, Input Field Description, Value
+ Component Sizing Information, ZoneHVAC:IdealLoadsAirSystem, ROOM_10_8E3690E3 IDEAL LOADS AIR SYSTEM, User-Specified Maximum Heating Air Flow Rate [m3/s], 0.00000
+ Component Sizing Information, ZoneHVAC:IdealLoadsAirSystem, ROOM_10_8E3690E3 IDEAL LOADS AIR SYSTEM, Design Size Maximum Sensible Heating Capacity [W], 3506.33562
+ Component Sizing Information, ZoneHVAC:IdealLoadsAirSystem, ROOM_10_8E3690E3 IDEAL LOADS AIR SYSTEM, Design Size Maximum Cooling Air Flow Rate [m3/s], 0.54860
+ Component Sizing Information, ZoneHVAC:IdealLoadsAirSystem, ROOM_10_8E3690E3 IDEAL LOADS AIR SYSTEM, Design Size Maximum Total Cooling Capacity [W], 7934.20423
+ Component Sizing Information, ZoneHVAC:IdealLoadsAirSystem, ROOM_11_1C9851CA IDEAL LOADS AIR SYSTEM, User-Specified Maximum Heating Air Flow Rate [m3/s], 0.00000
+ Component Sizing Information, ZoneHVAC:IdealLoadsAirSystem, ROOM_11_1C9851CA IDEAL LOADS AIR SYSTEM, Design Size Maximum Sensible Heating Capacity [W], 4130.83826
+ Component Sizing Information, ZoneHVAC:IdealLoadsAirSystem, ROOM_11_1C9851CA IDEAL LOADS AIR SYSTEM, Design Size Maximum Cooling Air Flow Rate [m3/s], 0.56587
+ Component Sizing Information, ZoneHVAC:IdealLoadsAirSystem, ROOM_11_1C9851CA IDEAL LOADS AIR SYSTEM, Design Size Maximum Total Cooling Capacity [W], 8194.89255
+ Component Sizing Information, ZoneHVAC:IdealLoadsAirSystem, ROOM_7_AB183AA5 IDEAL LOADS AIR SYSTEM, User-Specified Maximum Heating Air Flow Rate [m3/s], 0.00000
+ Component Sizing Information, ZoneHVAC:IdealLoadsAirSystem, ROOM_7_AB183AA5 IDEAL LOADS AIR SYSTEM, Design Size Maximum Sensible Heating Capacity [W], 3133.20157
+ Component Sizing Information, ZoneHVAC:IdealLoadsAirSystem, ROOM_7_AB183AA5 IDEAL LOADS AIR SYSTEM, Design Size Maximum Cooling Air Flow Rate [m3/s], 0.45396
+ Component Sizing Information, ZoneHVAC:IdealLoadsAirSystem, ROOM_7_AB183AA5 IDEAL LOADS AIR SYSTEM, Design Size Maximum Total Cooling Capacity [W], 6764.84093
+ Component Sizing Information, ZoneHVAC:IdealLoadsAirSystem, ROOM_8_6173059B IDEAL LOADS AIR SYSTEM, User-Specified Maximum Heating Air Flow Rate [m3/s], 0.00000
+ Component Sizing Information, ZoneHVAC:IdealLoadsAirSystem, ROOM_8_6173059B IDEAL LOADS AIR SYSTEM, Design Size Maximum Sensible Heating Capacity [W], 3388.79551
+ Component Sizing Information, ZoneHVAC:IdealLoadsAirSystem, ROOM_8_6173059B IDEAL LOADS AIR SYSTEM, Design Size Maximum Cooling Air Flow Rate [m3/s], 0.54071
+ Component Sizing Information, ZoneHVAC:IdealLoadsAirSystem, ROOM_8_6173059B IDEAL LOADS AIR SYSTEM, Design Size Maximum Total Cooling Capacity [W], 7836.75704
+ Component Sizing Information, ZoneHVAC:IdealLoadsAirSystem, ROOM_9_B9CCD289 IDEAL LOADS AIR SYSTEM, User-Specified Maximum Heating Air Flow Rate [m3/s], 0.00000
+ Component Sizing Information, ZoneHVAC:IdealLoadsAirSystem, ROOM_9_B9CCD289 IDEAL LOADS AIR SYSTEM, Design Size Maximum Sensible Heating Capacity [W], 3414.78943
+ Component Sizing Information, ZoneHVAC:IdealLoadsAirSystem, ROOM_9_B9CCD289 IDEAL LOADS AIR SYSTEM, Design Size Maximum Cooling Air Flow Rate [m3/s], 0.54727
+ Component Sizing Information, ZoneHVAC:IdealLoadsAirSystem, ROOM_9_B9CCD289 IDEAL LOADS AIR SYSTEM, Design Size Maximum Total Cooling Capacity [W], 7917.79148
+! <Environment>,Environment Name,Environment Type, Start Date, End Date, Start DayOfWeek, Duration {#days}, Source:Start DayOfWeek,  Use Daylight Saving, Use Holidays, Apply Weekend Holiday Rule,  Use Rain Values, Use Snow Values, Sky Temperature Model
+! <Environment:Special Days>, Special Day Name, Special Day Type, Source, Start Date, Duration {#days}
+! <Environment:Daylight Saving>, Daylight Saving Indicator, Source, Start Date, End Date
+! <Environment:WarmupDays>, NumberofWarmupDays
+Environment,RUN PERIOD 1,WeatherFileRunPeriod,01/01/2006,12/31/2006,Sunday,365,Use RunPeriod Specified Day,No,No,No,Yes,Yes,Clark and Allen
+Environment:Daylight Saving,No,RunPeriod Object
+Environment:WarmupDays,  7
+! <Warmup Convergence Information>,Zone Name,Environment Type/Name,Average Warmup Temperature Difference {deltaC},Std Dev Warmup Temperature Difference {deltaC},Max Temperature Pass/Fail Convergence,Min Temperature Pass/Fail Convergence,Average Warmup Load Difference {W},Std Dev Warmup Load Difference {W},Heating Load Pass/Fail Convergence,Cooling Load Pass/Fail Convergence
+ Warmup Convergence Information,ROOM_10_8E3690E3,RunPeriod: RUN PERIOD 1,7.4621466085E-002,7.7297521212E-002,Pass,Pass,2.9616171407E-002,4.2044555269E-002,Pass,Pass
+ Warmup Convergence Information,ROOM_11_1C9851CA,RunPeriod: RUN PERIOD 1,9.9347032993E-002,7.1500522208E-002,Pass,Pass,2.6346390200E-002,4.5884220353E-002,Pass,Pass
+ Warmup Convergence Information,ROOM_7_AB183AA5,RunPeriod: RUN PERIOD 1,6.1072025006E-002,4.9800567671E-002,Pass,Pass,2.1075672727E-002,3.1056981533E-002,Pass,Pass
+ Warmup Convergence Information,ROOM_8_6173059B,RunPeriod: RUN PERIOD 1,6.9786382229E-002,7.6931346954E-002,Pass,Pass,2.9569899233E-002,3.7937218846E-002,Pass,Pass
+ Warmup Convergence Information,ROOM_9_B9CCD289,RunPeriod: RUN PERIOD 1,6.9853608139E-002,7.6097378678E-002,Pass,Pass,2.9468640107E-002,3.6097300988E-002,Pass,Pass
+! <Program Control Information:Threads/Parallel Sims>, Threading Supported,Maximum Number of Threads, Env Set Threads (OMP_NUM_THREADS), EP Env Set Threads (EP_OMP_NUM_THREADS), IDF Set Threads, Number of Threads Used (Interior Radiant Exchange), Number Nominal Surfaces, Number Parallel Sims
+Program Control:Threads/Parallel Sims, No,1, N/A, N/A, N/A, N/A, N/A, N/A
+End of Data
