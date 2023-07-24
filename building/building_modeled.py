@@ -41,17 +41,21 @@ class BuildingModeled(BuildingBasic):
         # get the values from the original BuildingBasic object (if there is one) through **kwargs
         for key, value in kwargs.items():
             setattr(self, key, value)
-
+        # Honeybee model
         self.HB_model_obj = None
         self.HB_model_dict = None
-
+        self.merged_faces_hb_model_dict = None
+        # Stus of the building
         self.to_simulate = False
         self.is_target = False
-
+        # Shading computation
         self.shading_context_obj = None
 
-        self.first_pass_context_building_id_list = []
+        self.first_pass_context_building_id_list = []  # todo @Elie delete
 
+
+        # Solar and panel radiation
+        # self.solar_and_panel_radiation_obj = None  # todo @Elie later
         self.sensor_grid_dict = {'Roof': None, 'Facades': None}
         self.panels = {"Roof": None, "Facades": None}
         self.results_panels = {"Roof": None, "Facades": None, "Total": None}
@@ -284,6 +288,7 @@ class BuildingModeled(BuildingBasic):
         :param minimum_ratio_energy_harvested_on_primary_energy: int: production minimal during the first year for a panel to be installed at
         this position, Default=1.2
         :param performance_ratio: float: performance ratio of the PV, Default=0.75
+        todo @Elie, simplify and relocate this function and the one below
         """
         # we only add the panels if the sensor grid already exists
         if self.sensor_grid_dict["Roof"] is not None:
