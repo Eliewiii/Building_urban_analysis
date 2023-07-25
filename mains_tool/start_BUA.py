@@ -9,17 +9,17 @@ from step_methods.load_building_or_geometry import SimulationLoadBuildingOrGeome
 from step_methods.post_processing_and_plots import SimulationPostProcessingAndPlots
 from step_methods.run_simulations import SolarOrPanelSimulation
 
-from utils.utils_configuration import name_gh_components_logs_folder
+from utils.utils_configuration import name_gh_components_logs_folder,path_scripts_tool_folder
 
-# user_logger = logging.getLogger("user")
-# dev_logger = logging.getLogger("dev")
-# user_logger.setLevel(logging.INFO)
-# dev_logger.setLevel(logging.INFO)
-# dev_handler = logging.FileHandler('./dev_log.log')
-# user_formatter = logging.Formatter('%(message)s')
-# dev_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-# dev_handler.setFormatter(dev_formatter)
-# dev_logger.addHandler(dev_handler)
+user_logger = logging.getLogger("user")
+dev_logger = logging.getLogger("dev")
+user_logger.setLevel(logging.INFO)
+dev_logger.setLevel(logging.INFO)
+dev_handler = logging.FileHandler(os.path.join(path_scripts_tool_folder,"dev_log.log"))
+user_formatter = logging.Formatter('%(message)s')
+dev_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+dev_handler.setFormatter(dev_formatter)
+dev_logger.addHandler(dev_handler)
 
 def main():
 

@@ -197,79 +197,80 @@ class UrbanCanopyAdditionalFunction:
     def write_to_csv_panels_simulation_results(json_dict, building_dict, path_folder_simulation):
         # todo change names lca energy/lca carbon ?
         for building_id, building_object in building_dict.items():
-            path_folder_building = os.path.join(path_folder_simulation, name_radiation_simulation_folder,
-                                                building_id)
-            path_folder_panels_results_csv = os.path.join(path_folder_building, "panels_simulation_results.csv")
-            header = ["energy_harvested_roof (kWh)", "energy_harvested_facades (kWh)", "energy_harvested_total (kWh)",
-                      "primary_energy_roof (kWh)", "primary_energy_facades (kWh)", "primary_energy_total (kWh)",
-                      "gh_gas_emissions_manufacturing_roof (kgCO2eq)",
-                      "gh_gas_emissions_manufacturing_facades (kgCO2eq)",
-                      "gh_gas_emissions_manufacturing_total (kgCO2eq)",
-                      "dmfa_roof (kg)", "dmfa_facades (kg)", "dmfa_total (kg)", "energy_end_of_life_roof (kWh)",
-                      "energy_end_of_life_facades (kWh)", "energy_end_of_life_total (kWh)",
-                      "carbon_end_of_life_roof (kgCO2eq)", "carbon_end_of_life_facades (kgCO2eq)",
-                      "carbon_end_of_life_total (kgCO2eq)"]
-            list1 = \
-                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["energy_harvested"][
+            path_folder_building = os.path.join(path_folder_simulation, name_radiation_simulation_folder,str(
+                                                building_id))
+            if os.path.isdir(path_folder_building):  # todo, find better criteria
+                path_folder_panels_results_csv = os.path.join(path_folder_building, "panels_simulation_results.csv")
+                header = ["energy_harvested_roof (kWh)", "energy_harvested_facades (kWh)", "energy_harvested_total (kWh)",
+                          "primary_energy_roof (kWh)", "primary_energy_facades (kWh)", "primary_energy_total (kWh)",
+                          "gh_gas_emissions_manufacturing_roof (kgCO2eq)",
+                          "gh_gas_emissions_manufacturing_facades (kgCO2eq)",
+                          "gh_gas_emissions_manufacturing_total (kgCO2eq)",
+                          "dmfa_roof (kg)", "dmfa_facades (kg)", "dmfa_total (kg)", "energy_end_of_life_roof (kWh)",
+                          "energy_end_of_life_facades (kWh)", "energy_end_of_life_total (kWh)",
+                          "carbon_end_of_life_roof (kgCO2eq)", "carbon_end_of_life_facades (kgCO2eq)",
+                          "carbon_end_of_life_total (kgCO2eq)"]
+                list1 = \
+                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["energy_harvested"][
+                        "list"]
+                list2 = \
+                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["energy_harvested"][
+                        "list"]
+                list3 = \
+                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["energy_harvested"][
+                        "list"]
+                list4 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"][
+                    "lca_craddle_to_installation_primary_energy"][
                     "list"]
-            list2 = \
-                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["energy_harvested"][
+                list5 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"][
+                    "lca_craddle_to_installation_primary_energy"][
                     "list"]
-            list3 = \
-                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["energy_harvested"][
+                list6 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"][
+                    "lca_craddle_to_installation_primary_energy"][
                     "list"]
-            list4 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"][
-                "lca_craddle_to_installation_primary_energy"][
-                "list"]
-            list5 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"][
-                "lca_craddle_to_installation_primary_energy"][
-                "list"]
-            list6 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"][
-                "lca_craddle_to_installation_primary_energy"][
-                "list"]
-            list7 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"][
-                "lca_craddle_to_installation_carbon"][
-                "list"]
-            list8 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"][
-                "lca_craddle_to_installation_carbon"][
-                "list"]
-            list9 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"][
-                "lca_craddle_to_installation_carbon"][
-                "list"]
-            list10 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["dmfa"]["list"]
-            list11 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["dmfa"][
-                "list"]
-            list12 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["dmfa"]["list"]
-            list13 = \
-                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"][
-                    "lca_recycling_primary_energy"][
+                list7 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"][
+                    "lca_craddle_to_installation_carbon"][
                     "list"]
-            list14 = \
-                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"][
-                    "lca_recycling_primary_energy"][
+                list8 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"][
+                    "lca_craddle_to_installation_carbon"][
                     "list"]
-            list15 = \
-                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"][
-                    "lca_recycling_primary_energy"][
+                list9 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"][
+                    "lca_craddle_to_installation_carbon"][
                     "list"]
-            list16 = \
-                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"][
-                    "lca_recycling_carbon"][
+                list10 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["dmfa"]["list"]
+                list11 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["dmfa"][
                     "list"]
-            list17 = \
-                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"][
-                    "lca_recycling_carbon"][
-                    "list"]
-            list18 = \
-                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"][
-                    "lca_recycling_carbon"][
-                    "list"]
+                list12 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["dmfa"]["list"]
+                list13 = \
+                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"][
+                        "lca_recycling_primary_energy"][
+                        "list"]
+                list14 = \
+                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"][
+                        "lca_recycling_primary_energy"][
+                        "list"]
+                list15 = \
+                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"][
+                        "lca_recycling_primary_energy"][
+                        "list"]
+                list16 = \
+                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"][
+                        "lca_recycling_carbon"][
+                        "list"]
+                list17 = \
+                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"][
+                        "lca_recycling_carbon"][
+                        "list"]
+                list18 = \
+                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"][
+                        "lca_recycling_carbon"][
+                        "list"]
 
-            array = numpy.transpose(
-                [list1, list2, list3, list4, list5, list6, list7, list8, list9, list10, list11, list12, list13, list14,
-                 list15, list16, list17, list18])
+                array = numpy.transpose(
+                    [list1, list2, list3, list4, list5, list6, list7, list8, list9, list10, list11, list12, list13, list14,
+                     list15, list16, list17, list18])
 
-            write_to_csv_arr(header, array, path_folder_panels_results_csv)
+                write_to_csv_arr(header, array, path_folder_panels_results_csv)
 
     @staticmethod
     def get_energy_data_from_all_buildings(building_dict):
@@ -281,42 +282,43 @@ class UrbanCanopyAdditionalFunction:
         cum_primary_energy_facades_uc = []
         cum_primary_energy_total_uc = []
 
-        for building in building_dict.values():
-            # get the energy values
-            cum_energy_harvested_roof = get_cumul_values(building.results_panels["Roof"]["energy_harvested"][
-                                                             "list"])
-            cum_primary_energy_roof = add_elements_of_two_lists(
-                get_cumul_values(building.results_panels["Roof"]["lca_craddle_to_installation_primary_energy"][
-                                     "list"]),
-                get_cumul_values(building.results_panels["Roof"]["lca_recycling_primary_energy"]["list"]))
-            cum_energy_harvested_facades = get_cumul_values(
-                building.results_panels["Facades"]["energy_harvested"][
-                    "list"])
-            cum_primary_energy_facades = add_elements_of_two_lists(
-                get_cumul_values(
-                    building.results_panels["Facades"]["lca_craddle_to_installation_primary_energy"][
-                        "list"]),
-                get_cumul_values(building.results_panels["Facades"]["lca_recycling_primary_energy"]["list"]))
-            cum_energy_harvested_total = get_cumul_values(building.results_panels["Total"]["energy_harvested"][
-                                                              "list"])
-            cum_primary_energy_total = add_elements_of_two_lists(
-                get_cumul_values(building.results_panels["Total"]["lca_craddle_to_installation_primary_energy"][
-                                     "list"]),
-                get_cumul_values(building.results_panels["Total"]["lca_recycling_primary_energy"]["list"]))
+        for building_obj in building_dict.values():
+            if type(building_obj) is BuildingModeled:
+                # get the energy values
+                cum_energy_harvested_roof = get_cumul_values(building_obj.results_panels["Roof"]["energy_harvested"][
+                                                                 "list"])
+                cum_primary_energy_roof = add_elements_of_two_lists(
+                    get_cumul_values(building_obj.results_panels["Roof"]["lca_craddle_to_installation_primary_energy"][
+                                         "list"]),
+                    get_cumul_values(building_obj.results_panels["Roof"]["lca_recycling_primary_energy"]["list"]))
+                cum_energy_harvested_facades = get_cumul_values(
+                    building_obj.results_panels["Facades"]["energy_harvested"][
+                        "list"])
+                cum_primary_energy_facades = add_elements_of_two_lists(
+                    get_cumul_values(
+                        building_obj.results_panels["Facades"]["lca_craddle_to_installation_primary_energy"][
+                            "list"]),
+                    get_cumul_values(building_obj.results_panels["Facades"]["lca_recycling_primary_energy"]["list"]))
+                cum_energy_harvested_total = get_cumul_values(building_obj.results_panels["Total"]["energy_harvested"][
+                                                                  "list"])
+                cum_primary_energy_total = add_elements_of_two_lists(
+                    get_cumul_values(building_obj.results_panels["Total"]["lca_craddle_to_installation_primary_energy"][
+                                         "list"]),
+                    get_cumul_values(building_obj.results_panels["Total"]["lca_recycling_primary_energy"]["list"]))
 
-            # and add it to the total list of the uc
-            cum_energy_harvested_roof_uc = add_elements_of_two_lists(cum_energy_harvested_roof_uc,
-                                                                     cum_energy_harvested_roof)
-            cum_energy_harvested_facades_uc = add_elements_of_two_lists(cum_energy_harvested_facades_uc,
-                                                                        cum_energy_harvested_facades)
-            cum_energy_harvested_total_uc = add_elements_of_two_lists(cum_energy_harvested_total_uc,
-                                                                      cum_energy_harvested_total)
-            cum_primary_energy_roof_uc = add_elements_of_two_lists(cum_primary_energy_roof_uc,
-                                                                   cum_primary_energy_roof)
-            cum_primary_energy_facades_uc = add_elements_of_two_lists(cum_primary_energy_facades_uc,
-                                                                      cum_primary_energy_facades)
-            cum_primary_energy_total_uc = add_elements_of_two_lists(cum_primary_energy_total_uc,
-                                                                    cum_primary_energy_total)
+                # and add it to the total list of the uc
+                cum_energy_harvested_roof_uc = add_elements_of_two_lists(cum_energy_harvested_roof_uc,
+                                                                         cum_energy_harvested_roof)
+                cum_energy_harvested_facades_uc = add_elements_of_two_lists(cum_energy_harvested_facades_uc,
+                                                                            cum_energy_harvested_facades)
+                cum_energy_harvested_total_uc = add_elements_of_two_lists(cum_energy_harvested_total_uc,
+                                                                          cum_energy_harvested_total)
+                cum_primary_energy_roof_uc = add_elements_of_two_lists(cum_primary_energy_roof_uc,
+                                                                       cum_primary_energy_roof)
+                cum_primary_energy_facades_uc = add_elements_of_two_lists(cum_primary_energy_facades_uc,
+                                                                          cum_primary_energy_facades)
+                cum_primary_energy_total_uc = add_elements_of_two_lists(cum_primary_energy_total_uc,
+                                                                        cum_primary_energy_total)
 
         return cum_energy_harvested_roof_uc, cum_energy_harvested_facades_uc, cum_energy_harvested_total_uc, \
             cum_primary_energy_roof_uc, cum_primary_energy_facades_uc, cum_primary_energy_total_uc
@@ -331,40 +333,41 @@ class UrbanCanopyAdditionalFunction:
         cum_avoided_carbon_emissions_facades_uc = []
         cum_avoided_carbon_emissions_total_uc = []
 
-        for building in building_dict.values():
-            # get the carbon values
-            cum_carbon_emissions_roof = add_elements_of_two_lists(
-                get_cumul_values(building.results_panels["Roof"]["lca_craddle_to_installation_carbon"]["list"]),
-                get_cumul_values(building.results_panels["Roof"]["lca_recycling_carbon"]["list"]))
-            avoided_carbon_emissions_list_roof = [i * country_ghe_cost for i in building.results_panels["Roof"][
-                "energy_harvested"]["list"]]
-            cum_avoided_carbon_emissions_roof = get_cumul_values(avoided_carbon_emissions_list_roof)
-            cum_carbon_emissions_facades = add_elements_of_two_lists(
-                get_cumul_values(building.results_panels["Facades"]["lca_craddle_to_installation_carbon"]["list"]),
-                get_cumul_values(building.results_panels["Facades"]["lca_recycling_carbon"]["list"]))
-            avoided_carbon_emissions_list_facades = [i * country_ghe_cost for i in building.results_panels["Facades"][
-                "energy_harvested"]["list"]]
-            cum_avoided_carbon_emissions_facades = get_cumul_values(avoided_carbon_emissions_list_facades)
-            cum_carbon_emissions_total = add_elements_of_two_lists(
-                get_cumul_values(building.results_panels["Total"]["lca_craddle_to_installation_carbon"]["list"]),
-                get_cumul_values(building.results_panels["Total"]["lca_recycling_carbon"]["list"]))
-            avoided_carbon_emissions_list_total = [i * country_ghe_cost for i in building.results_panels["Total"][
-                "energy_harvested"]["list"]]
-            cum_avoided_carbon_emissions_total = get_cumul_values(avoided_carbon_emissions_list_total)
+        for building_obj in building_dict.values():
+            if type(building_obj) is BuildingModeled:
+                # get the carbon values
+                cum_carbon_emissions_roof = add_elements_of_two_lists(
+                    get_cumul_values(building_obj.results_panels["Roof"]["lca_craddle_to_installation_carbon"]["list"]),
+                    get_cumul_values(building_obj.results_panels["Roof"]["lca_recycling_carbon"]["list"]))
+                avoided_carbon_emissions_list_roof = [i * country_ghe_cost for i in building_obj.results_panels["Roof"][
+                    "energy_harvested"]["list"]]
+                cum_avoided_carbon_emissions_roof = get_cumul_values(avoided_carbon_emissions_list_roof)
+                cum_carbon_emissions_facades = add_elements_of_two_lists(
+                    get_cumul_values(building_obj.results_panels["Facades"]["lca_craddle_to_installation_carbon"]["list"]),
+                    get_cumul_values(building_obj.results_panels["Facades"]["lca_recycling_carbon"]["list"]))
+                avoided_carbon_emissions_list_facades = [i * country_ghe_cost for i in building_obj.results_panels["Facades"][
+                    "energy_harvested"]["list"]]
+                cum_avoided_carbon_emissions_facades = get_cumul_values(avoided_carbon_emissions_list_facades)
+                cum_carbon_emissions_total = add_elements_of_two_lists(
+                    get_cumul_values(building_obj.results_panels["Total"]["lca_craddle_to_installation_carbon"]["list"]),
+                    get_cumul_values(building_obj.results_panels["Total"]["lca_recycling_carbon"]["list"]))
+                avoided_carbon_emissions_list_total = [i * country_ghe_cost for i in building_obj.results_panels["Total"][
+                    "energy_harvested"]["list"]]
+                cum_avoided_carbon_emissions_total = get_cumul_values(avoided_carbon_emissions_list_total)
 
-            # and add it to the total list of the uc
-            cum_carbon_emissions_roof_uc = add_elements_of_two_lists(cum_carbon_emissions_roof_uc,
-                                                                     cum_carbon_emissions_roof)
-            cum_carbon_emissions_facades_uc = add_elements_of_two_lists(cum_carbon_emissions_facades_uc,
-                                                                        cum_carbon_emissions_facades)
-            cum_carbon_emissions_total_uc = add_elements_of_two_lists(cum_carbon_emissions_total_uc,
-                                                                      cum_carbon_emissions_total)
-            cum_avoided_carbon_emissions_roof_uc = add_elements_of_two_lists(cum_avoided_carbon_emissions_roof_uc,
-                                                                             cum_avoided_carbon_emissions_roof)
-            cum_avoided_carbon_emissions_facades_uc = add_elements_of_two_lists(cum_avoided_carbon_emissions_facades_uc,
-                                                                                cum_avoided_carbon_emissions_facades)
-            cum_avoided_carbon_emissions_total_uc = add_elements_of_two_lists(cum_avoided_carbon_emissions_total_uc,
-                                                                              cum_avoided_carbon_emissions_total)
+                # and add it to the total list of the uc
+                cum_carbon_emissions_roof_uc = add_elements_of_two_lists(cum_carbon_emissions_roof_uc,
+                                                                         cum_carbon_emissions_roof)
+                cum_carbon_emissions_facades_uc = add_elements_of_two_lists(cum_carbon_emissions_facades_uc,
+                                                                            cum_carbon_emissions_facades)
+                cum_carbon_emissions_total_uc = add_elements_of_two_lists(cum_carbon_emissions_total_uc,
+                                                                          cum_carbon_emissions_total)
+                cum_avoided_carbon_emissions_roof_uc = add_elements_of_two_lists(cum_avoided_carbon_emissions_roof_uc,
+                                                                                 cum_avoided_carbon_emissions_roof)
+                cum_avoided_carbon_emissions_facades_uc = add_elements_of_two_lists(cum_avoided_carbon_emissions_facades_uc,
+                                                                                    cum_avoided_carbon_emissions_facades)
+                cum_avoided_carbon_emissions_total_uc = add_elements_of_two_lists(cum_avoided_carbon_emissions_total_uc,
+                                                                                  cum_avoided_carbon_emissions_total)
 
         return cum_avoided_carbon_emissions_roof_uc, cum_avoided_carbon_emissions_facades_uc, \
             cum_avoided_carbon_emissions_total_uc, cum_carbon_emissions_roof_uc, cum_carbon_emissions_facades_uc, \

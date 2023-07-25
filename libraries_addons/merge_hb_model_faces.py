@@ -43,7 +43,7 @@ def merge_facades_and_roof_faces_in_hb_model(HB_model, name):
 
     # Loop through all the faces
     for index, face in enumerate(lb_face3d_list):
-        print(index)
+        # print(index)
         # Check if the face has been used already, and don't reuse it if so
         if index not in used_faces:
             plane = face.plane  # Get the plane of the face
@@ -128,7 +128,7 @@ def make_shapely_2d_polygon_from_lb_face_in_plan(lb_face_3D, rotation_matrix, or
         list_vertices_np_array]
     # Convert the list of np.array to a list of tuples
     list_tuple_vertices_2d = [(vertex[0], vertex[1]) for vertex in
-                              list_vertices_np_array]  #  We don't need the z coordinate as the polygon is supposed to be coplanar
+                              list_vertices_np_array]  # We don't need the z coordinate as the polygon is supposed to be coplanar
 
     return Polygon(list_tuple_vertices_2d)
 
@@ -168,9 +168,10 @@ def make_lb_face_from_shapely_2d_polygon(polygon, rotation_matrix, origin_new_co
 
 
 if __name__ == "__main__":
-    hb_model = Model.from_hbjson(
-        r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\BUA\Samples\Grasshopper\Dragonfly_H-Building+Balconies+Context.hbjson")
-    hb_model_merged = merge_facades_and_roof_faces_in_hb_model(hb_model, "test_all")
-    hb_model_merged.to_hbjson(
-        r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\BUA\Samples\Grasshopper\Dragonfly_H-Building+Balconies+Context_merged.hbjson")
-
+    for i in range(1, 7):
+        hb_model = Model.from_hbjson(
+            f"C:\\Users\\eliem\\OneDrive - Technion\\Ministry of Energy Research\\IBPSA US conference\\buildings_hbjson\\variation_1\\ResidentialBldg_{i}.hbjson")
+        hb_model_merged = merge_facades_and_roof_faces_in_hb_model(hb_model, hb_model.identifier + "_merged")
+        hb_model_merged.add_shades(hb_model.outdoor_shades)
+        hb_model_merged.to_hbjson(
+            f"C:\\Users\\eliem\\OneDrive - Technion\\Ministry of Energy Research\\IBPSA US conference\\buildings_hbjson\\variation_1\\ResidentialBldg_{i}_merged.hbjson")
