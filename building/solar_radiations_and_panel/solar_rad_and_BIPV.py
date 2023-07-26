@@ -58,9 +58,9 @@ class SolarRadAndBipvSimulation:
         :param on_facades: bool: default=True"""
 
         if self.on_roof:
-            generate_sensor_grid_for_hb_model(hb_model_obj, grid_size_x, grid_size_y, offset_dist, surface_type)
+            generate_sensor_grid_for_hb_model(hb_model_obj, roof_grid_size_x, roof_grid_size_y, offset_dist, "Roof")
         elif self.on_facade:
-            generate_sensor_grid_for_hb_model(hb_model_obj, grid_size_x, grid_size_y, offset_dist, surface_type)
+            generate_sensor_grid_for_hb_model(hb_model_obj, facade_grid_size_x, facade_grid_size_y, offset_dist, "Facade")
 
 
         else:

@@ -22,8 +22,6 @@ from utils.utils_constants import TOLERANCE_LBT
 default_elevation = 0.
 default_height = 9.
 
-# todo : for some rreason, the following import is necessary for _orient_geometry to work
-
 dev_logger = logging.getLogger("dev")
 user_logger = logging.getLogger("user")
 
