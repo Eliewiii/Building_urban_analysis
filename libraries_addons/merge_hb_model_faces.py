@@ -1,3 +1,5 @@
+import os
+import numpy as np
 from math import pi, cos, sin
 
 from shapely.geometry import Polygon, MultiPolygon
@@ -13,12 +15,12 @@ from honeybee.model import Model
 from honeybee.boundarycondition import Outdoors, Ground
 from honeybee.facetype import Wall, RoofCeiling
 
-import numpy as np
+
 
 default_tolerance = 0.01
 
 
-def merge_facades_and_roof_faces_in_hb_model(HB_model, name):
+def merge_facades_and_roof_faces_in_hb_model(HB_model, orient_roof_mesh_to_south=True, name=None):
     """
     Merge the faces of the facades and roof of a HB model to have
     :param HB_model:
@@ -32,21 +34,29 @@ def merge_facades_and_roof_faces_in_hb_model(HB_model, name):
                           face.boundary_condition,
                           Ground))]
 
-    # todo @Elie,test !
     # make a new face and round the coordinates of the vertices for each face of lb_face3d_list
     new_lb_face3d_list = []
     for face in lb_face3d_list:
         new_vertices = []
-        for vertex in face.vertices:
+        for vertex in face.vertices:  # Round the coordinates
             new_vertices.append(Point3D(round(vertex.x, 2), round(vertex.y, 2), round(vertex.z, 2)))
-        if face.normal.z > 0:  # TODO !!!!!! only of requested by the user
-            angle = get_orientation_of_LB_Face3D(face)
-            vect_x, vect_y = orientation_to_x_and_y_vector3d(angle)
+        # Adjust the orientation of the mesh on the roof
+        if face.normal.z > 0:
+            # To orient the mesh to South
+            if orient_roof_mesh_to_south:
+                vect_x = Vector3D(x=1., y=0, z=0)
+            # To orient it according to the orientation of the building
+            else:
+                angle = get_orientation_of_LB_Face3D(face)
+                vect_x, vect_y = orientation_to_x_and_y_vector3d(angle)
+            # Make the Plan in which the Face3D is
             new_plan = Plane(n=face.plane.n, o=face.plane.o, x=vect_x)
+            # Make the new Ladybug Face3D and add it to new_lb_face3d_list
             new_lb_face3d_list.append(Face3D(new_vertices, plane=new_plan, enforce_right_hand=True))
         else:
             new_lb_face3d_list.append(Face3D(new_vertices, plane=face.plane, enforce_right_hand=True))
 
+    # replace the old list by the new one
     lb_face3d_list = new_lb_face3d_list
 
     # Merge coplanar faces
@@ -58,17 +68,12 @@ def merge_facades_and_roof_faces_in_hb_model(HB_model, name):
         # print(index)
         # Check if the face has been used already, and don't reuse it if so
         if index not in used_faces:
-
-            # todo test
-            if face.normal.z > 0:
-                print(face.plane.x, face.plane.y)
-
             plane = face.plane  # Get the plane of the face
+            origin_new_coordinate_system = plane.o  # Get the origin of the new coordinate system
             # Make a rotation matrix from the plane to project the other faces on the plane
             rotation_matrix = make_rotation_matrix(plane)
-            origin_new_coordinate_system = plane.o  # Get the origin of the new coordinate system
-            new_shapely_multipolygon_2d = make_shapely_2D_polygon_from_lb_face(
-                face)  # Initialize the new multipolygon
+            # Make a Polygon 2d from the face
+            new_shapely_multipolygon_2d = make_shapely_2D_polygon_from_lb_face(face)  # Initialize the new multipolygon
             used_faces.append(index)
             for index_face_to_merge, face_to_merge in enumerate(lb_face3d_list):  # Loop through all the faces
                 # Merge only if the face is not used and is coplanar to the first face
@@ -112,18 +117,15 @@ def merge_facades_and_roof_faces_in_hb_model(HB_model, name):
                                                polyface=polyface_3d)
     Room.solve_adjacency([room_merged_facades], tolerance=default_tolerance)
     # Convert the HB Room to a HB Model
+    if name is None:
+        name = hb_model.identifier + "_merged"
     hb_model_merge_facades = Model(identifier=name, rooms=[room_merged_facades])
-
-    # for face in hb_model_merge_facades.faces:  # todo @Elie, for debugging, to delete
-    #     print(face.boundary_condition, face.type, face.geometry.plane.x, face.geometry.plane.y)
-
-    hb_model_aperture_list = hb_model.apertures
     # add apertures to the Model
+    hb_model_aperture_list = hb_model.apertures
     for aperture_obj in hb_model_aperture_list:
         for room in hb_model_merge_facades.rooms:
             for face in room.faces:
-                if face.geometry.is_sub_face(aperture_obj.geometry, tolerance=default_tolerance,
-                                             angle_tolerance=0.1):
+                if face.geometry.is_sub_face(aperture_obj.geometry, tolerance=default_tolerance, angle_tolerance=0.1):
                     face.add_aperture(aperture_obj)
 
     return hb_model_merge_facades
@@ -226,10 +228,23 @@ def orientation_to_x_and_y_vector3d(angle):
 
 
 if __name__ == "__main__":
-    for i in range(2, 3):
-        hb_model = Model.from_hbjson(
-            f"C:\\Users\\elie-medioni\\OneDrive\\OneDrive - Technion\\Ministry of Energy Research\\IBPSA US conference\\buildings_hbjson\\variation_1\\ResidentialBldg_{i}.hbjson")
-        hb_model_merged = merge_facades_and_roof_faces_in_hb_model(hb_model, hb_model.identifier + "_merged")
+    for i in range(0, 11):
+        path_folder = r"C:\Users\eliem\OneDrive - Technion\Ministry of Energy Research\IBPSA US conference\buildings_hbjson\variation_high_and_dense"
+        hb_model = Model.from_hbjson(os.path.join(path_folder,f"Buil_TA_{i}.hbjson"))
+        # hb_model_merged = merge_facades_and_roof_faces_in_hb_model(hb_model, orient_roof_mesh_to_south=True,name=hb_model.identifier + "_merged_south")
+        # hb_model_merged.add_shades(hb_model.outdoor_shades)
+        # hb_model_merged.to_hbjson(os.path.join(path_folder,"merged_south",f"Buil_TA_{i}_merged_south.hbjson"))
+
+        hb_model_merged = merge_facades_and_roof_faces_in_hb_model(hb_model, orient_roof_mesh_to_south=False,
+                                                                   name=hb_model.identifier + "_merged_or")
         hb_model_merged.add_shades(hb_model.outdoor_shades)
-        hb_model_merged.to_hbjson(
-            f"C:\\Users\\elie-medioni\\OneDrive\\OneDrive - Technion\\Ministry of Energy Research\\IBPSA US conference\\buildings_hbjson\\variation_1\\ResidentialBldg_{i}_merged.hbjson")
+        hb_model_merged.to_hbjson(os.path.join(path_folder,"merged_or", f"Buil_TA_{i}_merged_or.hbjson"))
+
+
+
+        # hb_model = Model.from_hbjson(
+        #     f"C:\\Users\\elie-medioni\\OneDrive\\OneDrive - Technion\\Ministry of Energy Research\\IBPSA US conference\\buildings_hbjson\\variation_1\\ResidentialBldg_{i}.hbjson")
+        # hb_model_merged = merge_facades_and_roof_faces_in_hb_model(hb_model, hb_model.identifier + "_merged")
+        # hb_model_merged.add_shades(hb_model.outdoor_shades)
+        # hb_model_merged.to_hbjson(
+        #     f"C:\\Users\\elie-medioni\\OneDrive\\OneDrive - Technion\\Ministry of Energy Research\\IBPSA US conference\\buildings_hbjson\\variation_1\\ResidentialBldg_{i}_merged.hbjson")
