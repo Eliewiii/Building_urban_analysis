@@ -16,6 +16,8 @@ from honeybee.facetype import Wall, RoofCeiling
 from honeybee.typing import clean_and_id_rad_string, clean_rad_string
 from honeybee_radiance.sensorgrid import SensorGrid
 
+from ladybug_geometry.geometry2d.pointvector import Point2D
+
 user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")
 
@@ -124,6 +126,10 @@ def from_polygon_grid_BUA(face, x_dim, y_dim, generate_centroids=True):
             them generated upon request as they typically are. However, if you
             have no need for the face centroids, you would save memory by setting
             this to False. Default is True.
+    todo @Elie, change the name of variables and put more comments
+
+    Credits, Highly inspired from ladybug_geometry.geometry2d.mesh.Mesh2D.from_polygon_grid, with adjusments
+    not to overlap holes/apertures/windows
     """
 
     polygon_face = face.polygon2d
@@ -139,10 +145,7 @@ def from_polygon_grid_BUA(face, x_dim, y_dim, generate_centroids=True):
     # generate the gid of points and faces
     _verts = Mesh2D._grid_vertices(_poly_min, _num_x, _num_y, _x_dim, _y_dim)
     _faces = Mesh2D._grid_faces(_num_x, _num_y)
-    _centroids = None
-    if generate_centroids is True:  # calculate centroids if requested
-        _centroids = Mesh2D._grid_centroids(
-            _poly_min, _num_x, _num_y, _x_dim, _y_dim)
+    _centroids = Mesh2D._grid_centroids(_poly_min, _num_x, _num_y, _x_dim, _y_dim)
 
     # figure out which vertices lie inside the polygon
     # for tolerance reasons, we scale the polygon by a very small amount
@@ -152,19 +155,62 @@ def from_polygon_grid_BUA(face, x_dim, y_dim, generate_centroids=True):
     scaled_poly = Polygon2D(
         tuple(pt.scale(1.000001, _poly_min) - tol_pt for pt in polygon_face.vertices))
 
-    _pattern = [scaled_poly.is_point_inside(_v) for _v in _verts]
+    """
+    The element of the mesh that overlap with windows/holes should be removed.
+    The separation of vertices that and faces will be differentiated, as the functions to remove them 
+    are different and cannot be used at the same time.
+    """
 
+    # Remove the vertices that are on the wholes/windows
+    _pattern_vertices = [scaled_poly.is_point_inside(_v) for _v in _verts]
     if face.has_holes:
         for polygon_hole in face.hole_polygon2d:
             # figure out how many x and y cells to make
             for vert in _verts:
                 if polygon_hole.is_point_inside(vert) or polygon_hole.is_point_on_edge(vert, 0.1):
-                    _pattern[_verts.index(vert)] = False
+                    _pattern_vertices[_verts.index(vert)] = False
 
     # build the mesh
     _mesh_init = Mesh2D(_verts, _faces)
     _mesh_init._face_centroids = _centroids
-    _new_mesh, _face_pattern = _mesh_init.remove_vertices(_pattern)
+    # Remove the vertices that are not in the pattern
+    _new_mesh, _face_pattern = _mesh_init.remove_vertices(_pattern_vertices)
+    _new_mesh._face_areas = x_dim * y_dim
+    # Get new value sof th enew_mesh
+    mesh_faces = _new_mesh.faces
+    mesh_verts = _new_mesh.vertices
+    mesh_centroid = _new_mesh.face_centroids
+
+    # Remove the faces that are on the wholes/windows
+    _pattern_faces = []
+    # Initialize the pattern of the faces
+    for mesh_face in mesh_faces:
+        if [scaled_poly.is_point_inside(mesh_verts[i]) for i in mesh_face] == [True, True, True, True]:
+            _pattern_faces.append(True)
+        else:
+            _pattern_faces.append(False)
+
+    if face.has_holes:
+        for polygon_hole in face.hole_polygon2d:
+            for index, mesh_face in enumerate(mesh_faces):
+                # Check if the centroid is in the window
+                if polygon_hole.is_point_inside(mesh_centroid[index]) or polygon_hole.is_point_on_edge(
+                        mesh_centroid[index], 0.1):
+                    _pattern_faces[index] = False
+                # Check if the middle point of the face side is in the window
+                else:
+                    face_point2d_list = [mesh_verts[i] for i in mesh_face]
+                    face_middle_point2_list = [middle_point2d(face_point2d_list[i], face_point2d_list[i + 1])
+                                               for i in range(0, len(face_point2d_list) - 1)]
+                    face_middle_point2_list.append(
+                        middle_point2d(face_point2d_list[-1], face_point2d_list[0]))
+                    for middle_point in face_middle_point2_list:
+                        if polygon_hole.is_point_inside(middle_point) or polygon_hole.is_point_on_edge(
+                                middle_point, 0.1):
+                            _pattern_faces[index] = False
+                            break
+    # Remove the vertices that are not in the pattern
+    _new_mesh, _face_pattern = _new_mesh.remove_faces(_pattern_faces)
     _new_mesh._face_areas = x_dim * y_dim
     return _new_mesh
 
@@ -298,7 +344,6 @@ def generate_sensorgrid_dict_on_hb_model(hb_model_obj, grid_size_x, grid_size_y,
     return sensor_grid_obj.to_dict()
 
 
-
 def get_lb_mesh_BUA_grid_y(hb_face_list, grid_size_x, grid_size_y, offset_dist):
     """
     Create a Mesh3D from a list of HB faces
@@ -328,3 +373,12 @@ def create_sensor_grid_from_mesh(mesh, name=None):
     id = clean_rad_string(name) if '/' not in name else clean_rad_string(name.split('/')[0])
     sensor_grid = SensorGrid.from_mesh3d(id, mesh)
     return sensor_grid
+
+
+def middle_point2d(point2d_1, point2d_2):
+    """
+    Return the middle point between two Ladybug Point2D objects
+    :param point2d_1: tuple of float
+    :param point2d_2: tuple of float
+    """
+    return (Point2D((point2d_1[0] + point2d_2[0]) / 2, (point2d_1[1] + point2d_2[1]) / 2))
