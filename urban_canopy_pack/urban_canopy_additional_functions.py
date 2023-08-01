@@ -43,7 +43,7 @@ tree_structure_per_building_urban_canopy_json_dict = {
                 "energy_harvested": {"list": None, "total": None},
                 "lca_craddle_to_installation_primary_energy": {"list": None, "total": None},
                 "lca_craddle_to_installation_carbon": {"list": None, "total": None},
-                "dmfa": {"list": None, "total": None},
+                "dmfa_waste": {"list": None, "total": None},
                 "lca_recycling_primary_energy": {"list": None, "total": None},
                 "lca_recycling_carbon": {"list": None, "total": None}
             },
@@ -51,7 +51,7 @@ tree_structure_per_building_urban_canopy_json_dict = {
                 "energy_harvested": {"list": None, "total": None},
                 "lca_craddle_to_installation_primary_energy": {"list": None, "total": None},
                 "lca_craddle_to_installation_carbon": {"list": None, "total": None},
-                "dmfa": {"list": None, "total": None},
+                "dmfa_waste": {"list": None, "total": None},
                 "lca_recycling_primary_energy": {"list": None, "total": None},
                 "lca_recycling_carbon": {"list": None, "total": None}
             },
@@ -59,7 +59,7 @@ tree_structure_per_building_urban_canopy_json_dict = {
                 "energy_harvested": {"list": None, "total": None},
                 "lca_craddle_to_installation_primary_energy": {"list": None, "total": None},
                 "lca_craddle_to_installation_carbon": {"list": None, "total": None},
-                "dmfa": {"list": None, "total": None},
+                "dmfa_waste": {"list": None, "total": None},
                 "lca_recycling_primary_energy": {"list": None, "total": None},
                 "lca_recycling_carbon": {"list": None, "total": None}
             },
@@ -206,7 +206,7 @@ class UrbanCanopyAdditionalFunction:
                           "gh_gas_emissions_manufacturing_roof (kgCO2eq)",
                           "gh_gas_emissions_manufacturing_facades (kgCO2eq)",
                           "gh_gas_emissions_manufacturing_total (kgCO2eq)",
-                          "dmfa_roof (kg)", "dmfa_facades (kg)", "dmfa_total (kg)", "energy_end_of_life_roof (kWh)",
+                          "dmfa_waste_roof (kg)", "dmfa_waste_facades (kg)", "dmfa_waste_total (kg)", "energy_end_of_life_roof (kWh)",
                           "energy_end_of_life_facades (kWh)", "energy_end_of_life_total (kWh)",
                           "carbon_end_of_life_roof (kgCO2eq)", "carbon_end_of_life_facades (kgCO2eq)",
                           "carbon_end_of_life_total (kgCO2eq)"]
@@ -237,34 +237,28 @@ class UrbanCanopyAdditionalFunction:
                 list9 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"][
                     "lca_craddle_to_installation_carbon"][
                     "list"]
-                list10 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["dmfa"]["list"]
-                list11 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["dmfa"][
+                list10 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["dmfa_waste"]["list"]
+                list11 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["dmfa_waste"][
                     "list"]
-                list12 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["dmfa"]["list"]
+                list12 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["dmfa_waste"]["list"]
                 list13 = \
                     json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"][
-                        "lca_recycling_primary_energy"][
-                        "list"]
+                        "lca_recycling_primary_energy"]["list"]
                 list14 = \
                     json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"][
-                        "lca_recycling_primary_energy"][
-                        "list"]
+                        "lca_recycling_primary_energy"]["list"]
                 list15 = \
                     json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"][
-                        "lca_recycling_primary_energy"][
-                        "list"]
+                        "lca_recycling_primary_energy"]["list"]
                 list16 = \
                     json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"][
-                        "lca_recycling_carbon"][
-                        "list"]
+                        "lca_recycling_carbon"]["list"]
                 list17 = \
                     json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"][
-                        "lca_recycling_carbon"][
-                        "list"]
+                        "lca_recycling_carbon"]["list"]
                 list18 = \
                     json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"][
-                        "lca_recycling_carbon"][
-                        "list"]
+                        "lca_recycling_carbon"]["list"]
 
                 array = numpy.transpose(
                     [list1, list2, list3, list4, list5, list6, list7, list8, list9, list10, list11, list12, list13, list14,

@@ -20,7 +20,7 @@ class PvPanelTechnology:
         self.carbon_manufacturing = None
         self.primary_energy_transport = None
         self.carbon_transport = None
-        self.DMFA = None  # per square meter
+        self.weight = None  # per square meter
         self.primary_energy_recycling = None
         self.carbon_recycling = None
 
@@ -42,14 +42,14 @@ class PvPanelTechnology:
                 pv_tech.weibull_law_failure_parameters["lifetime"] = pv_dict_data[identifier_key]["weibull_lifetime"]
                 pv_tech.weibull_law_failure_parameters["shape"] = pv_dict_data[identifier_key]["weibull_shape"]
                 pv_tech.panel_area = pv_dict_data[identifier_key]["panel_area"]
-                pv_tech.DMFA = pv_dict_data[identifier_key]["DMFA"]
+                pv_tech.weight = pv_dict_data[identifier_key]["weight"]
                 pv_tech.primary_energy_manufacturing = pv_dict_data[identifier_key][
                     "primary_energy_manufacturing_in_kWh_per_panel"]
                 pv_tech.carbon_manufacturing = pv_dict_data[identifier_key][
                     "gh_gas_emissions_manufacturing_in_kgCO2eq_per_panel"]
                 pv_tech.primary_energy_transport = pv_dict_data[identifier_key]["primary_energy_transport_in_kWh_per_panel"]
                 pv_tech.carbon_transport = pv_dict_data[identifier_key]["carbon_transport_in_kgCO2_per_panel"]
-                pv_tech.DMFA = pv_dict_data[identifier_key]["DMFA"]
+                pv_tech.weight = pv_dict_data[identifier_key]["weight"]
                 pv_tech.primary_energy_recycling = pv_dict_data[identifier_key]["end_of_life_primary_energy_in_kWh_per_panel"]
                 pv_tech.carbon_recycling = pv_dict_data[identifier_key]["end_of_life_carbon_in_kgCO2_per_panel"]
 

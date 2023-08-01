@@ -56,7 +56,7 @@ class PvPanel:
 
     def panel_failed(self):
         """
-        Switch off the panel by initializing its age and its life expectancy to None and return the dmfa caused by its
+        Switch off the panel by initializing its age and its life expectancy to None and return the waste caused by its
         failing
         """
         self.age = None
@@ -85,7 +85,7 @@ class PvPanel:
         #todo ask @elie about it
         :param solar_radiation_year_value: float: radiation received by a panel during an entire year in Wh/panel/year
         :return energy_harvested: float : energy harvested by the panel through the year
-        :return dmfa_waste: float : dmfa waste generate by the panel when it fails
+        :return panel_failed: bool: True if the panel failed, else False
         """
         energy_harvested, panel_failed = 0., False
 
