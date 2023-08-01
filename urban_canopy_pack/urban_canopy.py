@@ -584,7 +584,7 @@ class UrbanCanopy:
                                                    performance_ratio,
                                                    study_duration_in_years, replacement_scenario, **kwargs)
 
-    def plot_graphs(self, path_folder_simulation, study_duration_years, country_ghe_cost):
+    def plot_graphs_buildings(self, path_folder_simulation, study_duration_years, country_ghe_cost):
         for building in self.building_dict.values():
             if type(building) is BuildingModeled and building.is_target:
                 if building.results_panels["Roof"] and building.results_panels["Facades"] and building.results_panels["Total"]:

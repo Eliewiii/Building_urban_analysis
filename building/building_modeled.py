@@ -447,17 +447,28 @@ class BuildingModeled(BuildingBasic):
 
         # plot energy
         cum_energy_harvested_roof = get_cumul_values(self.results_panels["Roof"]["energy_harvested"]["list"])
+        cum_energy_harvested_roof = [i/1000 for i in cum_energy_harvested_roof]
+
         cum_primary_energy_roof = add_elements_of_two_lists(
-            get_cumul_values(self.results_panels["Roof"]["lca_craddle_to_installation_primary_energy"]["list"]),
+            get_cumul_values(self.results_panels["Roof"]["lca_cradle_to_installation_primary_energy"]["list"]),
             get_cumul_values(self.results_panels["Roof"]["lca_recycling_primary_energy"]["list"]))
+        cum_primary_energy_roof = [i/1000 for i in cum_primary_energy_roof]
+
         cum_energy_harvested_facades = get_cumul_values(self.results_panels["Facades"]["energy_harvested"]["list"])
+        cum_energy_harvested_facades = [i/1000 for i in cum_energy_harvested_facades]
+
         cum_primary_energy_facades = add_elements_of_two_lists(
-            get_cumul_values(self.results_panels["Facades"]["lca_craddle_to_installation_primary_energy"]["list"]),
+            get_cumul_values(self.results_panels["Facades"]["lca_cradle_to_installation_primary_energy"]["list"]),
             get_cumul_values(self.results_panels["Facades"]["lca_recycling_primary_energy"]["list"]))
+        cum_primary_energy_facades = [i/1000 for i in cum_primary_energy_facades]
+
         cum_energy_harvested_total = get_cumul_values(self.results_panels["Total"]["energy_harvested"]["list"])
+        cum_energy_harvested_total = [i/1000 for i in cum_energy_harvested_total]
+
         cum_primary_energy_total = add_elements_of_two_lists(
-            get_cumul_values(self.results_panels["Total"]["lca_craddle_to_installation_primary_energy"]["list"]),
+            get_cumul_values(self.results_panels["Total"]["lca_cradle_to_installation_primary_energy"]["list"]),
             get_cumul_values(self.results_panels["Total"]["lca_recycling_primary_energy"]["list"]))
+        cum_primary_energy_total = [i/1000 for i in cum_primary_energy_total]
 
         years = list(range(study_duration_years))
         fig = plt.figure()
@@ -495,7 +506,7 @@ class BuildingModeled(BuildingBasic):
         plt.text(round(interp_point[0]), asymptote_value, f'y={asymptote_value}', va='bottom', ha='left')
 
         plt.xlabel('Time (years)')
-        plt.ylabel('Energy (kWh)')
+        plt.ylabel('Energy (MWh)')
         plt.title('Cumulative harvested energy and primary energy used during the study')
         plt.grid(True)
         plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=2)
@@ -507,22 +518,36 @@ class BuildingModeled(BuildingBasic):
 
         # get the data we need to plot the graphs
         cum_carbon_emissions_roof = add_elements_of_two_lists(
-            get_cumul_values(self.results_panels["Roof"]["lca_craddle_to_installation_carbon"]["list"]),
+            get_cumul_values(self.results_panels["Roof"]["lca_cradle_to_installation_carbon"]["list"]),
             get_cumul_values(self.results_panels["Roof"]["lca_recycling_carbon"]["list"]))
+        cum_carbon_emissions_roof = [i/1000 for i in cum_carbon_emissions_roof]
+
         avoided_carbon_emissions_list_roof = [i * country_ghe_cost for i in self.results_panels["Roof"][
             "energy_harvested"]["list"]]
+        avoided_carbon_emissions_list_roof = [i/1000 for i in avoided_carbon_emissions_list_roof]
+
         cum_avoided_carbon_emissions_roof = get_cumul_values(avoided_carbon_emissions_list_roof)
+
         cum_carbon_emissions_facades = add_elements_of_two_lists(
-            get_cumul_values(self.results_panels["Facades"]["lca_craddle_to_installation_carbon"]["list"]),
+            get_cumul_values(self.results_panels["Facades"]["lca_cradle_to_installation_carbon"]["list"]),
             get_cumul_values(self.results_panels["Facades"]["lca_recycling_carbon"]["list"]))
+        cum_carbon_emissions_facades = [i/1000 for i in cum_carbon_emissions_facades]
+
         avoided_carbon_emissions_list_facades = [i * country_ghe_cost for i in self.results_panels["Facades"][
             "energy_harvested"]["list"]]
+        avoided_carbon_emissions_list_facades = [i/1000 for i in avoided_carbon_emissions_list_facades]
+
         cum_avoided_carbon_emissions_facades = get_cumul_values(avoided_carbon_emissions_list_facades)
+
         cum_carbon_emissions_total = add_elements_of_two_lists(
-            get_cumul_values(self.results_panels["Total"]["lca_craddle_to_installation_carbon"]["list"]),
+            get_cumul_values(self.results_panels["Total"]["lca_cradle_to_installation_carbon"]["list"]),
             get_cumul_values(self.results_panels["Total"]["lca_recycling_carbon"]["list"]))
+        cum_carbon_emissions_total = [i/1000 for i in cum_carbon_emissions_total]
+
         avoided_carbon_emissions_list_total = [i * country_ghe_cost for i in self.results_panels["Total"][
             "energy_harvested"]["list"]]
+        avoided_carbon_emissions_list_total = [i/1000 for i in avoided_carbon_emissions_list_total]
+
         cum_avoided_carbon_emissions_total = get_cumul_values(avoided_carbon_emissions_list_total)
 
         # plot the data
@@ -559,7 +584,7 @@ class BuildingModeled(BuildingBasic):
         plt.text(round(interp_point[0])-6, asymptote_value, f'y={asymptote_value}', va='bottom', ha='left')
 
         plt.xlabel('Time (years)')
-        plt.ylabel('GHE emissions (kgCO2eq)')
+        plt.ylabel('GHE emissions (tCO2eq)')
         plt.title('Cumulative GHG emissions during the study ')
         plt.grid(True)
         plt.subplots_adjust(bottom=0.5)
@@ -573,7 +598,7 @@ class BuildingModeled(BuildingBasic):
 
         cum_energy_harvested_total = get_cumul_values(self.results_panels["Total"]["energy_harvested"]["list"])
         cum_carbon_emissions_total = add_elements_of_two_lists(
-            get_cumul_values(self.results_panels["Total"]["lca_craddle_to_installation_carbon"]["list"]),
+            get_cumul_values(self.results_panels["Total"]["lca_cradle_to_installation_carbon"]["list"]),
             get_cumul_values(self.results_panels["Total"]["lca_recycling_carbon"]["list"]))
 
         ghg_per_kWh = [(x / y) * 1000 for x, y in zip(cum_carbon_emissions_total, cum_energy_harvested_total)]
@@ -591,7 +616,7 @@ class BuildingModeled(BuildingBasic):
     def plot_panels_results_eroi(self, path_folder_simulation_building, study_duration_years):
         # plot EROI
         cum_primary_energy_total = add_elements_of_two_lists(
-            get_cumul_values(self.results_panels["Total"]["lca_craddle_to_installation_primary_energy"]["list"]),
+            get_cumul_values(self.results_panels["Total"]["lca_cradle_to_installation_primary_energy"]["list"]),
             get_cumul_values(self.results_panels["Total"]["lca_recycling_primary_energy"]["list"]))
         cum_energy_harvested_total = get_cumul_values(self.results_panels["Total"]["energy_harvested"]["list"])
         eroi = [x / y for x, y in zip(cum_energy_harvested_total, cum_primary_energy_total)]

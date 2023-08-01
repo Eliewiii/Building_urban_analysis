@@ -11,7 +11,6 @@ urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object
 # SimulationCommonMethods.save_urban_canopy_to_json(urban_canopy_object=urban_canopy_object,
 #                                                   path_folder_simulation=default_path_folder_simulation)
 
-# Generate csv panels data
 SimulationPostProcessingAndPlots.plot_graphs_total_urban_canopy(urban_canopy_object=urban_canopy_object,
                                                                 path_folder_simulation=default_path_folder_simulation,
                                                                 study_duration_years=default_study_duration_years,
