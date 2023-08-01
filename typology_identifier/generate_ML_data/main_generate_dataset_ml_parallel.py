@@ -3,7 +3,8 @@
 """
 from generate_ML_data.sample_and_test_data import *
 
-
+user_logger = logging.getLogger("user")  # f"{__name__} user"
+dev_logger = logging.getLogger("dev")  # f"{__name__} dev"
 
 
 def generate_sample_ml(building_type, training_or_test):
@@ -11,8 +12,10 @@ def generate_sample_ml(building_type, training_or_test):
     training_or_test = training_or_test
     """ generate all the sample images  """
 
-    logging.warning("Generating %s", training_or_test) # why is this warning and not logging.info?
-    logging.warning("samples for %s", building_type)   # why is this warning and not logging.info?
+    user_logger.warning("Generating %s", training_or_test) # why is this warning and not logging.info?
+    user_logger.warning("samples for %s", building_type)   # why is this warning and not logging.info?
+    dev_logger.warning("Generating %s", training_or_test) # why is this warning and not logging.info?
+    dev_logger.warning("samples for %s", building_type)   # why is this warning and not logging.info?
 
     #f'Generating {training_or_test} samples for {building_type}.'
 

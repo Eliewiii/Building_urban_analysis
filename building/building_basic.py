@@ -1,8 +1,32 @@
 """
 BuildingBasic class, representing one building in an urban canopy.
 """
-from mains_tool.utils_general import *
-from building.utils_building import *
+
+
+import logging
+import shapely
+from math import isnan
+
+from ladybug_geometry.geometry3d import Vector3D
+from libraries_addons.lb_face_addons import make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint, \
+    LB_face_footprint_to_lB_polyface3D_extruded_footprint
+from libraries_addons.hb_rooms_addons import RoomsAddons
+from libraries_addons.function_for_gis_extraction_to_sort import polygon_to_LB_footprint,add_additional_attribute_keys_to_dict
+
+
+user_logger = logging.getLogger("user")  # f"{__name__} user"
+dev_logger = logging.getLogger("dev")  # f"{__name__} dev"
+
+default_gis_attribute_key_dict = {
+    "building_id_key_gis": "none",
+    "name": ["name", "full_name_"],
+    "age": ["age", "date", "year"],
+    "typology": ["typo", "typology", "type", "Typology"],
+    "elevation": ["minheight"],
+    "height": ["height", "Height", "govasimple"],
+    "number of floor": ["number_floor", "nb_floor", "mskomot"],
+    "group": ["group"]
+}
 
 
 class BuildingBasic:
@@ -89,7 +113,9 @@ class BuildingBasic:
                 polygon_to_LB_footprint(footprint, unit)
 
             except:
-                logging.warning("The footprint of the building id {building_id} in the GIS file could not be converted"
+                user_logger.warning(f"The footprint of the building id {building_id} in the GIS file could not be converted"
+                                " to a Ladybug footprint. The building will be ignored.")
+                dev_logger.warning(f"The footprint of the building id {building_id} in the GIS file could not be converted"
                                 " to a Ladybug footprint. The building will be ignored.")
             else:
                 building_obj = cls.make_buildingbasic_from_shapely_polygon(polygon=footprint, identifier=building_id,
@@ -108,7 +134,10 @@ class BuildingBasic:
                 try:
                     polygon_to_LB_footprint(polygon, unit)
                 except:
-                    logging.warning(
+                    user_logger.warning(
+                        "The footprint of the building id {sub_building_id} in the GIS file could not be converted"
+                        " to a Ladybug footprint. The building will be ignored.")
+                    dev_logger.warning(
                         "The footprint of the building id {sub_building_id} in the GIS file could not be converted"
                         " to a Ladybug footprint. The building will be ignored.")
                 else:
@@ -277,10 +306,10 @@ class BuildingBasic:
         :return: HB Room envelop
         """
         # convert the envelop of the building to a HB Room
-        HB_room_envelop = RooomsAddons.LB_face_footprint_to_elevated_HB_room_envelop(LB_face_footprint=self.LB_face_footprint,
-                                                                        building_id=self.id,
-                                                                        height=self.height,
-                                                                        elevation=self.elevation)
+        HB_room_envelop = RoomsAddons.LB_face_footprint_to_elevated_HB_room_envelop(LB_face_footprint=self.LB_face_footprint,
+                                                                                    building_id=self.id,
+                                                                                    height=self.height,
+                                                                                    elevation=self.elevation)
         return HB_room_envelop
 
     def to_HB_model(self, layout_from_typology=False, automatic_subdivision=True, properties_from_typology=True):

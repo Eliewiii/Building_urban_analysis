@@ -1,7 +1,17 @@
-from building.utils_building import *
+"""
+todo @ Elie
+"""
+import logging
+
+import numpy as np
+
+from solar_panel.pv_panel import PvPanel
+
 import csv
 from libraries_addons.solar_panels.pv_efficiency_functions import get_efficiency_loss_function_from_string
 
+user_logger = logging.getLogger("user")  # f"{__name__} user"
+dev_logger = logging.getLogger("dev")  # f"{__name__} dev"
 
 def load_panels_on_sensor_grid(sensor_grid, pv_technology_object, yearly_solar_radiation_values,
                                minimum_ratio_energy_harvested_on_primary_energy, performance_ratio):
@@ -34,10 +44,13 @@ def load_panels_on_sensor_grid(sensor_grid, pv_technology_object, yearly_solar_r
             pv_technology_object.primary_energy_transport
 
         if face_areas[mesh.faces.index(face)] < pv_technology_object.panel_area:
-            logging.warning("The area of the mesh's faces is not big enough to contain the PV panels. "
+            user_logger.warning("The area of the mesh's faces is not big enough to contain the PV panels. "
+                            "Make a mesh with bigger faces")
+            dev_logger.warning("The area of the mesh's faces is not big enough to contain the PV panels. "
                             "Make a mesh with bigger faces")
         elif (energy_harvested / primary_energy) <= minimum_ratio_energy_harvested_on_primary_energy:
-            logging.warning("If a panel is put here, it won't produce enough energy to be profitable")
+            user_logger.warning("If a panel is put here, it won't produce enough energy to be profitable")
+            dev_logger.warning("If a panel is put here, it won't produce enough energy to be profitable")
         else:
             panel_of_face = PvPanel(mesh.faces.index(face), pv_technology_object)
             panel_of_face.initialize_or_replace_panel()
@@ -135,6 +148,7 @@ def beginning_end_of_life_lca_results_in_lists(energy_production_per_year_list, 
     :return dmfa_list: list of floats: describes the dmfa caused by the failed panels, for each year
     :return lca_recycling_primary_energy_list: list of float: describes how much energy was used to recycle the panels having failed
     """
+    # todo: add comments
     panel_energy_craddle_to_installation = pv_tech.primary_energy_manufacturing + pv_tech.primary_energy_transport
     panel_carbon_craddle_to_installation = pv_tech.carbon_manufacturing + pv_tech.carbon_transport
     panel_dmfa = pv_tech.DMFA
@@ -167,7 +181,7 @@ def results_from_lists_to_dict(energy_production_per_year_list, craddle_to_insta
     :param lca_recycling_primary_energy_list: list of floats: describes how much energy is used to recycle the panels
     :return results_dict: dictionary containing all the data
     """
-
+    # todo: add comments
     results_dict = {}
     energy_harvested_dict = {"list": energy_production_per_year_list, "total": sum(energy_production_per_year_list)}
     lca_craddle_to_installation_primary_energy_dict = {"list": craddle_to_installation_primary_energy_list,

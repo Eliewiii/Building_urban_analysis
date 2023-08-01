@@ -2,12 +2,33 @@
 BuildingModeled class, representing one building in an urban canopy that will be converted in HB models
 as they will be simulated
 """
+
+import os
+import logging
 import matplotlib.pyplot as plt
 
-from mains_tool.utils_general import *
-from building.utils_building import *
-from building.building_basic import \
-    BuildingBasic  # todo: cannot be imported from building.utils because of circular import (building.building_basic import utils)
+from ladybug_geometry.geometry3d import Vector3D
+from honeybee.model import Model
+from honeybee_radiance.sensorgrid import SensorGrid
+
+from building.building_basic import BuildingBasic
+from building.context_filter.building_shading_context import BuildingShadingContext
+# from building.context_filter.building_lwr_context import BuildingLWRContext  # Useful later
+
+from libraries_addons.hb_model_addons import HbAddons
+from libraries_addons.solar_radiations.add_sensorgrid_hb_model import get_hb_faces_facades,get_hb_faces_roof,get_lb_mesh,get_lb_mesh_BUA,create_sensor_grid_from_mesh
+from libraries_addons.solar_radiations.hb_recipe_settings import hb_recipe_settings
+from libraries_addons.solar_radiations.annual_irradiance_simulation import hb_ann_irr_sim
+from libraries_addons.solar_radiations.annual_cumulative_value import hb_ann_cum_values
+from libraries_addons.solar_panels.useful_functions_solar_panel import load_panels_on_sensor_grid, \
+    loop_over_the_years_for_solar_panels, beginning_end_of_life_lca_results_in_lists, results_from_lists_to_dict, \
+    get_cumul_values, add_elements_of_two_lists, transform_to_linear_function, find_intersection_functions, \
+    generate_step_function
+
+
+user_logger = logging.getLogger("user")
+dev_logger = logging.getLogger("dev")
+
 
 
 class BuildingModeled(BuildingBasic):
@@ -20,17 +41,21 @@ class BuildingModeled(BuildingBasic):
         # get the values from the original BuildingBasic object (if there is one) through **kwargs
         for key, value in kwargs.items():
             setattr(self, key, value)
-
+        # Honeybee model
         self.HB_model_obj = None
         self.HB_model_dict = None
-
+        self.merged_faces_hb_model_dict = None
+        # Stus of the building
         self.to_simulate = False
         self.is_target = False
-
+        # Shading computation
         self.shading_context_obj = None
 
-        self.first_pass_context_building_id_list = []
+        self.first_pass_context_building_id_list = []  # todo @Elie delete
 
+
+        # Solar and panel radiation
+        # self.solar_and_panel_radiation_obj = None  # todo @Elie later
         self.sensor_grid_dict = {'Roof': None, 'Facades': None}
         self.panels = {"Roof": None, "Facades": None}
         self.results_panels = {"Roof": None, "Facades": None, "Total": None}
@@ -97,16 +122,30 @@ class BuildingModeled(BuildingBasic):
         identifier = HB_model.identifier
         # create the BuildingModeled object from the HB model
         building_modeled_obj = cls(identifier)
-        # Try to extract certain characteristics of the model from the HB_model
-        elevation, height = HbAddons.elevation_and_height_from_HB_model(HB_model)
+        try:
+            # Try to extract certain characteristics of the model from the HB_model
+            elevation, height = HbAddons.elevation_and_height_from_HB_model(HB_model)
+        except:
+            # todo @Elie: Check if this is the correct message.
+            err_message = "Cannot extract eleveation and height from the Honeybee model."
+            user_logger.error(err_message)
+            dev_logger.error(err_message, exc_info=True)
+            raise AttributeError(err_message)
         # # set the attributes of the BuildingModeled object
         building_modeled_obj.HB_model_obj = HB_model
         building_modeled_obj.urban_canopy = urban_canopy
         building_modeled_obj.elevation = elevation
         building_modeled_obj.height = height
         building_modeled_obj.is_target = is_target
-        # todo @Elie : make the LB_face_footprint from the HB_model
-        building_modeled_obj.LB_face_footprint = HbAddons.make_LB_face_footprint_from_HB_model(HB_model=HB_model)
+        try:
+            # todo @Elie : make the LB_face_footprint from the HB_model
+            building_modeled_obj.LB_face_footprint = HbAddons.make_LB_face_footprint_from_HB_model(HB_model=HB_model)
+        except:
+            # todo @Elie: Check if this is the correct message.
+            err_message = "Cannot make the Ladybug face footprint from the Honeybee model."
+            user_logger.error(err_message)
+            # dev_logger.error(err_message, exc_info=True)
+            raise AttributeError(err_message)
         # todo @Elie : finish the function (and check if it works)
         building_modeled_obj.moved_to_origin = True  # we assumed that the HB model is already in the proper place within the urban canopy
 
@@ -195,7 +234,9 @@ class BuildingModeled(BuildingBasic):
             self.sensor_grid_dict['Facades'] = sensor_grid_facades.to_dict()
 
         else:
-            logging.warning(f"You did not precise whether you want to run the simulation on the roof, "
+            user_logger.warning(f"You did not precise whether you want to run the simulation on the roof, "
+                            f"the facades or both")
+            dev_logger.warning(f"You did not precise whether you want to run the simulation on the roof, "
                             f"the facades or both")
 
     def solar_radiations(self, name, path_folder_simulation, path_weather_file, grid_size=1, offset_dist=0.1,
@@ -247,6 +288,7 @@ class BuildingModeled(BuildingBasic):
         :param minimum_ratio_energy_harvested_on_primary_energy: int: production minimal during the first year for a panel to be installed at
         this position, Default=1.2
         :param performance_ratio: float: performance ratio of the PV, Default=0.75
+        todo @Elie, simplify and relocate this function and the one below
         """
         # we only add the panels if the sensor grid already exists
         if self.sensor_grid_dict["Roof"] is not None:

@@ -1,7 +1,5 @@
-try:
-    from lbt_recipes.settings import RecipeSettings
-except ImportError as e:
-    raise ImportError('\nFailed to import lbt_recipes:\n\t{}'.format(e))
+from lbt_recipes.settings import RecipeSettings
+
 
 
 def hb_recipe_settings(path_folder, workers=None, reload_old=True, report_out=False):
@@ -18,7 +16,7 @@ def hb_recipe_settings(path_folder, workers=None, reload_old=True, report_out=Fa
     will be overwritten by the new simulation.
     report_out : A boolean to indicate whether the recipe progress should be displayed in the cmd window (False) or
     output from the "report" recipe component (True). Outputting  from the component can be useful for debugging but
-    recipe reports can often be very long so it can slow grasshopper slightly. (Default : False)"""
+    recipe reports can often be very long, so it can slow grasshopper slightly. (Default : False)"""
 
     # create the settings
     settings = RecipeSettings(path_folder, workers, reload_old, report_out)

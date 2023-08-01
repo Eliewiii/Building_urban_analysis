@@ -5,10 +5,6 @@ Panel class, modeling solar panels, to track the age and energy production of pa
 # todo @Julius and Elie, make a small documentation to explain how we compute the time of failure
 #  plus all the hypothesis
 
-from math import log, ceil
-import random
-
-from solar_panel.pv_panel_technology import PvPanelTechnology
 from libraries_addons.solar_panels.pv_efficiency_functions import get_efficiency_loss_function_from_string
 
 

@@ -2,8 +2,12 @@
 
 """
 
-from mains_tool.utils_general import *
-from urban_canopy_pack.utils_urban_canopy import *
+import logging
+
+from urban_canopy_pack.urban_canopy_additional_functions import UrbanCanopyAdditionalFunction
+
+user_logger = logging.getLogger("user")  # f"{__name__} user"
+dev_logger = logging.getLogger("dev")  # f"{__name__} dev"
 
 
 class SimulationPostProcessingAndPlots:
@@ -16,7 +20,8 @@ class SimulationPostProcessingAndPlots:
             todo @Elie, change it, so tha it is writen in the json file
         """
         urban_canopy_object.make_HB_model_envelops_from_buildings(path_folder=path_folder_simulation)
-        logging.info("HB model for the building envelop created successfully")
+        user_logger.info("HB model for the building envelop created successfully")
+        dev_logger.info("HB model for the building envelop created successfully")
 
     @staticmethod
     def add_building_envelops_to_urban_canopy_json(urban_canopy_object):
@@ -25,7 +30,8 @@ class SimulationPostProcessingAndPlots:
         :param urban_canopy_object:
         """
         urban_canopy_object.add_hb_model_envelop_to_json_dict()
-        logging.info(" ")  # todo
+        user_logger.info(" ")  # todo
+        dev_logger.info(" ")  # todo
 
     @staticmethod
     def generate_csv_panels_simulation_results(urban_canopy_object, path_folder_simulation):
@@ -47,3 +53,8 @@ class SimulationPostProcessingAndPlots:
         urban_canopy_object.plot_graphs_urban_canopy(path_folder_simulation=path_folder_simulation,
                                                      study_duration_years=study_duration_years,
                                                      country_ghe_cost=country_ghe_cost)
+
+    def plot_graphs(self):
+        """
+            todo @Elie
+        """

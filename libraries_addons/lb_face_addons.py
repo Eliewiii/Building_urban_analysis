@@ -2,10 +2,28 @@
 Additional functions for Ladybug Face objects.
 """
 
-from libraries_addons.utils_libraries_addons import *
 
-# todo : for some rreason, the following import is necessary for _orient_geometry to work
-from ladybug_geometry.bounding import _orient_geometry
+import logging
+from math import pi
+
+from shapely.geometry import Polygon
+
+
+from ladybug_geometry.geometry3d.pointvector import Point3D, Vector3D
+from ladybug_geometry.geometry3d.face import Face3D
+from ladybug_geometry.geometry3d.polyface import Polyface3D
+from ladybug_geometry.bounding import bounding_domain_x, bounding_domain_y, bounding_rectangle_extents, _orient_geometry
+from honeybee.boundarycondition import Outdoors
+import dragonfly
+from dragonfly.building import Building
+
+from utils.utils_constants import TOLERANCE_LBT
+
+default_elevation = 0.
+default_height = 9.
+
+dev_logger = logging.getLogger("dev")
+user_logger = logging.getLogger("user")
 
 
 def make_shapely_polygon_from_LB_face(LB_face):
@@ -15,7 +33,7 @@ def make_shapely_polygon_from_LB_face(LB_face):
     return Polygon(list_tuple_vertices_2d)
 
 
-def make_LB_face_from_shapely_polygon(polygon, tolerance=default_tolerance):
+def make_LB_face_from_shapely_polygon(polygon, tolerance=TOLERANCE_LBT):
     """Convert a Ladybug Face to a Shapely Polygon."""
     # convert vertices into tuples
     point_list_outline = [list(point) for point in polygon.exterior.__geo_interface__['coordinates']]
@@ -144,7 +162,8 @@ def merge_LB_face_list(LB_face_list):
             LB_face_merged = make_LB_face_from_shapely_polygon(merged_polygon)
             return LB_face_merged
         else:
-            logging.warning("The footprint of the building is not a single polygon")
+            user_logger.warning("The footprint of the building is not a single polygon")
+            dev_logger.warning("The footprint of the building is not a single polygon")
             # raise error
             raise ValueError("The footprint of the building is not a single polygon")
     # if there is only one face, return it
@@ -152,7 +171,8 @@ def merge_LB_face_list(LB_face_list):
         return (LB_face_list[0])
     # if there is no face, return a warning
     else:
-        logging.warning("The list of faces to merge is empty")
+        user_logger.warning("The list of faces to merge is empty")
+        dev_logger.warning("The list of faces to merge is empty")
         # raise error
         raise ValueError("The list of faces to merge is empty")
 
@@ -224,7 +244,8 @@ def LB_footprint_to_df_building(LB_face_footprint, core_area_ratio=0.15, tol=0.0
 
 
     else:
-        logging.warning(f" building_{self.id} : the automatic subdivision in rooms and cores failed")
+        user_logger.warning(f" building_{self.id} : the automatic subdivision in rooms and cores failed")
+        dev_logger.warning(f" building_{self.id} : the automatic subdivision in rooms and cores failed")
         self.DF_building = dragonfly.building.Building.from_footprint(identifier="Building_" + str(self.id),
                                                                       footprint=[LB_face_footprint],
                                                                       floor_to_floor_heights=floor_to_floor_heights)
