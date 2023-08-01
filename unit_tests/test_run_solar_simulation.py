@@ -21,11 +21,11 @@ path_file_json = None
 urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object(
     path_folder_simulation=default_path_folder_simulation)
 
-path_folder_json = "C:\\Users\\elie-medioni\\OneDrive\\OneDrive - Technion\\BUA\\Hilany\\Samples\\mesh_issue"
-SimulationLoadBuildingOrGeometry.add_buildings_from_hbjson_to_urban_canopy(urban_canopy_object=urban_canopy_object,
-                                                                           path_file_hbjson=path_file_json,
-                                                                           path_folder_hbjson=path_folder_json,
-                                                                           are_buildings_targets=True)
+#path_folder_json = "C:\\Users\\elie-medioni\\OneDrive\\OneDrive - Technion\\BUA\\Hilany\\Samples\\mesh_issue"
+#SimulationLoadBuildingOrGeometry.add_buildings_from_hbjson_to_urban_canopy(urban_canopy_object=urban_canopy_object,
+#                                                                           path_file_hbjson=path_file_json,
+#                                                                           path_folder_hbjson=path_folder_json,
+#                                                                          are_buildings_targets=True)
 
 
 # Run radiation simulation on the Urban Canopy
