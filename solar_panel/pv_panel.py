@@ -34,16 +34,16 @@ class PvPanel:
     def initialize_or_replace_panel_old(self):
         """
         Initialize a panel or replace the panel with a new one, leading the LCA carbon footprint
-        :return lca_craddle_to_installation_primary_energy: float: the energy manufacturing this new panel caused
+        :return lca_cradle_to_installation_primary_energy: float: the energy manufacturing this new panel caused
         """
         # Get a life expectancy according to the life expectancy distribution of the pv technology
         self.life_expectancy = self.panel_technology_object.get_life_expectancy_of_a_panel()
         # put back the age to 0
         self.age = 0
         # get the LCA carbon footprint for one panel according to its pv technology
-        lca_craddle_to_installation_primary_energy = self.panel_technology_object.primary_energy_manufacturing
+        lca_cradle_to_installation_primary_energy = self.panel_technology_object.primary_energy_manufacturing
 
-        return lca_craddle_to_installation_primary_energy
+        return lca_cradle_to_installation_primary_energy
 
     def initialize_or_replace_panel(self):
         """

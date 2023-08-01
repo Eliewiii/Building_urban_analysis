@@ -142,41 +142,41 @@ def beginning_end_of_life_lca_results_in_lists(energy_production_per_year_list, 
     :param nb_of_failed_panels_list: list of integers: describes how many panels fail each year
     :param pv_tech: PVPanelTechnology object
     :return energy_production_per_year_list: list of floats
-    :return lca_craddle_to_installation_primary_energy_list: list of floats: describes how much energy was used to manufacture the panels installed for
+    :return lca_cradle_to_installation_primary_energy_list: list of floats: describes how much energy was used to manufacture the panels installed for
     each year
-    :return lca_craddle_to_installation_carbon_list: list of floats: describes how much carbon was released to manufacture the panels installed,
+    :return lca_cradle_to_installation_carbon_list: list of floats: describes how much carbon was released to manufacture the panels installed,
     for each year
     :return dmfa_waste_list: list of floats: describes the dmfa waste caused by the failed panels, for each year
     :return lca_recycling_primary_energy_list: list of float: describes how much energy was used to recycle the panels having failed
     """
     # todo: add comments
-    panel_energy_craddle_to_installation = pv_tech.primary_energy_manufacturing + pv_tech.primary_energy_transport
-    panel_carbon_craddle_to_installation = pv_tech.carbon_manufacturing + pv_tech.carbon_transport
+    panel_energy_cradle_to_installation = pv_tech.primary_energy_manufacturing + pv_tech.primary_energy_transport
+    panel_carbon_cradle_to_installation = pv_tech.carbon_manufacturing + pv_tech.carbon_transport
     panel_waste = pv_tech.weight
     panel_primary_energy_recycling = pv_tech.primary_energy_recycling
     panel_carbon_recycling = pv_tech.carbon_recycling
 
-    craddle_to_installation_primary_energy_list = [i * panel_energy_craddle_to_installation for i in
+    cradle_to_installation_primary_energy_list = [i * panel_energy_cradle_to_installation for i in
                                                    nb_of_panels_installed_list]
-    craddle_to_installation_carbon_list = [i * panel_carbon_craddle_to_installation for i in
+    cradle_to_installation_carbon_list = [i * panel_carbon_cradle_to_installation for i in
                                            nb_of_panels_installed_list]
     dmfa_waste_list = [i * panel_waste for i in nb_of_failed_panels_list]
     lca_recycling_primary_energy_list = [i * panel_primary_energy_recycling for i in nb_of_panels_installed_list]
     lca_recycling_carbon_list = [i * panel_carbon_recycling for i in nb_of_panels_installed_list]
 
-    return energy_production_per_year_list, craddle_to_installation_primary_energy_list, craddle_to_installation_carbon_list, \
+    return energy_production_per_year_list, cradle_to_installation_primary_energy_list, cradle_to_installation_carbon_list, \
         dmfa_waste_list, lca_recycling_primary_energy_list, lca_recycling_carbon_list
 
 
-def results_from_lists_to_dict(energy_production_per_year_list, craddle_to_installation_primary_energy_list,
-                               craddle_to_installation_carbon_list, dmfa_waste_list, lca_recycling_primary_energy_list,
+def results_from_lists_to_dict(energy_production_per_year_list, cradle_to_installation_primary_energy_list,
+                               cradle_to_installation_carbon_list, dmfa_waste_list, lca_recycling_primary_energy_list,
                                lca_recycling_carbon_list):
     """
     Transform those results into a dictionary
     :param energy_production_per_year_list: list of floats describes the energy production each year
-    :param craddle_to_installation_primary_energy_list: list of floats: describes how much energy was used to manufacture the panels
+    :param cradle_to_installation_primary_energy_list: list of floats: describes how much energy was used to manufacture the panels
     installed for each year
-    :param craddle_to_installation_carbon_list: list of floats: describes how much carbon was released to manufacture the panels
+    :param cradle_to_installation_carbon_list: list of floats: describes how much carbon was released to manufacture the panels
     installed for each year
     :param dmfa_waste_list: list of floats: describes the dmfa waste caused by the failed panels, for each year
     :param lca_recycling_primary_energy_list: list of floats: describes how much energy is used to recycle the panels
@@ -185,18 +185,18 @@ def results_from_lists_to_dict(energy_production_per_year_list, craddle_to_insta
     # todo: add comments
     results_dict = {}
     energy_harvested_dict = {"list": energy_production_per_year_list, "total": sum(energy_production_per_year_list)}
-    lca_craddle_to_installation_primary_energy_dict = {"list": craddle_to_installation_primary_energy_list,
-                                                       "total": sum(craddle_to_installation_primary_energy_list)}
-    lca_craddle_to_installation_carbon_dict = {"list": craddle_to_installation_carbon_list,
-                                               "total": sum(craddle_to_installation_carbon_list)}
+    lca_cradle_to_installation_primary_energy_dict = {"list": cradle_to_installation_primary_energy_list,
+                                                       "total": sum(cradle_to_installation_primary_energy_list)}
+    lca_cradle_to_installation_carbon_dict = {"list": cradle_to_installation_carbon_list,
+                                               "total": sum(cradle_to_installation_carbon_list)}
     dmfa_waste_dict = {"list": dmfa_waste_list, "total": sum(dmfa_waste_list)}
     lca_recycling_primary_energy_dict = {"list": lca_recycling_primary_energy_list,
                                          "total": sum(lca_recycling_primary_energy_list)}
     lca_recycling_carbon_dict = {"list": lca_recycling_carbon_list, "total": sum(lca_recycling_carbon_list)}
 
     results_dict["energy_harvested"] = energy_harvested_dict
-    results_dict["lca_craddle_to_installation_primary_energy"] = lca_craddle_to_installation_primary_energy_dict
-    results_dict["lca_craddle_to_installation_carbon"] = lca_craddle_to_installation_carbon_dict
+    results_dict["lca_cradle_to_installation_primary_energy"] = lca_cradle_to_installation_primary_energy_dict
+    results_dict["lca_cradle_to_installation_carbon"] = lca_cradle_to_installation_carbon_dict
     results_dict["dmfa_waste"] = dmfa_waste_dict
     results_dict["lca_recycling_primary_energy"] = lca_recycling_primary_energy_dict
     results_dict["lca_recycling_carbon"] = lca_recycling_carbon_dict

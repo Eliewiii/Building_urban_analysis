@@ -40,6 +40,8 @@ class SimulationPostProcessingAndPlots:
                                                                              building_dict,
                                                                              path_folder_simulation=
                                                                              path_folder_simulation)
+        UrbanCanopyAdditionalFunction.write_to_csv_urban_canopy_results(building_dict=urban_canopy_object.building_dict,
+                                                                        path_folder_simulation=path_folder_simulation)
 
     @staticmethod
     def plot_graphs_each_building(urban_canopy_object, path_folder_simulation, study_duration_years, country_ghe_cost):

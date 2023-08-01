@@ -55,9 +55,9 @@ default_on_facades = True
 
 default_path_pv_tech_dictionary = os.path.join(path_tool, "Libraries", "Solar_panels", "pv_technologies.json")  # todo @Elie to delete
 default_id_pv_tech_roof = "mitrex_roof c-Si"
-default_id_pv_tech_facades = "metsolar_facades c-Si"
+default_id_pv_tech_facades = "mitrex_facades c-Si"
 default_minimum_ratio_energy_harvested_on_primary_energy = 1.2
-default_performance_ratio = 0.75
+default_performance_ratio = 0.80
 default_study_duration_years = 50
 default_replacement_scenario = "yearly"
 default_evey_X_years = 5
