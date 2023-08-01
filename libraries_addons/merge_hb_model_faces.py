@@ -228,14 +228,14 @@ def orientation_to_x_and_y_vector3d(angle):
 
 
 if __name__ == "__main__":
-    for i in range(0, 11):
-        path_folder = r"C:\Users\eliem\OneDrive - Technion\Ministry of Energy Research\IBPSA US conference\buildings_hbjson\variation_high_and_dense"
+    for i in range(0, 10):
+        path_folder = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\Ministry of Energy Research\IBPSA US conference\hbjson_2\var_sub_optimal"
         hb_model = Model.from_hbjson(os.path.join(path_folder,f"Buil_TA_{i}.hbjson"))
         # hb_model_merged = merge_facades_and_roof_faces_in_hb_model(hb_model, orient_roof_mesh_to_south=True,name=hb_model.identifier + "_merged_south")
         # hb_model_merged.add_shades(hb_model.outdoor_shades)
         # hb_model_merged.to_hbjson(os.path.join(path_folder,"merged_south",f"Buil_TA_{i}_merged_south.hbjson"))
 
-        hb_model_merged = merge_facades_and_roof_faces_in_hb_model(hb_model, orient_roof_mesh_to_south=False,
+        hb_model_merged = merge_facades_and_roof_faces_in_hb_model(hb_model, orient_roof_mesh_to_south=True,
                                                                    name=hb_model.identifier + "_merged_or")
         hb_model_merged.add_shades(hb_model.outdoor_shades)
         hb_model_merged.to_hbjson(os.path.join(path_folder,"merged_or", f"Buil_TA_{i}_merged_or.hbjson"))
