@@ -296,4 +296,5 @@ def find_intersection_functions(func1, func2, x_start, x_end, tol=1e-3, max_iter
             x_left = x_mid
 
     # If no intersection is found within the maximum iterations
-    raise RuntimeError("Intersection not found within the specified range and maximum iterations.")
+    dev_logger.warning("Intersection not found within the specified range and maximum iterations.")
+    return None

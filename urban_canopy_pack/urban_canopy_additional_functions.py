@@ -14,7 +14,8 @@ from utils.utils_constants import TOLERANCE_LBT
 from building.building_basic import BuildingBasic
 from building.building_modeled import BuildingModeled
 
-from libraries_addons.solar_panels.useful_functions_solar_panel import get_cumul_values, add_elements_of_two_lists, \
+from libraries_addons.solar_panels.useful_functions_solar_panel import get_cumul_values, \
+    add_elements_of_two_lists, \
     transform_to_linear_function, find_intersection_functions, generate_step_function, write_to_csv_arr
 
 # Export to json file
@@ -177,7 +178,8 @@ class UrbanCanopyAdditionalFunction:
         for building in building_dict.values():
             if type(building) is BuildingBasic:  # Make an HB room by extruding the footprint
                 HB_room_envelop_list.append(building.export_building_to_elevated_HB_room_envelop())
-            elif type(building) is BuildingModeled:  # Extract the rooms from the HB model attribute of the building
+            elif type(
+                    building) is BuildingModeled:  # Extract the rooms from the HB model attribute of the building
                 for HB_room in building.HB_model_obj.rooms:
                     HB_room_envelop_list.append(HB_room)
         # additional cleaning of the colinear vertices, might not be necessary
@@ -197,10 +199,12 @@ class UrbanCanopyAdditionalFunction:
             path_folder_building = os.path.join(path_folder_simulation, name_radiation_simulation_folder, str(
                 building_id))
             if os.path.isdir(path_folder_building):  # todo, find better criteria
-                path_folder_panels_results_csv = os.path.join(path_folder_building, "panels_simulation_results.csv")
+                path_folder_panels_results_csv = os.path.join(path_folder_building,
+                                                              "panels_simulation_results.csv")
                 header = ["energy_harvested_roof (kWh)", "energy_harvested_facades (kWh)",
                           "energy_harvested_total (kWh)",
-                          "primary_energy_roof (kWh)", "primary_energy_facades (kWh)", "primary_energy_total (kWh)",
+                          "primary_energy_roof (kWh)", "primary_energy_facades (kWh)",
+                          "primary_energy_total (kWh)",
                           "gh_gas_emissions_manufacturing_roof (kgCO2eq)",
                           "gh_gas_emissions_manufacturing_facades (kgCO2eq)",
                           "gh_gas_emissions_manufacturing_total (kgCO2eq)",
@@ -239,13 +243,16 @@ class UrbanCanopyAdditionalFunction:
                 list9 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"][
                     "lca_cradle_to_installation_carbon"][
                     "list"]
-                list10 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"]["dmfa_waste"][
+                list10 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"][
+                    "dmfa_waste"][
                     "list"]
                 list11 = \
-                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"]["dmfa_waste"][
+                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"][
+                        "dmfa_waste"][
                         "list"]
                 list12 = \
-                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"]["dmfa_waste"][
+                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"][
+                        "dmfa_waste"][
                         "list"]
                 list13 = \
                     json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"][
@@ -267,7 +274,8 @@ class UrbanCanopyAdditionalFunction:
                         "lca_recycling_carbon"]["list"]
 
                 array = numpy.transpose(
-                    [list1, list2, list3, list4, list5, list6, list7, list8, list9, list10, list11, list12, list13,
+                    [list1, list2, list3, list4, list5, list6, list7, list8, list9, list10, list11, list12,
+                     list13,
                      list14,
                      list15, list16, list17, list18])
 
@@ -275,6 +283,7 @@ class UrbanCanopyAdditionalFunction:
 
     @staticmethod
     def get_energy_data_from_all_buildings(building_dict):
+        """ todo @Elie, to simplify and make better"""
 
         cum_energy_harvested_roof_uc = []
         cum_energy_harvested_facades_uc = []
@@ -296,13 +305,15 @@ class UrbanCanopyAdditionalFunction:
                         get_cumul_values(
                             building_obj.results_panels["Roof"]["lca_cradle_to_installation_primary_energy"][
                                 "list"]),
-                        get_cumul_values(building_obj.results_panels["Roof"]["lca_recycling_primary_energy"]["list"]))
+                        get_cumul_values(
+                            building_obj.results_panels["Roof"]["lca_recycling_primary_energy"]["list"]))
                     cum_energy_harvested_facades = get_cumul_values(
                         building_obj.results_panels["Facades"]["energy_harvested"][
                             "list"])
                     cum_primary_energy_facades = add_elements_of_two_lists(
                         get_cumul_values(
-                            building_obj.results_panels["Facades"]["lca_cradle_to_installation_primary_energy"][
+                            building_obj.results_panels["Facades"][
+                                "lca_cradle_to_installation_primary_energy"][
                                 "list"]),
                         get_cumul_values(
                             building_obj.results_panels["Facades"]["lca_recycling_primary_energy"]["list"]))
@@ -313,13 +324,15 @@ class UrbanCanopyAdditionalFunction:
                         get_cumul_values(
                             building_obj.results_panels["Total"]["lca_cradle_to_installation_primary_energy"][
                                 "list"]),
-                        get_cumul_values(building_obj.results_panels["Total"]["lca_recycling_primary_energy"]["list"]))
+                        get_cumul_values(
+                            building_obj.results_panels["Total"]["lca_recycling_primary_energy"]["list"]))
 
                     # and add it to the total list of the uc
                     cum_energy_harvested_roof_uc = add_elements_of_two_lists(cum_energy_harvested_roof_uc,
                                                                              cum_energy_harvested_roof)
-                    cum_energy_harvested_facades_uc = add_elements_of_two_lists(cum_energy_harvested_facades_uc,
-                                                                                cum_energy_harvested_facades)
+                    cum_energy_harvested_facades_uc = add_elements_of_two_lists(
+                        cum_energy_harvested_facades_uc,
+                        cum_energy_harvested_facades)
                     cum_energy_harvested_total_uc = add_elements_of_two_lists(cum_energy_harvested_total_uc,
                                                                               cum_energy_harvested_total)
                     cum_primary_energy_roof_uc = add_elements_of_two_lists(cum_primary_energy_roof_uc,
@@ -365,16 +378,21 @@ class UrbanCanopyAdditionalFunction:
                     cum_avoided_carbon_emissions_roof = get_cumul_values(avoided_carbon_emissions_list_roof)
                     cum_carbon_emissions_facades = add_elements_of_two_lists(
                         get_cumul_values(
-                            building_obj.results_panels["Facades"]["lca_cradle_to_installation_carbon"]["list"]),
-                        get_cumul_values(building_obj.results_panels["Facades"]["lca_recycling_carbon"]["list"]))
+                            building_obj.results_panels["Facades"]["lca_cradle_to_installation_carbon"][
+                                "list"]),
+                        get_cumul_values(
+                            building_obj.results_panels["Facades"]["lca_recycling_carbon"]["list"]))
                     avoided_carbon_emissions_list_facades = [i * country_ghe_cost for i in
                                                              building_obj.results_panels["Facades"][
                                                                  "energy_harvested"]["list"]]
-                    cum_avoided_carbon_emissions_facades = get_cumul_values(avoided_carbon_emissions_list_facades)
+                    cum_avoided_carbon_emissions_facades = get_cumul_values(
+                        avoided_carbon_emissions_list_facades)
                     cum_carbon_emissions_total = add_elements_of_two_lists(
                         get_cumul_values(
-                            building_obj.results_panels["Total"]["lca_cradle_to_installation_carbon"]["list"]),
-                        get_cumul_values(building_obj.results_panels["Total"]["lca_recycling_carbon"]["list"]))
+                            building_obj.results_panels["Total"]["lca_cradle_to_installation_carbon"][
+                                "list"]),
+                        get_cumul_values(
+                            building_obj.results_panels["Total"]["lca_recycling_carbon"]["list"]))
                     avoided_carbon_emissions_list_total = [i * country_ghe_cost for i in
                                                            building_obj.results_panels["Total"][
                                                                "energy_harvested"]["list"]]
@@ -383,8 +401,9 @@ class UrbanCanopyAdditionalFunction:
                     # and add it to the total list of the uc
                     cum_carbon_emissions_roof_uc = add_elements_of_two_lists(cum_carbon_emissions_roof_uc,
                                                                              cum_carbon_emissions_roof)
-                    cum_carbon_emissions_facades_uc = add_elements_of_two_lists(cum_carbon_emissions_facades_uc,
-                                                                                cum_carbon_emissions_facades)
+                    cum_carbon_emissions_facades_uc = add_elements_of_two_lists(
+                        cum_carbon_emissions_facades_uc,
+                        cum_carbon_emissions_facades)
                     cum_carbon_emissions_total_uc = add_elements_of_two_lists(cum_carbon_emissions_total_uc,
                                                                               cum_carbon_emissions_total)
                     cum_avoided_carbon_emissions_roof_uc = add_elements_of_two_lists(
@@ -414,13 +433,18 @@ class UrbanCanopyAdditionalFunction:
                                cum_energy_harvested_facades_uc, cum_energy_harvested_total_uc,
                                cum_primary_energy_roof_uc, cum_primary_energy_facades_uc,
                                cum_primary_energy_total_uc):
+        """
+        todo
+        """
 
         fig = plt.figure()
         plt.plot(years, cum_energy_harvested_roof_uc, 'gd', markersize=4,
                  label="Cumulative energy harvested on the roof")
-        plt.plot(years, cum_energy_harvested_facades_uc, 'g.', label="Cumulative energy harvested on the facades")
+        plt.plot(years, cum_energy_harvested_facades_uc, 'g.',
+                 label="Cumulative energy harvested on the facades")
         plt.plot(years, cum_energy_harvested_total_uc, 'g', label="Total cumulative energy harvested")
-        plt.plot(years, cum_primary_energy_roof_uc, 'rd', markersize=4, label="Cumulative primary energy, roof")
+        plt.plot(years, cum_primary_energy_roof_uc, 'rd', markersize=4,
+                 label="Cumulative primary energy, roof")
         plt.plot(years, cum_primary_energy_facades_uc, 'r.', label="Cumulative primary energy, facades")
         plt.plot(years, cum_primary_energy_total_uc, 'r', label="Total cumulative primary energy")
 
@@ -432,12 +456,14 @@ class UrbanCanopyAdditionalFunction:
 
         cum_primary_energy_total_fun = generate_step_function(years, cum_primary_energy_total_uc)
 
-        intersection = find_intersection_functions(cum_energy_harvested_eq, cum_primary_energy_total_fun, years[0],
+        intersection = find_intersection_functions(cum_energy_harvested_eq, cum_primary_energy_total_fun,
+                                                   years[0],
                                                    years[-1])
-        plt.axhline(round(intersection[1]), color='k')
-        plt.axvline(intersection[0], color='k')
-        plt.text(-2, round(intersection[1]), f'y={round(intersection[1])}', va='bottom', ha='left')
-        plt.text(round(intersection[0], 1), 0, f'x={round(intersection[0], 1)}', va='bottom', ha='left')
+        if intersection is not None:
+            plt.axhline(round(intersection[1]), color='k')
+            plt.axvline(intersection[0], color='k')
+            plt.text(-2, round(intersection[1]), f'y={round(intersection[1])}', va='bottom', ha='left')
+            plt.text(round(intersection[0], 1), 0, f'x={round(intersection[0], 1)}', va='bottom', ha='left')
 
         # get the intersection point when all the energy used has been reimbursed
         asymptote_value = round(cum_primary_energy_total_uc[-1])
@@ -446,18 +472,24 @@ class UrbanCanopyAdditionalFunction:
             return asymptote_value
 
         interp_point = find_intersection_functions(cum_energy_harvested_eq, asymptote_eq, years[0], years[-1])
-        plt.axvline(x=round(interp_point[0], 1), color='k')
-        plt.text(round(interp_point[0], 1) - 3, -80000, f'x={round(interp_point[0], 1)}', va='bottom', ha='left')
-        plt.axhline(asymptote_value, color='k')
-        plt.text(round(interp_point[0]), asymptote_value, f'y={asymptote_value}', va='bottom', ha='left')
+        if interp_point is not None:
+            plt.axvline(x=round(interp_point[0], 1), color='k')
+            plt.text(round(interp_point[0], 1) - 3, -80000, f'x={round(interp_point[0], 1)}', va='bottom',
+                     ha='left')
+            plt.axhline(asymptote_value, color='k')
+            plt.text(round(interp_point[0]), asymptote_value, f'y={asymptote_value}', va='bottom', ha='left')
 
         plt.xlabel('Time (years)')
         plt.ylabel('Energy (MWh)')
-        plt.title('Cumulative harvested energy and primary energy used during the study over the entire neighborhood')
+        plt.title(
+            'Cumulative harvested energy and primary energy used during the study over the entire neighborhood')
         plt.grid(True)
         plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=2)
         file_name = 'cumulative_energy_harvested_and_primary_energy_urban_canopy.pdf'
+
         fig.savefig(f'{path_folder_simulation}/{file_name}', bbox_inches='tight')
+
+
         plt.show()
 
     @staticmethod
@@ -491,11 +523,14 @@ class UrbanCanopyAdditionalFunction:
         def asymptote_eq(x):
             return asymptote_value
 
-        interp_point = find_intersection_functions(cum_avoided_carbon_emissions_eq, asymptote_eq, years[0], years[-1])
-        plt.axvline(x=round(interp_point[0], 1), color='k')
-        plt.text(round(interp_point[0], 1) - 2, -60000, f'x={round(interp_point[0], 1)}', va='bottom', ha='left')
-        plt.axhline(asymptote_value, color='k')
-        plt.text(round(interp_point[0]) - 6, asymptote_value, f'y={asymptote_value}', va='bottom', ha='left')
+        interp_point = find_intersection_functions(cum_avoided_carbon_emissions_eq, asymptote_eq, years[0],
+                                                   years[-1])
+        if interp_point is not None:
+            plt.axvline(x=round(interp_point[0], 1), color='k')
+            plt.text(round(interp_point[0], 1) - 2, -60000, f'x={round(interp_point[0], 1)}', va='bottom',
+                     ha='left')
+            plt.axhline(asymptote_value, color='k')
+            plt.text(round(interp_point[0]) - 6, asymptote_value, f'y={asymptote_value}', va='bottom', ha='left')
 
         plt.xlabel('Time (years)')
         plt.ylabel('GHE emissions (tCO2eq)')
@@ -511,14 +546,16 @@ class UrbanCanopyAdditionalFunction:
     def plot_ghe_per_kwh_uc(path_folder_simulation, years, cum_energy_harvested_total_uc,
                             cum_carbon_emissions_total_uc):
 
-        ghg_per_kWh = [(x / y) * 1000 for x, y in zip(cum_carbon_emissions_total_uc, cum_energy_harvested_total_uc)]
+        ghg_per_kWh = [(x / y) * 1000 for x, y in
+                       zip(cum_carbon_emissions_total_uc, cum_energy_harvested_total_uc)]
 
         fig = plt.figure()
         plt.plot(years, ghg_per_kWh)
         plt.xlabel('Time (years)')
         plt.ylabel('GHE emissions (gCO2eq/kWh)')
-        plt.title("Evolution of the cost in GHG emissions for each kWh harvested during the study over the entire "
-                  "neighborhood")
+        plt.title(
+            "Evolution of the cost in GHG emissions for each kWh harvested during the study over the entire "
+            "neighborhood")
         plt.grid(True)
         file_name = 'ghg_per_kWh_plot_urban_canopy.pdf'
         fig.savefig(f'{path_folder_simulation}/{file_name}', bbox_inches='tight')
@@ -574,7 +611,8 @@ class UrbanCanopyAdditionalFunction:
                                                                       building_obj.results_panels["Roof"][
                                                                           "energy_harvested"]["list"])
                     harvested_energy_facades = add_elements_of_two_lists(harvested_energy_facades,
-                                                                         building_obj.results_panels["Facades"][
+                                                                         building_obj.results_panels[
+                                                                             "Facades"][
                                                                              "energy_harvested"]["list"])
                     harvested_energy_total = add_elements_of_two_lists(harvested_energy_total,
                                                                        building_obj.results_panels["Total"][
@@ -602,19 +640,24 @@ class UrbanCanopyAdditionalFunction:
 
                     recycling_energy_roof = add_elements_of_two_lists(recycling_energy_roof,
                                                                       building_obj.results_panels["Roof"][
-                                                                          "lca_recycling_primary_energy"]["list"])
+                                                                          "lca_recycling_primary_energy"][
+                                                                          "list"])
                     recycling_energy_facades = add_elements_of_two_lists(recycling_energy_facades,
-                                                                         building_obj.results_panels["Facades"][
-                                                                             "lca_recycling_primary_energy"]["list"])
+                                                                         building_obj.results_panels[
+                                                                             "Facades"][
+                                                                             "lca_recycling_primary_energy"][
+                                                                             "list"])
                     recycling_energy_total = add_elements_of_two_lists(recycling_energy_total,
                                                                        building_obj.results_panels["Total"][
-                                                                           "lca_recycling_primary_energy"]["list"])
+                                                                           "lca_recycling_primary_energy"][
+                                                                           "list"])
 
                     recycling_carbon_roof = add_elements_of_two_lists(recycling_carbon_roof,
                                                                       building_obj.results_panels["Roof"][
                                                                           "lca_recycling_carbon"]["list"])
                     recycling_carbon_facades = add_elements_of_two_lists(recycling_carbon_facades,
-                                                                         building_obj.results_panels["Facades"][
+                                                                         building_obj.results_panels[
+                                                                             "Facades"][
                                                                              "lca_recycling_carbon"]["list"])
                     recycling_carbon_total = add_elements_of_two_lists(recycling_carbon_total,
                                                                        building_obj.results_panels["Total"][
@@ -641,8 +684,9 @@ class UrbanCanopyAdditionalFunction:
         cum_total_embedded_energy_total = get_cumul_values(add_elements_of_two_lists(
             primary_energy_cradle_to_installation_total, recycling_energy_total))
 
-        cum_total_carbon_emissions_roof = get_cumul_values(add_elements_of_two_lists(cradle_to_installation_carbon_roof,
-                                                                                     recycling_carbon_roof))
+        cum_total_carbon_emissions_roof = get_cumul_values(
+            add_elements_of_two_lists(cradle_to_installation_carbon_roof,
+                                      recycling_carbon_roof))
         cum_total_carbon_emissions_facades = get_cumul_values(
             add_elements_of_two_lists(cradle_to_installation_carbon_facades,
                                       recycling_carbon_facades))
@@ -673,7 +717,8 @@ class UrbanCanopyAdditionalFunction:
                   "energy_end_of_life_facades (kWh)", "energy_end_of_life_total (kWh)",
                   "carbon_end_of_life_roof (kgCO2eq)", "carbon_end_of_life_facades (kgCO2eq)",
                   "carbon_end_of_life_total (kgCO2eq)", "dmfa_waste_roof (kg)", "dmfa_waste_facades (kg)",
-                  "dmfa_waste_total (kg)", "cum_harvested_energy_roof (kWh)", "cum_harvested_energy_facades (kWh)",
+                  "dmfa_waste_total (kg)", "cum_harvested_energy_roof (kWh)",
+                  "cum_harvested_energy_facades (kWh)",
                   "cum_harvested_energy_total (kWh)", "cum_total_embedded_energy_roof (kWh)",
                   "cum_total_embedded_energy_facades (kWh)", "cum_total_embedded_energy_total (kWh)",
                   "cum_total_carbon_emissions_roof (kgCO2eq)", "cum_total_carbon_emissions_facades (kgCO2eq)",
@@ -709,11 +754,10 @@ class UrbanCanopyAdditionalFunction:
         list26 = urban_canopy_results[25]
         list27 = urban_canopy_results[26]
 
-
-
         array = numpy.transpose(
             [list1, list2, list3, list4, list5, list6, list7, list8, list9, list10, list11, list12, list13,
-             list14, list15, list16, list17, list18, list19, list20, list21, list22, list23, list24, list25, list26,
+             list14, list15, list16, list17, list18, list19, list20, list21, list22, list23, list24, list25,
+             list26,
              list27])
 
         path_folder_panels_results_csv = os.path.join(path_folder_simulation, "panels_simulation_results.csv")

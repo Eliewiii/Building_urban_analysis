@@ -52,15 +52,16 @@ class SolarRadAndBipvSimulation:
                         facade_grid_size_y=1, offset_dist=0.1):
         """Create a HoneyBee SensorGrid from a HoneyBe model for the roof, the facades or both and add it to the
         model
+        todo @Elie
         :param grid_size : Number for the size of the test grid
         :param offset_dist : Number for the distance to move points from the surfaces of the geometry of the model. Typically, this
         :param on_roof: bool: default=True
         :param on_facades: bool: default=True"""
 
         if self.on_roof:
-            generate_sensor_grid_for_hb_model(hb_model_obj, roof_grid_size_x, roof_grid_size_y, offset_dist, "Roof")
+            self.roof_sensorgrid_dict = generate_sensor_grid_for_hb_model(hb_model_obj, roof_grid_size_x, roof_grid_size_y, offset_dist, "Roof")
         elif self.on_facade:
-            generate_sensor_grid_for_hb_model(hb_model_obj, facade_grid_size_x, facade_grid_size_y, offset_dist, "Facade")
+            self.facade_sensorgrid_dict = generate_sensor_grid_for_hb_model(hb_model_obj, facade_grid_size_x, facade_grid_size_y, offset_dist, "Facade")
 
 
         else:
