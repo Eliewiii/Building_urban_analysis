@@ -5,7 +5,7 @@ urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object
     path_folder_simulation=default_path_folder_simulation)
 
 
-path_gis = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\Ministry of Energy Research\IBPSA US conference\Buildings"
+path_gis = r"C:\Users\eliem\OneDrive - Technion\Ministry of Energy Research\IBPSA US conference\Buildings"
 # add GIS
 SimulationLoadBuildingOrGeometry.add_2D_GIS_to_urban_canopy(urban_canopy=urban_canopy_object,
                                                             path_gis=path_gis,
@@ -17,7 +17,7 @@ SimulationLoadBuildingOrGeometry.add_2D_GIS_to_urban_canopy(urban_canopy=urban_c
 SimulationBuildingManipulationFunctions.move_buildings_to_origin(urban_canopy_object=urban_canopy_object)
 #
 
-path_folder_json = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\Ministry of Energy Research\IBPSA US conference\hbjson_2\var_optimal\merged_or"
+path_folder_json = r"C:\Users\eliem\OneDrive - Technion\Ministry of Energy Research\IBPSA US conference\hbjson_2\var_sub_optimal\merged_or"
 
 # # Load Buildings from json
 # path_folder_json = None

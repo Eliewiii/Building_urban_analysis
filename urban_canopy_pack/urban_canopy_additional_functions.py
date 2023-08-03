@@ -490,7 +490,7 @@ class UrbanCanopyAdditionalFunction:
         fig.savefig(f'{path_folder_simulation}/{file_name}', bbox_inches='tight')
 
 
-        plt.show()
+        # plt.show()
 
     @staticmethod
     def plot_carbon_results_uc(path_folder_simulation, years, cum_avoided_carbon_emissions_roof_uc,
@@ -540,7 +540,7 @@ class UrbanCanopyAdditionalFunction:
         plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=2)
         file_name = 'cumulative_ghg_emissions_urban_canopy.pdf'
         fig.savefig(f'{path_folder_simulation}/{file_name}', bbox_inches='tight')
-        plt.show()
+        # plt.show()
 
     @staticmethod
     def plot_ghe_per_kwh_uc(path_folder_simulation, years, cum_energy_harvested_total_uc,

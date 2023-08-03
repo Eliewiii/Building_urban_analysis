@@ -2,8 +2,8 @@ from unit_tests.utils_main_import_scripts import *
 import shutil
 
 
-minimum_ratio_energy_harvested_on_primary_energy_list = [3]
-replacement_year_list = [50]
+minimum_ratio_energy_harvested_on_primary_energy_list = [1,1.2,1.5,2,3]
+replacement_year_list = [5,10,15,20,25,50]
 os.makedirs(os.path.join(default_path_folder_simulation, "panels_simulation_results"), exist_ok=True)
 
 uc_csv = os.path.join(default_path_folder_simulation, "panels_simulation_results.csv")
