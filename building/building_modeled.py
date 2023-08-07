@@ -44,7 +44,7 @@ class BuildingModeled(BuildingBasic):
         # Honeybee model
         self.HB_model_obj = None
         self.HB_model_dict = None
-        self.merged_faces_hb_model_dict = None
+        self.merged_faces_hb_model_dict = None  # todo @Elie IMPORTANT, move this obj as well
         # Stus of the building
         self.to_simulate = False
         self.is_target = False

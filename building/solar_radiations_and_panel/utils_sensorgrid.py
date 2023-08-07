@@ -22,6 +22,7 @@ dev_logger = logging.getLogger("dev")
 
 def generate_sensor_grid_for_hb_model(hb_model_obj, grid_size_x, grid_size_y, offset_dist, surface_type):
     """
+    Generate SensorGrid object for a Honeybee Model object on either the roof or the facades
     :param hb_model_obj: Honeybee Model object
     :param grid_size_x: float : size of the grid in the x direction in meter
     :param grid_size_y: float : size of the grid in the y direction in meter
@@ -31,7 +32,6 @@ def generate_sensor_grid_for_hb_model(hb_model_obj, grid_size_x, grid_size_y, of
     :return sensorgrid_dict:
     """
     # not sure if necessary
-
     assert isinstance(hb_model_obj, Model), 'Expected Honeybee Model. Got {}.'.format(type(hb_model_obj))
 
     if surface_type not in ["Roof", "Facade"]:
@@ -41,7 +41,7 @@ def generate_sensor_grid_for_hb_model(hb_model_obj, grid_size_x, grid_size_y, of
         hb_face_list = get_hb_faces_list_according_to_type(hb_model_obj, is_roof)
     else:
         hb_face_list = get_hb_faces_list_according_to_type(hb_model_obj, is_facade)
-
+    # Generate the SensorGrid object
     sensor_grid_obj = generate_sensorgrid_obj_on_hb_face_list(hb_face_list, grid_size_x, grid_size_y,
                                                               offset_dist)
 
@@ -50,10 +50,16 @@ def generate_sensor_grid_for_hb_model(hb_model_obj, grid_size_x, grid_size_y, of
 
 def generate_sensorgrid_obj_on_hb_face_list(hb_face_list, grid_size_x, grid_size_y, offset_dist):
     """
+    Generate a SensorGrid object for a list of Honeybee Faces
+    :param hb_face_list: list of Honeybee Face
+    :param grid_size_x: float : size of the grid in the x direction in meter
+    :param grid_size_y: float : size of the grid in the y direction in meter
+    :param offset_dist: float : offset distance on the border of the face to generate the mesh
 
+    :return sensor_grid_obj: Honeybee SensorGrid object
     """
     # generate Ladybug Mesh on the Honeybee Face
-    lb_mesh_obj = get_lb_mesh_BUA_grid_y(hb_face_list, grid_size_x, grid_size_y, offset_dist)
+    lb_mesh_obj = generate_lb_mesh_from_hb_face_list(hb_face_list, grid_size_x, grid_size_y, offset_dist)
     # Generate a SensorGrid object out of the mesh
     sensor_grid_obj = create_sensor_grid_from_mesh(lb_mesh_obj)
 
@@ -77,54 +83,62 @@ def create_sensor_grid_from_mesh(mesh, name=None):
     return sensor_grid
 
 
-def get_lb_mesh_BUA_grid_y(hb_face_list, grid_size_x, grid_size_y, offset_dist):
+def generate_lb_mesh_from_hb_face_list(hb_face_list, grid_size_x, grid_size_y, offset_dist):
     """
-    Create a Mesh3D from a list of HB faces
+    Create a Ladybug Mesh3D from a list of HB faces
     :param hb_face_list: list of Honeybee Face
     :param grid_size_x: float : size of the grid in the x direction in meter
     :param grid_size_y: float : size of the grid in the y direction in meter
     :param offset_dist: float : offset distance on the border of the face to generate the mesh
     """
+    # Initialize the list of Ladybug Meshes
     lb_meshes = []
-    for face in hb_face_list:
+    for hb_face_obj in hb_face_list:
         try:
-            lb_meshes.append(mesh_grid_BUA(face, grid_size_x, grid_size_y, offset=offset_dist))
+            lb_meshes.append(generate_lb_mesh_from_hb_face(hb_face_obj, grid_size_x, grid_size_y, offset=offset_dist))
         except AssertionError:  # tiny geometry not compatible with quad faces
             continue
     if len(lb_meshes) == 0:
         lb_mesh = None
+        dev_logger.warning("No mesh was generated for the Honeybee Model")
     elif len(lb_meshes) == 1:
         lb_mesh = lb_meshes[0]
-    else:  # which means : len(lb_meshes) > 1:
+    else:  # join the meshes
         lb_mesh = Mesh3D.join_meshes(lb_meshes)
     return lb_mesh
 
 
-def mesh_grid_BUA(face, x_dim, y_dim=None, offset=None, flip=False, generate_centroids=True):
-    """Get a gridded Mesh3D over this face.
+def generate_lb_mesh_from_hb_face(hb_face_obj, x_dim, y_dim=None, offset=None, flip=False, generate_centroids=True):
+    """
+    Function highly inspired from the in the todo @Elie, add the name of the function
+     function in the original Honeybee code, modified to fit the needs of the project.
 
-    This method generates a mesh grid over the domain of the face
+    Get a gridded Mesh3D over this hb_face_obj.
+
+    This method generates a mesh grid over the domain of the hb_face_obj
     and then removes any vertices that do not lie within it.
 
     Note that the x_dim and y_dim refer to dimensions within the X and Y
-    coordinate system of this faces's plane. So rotating this plane will
+    coordinate system of this hb_face_objs's plane. So rotating this plane will
     result in rotated grid cells.
 
-    Args:
-        x_dim: The x dimension of the grid cells as a number.
-        y_dim: The y dimension of the grid cells as a number. Default is None,
-            which will assume the same cell dimension for y as is set for x.
-        offset: A number for how far to offset the grid from the base face.
-                Default is None, which will not offset the grid at all.
-        flip: Set to True to have the mesh normals reversed from the direction
-                of this face and to have the offset input move the mesh in the
-                opposite direction from this face's normal.
-         generate_centroids: Set to True to have the face centroids generated
-                alongside the grid of vertices, which is much faster than having
-                them generated upon request as they typically are. However, if you
-                have no need for the face centroids, you would save time and memory
-                by setting this to False. Default is True.
-        """
+    :param hb_face_obj: A Honeybee Face object.
+    :param x_dim: The x dimension of the grid cells as a number.
+    :param y_dim: The y dimension of the grid cells as a number. Default is None,
+        which will assume the same cell dimension for y as is set for x.
+    :param offset: A number for how far to offset the grid from the base face.
+        Default is None, which will not offset the grid at all.
+    :param flip: Set to True to have the mesh normals reversed from the direction
+        of this face and to have the offset input move the mesh in the
+        opposite direction from this face's normal.
+    :param generate_centroids: Set to True to have the face centroids generated
+        alongside the grid of vertices, which is much faster than having
+        them generated upon request as they typically are. However, if you
+        have no need for the face centroids, you would save time and memory
+        by setting this to False. Default is True.
+
+    :returns: A Honeybee Mesh3D object.
+    """
     # check the inputs and set defaults
     assert isinstance(x_dim, (float, int)), '{} for Face3D.get_mesh_grid' \
                                             ' must be a number. Got {}.'.format('x_dim', type(input))
@@ -139,13 +153,13 @@ def mesh_grid_BUA(face, x_dim, y_dim=None, offset=None, flip=False, generate_cen
 
     # generate the mesh grid and convert it to a 3D mesh
     grid_mesh2d = from_polygon_grid_BUA(
-        face, x_dim, y_dim, generate_centroids)
+        hb_face_obj, x_dim, y_dim, generate_centroids)
     if offset is None or offset == 0:
-        vert_3d = tuple(face.plane.xy_to_xyz(pt)
+        vert_3d = tuple(hb_face_obj.plane.xy_to_xyz(pt)
                         for pt in grid_mesh2d.vertices)
     else:
         _off_num = -1 * offset if flip is True else offset
-        _off_plane = face.plane.move(face.plane.n * _off_num)
+        _off_plane = hb_face_obj.plane.move(hb_face_obj.plane.n * _off_num)
         vert_3d = tuple(_off_plane.xy_to_xyz(pt)
                         for pt in grid_mesh2d.vertices)
     grid_mesh3d = Mesh3D(vert_3d, grid_mesh2d.faces)
@@ -153,17 +167,17 @@ def mesh_grid_BUA(face, x_dim, y_dim=None, offset=None, flip=False, generate_cen
 
     # assign the face plane normal to the mesh normals
     if flip is True:
-        grid_mesh3d._face_normals = face.plane.n.reverse()
-        grid_mesh3d._vertex_normals = face.plane.n.reverse()
+        grid_mesh3d._face_normals = hb_face_obj.plane.n.reverse()
+        grid_mesh3d._vertex_normals = hb_face_obj.plane.n.reverse()
         grid_mesh3d._faces = tuple(
             tuple(reversed(face)) for face in grid_mesh3d.faces)  # right-hand rule
     else:
-        grid_mesh3d._face_normals = face.plane.n
-        grid_mesh3d._vertex_normals = face.plane.n
+        grid_mesh3d._face_normals = hb_face_obj.plane.n
+        grid_mesh3d._vertex_normals = hb_face_obj.plane.n
 
     # transform the centroids to 3D space if they were generated
     if generate_centroids is True:
-        _conv_plane = face.plane if offset is None or offset == 0 else _off_plane
+        _conv_plane = hb_face_obj.plane if offset is None or offset == 0 else _off_plane
         grid_mesh3d._face_centroids = tuple(_conv_plane.xy_to_xyz(pt)
                                             for pt in grid_mesh2d.face_centroids)
 
