@@ -201,6 +201,7 @@ def generate_lb_mesh2d_from_lb_polygon2d(polygon, x_dim, y_dim, generate_centroi
             have no need for the face centroids, you would save memory by setting
             this to False. Default is True.
     todo @Elie, change the name of variables and put more comments
+    todo @Elie, rework on the whole structure of the function, it works but it is unclear
 
     Credits, Highly inspired from ladybug_geometry.geometry2d.mesh.Mesh2D.from_polygon_grid, with adjusments
     not to overlap holes/apertures/windows
@@ -334,11 +335,16 @@ def middle_point2d(point2d_1, point2d_2):
 def is_facade(hb_face):
     """
     Check if the hb_face is an exterior wall
-
+    :param hb_face: Honeybee Face3D
+    :return: True if the face is an exterior wall, False otherwise
     """
     return (isinstance(hb_face.type, Wall) and isinstance(hb_face.boundary_condition, Outdoors))
 
 
 def is_roof(hb_face):
-    """Check if the hb_face is a roof"""
+    """
+    Check if the hb_face is a roof
+    :param hb_face: Honeybee Face3D
+    :return: True if the face is a roof, False otherwise
+    """
     return (isinstance(hb_face.type, RoofCeiling) and isinstance(hb_face.boundary_condition, Outdoors))

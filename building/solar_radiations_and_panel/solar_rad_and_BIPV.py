@@ -48,7 +48,7 @@ class SolarRadAndBipvSimulation:
         # Results
         self.parameter_dict = empty_parameter_dict
 
-    def add_sensorgrids(self, hb_model_obj, roof_grid_size_x=1, facade_grid_size_x=1, roof_grid_size_y=1,
+    def generate_sensorgrids(self, hb_model_obj, roof_grid_size_x=1, facade_grid_size_x=1, roof_grid_size_y=1,
                         facade_grid_size_y=1, offset_dist=0.1):
         """Create a HoneyBee SensorGrid from a HoneyBe model for the roof, the facades or both and add it to the
         model
@@ -69,3 +69,39 @@ class SolarRadAndBipvSimulation:
                                 f"the facades or both")
             dev_logger.warning(f"You did not precise whether you want to run the simulation on the roof, "
                                f"the facades or both")
+
+    def run_annual_solar_radiation(self, hb_model, context_shading_hb_aperture_list,other):
+        """
+
+        """
+
+        # Distinguish between roof and facade
+
+        # Make a copy of the Honeybee Model
+
+        # add the context to the Model
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

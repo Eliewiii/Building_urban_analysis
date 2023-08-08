@@ -75,7 +75,9 @@ class LoadArguments:
         parser.add_argument("--nb_of_rays",
                             help="int, number of rays used for the raytracing", nargs='?',
                             default=default_shading_number_of_rays_context_filter_second_pass)
-
+        # General simulation parameters
+        parser.add_argument("--overwrite", help="boolean, if True, the simulation will overwrite the previous one, "
+                                                "can be used for any simulation if relevant",default=False)
         # Weather parameters
         parser.add_argument("-w", "--path_weather_file", help="path to the weather file used",
                             default=default_path_weather_file)
