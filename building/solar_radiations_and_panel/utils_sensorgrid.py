@@ -95,7 +95,7 @@ def generate_lb_mesh_from_hb_face_list(hb_face_list, grid_size_x, grid_size_y, o
     lb_meshes = []
     for hb_face_obj in hb_face_list:
         try:
-            lb_meshes.append(generate_lb_mesh_from_hb_face(hb_face_obj, grid_size_x, grid_size_y, offset=offset_dist))
+            lb_meshes.append(generate_lb_mesh3d_from_hb_face(hb_face_obj, grid_size_x, grid_size_y, offset=offset_dist))
         except AssertionError:  # tiny geometry not compatible with quad faces
             continue
     if len(lb_meshes) == 0:
@@ -108,7 +108,7 @@ def generate_lb_mesh_from_hb_face_list(hb_face_list, grid_size_x, grid_size_y, o
     return lb_mesh
 
 
-def generate_lb_mesh_from_hb_face(hb_face_obj, x_dim, y_dim=None, offset=None, flip=False, generate_centroids=True):
+def generate_lb_mesh3d_from_hb_face(hb_face_obj, x_dim, y_dim=None, offset=None, flip=False, generate_centroids=True):
     """
     Function highly inspired from the in the todo @Elie, add the name of the function
      function in the original Honeybee code, modified to fit the needs of the project.
@@ -152,7 +152,7 @@ def generate_lb_mesh_from_hb_face(hb_face_obj, x_dim, y_dim=None, offset=None, f
                                                  ' must be a number. Got {}.'.format('offset', type(input))
 
     # generate the mesh grid and convert it to a 3D mesh
-    grid_mesh2d = from_polygon_grid_BUA(
+    grid_mesh2d = generate_lb_mesh2d_from_lb_polygon2d(
         hb_face_obj, x_dim, y_dim, generate_centroids)
     if offset is None or offset == 0:
         vert_3d = tuple(hb_face_obj.plane.xy_to_xyz(pt)
@@ -184,7 +184,7 @@ def generate_lb_mesh_from_hb_face(hb_face_obj, x_dim, y_dim=None, offset=None, f
     return grid_mesh3d
 
 
-def from_polygon_grid_BUA(face, x_dim, y_dim, generate_centroids=True):
+def generate_lb_mesh2d_from_lb_polygon2d(polygon, x_dim, y_dim, generate_centroids=True):
     """Initialize a gridded Mesh2D from a Polygon2D.
 
     Note that this gridded mesh will usually not completely fill the polygon.
@@ -206,7 +206,7 @@ def from_polygon_grid_BUA(face, x_dim, y_dim, generate_centroids=True):
     not to overlap holes/apertures/windows
     """
 
-    polygon_face = face.polygon2d
+    polygon_face = polygon.polygon2d
 
     assert isinstance(polygon_face, Polygon2D), 'Expected Polygon2D for' \
                                                 ' Mesh2D.from_polygon_grid. Got {}'.format(type(polygon_face))
@@ -237,8 +237,8 @@ def from_polygon_grid_BUA(face, x_dim, y_dim, generate_centroids=True):
 
     # Remove the vertices that are on the wholes/windows
     _pattern_vertices = [scaled_poly.is_point_inside(_v) for _v in _verts]
-    if face.has_holes:
-        for polygon_hole in face.hole_polygon2d:
+    if polygon.has_holes:
+        for polygon_hole in polygon.hole_polygon2d:
             # figure out how many x and y cells to make
             for vert in _verts:
                 if polygon_hole.is_point_inside(vert) or polygon_hole.is_point_on_edge(vert, 0.1):
@@ -264,14 +264,14 @@ def from_polygon_grid_BUA(face, x_dim, y_dim, generate_centroids=True):
         else:
             _pattern_faces.append(False)
 
-    if face.has_holes:
-        for polygon_hole in face.hole_polygon2d:
+    if polygon.has_holes:
+        for polygon_hole in polygon.hole_polygon2d:
             for index, mesh_face in enumerate(mesh_faces):
                 # Check if the centroid is in the window
                 if polygon_hole.is_point_inside(mesh_centroid[index]) or polygon_hole.is_point_on_edge(
                         mesh_centroid[index], 0.1):
                     _pattern_faces[index] = False
-                # Check if the middle point of the face side is in the window
+                # Check if the middle point of the polygon side is in the window
                 else:
                     face_point2d_list = [mesh_verts[i] for i in mesh_face]
                     face_middle_point2_list = [middle_point2d(face_point2d_list[i], face_point2d_list[i + 1])
@@ -331,11 +331,14 @@ def middle_point2d(point2d_1, point2d_2):
     return (Point2D((point2d_1[0] + point2d_2[0]) / 2, (point2d_1[1] + point2d_2[1]) / 2))
 
 
-def is_facade(face):
-    """Check if the face is an exterior wall"""
-    return (isinstance(face.type, Wall) and isinstance(face.boundary_condition, Outdoors))
+def is_facade(hb_face):
+    """
+    Check if the hb_face is an exterior wall
+
+    """
+    return (isinstance(hb_face.type, Wall) and isinstance(hb_face.boundary_condition, Outdoors))
 
 
-def is_roof(face):
-    """Check if the face is a roof"""
-    return (isinstance(face.type, RoofCeiling) and isinstance(face.boundary_condition, Outdoors))
+def is_roof(hb_face):
+    """Check if the hb_face is a roof"""
+    return (isinstance(hb_face.type, RoofCeiling) and isinstance(hb_face.boundary_condition, Outdoors))
