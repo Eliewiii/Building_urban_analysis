@@ -167,7 +167,7 @@ class BuildingModeled(BuildingBasic):
         self.HB_model_obj.move(Vector3D(vector[0], vector[1], vector[2]))  # the model is moved fully
         self.moved_to_origin = True
 
-    def initialize_shading_context_obj(self, min_VF_criterion, number_of_rays):
+    def init_shading_context_obj(self, min_VF_criterion, number_of_rays):
         """
         todo @Elie
         todo @Elie
@@ -197,18 +197,15 @@ class BuildingModeled(BuildingBasic):
 
         return self.shading_context_obj.context_building_list
 
-    def init_solar_radiation_and_bipv_simulation_object(self, do_simulation_on_roof=True,
-                                                        do_simulation_on_facades=True):
+    def init_solar_radiation_and_bipv_simulation_object(self):
         """
         Initialize the solar radiation and BIPV simulation object
-        :param do_simulation_on_roof: bool: default=True
-        :param do_simulation_on_facades: bool: default=True
         """
-        self.solar_radiation_and_bipv_simulation_obj = SolarRadAndBipvSimulation(
-            do_simulation_on_roof=do_simulation_on_roof, do_simulation_on_facades=do_simulation_on_facades)
+        if self.solar_radiation_and_bipv_simulation_obj is None:
+            self.solar_radiation_and_bipv_simulation_obj = SolarRadAndBipvSimulation()
 
-    def generate_sensor_grid(self, roof_grid_size_x=1, facade_grid_size_x=1, roof_grid_size_y=1,
-                             facade_grid_size_y=1, offset_dist=0.1):
+    def generate_sensor_grid(self, do_simulation_on_roof=True, do_simulation_on_facade=True, roof_grid_size_x=1,
+                             facade_grid_size_x=1, roof_grid_size_y=1, facade_grid_size_y=1, offset_dist=0.1):
         """
         Generate Honeybee SensorGrid on the roof and/or on the facades for the building.
         It does not add the SendorgGrid to the HB model.
@@ -218,6 +215,23 @@ class BuildingModeled(BuildingBasic):
         :param facade_grid_size_y: Number for the size of the test grid on the facades in the y direction
         :param offset_dist: Number for the distance to move points from the surfaces of the geometry of the model.
         """
+        # Initialize the solar radiation and BIPV simulation object if it is not already initialized (if possible
+        if self.is_target:
+            self.init_solar_radiation_and_bipv_simulation_object()
+            dev_logger.info(
+                f"The building {self.id} was target, thus the solar radiation and BIPV simulation object "
+                f"was initialized with the default values.")
+        else:
+            return
+        # Generate the SensorGrids for the roof and the facades on the HB model with merged facade if it exists
+        self.solar_radiation_and_bipv_simulation_obj.set_mesh_paraneters(self,
+                                                                         do_simulation_on_roof=do_simulation_on_roof,
+                                                                         do_simulation_on_facade=do_simulation_on_facade,
+                                                                         roof_grid_size_x=roof_grid_size_x,
+                                                                         facade_grid_size_x=facade_grid_size_x,
+                                                                         roof_grid_size_y=roof_grid_size_y,
+                                                                         facade_grid_size_y=facade_grid_size_y,
+                                                                         offset_dist=offset_dist)
         if self.merged_faces_hb_model_dict is not None:
             hb_model_obj = self.merged_faces_hb_model_dict
         else:
@@ -228,6 +242,35 @@ class BuildingModeled(BuildingBasic):
                                                                           roof_grid_size_y=roof_grid_size_y,
                                                                           facade_grid_size_y=facade_grid_size_y,
                                                                           offset_dist=offset_dist)
+
+    def run_annual_solar_radiation_simulation(self, path_folder_simulation, path_epw_file, overwrite=False,
+                                              north_angle=0, silent=False):
+        """
+        Run the annual solar radiation simulation for the building on the roof and/or on the facades if a Honeybee SensorGrid
+        was generated on them.
+        :param path_folder_simulation: Path to the simulation folder
+        :param path_epw_file: Path to the epw file
+        :param overwrite: bool: default=False, if True, overwrite the simulation files if they already exist
+        :param north_angle: float : north angle of the building in degrees
+        :param silent: bool: default=False
+        """
+        # check if the solar radiation and BIPV simulation object was initialized
+        if self.solar_radiation_and_bipv_simulation_obj is None:
+            dev_logger.info(
+                f"The solar radiation and BIPV simulation object was not initialized for the building {self.id}, it will be ignored")
+            user_logger.info(
+                f"The building {self.id} was not simulated for the annual solar radiation simulation no mesh for the PVs was generated")
+            return
+        # check if the epw file exists (should be check in the components in Grasshopper as well)
+        if not os.path.isfile(path_epw_file):
+            dev_logger.info(f"The epw file {path_epw_file} does not exist, the simulation will be ignored")
+            user_logger.info(
+                f"The building {self.id} was not simulated for the annual solar radiation simulation no mesh for the PVs was generated")
+            return
+        # run the annual solar radiation simulation
+        self.solar_radiation_and_bipv_simulation_obj.run_annual_solar_radiation_simulation(
+            path_folder_simulation=path_folder_simulation, path_epw_file=path_epw_file, overwrite=overwrite,
+            north_angle=north_angle, silent=silent)
 
     def add_sensor_grid_to_hb_model(self, name=None, grid_size=1, offset_dist=0.1, on_roof=True, on_facades=True):
         """Create a HoneyBee SensorGrid from a HoneyBe model for the roof, the facades or both and add it to the

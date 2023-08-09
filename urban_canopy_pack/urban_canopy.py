@@ -22,6 +22,7 @@ from utils.utils_configuration import name_urban_canopy_export_file_pkl, name_ur
 dev_logger = logging.getLogger("dev")
 user_logger = logging.getLogger("user")
 
+
 class UrbanCanopy:
 
     def __init__(self):
@@ -186,9 +187,9 @@ class UrbanCanopy:
         # check if the building id is already in the urban canopy
         if building_id in self.building_dict.keys():
             user_logger.warning("The building id {building_id} is already in the urban canopy, "
-                            "it will not be added again to the urban canopy".format(building_id=building_id))
+                                "it will not be added again to the urban canopy".format(building_id=building_id))
             dev_logger.warning("The building id {building_id} is already in the urban canopy, "
-                            "it will not be added again to the urban canopy".format(building_id=building_id))
+                               "it will not be added again to the urban canopy".format(building_id=building_id))
         else:
             # add the building to the urban canopy
             self.building_dict[building_id] = building_obj
@@ -452,6 +453,93 @@ class UrbanCanopy:
                 # Move by the opposite vector
                 building.move([-coordinate for coordinate in self.moving_vector_to_origin])
 
+    def generate_sensor_grid_for_buildings(self, building_id_list=None, do_simulation_on_roof=True,
+                                           do_simulation_on_facade=True, roof_grid_size_x=1, facade_grid_size_x=1,
+                                           roof_grid_size_y=1, facade_grid_size_y=1, offset_dist=0.1):
+        """
+        Generate the sensor grid for the buildings in the urban canopy.
+        :param do_simulation_on_roof: boolean, if True, the solar radiation simulation will be performed on the roofs
+            of the buildings.
+        :param do_simulation_on_facade: boolean, if True, the solar radiation simulation will be performed on the
+            facades of the buildings.
+        :param building_id_list: list of the building id to generate the sensor grid,
+            if None or empty list, all the target buildings will be initialized.
+        :param roof_grid_size_x: float, grid size of the sensor grid on the roof in the x direction.
+        :param facade_grid_size_x: float, grid size of the sensor grid on the facade in the x direction.
+        :param roof_grid_size_y: float, grid size of the sensor grid on the roof in the y direction.
+        :param facade_grid_size_y: float, grid size of the sensor grid on the facade in the y direction.
+        :param offset_dist: float, offset distance between the sensor grid and the building.
+        """
+        # Checks of the building_id_list parameter to give feedback to the user if there is an issue with an id
+        if not (building_id_list is None or building_id_list is []):
+            for building_id in building_id_list:
+                if building_id not in self.building_dict.keys():
+                    user_logger.warning(f"The building id {building_id} is not in the urban canopy")
+                    dev_logger.info(
+                        f"The building id {building_id} is not in the urban canopy, make sure you indicated "
+                        f"the proper identifier in the input")
+                elif not isinstance(self.building_dict[building_id], BuildingModeled) or not self.building_dict[
+                    building_id].is_target:
+                    user_logger.warning(f"The building id {building_id} is not a target building, a radiation analysis "
+                                        f"cannot be performed if the building is not a target. You can update "
+                                        f"the properties of the building {building_id} to make it a target building.")
+        # Generate the sensor grid for the buildings
+        for building_obj in self.building_dict.values():
+            if ((
+                        building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) and isinstance(
+                building_obj, BuildingModeled) and building_obj.is_target:
+                building_obj.generate_sensor_grid(do_simulation_on_roof=do_simulation_on_roof,
+                                                  do_simulation_on_facade=do_simulation_on_facade,
+                                                  roof_grid_size_x=roof_grid_size_x,
+                                                  facade_grid_size_x=facade_grid_size_x,
+                                                  roof_grid_size_y=roof_grid_size_y,
+                                                  facade_grid_size_y=facade_grid_size_y,
+                                                  offset_dist=offset_dist)
+
+    def run_solar_radiation_simulation_for_buildings(self, building_id_list, path_folder_simulation, path_weather_file,
+                                                     list_id=None, overwrite=False,
+                                                     north_angle=0, silent=False):
+        """
+        Run the solar radiation simulation for the buildings in the urban canopy.
+        :param building_id_list: list of the building id to run the simulation, if None or empty list, all the target
+        :param path_folder_simulation: string, path to the folder where the simulation will be performed.
+        :param path_weather_file: string, path to the weather file.
+        :param list_id: list of the building id to run the simulation,
+            if None or empty list, all the target buildings will be initialized.
+        :param overwrite: boolean, if True, the simulation will be run again and the results will overwrite the
+            existing ones.
+        :param north_angle: float, angle of the north in degrees.
+        :param silent: boolean, if True, the console outputs will be disabled.
+        """
+
+        # Todo @Elie : can add a progress bar
+
+        # Checks of the building_id_list parameter to give feedback to the user if there is an issue with an id
+        if not (building_id_list is None or building_id_list is []):
+            for building_id in building_id_list:
+                if building_id not in self.building_dict.keys():
+                    user_logger.warning(f"The building id {building_id} is not in the urban canopy")
+                    dev_logger.info(
+                        f"The building id {building_id} is not in the urban canopy, make sure you indicated "
+                        f"the proper identifier in the input")
+                elif not isinstance(self.building_dict[building_id], BuildingModeled) or not self.building_dict[
+                    building_id].is_target:
+                    user_logger.warning(f"The building id {building_id} is not a target building, a radiation analysis "
+                                        f"cannot be performed if the building is not a target. You can update "
+                                        f"the properties of the building {building_id} to make it a target building.")
+                elif self.building_dict[building_id].solar_radiation_and_bipv_simulation_obj is None:
+                    user_logger.warning(f"No mesh for radiation simulation was generated for The building id "
+                                        f"{building_id}, the radiation simulation was noty performed for this building.")
+        # Run the simulation for the buildings
+        for building_obj in self.building_dict.values():
+            if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
+                    and isinstance(building_obj, BuildingModeled) and building_obj.is_target \
+                    and building_obj.solar_radiation_and_bipv_simulation_obj is not None:
+                building_obj.run_solar_radiation_simulation(path_folder_simulation=path_folder_simulation,
+                                                            path_weather_file=path_weather_file,
+                                                            overwrite=overwrite,
+                                                            north_angle=north_angle, silent=silent)
+
     def radiation_simulation_urban_canopy(self, path_folder_simulation, path_weather_file, list_id, grid_size,
                                           offset_dist, on_roof, on_facades):
         path_folder_radiation_simulation = os.path.join(path_folder_simulation,
@@ -571,7 +659,8 @@ class UrbanCanopy:
         :param replacement_scenario: string: scenario of replacements for the panels, default = 'yearly'
         """
 
-        pv_tech_dictionary = PvPanelTechnology.load_pv_technologies_from_json_to_dictionary(path_pv_tech_dictionary_json)
+        pv_tech_dictionary = PvPanelTechnology.load_pv_technologies_from_json_to_dictionary(
+            path_pv_tech_dictionary_json)
 
         for building in self.building_dict.values():  # for every building in the urban canopy
             if type(building) is BuildingModeled and building.is_target:
@@ -587,7 +676,8 @@ class UrbanCanopy:
     def plot_graphs_buildings(self, path_folder_simulation, study_duration_years, country_ghe_cost):
         for building in self.building_dict.values():
             if type(building) is BuildingModeled and building.is_target:
-                if building.results_panels["Roof"] and building.results_panels["Facades"] and building.results_panels["Total"]:
+                if building.results_panels["Roof"] and building.results_panels["Facades"] and building.results_panels[
+                    "Total"]:
                     path_folder_simulation_building = os.path.join(path_folder_simulation,
                                                                    name_radiation_simulation_folder,
                                                                    building.id)
