@@ -14,9 +14,11 @@ from honeybee_radiance.sensorgrid import SensorGrid
 from building.building_basic import BuildingBasic
 from building.context_filter.building_shading_context import BuildingShadingContext
 # from building.context_filter.building_lwr_context import BuildingLWRContext  # Useful later
+from building.solar_radiations_and_panel.solar_rad_and_BIPV import SolarRadAndBipvSimulation
 
 from libraries_addons.hb_model_addons import HbAddons
-from libraries_addons.solar_radiations.add_sensorgrid_hb_model import get_hb_faces_facades,get_hb_faces_roof,get_lb_mesh,get_lb_mesh_BUA,create_sensor_grid_from_mesh
+from libraries_addons.solar_radiations.add_sensorgrid_hb_model import get_hb_faces_facades, get_hb_faces_roof, \
+    get_lb_mesh, get_lb_mesh_BUA, create_sensor_grid_from_mesh
 from libraries_addons.solar_radiations.hb_recipe_settings import hb_recipe_settings
 from libraries_addons.solar_radiations.annual_irradiance_simulation import hb_ann_irr_sim
 from libraries_addons.solar_radiations.annual_cumulative_value import hb_ann_cum_values
@@ -25,10 +27,8 @@ from libraries_addons.solar_panels.useful_functions_solar_panel import load_pane
     get_cumul_values, add_elements_of_two_lists, transform_to_linear_function, find_intersection_functions, \
     generate_step_function
 
-
 user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")
-
 
 
 class BuildingModeled(BuildingBasic):
@@ -52,7 +52,6 @@ class BuildingModeled(BuildingBasic):
         self.shading_context_obj = None
 
         self.first_pass_context_building_id_list = []  # todo @Elie delete
-
 
         # Solar and panel radiation
         # self.solar_and_panel_radiation_obj = None  # todo @Elie later
@@ -151,6 +150,23 @@ class BuildingModeled(BuildingBasic):
 
         return building_modeled_obj, identifier
 
+    def move(self, vector):
+        """
+        Move the building
+        :param vector:
+        :return:
+        """
+        # move the LB footprint
+        if self.LB_face_footprint is not None:
+            self.LB_face_footprint = self.LB_face_footprint.move(
+                Vector3D(vector[0], vector[1], 0))  # the footprint is moved only in the x and y directions
+        # adjust the elevation
+        if self.elevation is not None:
+            self.elevation = self.elevation + vector[2]
+        # make it moved
+        self.HB_model_obj.move(Vector3D(vector[0], vector[1], vector[2]))  # the model is moved fully
+        self.moved_to_origin = True
+
     def initialize_shading_context_obj(self, min_VF_criterion, number_of_rays):
         """
         todo @Elie
@@ -181,22 +197,37 @@ class BuildingModeled(BuildingBasic):
 
         return self.shading_context_obj.context_building_list
 
-    def move(self, vector):
+    def init_solar_radiation_and_bipv_simulation_object(self, do_simulation_on_roof=True,
+                                                        do_simulation_on_facades=True):
         """
-        Move the building
-        :param vector:
-        :return:
+        Initialize the solar radiation and BIPV simulation object
+        :param do_simulation_on_roof: bool: default=True
+        :param do_simulation_on_facades: bool: default=True
         """
-        # move the LB footprint
-        if self.LB_face_footprint is not None:
-            self.LB_face_footprint = self.LB_face_footprint.move(
-                Vector3D(vector[0], vector[1], 0))  # the footprint is moved only in the x and y directions
-        # adjust the elevation
-        if self.elevation is not None:
-            self.elevation = self.elevation + vector[2]
-        # make it moved
-        self.HB_model_obj.move(Vector3D(vector[0], vector[1], vector[2]))  # the model is moved fully
-        self.moved_to_origin = True
+        self.solar_radiation_and_bipv_simulation_obj = SolarRadAndBipvSimulation(
+            do_simulation_on_roof=do_simulation_on_roof, do_simulation_on_facades=do_simulation_on_facades)
+
+    def generate_sensor_grid(self, roof_grid_size_x=1, facade_grid_size_x=1, roof_grid_size_y=1,
+                             facade_grid_size_y=1, offset_dist=0.1):
+        """
+        Generate Honeybee SensorGrid on the roof and/or on the facades for the building.
+        It does not add the SendorgGrid to the HB model.
+        :param roof_grid_size_x: Number for the size of the test grid on the roof in the x direction
+        :param facade_grid_size_x: Number for the size of the test grid on the facades in the x direction
+        :param roof_grid_size_y: Number for the size of the test grid on the roof in the y direction
+        :param facade_grid_size_y: Number for the size of the test grid on the facades in the y direction
+        :param offset_dist: Number for the distance to move points from the surfaces of the geometry of the model.
+        """
+        if self.merged_faces_hb_model_dict is not None:
+            hb_model_obj = self.merged_faces_hb_model_dict
+        else:
+            hb_model_obj = self.HB_model_obj
+        self.solar_radiation_and_bipv_simulation_obj.generate_sensor_grid(hb_model_obj=hb_model_obj,
+                                                                          roof_grid_size_x=roof_grid_size_x,
+                                                                          facade_grid_size_x=facade_grid_size_x,
+                                                                          roof_grid_size_y=roof_grid_size_y,
+                                                                          facade_grid_size_y=facade_grid_size_y,
+                                                                          offset_dist=offset_dist)
 
     def add_sensor_grid_to_hb_model(self, name=None, grid_size=1, offset_dist=0.1, on_roof=True, on_facades=True):
         """Create a HoneyBee SensorGrid from a HoneyBe model for the roof, the facades or both and add it to the
@@ -235,9 +266,9 @@ class BuildingModeled(BuildingBasic):
 
         else:
             user_logger.warning(f"You did not precise whether you want to run the simulation on the roof, "
-                            f"the facades or both")
+                                f"the facades or both")
             dev_logger.warning(f"You did not precise whether you want to run the simulation on the roof, "
-                            f"the facades or both")
+                               f"the facades or both")
 
     def solar_radiations(self, name, path_folder_simulation, path_weather_file, grid_size=1, offset_dist=0.1,
                          on_roof=True, on_facades=True):
@@ -447,28 +478,28 @@ class BuildingModeled(BuildingBasic):
 
         # plot energy
         cum_energy_harvested_roof = get_cumul_values(self.results_panels["Roof"]["energy_harvested"]["list"])
-        cum_energy_harvested_roof = [i/1000 for i in cum_energy_harvested_roof]
+        cum_energy_harvested_roof = [i / 1000 for i in cum_energy_harvested_roof]
 
         cum_primary_energy_roof = add_elements_of_two_lists(
             get_cumul_values(self.results_panels["Roof"]["lca_cradle_to_installation_primary_energy"]["list"]),
             get_cumul_values(self.results_panels["Roof"]["lca_recycling_primary_energy"]["list"]))
-        cum_primary_energy_roof = [i/1000 for i in cum_primary_energy_roof]
+        cum_primary_energy_roof = [i / 1000 for i in cum_primary_energy_roof]
 
         cum_energy_harvested_facades = get_cumul_values(self.results_panels["Facades"]["energy_harvested"]["list"])
-        cum_energy_harvested_facades = [i/1000 for i in cum_energy_harvested_facades]
+        cum_energy_harvested_facades = [i / 1000 for i in cum_energy_harvested_facades]
 
         cum_primary_energy_facades = add_elements_of_two_lists(
             get_cumul_values(self.results_panels["Facades"]["lca_cradle_to_installation_primary_energy"]["list"]),
             get_cumul_values(self.results_panels["Facades"]["lca_recycling_primary_energy"]["list"]))
-        cum_primary_energy_facades = [i/1000 for i in cum_primary_energy_facades]
+        cum_primary_energy_facades = [i / 1000 for i in cum_primary_energy_facades]
 
         cum_energy_harvested_total = get_cumul_values(self.results_panels["Total"]["energy_harvested"]["list"])
-        cum_energy_harvested_total = [i/1000 for i in cum_energy_harvested_total]
+        cum_energy_harvested_total = [i / 1000 for i in cum_energy_harvested_total]
 
         cum_primary_energy_total = add_elements_of_two_lists(
             get_cumul_values(self.results_panels["Total"]["lca_cradle_to_installation_primary_energy"]["list"]),
             get_cumul_values(self.results_panels["Total"]["lca_recycling_primary_energy"]["list"]))
-        cum_primary_energy_total = [i/1000 for i in cum_primary_energy_total]
+        cum_primary_energy_total = [i / 1000 for i in cum_primary_energy_total]
 
         years = list(range(study_duration_years))
         fig = plt.figure()
@@ -487,7 +518,8 @@ class BuildingModeled(BuildingBasic):
 
         cum_primary_energy_total_fun = generate_step_function(years, cum_primary_energy_total)
 
-        intersection = find_intersection_functions(cum_energy_harvested_eq, cum_primary_energy_total_fun, years[0], years[-1])
+        intersection = find_intersection_functions(cum_energy_harvested_eq, cum_primary_energy_total_fun, years[0],
+                                                   years[-1])
         plt.axhline(round(intersection[1]), color='k')
         plt.axvline(intersection[0], color='k')
         plt.text(-2, round(intersection[1]), f'y={round(intersection[1])}', va='bottom', ha='left')
@@ -520,33 +552,33 @@ class BuildingModeled(BuildingBasic):
         cum_carbon_emissions_roof = add_elements_of_two_lists(
             get_cumul_values(self.results_panels["Roof"]["lca_cradle_to_installation_carbon"]["list"]),
             get_cumul_values(self.results_panels["Roof"]["lca_recycling_carbon"]["list"]))
-        cum_carbon_emissions_roof = [i/1000 for i in cum_carbon_emissions_roof]
+        cum_carbon_emissions_roof = [i / 1000 for i in cum_carbon_emissions_roof]
 
         avoided_carbon_emissions_list_roof = [i * country_ghe_cost for i in self.results_panels["Roof"][
             "energy_harvested"]["list"]]
-        avoided_carbon_emissions_list_roof = [i/1000 for i in avoided_carbon_emissions_list_roof]
+        avoided_carbon_emissions_list_roof = [i / 1000 for i in avoided_carbon_emissions_list_roof]
 
         cum_avoided_carbon_emissions_roof = get_cumul_values(avoided_carbon_emissions_list_roof)
 
         cum_carbon_emissions_facades = add_elements_of_two_lists(
             get_cumul_values(self.results_panels["Facades"]["lca_cradle_to_installation_carbon"]["list"]),
             get_cumul_values(self.results_panels["Facades"]["lca_recycling_carbon"]["list"]))
-        cum_carbon_emissions_facades = [i/1000 for i in cum_carbon_emissions_facades]
+        cum_carbon_emissions_facades = [i / 1000 for i in cum_carbon_emissions_facades]
 
         avoided_carbon_emissions_list_facades = [i * country_ghe_cost for i in self.results_panels["Facades"][
             "energy_harvested"]["list"]]
-        avoided_carbon_emissions_list_facades = [i/1000 for i in avoided_carbon_emissions_list_facades]
+        avoided_carbon_emissions_list_facades = [i / 1000 for i in avoided_carbon_emissions_list_facades]
 
         cum_avoided_carbon_emissions_facades = get_cumul_values(avoided_carbon_emissions_list_facades)
 
         cum_carbon_emissions_total = add_elements_of_two_lists(
             get_cumul_values(self.results_panels["Total"]["lca_cradle_to_installation_carbon"]["list"]),
             get_cumul_values(self.results_panels["Total"]["lca_recycling_carbon"]["list"]))
-        cum_carbon_emissions_total = [i/1000 for i in cum_carbon_emissions_total]
+        cum_carbon_emissions_total = [i / 1000 for i in cum_carbon_emissions_total]
 
         avoided_carbon_emissions_list_total = [i * country_ghe_cost for i in self.results_panels["Total"][
             "energy_harvested"]["list"]]
-        avoided_carbon_emissions_list_total = [i/1000 for i in avoided_carbon_emissions_list_total]
+        avoided_carbon_emissions_list_total = [i / 1000 for i in avoided_carbon_emissions_list_total]
 
         cum_avoided_carbon_emissions_total = get_cumul_values(avoided_carbon_emissions_list_total)
 
@@ -579,9 +611,9 @@ class BuildingModeled(BuildingBasic):
 
         interp_point = find_intersection_functions(cum_avoided_carbon_emissions_eq, asymptote_eq, years[0], years[-1])
         plt.axvline(x=round(interp_point[0], 1), color='k')
-        plt.text(round(interp_point[0], 1)-2, -60000, f'x={round(interp_point[0], 1)}', va='bottom', ha='left')
+        plt.text(round(interp_point[0], 1) - 2, -60000, f'x={round(interp_point[0], 1)}', va='bottom', ha='left')
         plt.axhline(asymptote_value, color='k')
-        plt.text(round(interp_point[0])-6, asymptote_value, f'y={asymptote_value}', va='bottom', ha='left')
+        plt.text(round(interp_point[0]) - 6, asymptote_value, f'y={asymptote_value}', va='bottom', ha='left')
 
         plt.xlabel('Time (years)')
         plt.ylabel('GHE emissions (tCO2eq)')
