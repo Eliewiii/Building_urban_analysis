@@ -15,25 +15,31 @@ from honeybee.model import Model
 from honeybee.boundarycondition import Outdoors, Ground
 from honeybee.facetype import Wall, RoofCeiling
 
+from utils.utils_constants import TOLERANCE_LBT
 
 
-default_tolerance = 0.01
-
-
-def merge_facades_and_roof_faces_in_hb_model(HB_model, orient_roof_mesh_to_south=True, name=None):
+def merge_facades_and_roof_faces_in_hb_model(hb_model_obj, orient_roof_mesh_to_according_to_building_orientation=True,
+                                             north_angle=0, name=None):
     """
     Merge the faces of the facades and roof of a HB model to have
-    :param HB_model:
+    :param hb_model_obj: Honeybee Model to merge the faces
+    :param orient_roof_mesh_to_according_to_building_orientation: bool: default=True, if True, the roof mesh
+        will be oriented according to the orientation of the building
+    :param north_angle: float: default=0, angle of the north in degree
+    :param name: str: default=None
     :return:
     """
     # Collect all the LB Face3D of the HB model that are exterior walls
-    lb_face3d_list = [face.geometry for face in HB_model.faces if
+    lb_face3d_list = [face.geometry for face in hb_model_obj.faces if
                       (isinstance(face.boundary_condition, Outdoors) and (
                               isinstance(face.type, Wall) or isinstance(face.type,
                                                                         RoofCeiling)) or isinstance(
                           face.boundary_condition,
                           Ground))]
 
+    """
+    Shapely is a bit capricious with the union function, so we need round the coordinates of the vertices of the faces
+    """
     # make a new face and round the coordinates of the vertices for each face of lb_face3d_list
     new_lb_face3d_list = []
     for face in lb_face3d_list:
@@ -42,13 +48,13 @@ def merge_facades_and_roof_faces_in_hb_model(HB_model, orient_roof_mesh_to_south
             new_vertices.append(Point3D(round(vertex.x, 2), round(vertex.y, 2), round(vertex.z, 2)))
         # Adjust the orientation of the mesh on the roof
         if face.normal.z > 0:
-            # To orient the mesh to South
-            if orient_roof_mesh_to_south:
-                vect_x = Vector3D(x=1., y=0, z=0)
             # To orient it according to the orientation of the building
-            else:
+            if orient_roof_mesh_to_according_to_building_orientation:
                 angle = get_orientation_of_LB_Face3D(face)
-                vect_x, vect_y = orientation_to_x_and_y_vector3d(angle)
+            # To orient according to the north angle
+            else:
+                angle = north_angle + 90  # as the north angle is the y axis
+            vect_x, vect_y = orientation_to_x_and_y_vector3d(angle)
             # Make the Plan in which the Face3D is
             new_plan = Plane(n=face.plane.n, o=face.plane.o, x=vect_x)
             # Make the new Ladybug Face3D and add it to new_lb_face3d_list
@@ -101,7 +107,6 @@ def merge_facades_and_roof_faces_in_hb_model(HB_model, orient_roof_mesh_to_south
     # Convert back to LB Face3D format
     new_lb_face3d_list = []  # Initialize the list of new LB Face3D
     for (obj, rotation_matrix, origin, plane) in merged_multipolygon_and_matrix:
-
         if isinstance(obj, Polygon):
             new_lb_face3d_list.append(
                 make_lb_face_from_shapely_2d_polygon(obj, rotation_matrix, origin, plane))
@@ -111,24 +116,20 @@ def merge_facades_and_roof_faces_in_hb_model(HB_model, orient_roof_mesh_to_south
                     make_lb_face_from_shapely_2d_polygon(polygon, rotation_matrix, origin, plane))
 
     # Make Polyface3D from the merged polygons
-    polyface_3d = Polyface3D.from_faces(new_lb_face3d_list, tolerance=default_tolerance)
+    polyface_3d = Polyface3D.from_faces(new_lb_face3d_list, tolerance=TOLERANCE_LBT)
     # Make HB Room from Polyface 3D
     room_merged_facades = Room.from_polyface3d(identifier=hb_model.identifier + "_merged_facades",
                                                polyface=polyface_3d)
-    Room.solve_adjacency([room_merged_facades], tolerance=default_tolerance)
+    Room.solve_adjacency([room_merged_facades], tolerance=TOLERANCE_LBT)
     # Convert the HB Room to a HB Model
     if name is None:
-        name = hb_model.identifier + "_merged"
-    hb_model_merge_facades = Model(identifier=name, rooms=[room_merged_facades])
+        name = hb_model.identifier + "_merged_faces"
+    merged_faces_hb_model_obj = Model(identifier=name, rooms=[room_merged_facades])
     # add apertures to the Model
-    hb_model_aperture_list = hb_model.apertures
-    for aperture_obj in hb_model_aperture_list:
-        for room in hb_model_merge_facades.rooms:
-            for face in room.faces:
-                if face.geometry.is_sub_face(aperture_obj.geometry, tolerance=default_tolerance, angle_tolerance=0.1):
-                    face.add_aperture(aperture_obj)
+    add_apertures_to_merged_faces_hb_model(hb_model_obj=hb_model_obj,
+                                           merged_faces_hb_model_obj=merged_faces_hb_model_obj)
 
-    return hb_model_merge_facades
+    return merged_faces_hb_model_obj
 
 
 def make_shapely_2D_polygon_from_lb_face(lb_face_3D):
@@ -171,7 +172,7 @@ def make_rotation_matrix(plane):
 
 
 def make_lb_face_from_shapely_2d_polygon(polygon, rotation_matrix, origin_new_coordinate_system, plane,
-                                         tolerance=default_tolerance):
+                                         tolerance=TOLERANCE_LBT):
     """Convert a Ladybug Face to a Shapely Polygon."""
     # convert vertices into tuples
     point_list_outline_2d = [list(point) for point in polygon.exterior.__geo_interface__['coordinates']]
@@ -227,10 +228,25 @@ def orientation_to_x_and_y_vector3d(angle):
     return x_vector3d, y_vector3d
 
 
+def add_apertures_to_merged_faces_hb_model(hb_model_obj, merged_faces_hb_model_obj):
+    """
+    Add the apertures of the original model to the merged faces model
+    :param hb_model_obj: Honeybee Model
+    :param merged_faces_hb_model_obj: Honeybee Model
+    """
+    # add apertures to the Model
+    hb_model_aperture_list = hb_model_obj.apertures
+    for aperture_obj in hb_model_aperture_list:
+        for room in merged_faces_hb_model_obj.rooms:
+            for face in room.faces:
+                if face.geometry.is_sub_face(aperture_obj.geometry, tolerance=TOLERANCE_LBT, angle_tolerance=0.1):
+                    face.add_aperture(aperture_obj)
+
+
 if __name__ == "__main__":
     for i in range(0, 10):
         path_folder = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\Ministry of Energy Research\IBPSA US conference\hbjson_2\var_sub_optimal"
-        hb_model = Model.from_hbjson(os.path.join(path_folder,f"Buil_TA_{i}.hbjson"))
+        hb_model = Model.from_hbjson(os.path.join(path_folder, f"Buil_TA_{i}.hbjson"))
         # hb_model_merged = merge_facades_and_roof_faces_in_hb_model(hb_model, orient_roof_mesh_to_south=True,name=hb_model.identifier + "_merged_south")
         # hb_model_merged.add_shades(hb_model.outdoor_shades)
         # hb_model_merged.to_hbjson(os.path.join(path_folder,"merged_south",f"Buil_TA_{i}_merged_south.hbjson"))
@@ -238,9 +254,7 @@ if __name__ == "__main__":
         hb_model_merged = merge_facades_and_roof_faces_in_hb_model(hb_model, orient_roof_mesh_to_south=True,
                                                                    name=hb_model.identifier + "_merged_or")
         hb_model_merged.add_shades(hb_model.outdoor_shades)
-        hb_model_merged.to_hbjson(os.path.join(path_folder,"merged_or", f"Buil_TA_{i}_merged_or.hbjson"))
-
-
+        hb_model_merged.to_hbjson(os.path.join(path_folder, "merged_or", f"Buil_TA_{i}_merged_or.hbjson"))
 
         # hb_model = Model.from_hbjson(
         #     f"C:\\Users\\elie-medioni\\OneDrive\\OneDrive - Technion\\Ministry of Energy Research\\IBPSA US conference\\buildings_hbjson\\variation_1\\ResidentialBldg_{i}.hbjson")

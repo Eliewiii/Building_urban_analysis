@@ -15,6 +15,7 @@ from building.building_basic import BuildingBasic
 from building.context_filter.building_shading_context import BuildingShadingContext
 # from building.context_filter.building_lwr_context import BuildingLWRContext  # Useful later
 from building.solar_radiations_and_panel.solar_rad_and_BIPV import SolarRadAndBipvSimulation
+from building.merg_hb_model_faces.merge_hb_model_faces import merge_facades_and_roof_faces_in_hb_model
 
 from libraries_addons.hb_model_addons import HbAddons
 from libraries_addons.solar_radiations.add_sensorgrid_hb_model import get_hb_faces_facades, get_hb_faces_roof, \
@@ -166,6 +167,20 @@ class BuildingModeled(BuildingBasic):
         # make it moved
         self.HB_model_obj.move(Vector3D(vector[0], vector[1], vector[2]))  # the model is moved fully
         self.moved_to_origin = True
+
+    def make_merged_faces_hb_model(self, orient_roof_mesh_to_according_to_building_orientation=True,
+                                   north_angle=0):
+        """
+        Make a HB model with the faces merged. Useful for mesh generation and to simplify the geometry of the model
+        for context shading computation.
+        :param orient_roof_mesh_to_according_to_building_orientation: bool: default=True, if True, the roof mesh
+            will be oriented according to the orientation of the building
+        :param north_angle: float: default=0, angle of the north in degree
+        """
+        merged_faces_hb_model_obj = merge_facades_and_roof_faces_in_hb_model(hb_model_obj=self.HB_model_obj,
+                                                                             orient_roof_mesh_to_according_to_building_orientation=orient_roof_mesh_to_according_to_building_orientation,
+                                                                             north_angle=north_angle)
+        self.merged_faces_hb_model_dict = merged_faces_hb_model_obj.to_dict()
 
     def init_shading_context_obj(self, min_VF_criterion, number_of_rays):
         """

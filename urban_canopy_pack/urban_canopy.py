@@ -453,6 +453,31 @@ class UrbanCanopy:
                 # Move by the opposite vector
                 building.move([-coordinate for coordinate in self.moving_vector_to_origin])
 
+    def make_merged_faces_hb_model_of_buildings(self, building_id_list=None,
+                                                orient_roof_mesh_to_according_to_building_orientation=True,
+                                                north_angle=0):
+        """
+        Make the merged faces hb model of the buildings in the urban canopy.
+        :param building_id_list: list of the building id to make the merged faces hb model,
+            if None or empty list, all the simulated and target buildings will be initialized.
+        :param orient_roof_mesh_to_according_to_building_orientation: boolean, if True, the roof mesh will be oriented
+            according to the building orientation.
+        :param north_angle: float, angle of the north in degrees.
+        """
+        # Checks of the building_id_list parameter to give feedback to the user if there is an issue with an id
+        if not (building_id_list is None or building_id_list is []):
+            for building_id in building_id_list:
+                if building_id not in self.building_dict.keys():
+                    user_logger.warning(f"The building id {building_id} is not in the urban canopy")
+                    dev_logger.info(
+                        f"The building id {building_id} is not in the urban canopy, make sure you indicated "
+                        f"the proper identifier in the input")
+                elif not isinstance(self.building_dict[building_id], BuildingModeled):
+                    user_logger.warning(f"The building id {building_id} does not have a Honeybee model, it's not "
+                                        f"possible to merge the faces. You can upgrade the building {building_id} and"
+                                        f" generate a Honeybee model out of it  with the component xxx.")
+
+
     def generate_sensor_grid_for_buildings(self, building_id_list=None, do_simulation_on_roof=True,
                                            do_simulation_on_facade=True, roof_grid_size_x=1, facade_grid_size_x=1,
                                            roof_grid_size_y=1, facade_grid_size_y=1, offset_dist=0.1):
@@ -529,7 +554,7 @@ class UrbanCanopy:
                                         f"the properties of the building {building_id} to make it a target building.")
                 elif self.building_dict[building_id].solar_radiation_and_bipv_simulation_obj is None:
                     user_logger.warning(f"No mesh for radiation simulation was generated for The building id "
-                                        f"{building_id}, the radiation simulation was noty performed for this building.")
+                                        f"{building_id}, the radiation simulation will not performed for this building.")
         # Run the simulation for the buildings
         for building_obj in self.building_dict.values():
             if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \

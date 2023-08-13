@@ -77,11 +77,16 @@ class LoadArguments:
                             default=default_shading_number_of_rays_context_filter_second_pass)
         # General simulation parameters
         parser.add_argument("--overwrite", help="boolean, if True, the simulation will overwrite the previous one, "
-                                                "can be used for any simulation if relevant",default=False)
+                                                "can be used for any simulation if relevant", default=False)
         # Weather parameters
         parser.add_argument("-w", "--path_weather_file", help="path to the weather file used",
                             default=default_path_weather_file)
-        # Solar radiation parameters
+        # Mesh and Solar radiation parameters
+        parser.add_argument("--north_angle",
+                            help="angle of the north in degree", default=0)
+        parser.add_argument("--orient_roof_mesh_to_according_to_building_orientation",
+                            help="True if the roof mesh should be oriented according to the building orientation, else False",
+                            default=True)
         parser.add_argument("--grid_size",
                             help="size of the grid of the mesh for the buildings, it should be about "
                                  "the size of a panel + BOS", default=default_grid_size)
@@ -154,6 +159,9 @@ class LoadArguments:
                             nargs='?', default=False)
         parser.add_argument("--remove_building_list_from_urban_canopy",
                             help="Remove a list of building from the urban canopy object", nargs='?',
+                            default=False)
+        parser.add_argument("--make_merged_faces_hb_model",
+                            help="Make a HB model with the faces merged.", nargs='?',
                             default=False)
 
         # Context filtering features
@@ -239,8 +247,8 @@ class LoadArguments:
             "run_extract_gis": bool(int(args.extract_gis)),
             "run_extract_buildings_from_hbjson_models": bool(int(args.extract_buildings_from_hbjson_models)),
             "run_move_buildings_to_origin": bool(int(args.move_buildings_to_origin)),
-            "run_remove_building_list_from_urban_canopy": bool(
-                int(args.remove_building_list_from_urban_canopy)),
+            "run_remove_building_list_from_urban_canopy": bool(int(args.remove_building_list_from_urban_canopy)),
+            "run_make_merged_faces_hb_model" : bool(int(args.make_merged_faces_hb_model)),
             "run_generate_bounding_boxes": bool(int(args.generate_bounding_boxes)),
             "run_perform_context_filtering": bool(int(args.perform_context_filtering)),
             "run_generate_model_with_building_envelop": bool(int(args.generate_model_with_building_envelop)),
