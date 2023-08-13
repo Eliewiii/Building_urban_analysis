@@ -247,6 +247,7 @@ class BuildingModeled(BuildingBasic):
                                                                          roof_grid_size_y=roof_grid_size_y,
                                                                          facade_grid_size_y=facade_grid_size_y,
                                                                          offset_dist=offset_dist)
+        # Use the merged faces HB model if it exists, otherwise use the original HB model
         if self.merged_faces_hb_model_dict is not None:
             hb_model_obj = self.merged_faces_hb_model_dict
         else:

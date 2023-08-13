@@ -477,8 +477,14 @@ class UrbanCanopy:
                                         f"possible to merge the faces. You can upgrade the building {building_id} and"
                                         f" generate a Honeybee model out of it  with the component xxx.")
 
+        for building_obj in self.building_dict.values():
+            if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
+                    and isinstance(building_obj, BuildingModeled):
+                building_obj.make_merged_faces_hb_model(
+                    orient_roof_mesh_to_according_to_building_orientation=orient_roof_mesh_to_according_to_building_orientation,
+                    north_angle=north_angle)
 
-    def generate_sensor_grid_for_buildings(self, building_id_list=None, do_simulation_on_roof=True,
+    def generate_sensor_grid_on_buildings(self, building_id_list=None, do_simulation_on_roof=True,
                                            do_simulation_on_facade=True, roof_grid_size_x=1, facade_grid_size_x=1,
                                            roof_grid_size_y=1, facade_grid_size_y=1, offset_dist=0.1):
         """
@@ -510,9 +516,8 @@ class UrbanCanopy:
                                         f"the properties of the building {building_id} to make it a target building.")
         # Generate the sensor grid for the buildings
         for building_obj in self.building_dict.values():
-            if ((
-                        building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) and isinstance(
-                building_obj, BuildingModeled) and building_obj.is_target:
+            if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
+                    and isinstance(building_obj, BuildingModeled) and building_obj.is_target:
                 building_obj.generate_sensor_grid(do_simulation_on_roof=do_simulation_on_roof,
                                                   do_simulation_on_facade=do_simulation_on_facade,
                                                   roof_grid_size_x=roof_grid_size_x,
@@ -521,16 +526,13 @@ class UrbanCanopy:
                                                   facade_grid_size_y=facade_grid_size_y,
                                                   offset_dist=offset_dist)
 
-    def run_solar_radiation_simulation_for_buildings(self, building_id_list, path_folder_simulation, path_weather_file,
-                                                     list_id=None, overwrite=False,
-                                                     north_angle=0, silent=False):
+    def run_solar_radiation_simulation_for_buildings(self,path_folder_simulation, building_id_list, path_weather_file,
+                                                     overwrite=False, north_angle=0, silent=False):
         """
         Run the solar radiation simulation for the buildings in the urban canopy.
         :param building_id_list: list of the building id to run the simulation, if None or empty list, all the target
         :param path_folder_simulation: string, path to the folder where the simulation will be performed.
         :param path_weather_file: string, path to the weather file.
-        :param list_id: list of the building id to run the simulation,
-            if None or empty list, all the target buildings will be initialized.
         :param overwrite: boolean, if True, the simulation will be run again and the results will overwrite the
             existing ones.
         :param north_angle: float, angle of the north in degrees.

@@ -8,21 +8,22 @@ from step_methods.load_bat_file_arguments import LoadArguments
 from step_methods.load_building_or_geometry import SimulationLoadBuildingOrGeometry
 from step_methods.post_processing_and_plots import SimulationPostProcessingAndPlots
 from step_methods.run_simulations import SolarOrPanelSimulation
+from step_methods.solar_radiation_and_bipv import SimFunSolarRadAndBipv
 
-from utils.utils_configuration import name_gh_components_logs_folder,path_scripts_tool_folder
+from utils.utils_configuration import name_gh_components_logs_folder, path_scripts_tool_folder
 
 user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")
 user_logger.setLevel(logging.INFO)
 dev_logger.setLevel(logging.INFO)
-dev_handler = logging.FileHandler(os.path.join(path_scripts_tool_folder,"dev_log.log"))
+dev_handler = logging.FileHandler(os.path.join(path_scripts_tool_folder, "dev_log.log"))
 user_formatter = logging.Formatter('%(message)s')
 dev_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 dev_handler.setFormatter(dev_formatter)
 dev_logger.addHandler(dev_handler)
 
-def main():
 
+def main():
     # Get the user parameters from the command line
     parser = argparse.ArgumentParser()
     # Parse the arguments and return them in a dictionary
@@ -86,7 +87,30 @@ def main():
     # Perform context filtering
     # todo @Elie
 
-    # Solar radiation analysis #
+    # Solar radiations and BIPV simulations
+    # Generate sensor grids
+    if simulation_step_dictionary["run_generate_sensorgrids_on_buildings"]:
+        SimFunSolarRadAndBipv.genrate_sensor_grid(urban_canopy_object=urban_canopy_object,
+                                                  building_id_list=arguments_dictionary["building_id_list"],
+                                                  do_simulation_on_roof=arguments_dictionary["on_roof"],
+                                                  do_simulation_on_facade=arguments_dictionary["on_facades"],
+                                                  roof_grid_size_x=arguments_dictionary["roof_grid_size_x"],
+                                                  facade_grid_size_x=arguments_dictionary["facade_grid_size_x"],
+                                                  roof_grid_size_y=arguments_dictionary["roof_grid_size_y"],
+                                                  facade_grid_size_y=arguments_dictionary["facade_grid_size_y"],
+                                                  offset_dist=arguments_dictionary["offset_dist"])
+    # Run solar radiation
+    if simulation_step_dictionary["run_solar_radiation_simulation"]:
+        SimFunSolarRadAndBipv.run_annual_solar_irradiance_simulation(
+            urban_canopy_object=urban_canopy_object,
+            path_folder_simulation=arguments_dictionary["path_folder_simulation"],
+            building_id_list=arguments_dictionary["building_id_list"],
+            path_weather_file=arguments_dictionary["path_weather_file"],
+            overwrite=arguments_dictionary["overwrite"],
+            north_angle=arguments_dictionary["north_angle"],
+            silent=arguments_dictionary["silent"])
+
+    # Solar radiation analysis #  todo @Elie : old version to delete
     # Perform Solar radiation
     if simulation_step_dictionary["run_radiation_simulation"]:
         SolarOrPanelSimulation.solar_radiation_simulation(urban_canopy_object=urban_canopy_object,
@@ -108,7 +132,8 @@ def main():
                                                     "path_pv_tech_dictionary"],
                                                 id_pv_tech_roof=arguments_dictionary["id_pv_tech_roof"],
                                                 id_pv_tech_facades=arguments_dictionary["id_pv_tech_facades"],
-                                                minimum_ratio_energy_harvested_on_primary_energy=arguments_dictionary["minimum_ratio_energy_harvested_on_primary_energy"],
+                                                minimum_ratio_energy_harvested_on_primary_energy=arguments_dictionary[
+                                                    "minimum_ratio_energy_harvested_on_primary_energy"],
                                                 performance_ratio=arguments_dictionary["performance_ratio"],
                                                 study_duration_in_years=arguments_dictionary["study_duration_years"],
                                                 replacement_scenario=arguments_dictionary["replacement_scenario"],
@@ -147,11 +172,11 @@ def main():
     if simulation_step_dictionary["plot_graph_results_building_panel_simulation"]:
         SimulationPostProcessingAndPlots.plot_graphs(urban_canopy_object=urban_canopy_object,
                                                      path_folder_simulation=arguments_dictionary[
-                                                                                    "path_folder_simulation"],
+                                                         "path_folder_simulation"],
                                                      study_duration_years=arguments_dictionary[
-                                                                                    "study_duration_years"],
+                                                         "study_duration_years"],
                                                      country_ghe_cost=arguments_dictionary[
-                                                                                    "country_ghe_cost"])
+                                                         "country_ghe_cost"])
 
     # Save logs for the components
     if arguments_dictionary["gh_component_name"] is not None:

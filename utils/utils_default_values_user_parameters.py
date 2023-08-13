@@ -43,7 +43,6 @@ default_mvfc_context_lwr_selection = 0.001
 default_shading_number_of_rays_context_filter_second_pass = 3
 default_perform_context_filtering_on_building_to_simulate = True
 
-
 # Default values for the simulations - Solar radiation calculation
 default_name_radiation_simulation_folder = 'Radiation Simulation'
 default_grid_size = 1.5  # todo check it !
@@ -51,9 +50,17 @@ default_offset_dist = 0.1
 default_on_roof = True
 default_on_facades = True
 
+# Default value mesh generation
+default_roof_grid_size_x = 1.5
+default_facade_grid_size_x = 1.5
+default_roof_grid_size_y = 1.5
+default_facade_grid_size_y = 1.5
+default_offset_dist = 0.1
+
 # Default values for panel simulation
 
-default_path_pv_tech_dictionary = os.path.join(path_tool, "Libraries", "Solar_panels", "pv_technologies.json")  # todo @Elie to delete
+default_path_pv_tech_dictionary = os.path.join(path_tool, "Libraries", "Solar_panels",
+                                               "pv_technologies.json")  # todo @Elie to delete
 default_id_pv_tech_roof = "mitrex_roof c-Si"
 default_id_pv_tech_facades = "mitrex_facades c-Si"
 default_minimum_ratio_energy_harvested_on_primary_energy = 1.2

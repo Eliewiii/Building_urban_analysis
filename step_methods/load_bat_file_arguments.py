@@ -175,8 +175,13 @@ class LoadArguments:
                             help="Make a HB model containing the envelop of all the buildings in the urban canopy "
                                  "object that will be stored in the json dic of the urban canopy object",
                             nargs='?', default=False)
+        # Solar radiation and BIPV simulation
+        parser.add_argument("--generate_sensorgrid",
+                            help="Perform the generation of the mesh on the buildings", default=False)
+        parser.add_argument("--run_solar_radiation_simulation",
+                            help="Perform the generation of the mesh on the buildings", default=False)
 
-        # Run the simulations
+        # Run the simulations todo: remove and keep only the updated version
         parser.add_argument("--do_radiation_simulation",
                             help="On each building targeted in the urban canopy, "
                                  "run the solar simulation", default=False)
@@ -211,30 +216,45 @@ class LoadArguments:
         # Create a dictionary with the arguments and the name of their variable that will be imported in the main script
         # todo @Elie, complete the dictionary with the new arguments through the development
         arguments_dictionary = {
+            # Configuration
             "path_folder_simulation": args.path_simulation_folder,
-            "path_gis": args.path_gis_folder,
-            "unit_gis": args.gis_unit,
-            "path_additional_gis_attribute_key_dict": args.path_dic_additional_gis_attribute_keys,
             "gh_component_name": args.gh_component_name,
+            # General
             "path_folder": args.path_folder,
             "path_file": args.path_file,
             "building_id_list": buildings_id_list,
+            "silent": bool(int(args.silent)),
+            "overwrite": bool(int(args.overwrite)),
+            # Extract geometry
+            "path_gis": args.path_gis_folder,
+            "unit_gis": args.gis_unit,
+            "path_additional_gis_attribute_key_dict": args.path_dic_additional_gis_attribute_keys,
             "are_buildings_target": bool(int(args.are_buildings_target)),
+            # Simulation general
             "path_weather_file": args.path_weather_file,
-            "grid_size": float(args.grid_size),
-            "offset_dist": float(args.offset_dist),
+            "north_angle": float(args.north_angle),
+            # Sensorgrid
             "on_roof": bool(int(args.on_roof)),
             "on_facades": bool(int(args.on_facades)),
+            "roof_grid_size_x": float(args.roof_grid_size_x),
+            "facade_grid_size_x": float(args.facade_grid_size_x),
+            "roof_grid_size_y": float(args.roof_grid_size_y),
+            "facade_grid_size_y": float(args.facade_grid_size_y),
+            "offset_dist": float(args.offset_dist),
+            # BIPV
             "path_pv_tech_dictionary": args.path_pv_tech_dictionary,
             "id_pv_tech_roof": args.id_pv_tech_roof,
             "id_pv_tech_facades": args.id_pv_tech_facades,
+            "performance_ratio": float(args.performance_ratio),
             "minimum_ratio_energy_harvested_on_primary_energy": float(
                 args.minimum_ratio_energy_harvested_on_primary_energy),
             "performance_ratio": float(args.performance_ratio),
             "study_duration_years": int(args.study_duration_years),
             "replacement_scenario": args.replacement_scenario,
             "every_X_years": int(args.every_X_years),
-            "country_ghe_cost": float(args.country_ghe_cost)
+            "country_ghe_cost": float(args.country_ghe_cost),
+            # old to delete
+            "grid_size": float(args.grid_size)
         }
 
         # Create a dictionary with the arguments and the name of their variable that will be imported in the main script
@@ -248,10 +268,12 @@ class LoadArguments:
             "run_extract_buildings_from_hbjson_models": bool(int(args.extract_buildings_from_hbjson_models)),
             "run_move_buildings_to_origin": bool(int(args.move_buildings_to_origin)),
             "run_remove_building_list_from_urban_canopy": bool(int(args.remove_building_list_from_urban_canopy)),
-            "run_make_merged_faces_hb_model" : bool(int(args.make_merged_faces_hb_model)),
+            "run_make_merged_faces_hb_model": bool(int(args.make_merged_faces_hb_model)),
             "run_generate_bounding_boxes": bool(int(args.generate_bounding_boxes)),
             "run_perform_context_filtering": bool(int(args.perform_context_filtering)),
             "run_generate_model_with_building_envelop": bool(int(args.generate_model_with_building_envelop)),
+            "run_generate_sensorgrids_on_buildings": bool(int(args.generate_sensorgrid)),
+            "run_run_solar_radiation_simulation": bool(int(args.run_solar_radiation_simulation)),
             "run_radiation_simulation": bool(int(args.do_radiation_simulation)),
             "run_panel_simulation": bool(int(args.do_panel_simulation)),
             "generate_panels_results_in_csv": bool(int(args.generate_panels_results_in_csv)),
