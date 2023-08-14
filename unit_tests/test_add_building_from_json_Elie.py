@@ -2,7 +2,7 @@ from unit_tests.utils_main_import_scripts import *
 
 # Create urban_canopy
 urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object(
-    path_folder_simulation=default_path_folder_simulation)
+    path_simulation_folder=default_path_simulation_folder)
 
 
 path_gis = r"C:\Users\eliem\OneDrive - Technion\Ministry of Energy Research\IBPSA US conference\Buildings"
@@ -40,8 +40,8 @@ SimulationLoadBuildingOrGeometry.add_buildings_from_hbjson_to_urban_canopy(
 
 # Export urban_canopy to pickle
 SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,
-                                                           path_folder_simulation=default_path_folder_simulation)
+                                                           path_simulation_folder=default_path_simulation_folder)
 # Export urban_canopy to json
 SimulationCommonMethods.save_urban_canopy_to_json(urban_canopy_object=urban_canopy_object,
-                                                  path_folder_simulation=default_path_folder_simulation)
+                                                  path_simulation_folder=default_path_simulation_folder)
 

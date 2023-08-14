@@ -323,15 +323,15 @@ def generate_sensorgrid_dict_on_hb_model(hb_model_obj, grid_size_x, grid_size_y,
     :param grid_size_x: float : size of the grid in the x direction in meter
     :param grid_size_y: float : size of the grid in the y direction in meter
     :param offset_dist: float : offset distance on the border of the face to generate the mesh
-    :param surface_type: str : Surface type to generate the Sensorgrid on, either "Roof" or "Facade"
+    :param surface_type: str : Surface type to generate the Sensorgrid on, either "roof" or "facades"
 
     :return sensorgrid_dict:
     """
 
-    if surface_type not in ["Roof", "Facade"]:
+    if surface_type not in ["roof", "facades"]:
         dev_logger.critical(f"the surface_type is either not specified or incorrect, please check")
         # TODO @Ale, what to do to stop the program here
-    elif surface_type == "Roof":
+    elif surface_type == "roof":
         hb_face_list = get_hb_faces_roof(hb_model_obj)
     else:
         hb_face_list = get_hb_faces_facades(hb_model_obj)

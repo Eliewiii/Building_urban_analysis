@@ -79,19 +79,19 @@ if _run and os.path.isfile(path_json):
         hb_model_list.append(Model.from_dict(urban_canopy_dict["buildings"][building_id]["HB_model"]))
 
         # for the roof
-        path_values_roof = os.path.join(path_folder_simulation_, "Radiation Simulation", building_id, "Roof",
+        path_values_roof = os.path.join(path_folder_simulation_, "Radiation Simulation", building_id, "roof",
                                         'annual_radiation_values.txt')
         values_roof_list.append(get_values_in_list(path_values_roof))
         sensor_grid_dict_roof = urban_canopy_dict["buildings"][building_id]["Solar_radiation"]["Sensor_grids_dict"][
-            "Roof"]
+            "roof"]
         mesh_roof_list.append(get_rhino_mesh_from_sensor_grid(sensor_grid_dict_roof))
 
         # for the facades
-        path_values_facades = os.path.join(path_folder_simulation_, "Radiation Simulation", building_id, "Facades",
+        path_values_facades = os.path.join(path_folder_simulation_, "Radiation Simulation", building_id, "facades",
                                            'annual_radiation_values.txt')
         values_facade_list.append(get_values_in_list(path_values_facades))
         sensor_grid_dict_facades = urban_canopy_dict["buildings"][building_id]["Solar_radiation"]["Sensor_grids_dict"][
-            "Facades"]
+            "facades"]
         mesh_facade_list.append(get_rhino_mesh_from_sensor_grid(sensor_grid_dict_facades))
 
     values_roof_tree = th.list_to_tree(values_roof_list)

@@ -7,7 +7,7 @@ import os
 from utils.utils_configuration import path_tool, path_simulation_temp_folder, path_libraries_tool_folder
 
 # Default path to the simulation folder
-default_path_folder_simulation = path_simulation_temp_folder
+default_path_simulation_folder = path_simulation_temp_folder
 
 # ???
 default_move_buildings_to_origin = False

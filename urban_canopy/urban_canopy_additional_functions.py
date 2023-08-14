@@ -31,13 +31,13 @@ tree_structure_per_building_urban_canopy_json_dict = {
         "Second_pass_filter": {}
     },
     "Solar_radiation": {
-        "Sensor_grids_dict": {"Roof": None, "Facades": None},
+        "Sensor_grids_dict": {"roof": None, "facades": None},
         "Path_results": {
-            "Annual": {"Roof": None, "Facades": None},
-            "Timestep": {"Roof": None, "Facades": None}
+            "Annual": {"roof": None, "facades": None},
+            "Timestep": {"roof": None, "facades": None}
         },
         "Panels_results": {
-            "Roof": {
+            "roof": {
                 "energy_harvested": {"list": None, "total": None},
                 "lca_cradle_to_installation_primary_energy": {"list": None, "total": None},
                 "lca_cradle_to_installation_carbon": {"list": None, "total": None},
@@ -45,7 +45,7 @@ tree_structure_per_building_urban_canopy_json_dict = {
                 "lca_recycling_primary_energy": {"list": None, "total": None},
                 "lca_recycling_carbon": {"list": None, "total": None}
             },
-            "Facades": {
+            "facades": {
                 "energy_harvested": {"list": None, "total": None},
                 "lca_cradle_to_installation_primary_energy": {"list": None, "total": None},
                 "lca_cradle_to_installation_carbon": {"list": None, "total": None},
@@ -112,7 +112,7 @@ class UrbanCanopyAdditionalFunction:
                 json_dict["buildings"][building_id]["HB_room_envelop"] = HB_room_dict
                 # at this stage of the simulation, the HB has already been turned into a dict (to avoid locked class
                 # issue)
-                json_dict["buildings"][building_id]["HB_model"] = building_object.HB_model_dict
+                json_dict["buildings"][building_id]["HB_model"] = building_object.hb_model_dict
 
     @staticmethod
     def add_building_attributes_to_json_dict(json_dict, building_dict):
@@ -131,43 +131,43 @@ class UrbanCanopyAdditionalFunction:
                 json_dict["buildings"][building_id]["Is_to_simulate"] = building_object.to_simulate
 
     @staticmethod
-    def add_radiation_attributes_to_json_dict(json_dict, building_dict, path_folder_simulation):
+    def add_radiation_attributes_to_json_dict(json_dict, building_dict, path_simulation_folder):
         """
         todo @Elie
         Buildings were already added to the dictionary before this function is called
         :param json_dict:
         :param building_dict:
-        :param path_folder_simulation:
+        :param path_simulation_folder:
         :return:
         """
         for building_id, building_object in building_dict.items():
             if type(building_object) is BuildingModeled:
                 json_dict["buildings"][building_id]["Solar_radiation"][
                     "Sensor_grids_dict"] = building_object.sensor_grid_dict
-                path_solar_radiation_folder = os.path.join(path_folder_simulation,
+                path_solar_radiation_folder = os.path.join(path_simulation_folder,
                                                            name_radiation_simulation_folder)
-                if building_object.sensor_grid_dict["Roof"] is not None:
+                if building_object.sensor_grid_dict["roof"] is not None:
                     json_dict["buildings"][building_id]["Solar_radiation"]["Path_results"]["Annual"][
-                        "Roof"] = os.path.join(path_solar_radiation_folder, building_id, "Roof",
+                        "roof"] = os.path.join(path_solar_radiation_folder, building_id, "roof",
                                                'annual_radiation_values.txt')
                     # todo @Hilany, add the timestep results
-                    # json_dict["buildings"][building_id]["Solar_radiation"]["Path_results"]["Timestep"]["Roof"] =
-                if building_object.sensor_grid_dict["Facades"] is not None:
+                    # json_dict["buildings"][building_id]["Solar_radiation"]["Path_results"]["Timestep"]["roof"] =
+                if building_object.sensor_grid_dict["facades"] is not None:
                     json_dict["buildings"][building_id]["Solar_radiation"]["Path_results"]["Annual"][
-                        "Facades"] = os.path.join(path_solar_radiation_folder, building_id, "Facades",
+                        "facades"] = os.path.join(path_solar_radiation_folder, building_id, "facades",
                                                   'annual_radiation_values.txt')
                     # todo @Hilany, add the timestep results
-                    # json_dict["buildings"][building_id]["Solar_radiation"]["Path_results"]["Timestep"]["Facades"] =
+                    # json_dict["buildings"][building_id]["Solar_radiation"]["Path_results"]["Timestep"]["facades"] =
 
     @staticmethod
     def add_panel_attributes_to_json_dict(json_dict, building_dict):
 
         for building_id, building_object in building_dict.items():
             if type(building_object) is BuildingModeled:
-                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"] = \
-                    building_object.results_panels["Roof"]
-                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"] = \
-                    building_object.results_panels["Facades"]
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["roof"] = \
+                    building_object.results_panels["roof"]
+                json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["facades"] = \
+                    building_object.results_panels["facades"]
                 json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"] = \
                     building_object.results_panels["Total"]
 
@@ -180,7 +180,7 @@ class UrbanCanopyAdditionalFunction:
                 HB_room_envelop_list.append(building.export_building_to_elevated_HB_room_envelop())
             elif type(
                     building) is BuildingModeled:  # Extract the rooms from the HB model attribute of the building
-                for HB_room in building.HB_model_obj.rooms:
+                for HB_room in building.hb_model_obj.rooms:
                     HB_room_envelop_list.append(HB_room)
         # additional cleaning of the colinear vertices, might not be necessary
         for room in HB_room_envelop_list:
@@ -193,10 +193,10 @@ class UrbanCanopyAdditionalFunction:
         return HB_dict
 
     @staticmethod
-    def write_to_csv_panels_simulation_results(json_dict, building_dict, path_folder_simulation):
+    def write_to_csv_panels_simulation_results(json_dict, building_dict, path_simulation_folder):
         # todo change names lca energy/lca carbon ?
         for building_id, building_object in building_dict.items():
-            path_folder_building = os.path.join(path_folder_simulation, name_radiation_simulation_folder, str(
+            path_folder_building = os.path.join(path_simulation_folder, name_radiation_simulation_folder, str(
                 building_id))
             if os.path.isdir(path_folder_building):  # todo, find better criteria
                 path_folder_panels_results_csv = os.path.join(path_folder_building,
@@ -214,40 +214,40 @@ class UrbanCanopyAdditionalFunction:
                           "carbon_end_of_life_roof (kgCO2eq)", "carbon_end_of_life_facades (kgCO2eq)",
                           "carbon_end_of_life_total (kgCO2eq)"]
                 list1 = \
-                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"][
+                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["roof"][
                         "energy_harvested"][
                         "list"]
                 list2 = \
-                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"][
+                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["facades"][
                         "energy_harvested"][
                         "list"]
                 list3 = \
                     json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"][
                         "energy_harvested"][
                         "list"]
-                list4 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"][
+                list4 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["roof"][
                     "lca_cradle_to_installation_primary_energy"][
                     "list"]
-                list5 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"][
+                list5 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["facades"][
                     "lca_cradle_to_installation_primary_energy"][
                     "list"]
                 list6 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"][
                     "lca_cradle_to_installation_primary_energy"][
                     "list"]
-                list7 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"][
+                list7 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["roof"][
                     "lca_cradle_to_installation_carbon"][
                     "list"]
-                list8 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"][
+                list8 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["facades"][
                     "lca_cradle_to_installation_carbon"][
                     "list"]
                 list9 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"][
                     "lca_cradle_to_installation_carbon"][
                     "list"]
-                list10 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"][
+                list10 = json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["roof"][
                     "dmfa_waste"][
                     "list"]
                 list11 = \
-                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"][
+                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["facades"][
                         "dmfa_waste"][
                         "list"]
                 list12 = \
@@ -255,19 +255,19 @@ class UrbanCanopyAdditionalFunction:
                         "dmfa_waste"][
                         "list"]
                 list13 = \
-                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"][
+                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["roof"][
                         "lca_recycling_primary_energy"]["list"]
                 list14 = \
-                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"][
+                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["facades"][
                         "lca_recycling_primary_energy"]["list"]
                 list15 = \
                     json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"][
                         "lca_recycling_primary_energy"]["list"]
                 list16 = \
-                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Roof"][
+                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["roof"][
                         "lca_recycling_carbon"]["list"]
                 list17 = \
-                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Facades"][
+                    json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["facades"][
                         "lca_recycling_carbon"]["list"]
                 list18 = \
                     json_dict["buildings"][building_id]["Solar_radiation"]["Panels_results"]["Total"][
@@ -294,29 +294,29 @@ class UrbanCanopyAdditionalFunction:
 
         for building_obj in building_dict.values():
             if type(building_obj) is BuildingModeled and building_obj.is_target:
-                if (building_obj.results_panels["Roof"] is not None) \
-                        and (building_obj.results_panels["Facades"] is not None) \
+                if (building_obj.results_panels["roof"] is not None) \
+                        and (building_obj.results_panels["facades"] is not None) \
                         and (building_obj.results_panels["Total"] is not None):
                     # get the energy values
                     cum_energy_harvested_roof = get_cumul_values(
-                        building_obj.results_panels["Roof"]["energy_harvested"][
+                        building_obj.results_panels["roof"]["energy_harvested"][
                             "list"])
                     cum_primary_energy_roof = add_elements_of_two_lists(
                         get_cumul_values(
-                            building_obj.results_panels["Roof"]["lca_cradle_to_installation_primary_energy"][
+                            building_obj.results_panels["roof"]["lca_cradle_to_installation_primary_energy"][
                                 "list"]),
                         get_cumul_values(
-                            building_obj.results_panels["Roof"]["lca_recycling_primary_energy"]["list"]))
+                            building_obj.results_panels["roof"]["lca_recycling_primary_energy"]["list"]))
                     cum_energy_harvested_facades = get_cumul_values(
-                        building_obj.results_panels["Facades"]["energy_harvested"][
+                        building_obj.results_panels["facades"]["energy_harvested"][
                             "list"])
                     cum_primary_energy_facades = add_elements_of_two_lists(
                         get_cumul_values(
-                            building_obj.results_panels["Facades"][
+                            building_obj.results_panels["facades"][
                                 "lca_cradle_to_installation_primary_energy"][
                                 "list"]),
                         get_cumul_values(
-                            building_obj.results_panels["Facades"]["lca_recycling_primary_energy"]["list"]))
+                            building_obj.results_panels["facades"]["lca_recycling_primary_energy"]["list"]))
                     cum_energy_harvested_total = get_cumul_values(
                         building_obj.results_panels["Total"]["energy_harvested"][
                             "list"])
@@ -365,25 +365,25 @@ class UrbanCanopyAdditionalFunction:
 
         for building_obj in building_dict.values():
             if type(building_obj) is BuildingModeled:
-                if building_obj.results_panels["Roof"] is not None and building_obj.results_panels[
-                    "Facades"] is not None and building_obj.results_panels["Total"] is not None:
+                if building_obj.results_panels["roof"] is not None and building_obj.results_panels[
+                    "facades"] is not None and building_obj.results_panels["Total"] is not None:
                     # get the carbon values
                     cum_carbon_emissions_roof = add_elements_of_two_lists(
                         get_cumul_values(
-                            building_obj.results_panels["Roof"]["lca_cradle_to_installation_carbon"]["list"]),
-                        get_cumul_values(building_obj.results_panels["Roof"]["lca_recycling_carbon"]["list"]))
+                            building_obj.results_panels["roof"]["lca_cradle_to_installation_carbon"]["list"]),
+                        get_cumul_values(building_obj.results_panels["roof"]["lca_recycling_carbon"]["list"]))
                     avoided_carbon_emissions_list_roof = [i * country_ghe_cost for i in
-                                                          building_obj.results_panels["Roof"][
+                                                          building_obj.results_panels["roof"][
                                                               "energy_harvested"]["list"]]
                     cum_avoided_carbon_emissions_roof = get_cumul_values(avoided_carbon_emissions_list_roof)
                     cum_carbon_emissions_facades = add_elements_of_two_lists(
                         get_cumul_values(
-                            building_obj.results_panels["Facades"]["lca_cradle_to_installation_carbon"][
+                            building_obj.results_panels["facades"]["lca_cradle_to_installation_carbon"][
                                 "list"]),
                         get_cumul_values(
-                            building_obj.results_panels["Facades"]["lca_recycling_carbon"]["list"]))
+                            building_obj.results_panels["facades"]["lca_recycling_carbon"]["list"]))
                     avoided_carbon_emissions_list_facades = [i * country_ghe_cost for i in
-                                                             building_obj.results_panels["Facades"][
+                                                             building_obj.results_panels["facades"][
                                                                  "energy_harvested"]["list"]]
                     cum_avoided_carbon_emissions_facades = get_cumul_values(
                         avoided_carbon_emissions_list_facades)
@@ -429,7 +429,7 @@ class UrbanCanopyAdditionalFunction:
             cum_carbon_emissions_total_uc
 
     @staticmethod
-    def plot_energy_results_uc(path_folder_simulation, years, cum_energy_harvested_roof_uc,
+    def plot_energy_results_uc(path_simulation_folder, years, cum_energy_harvested_roof_uc,
                                cum_energy_harvested_facades_uc, cum_energy_harvested_total_uc,
                                cum_primary_energy_roof_uc, cum_primary_energy_facades_uc,
                                cum_primary_energy_total_uc):
@@ -487,13 +487,13 @@ class UrbanCanopyAdditionalFunction:
         plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=2)
         file_name = 'cumulative_energy_harvested_and_primary_energy_urban_canopy.pdf'
 
-        fig.savefig(f'{path_folder_simulation}/{file_name}', bbox_inches='tight')
+        fig.savefig(f'{path_simulation_folder}/{file_name}', bbox_inches='tight')
 
 
         # plt.show()
 
     @staticmethod
-    def plot_carbon_results_uc(path_folder_simulation, years, cum_avoided_carbon_emissions_roof_uc,
+    def plot_carbon_results_uc(path_simulation_folder, years, cum_avoided_carbon_emissions_roof_uc,
                                cum_avoided_carbon_emissions_facades_uc, cum_avoided_carbon_emissions_total_uc,
                                cum_carbon_emissions_roof_uc, cum_carbon_emissions_facades_uc,
                                cum_carbon_emissions_total_uc):
@@ -539,11 +539,11 @@ class UrbanCanopyAdditionalFunction:
         plt.subplots_adjust(bottom=0.5)
         plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=2)
         file_name = 'cumulative_ghg_emissions_urban_canopy.pdf'
-        fig.savefig(f'{path_folder_simulation}/{file_name}', bbox_inches='tight')
+        fig.savefig(f'{path_simulation_folder}/{file_name}', bbox_inches='tight')
         # plt.show()
 
     @staticmethod
-    def plot_ghe_per_kwh_uc(path_folder_simulation, years, cum_energy_harvested_total_uc,
+    def plot_ghe_per_kwh_uc(path_simulation_folder, years, cum_energy_harvested_total_uc,
                             cum_carbon_emissions_total_uc):
 
         ghg_per_kWh = [(x / y) * 1000 for x, y in
@@ -558,10 +558,10 @@ class UrbanCanopyAdditionalFunction:
             "neighborhood")
         plt.grid(True)
         file_name = 'ghg_per_kWh_plot_urban_canopy.pdf'
-        fig.savefig(f'{path_folder_simulation}/{file_name}', bbox_inches='tight')
+        fig.savefig(f'{path_simulation_folder}/{file_name}', bbox_inches='tight')
 
     @staticmethod
-    def plot_results_eroi_uc(path_folder_simulation, years, cum_primary_energy_total_uc,
+    def plot_results_eroi_uc(path_simulation_folder, years, cum_primary_energy_total_uc,
                              cum_energy_harvested_total_uc):
 
         eroi = [x / y for x, y in zip(cum_energy_harvested_total_uc, cum_primary_energy_total_uc)]
@@ -573,7 +573,7 @@ class UrbanCanopyAdditionalFunction:
         plt.title("Evolution of the EROI during the study over the entire neighborhood")
         plt.grid(True)
         file_name = 'eroi_urban_canopy.pdf'
-        fig.savefig(f'{path_folder_simulation}/{file_name}', bbox_inches='tight')
+        fig.savefig(f'{path_simulation_folder}/{file_name}', bbox_inches='tight')
 
     @staticmethod
     def get_results_data_uc_for_csv(building_dict):
@@ -604,47 +604,47 @@ class UrbanCanopyAdditionalFunction:
 
         for building_obj in building_dict.values():
             if type(building_obj) is BuildingModeled and building_obj.is_target:
-                if (building_obj.results_panels["Roof"] is not None) \
-                        and (building_obj.results_panels["Facades"] is not None) \
+                if (building_obj.results_panels["roof"] is not None) \
+                        and (building_obj.results_panels["facades"] is not None) \
                         and (building_obj.results_panels["Total"] is not None):
                     harvested_energy_roof = add_elements_of_two_lists(harvested_energy_roof,
-                                                                      building_obj.results_panels["Roof"][
+                                                                      building_obj.results_panels["roof"][
                                                                           "energy_harvested"]["list"])
                     harvested_energy_facades = add_elements_of_two_lists(harvested_energy_facades,
                                                                          building_obj.results_panels[
-                                                                             "Facades"][
+                                                                             "facades"][
                                                                              "energy_harvested"]["list"])
                     harvested_energy_total = add_elements_of_two_lists(harvested_energy_total,
                                                                        building_obj.results_panels["Total"][
                                                                            "energy_harvested"]["list"])
 
                     primary_energy_cradle_to_installation_roof = add_elements_of_two_lists(
-                        primary_energy_cradle_to_installation_roof, building_obj.results_panels["Roof"][
+                        primary_energy_cradle_to_installation_roof, building_obj.results_panels["roof"][
                             "lca_cradle_to_installation_primary_energy"]["list"])
                     primary_energy_cradle_to_installation_facades = add_elements_of_two_lists(
-                        primary_energy_cradle_to_installation_facades, building_obj.results_panels["Facades"][
+                        primary_energy_cradle_to_installation_facades, building_obj.results_panels["facades"][
                             "lca_cradle_to_installation_primary_energy"]["list"])
                     primary_energy_cradle_to_installation_total = add_elements_of_two_lists(
                         primary_energy_cradle_to_installation_total, building_obj.results_panels["Total"][
                             "lca_cradle_to_installation_primary_energy"]["list"])
 
                     cradle_to_installation_carbon_roof = add_elements_of_two_lists(
-                        cradle_to_installation_carbon_roof, building_obj.results_panels["Roof"][
+                        cradle_to_installation_carbon_roof, building_obj.results_panels["roof"][
                             "lca_cradle_to_installation_carbon"]["list"])
                     cradle_to_installation_carbon_facades = add_elements_of_two_lists(
-                        cradle_to_installation_carbon_facades, building_obj.results_panels["Facades"][
+                        cradle_to_installation_carbon_facades, building_obj.results_panels["facades"][
                             "lca_cradle_to_installation_carbon"]["list"])
                     cradle_to_installation_carbon_total = add_elements_of_two_lists(
                         cradle_to_installation_carbon_total, building_obj.results_panels["Total"][
                             "lca_cradle_to_installation_carbon"]["list"])
 
                     recycling_energy_roof = add_elements_of_two_lists(recycling_energy_roof,
-                                                                      building_obj.results_panels["Roof"][
+                                                                      building_obj.results_panels["roof"][
                                                                           "lca_recycling_primary_energy"][
                                                                           "list"])
                     recycling_energy_facades = add_elements_of_two_lists(recycling_energy_facades,
                                                                          building_obj.results_panels[
-                                                                             "Facades"][
+                                                                             "facades"][
                                                                              "lca_recycling_primary_energy"][
                                                                              "list"])
                     recycling_energy_total = add_elements_of_two_lists(recycling_energy_total,
@@ -653,11 +653,11 @@ class UrbanCanopyAdditionalFunction:
                                                                            "list"])
 
                     recycling_carbon_roof = add_elements_of_two_lists(recycling_carbon_roof,
-                                                                      building_obj.results_panels["Roof"][
+                                                                      building_obj.results_panels["roof"][
                                                                           "lca_recycling_carbon"]["list"])
                     recycling_carbon_facades = add_elements_of_two_lists(recycling_carbon_facades,
                                                                          building_obj.results_panels[
-                                                                             "Facades"][
+                                                                             "facades"][
                                                                              "lca_recycling_carbon"]["list"])
                     recycling_carbon_total = add_elements_of_two_lists(recycling_carbon_total,
                                                                        building_obj.results_panels["Total"][
@@ -665,10 +665,10 @@ class UrbanCanopyAdditionalFunction:
 
                     waste_generated_roof = add_elements_of_two_lists(waste_generated_roof,
                                                                      building_obj.results_panels[
-                                                                         "Roof"]["dmfa_waste"]["list"])
+                                                                         "roof"]["dmfa_waste"]["list"])
                     waste_generated_facades = add_elements_of_two_lists(waste_generated_facades,
                                                                         building_obj.results_panels[
-                                                                            "Facades"]["dmfa_waste"]["list"])
+                                                                            "facades"]["dmfa_waste"]["list"])
                     waste_generated_total = add_elements_of_two_lists(waste_generated_total,
                                                                       building_obj.results_panels[
                                                                           "Total"]["dmfa_waste"]["list"])
@@ -705,7 +705,7 @@ class UrbanCanopyAdditionalFunction:
             cum_total_carbon_emissions_roof, cum_total_carbon_emissions_facades, cum_total_carbon_emissions_total
 
     @classmethod
-    def write_to_csv_urban_canopy_results(cls, building_dict, path_folder_simulation):
+    def write_to_csv_urban_canopy_results(cls, building_dict, path_simulation_folder):
 
         header = ["energy_harvested_roof (kWh)", "energy_harvested_facades (kWh)",
                   "energy_harvested_total (kWh)",
@@ -760,6 +760,6 @@ class UrbanCanopyAdditionalFunction:
              list26,
              list27])
 
-        path_folder_panels_results_csv = os.path.join(path_folder_simulation, "panels_simulation_results.csv")
+        path_folder_panels_results_csv = os.path.join(path_simulation_folder, "panels_simulation_results.csv")
 
         write_to_csv_arr(header, array, path_folder_panels_results_csv)

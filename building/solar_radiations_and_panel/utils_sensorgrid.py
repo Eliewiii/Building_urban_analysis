@@ -27,17 +27,17 @@ def generate_sensor_grid_for_hb_model(hb_model_obj, grid_size_x, grid_size_y, of
     :param grid_size_x: float : size of the grid in the x direction in meter
     :param grid_size_y: float : size of the grid in the y direction in meter
     :param offset_dist: float : offset distance on the border of the face to generate the mesh
-    :param surface_type: str : Surface type to generate the Sensorgrid on, either "Roof" or "Facade"
+    :param surface_type: str : Surface type to generate the Sensorgrid on, either "roof" or "facades"
 
     :return sensorgrid_dict:
     """
     # not sure if necessary
     assert isinstance(hb_model_obj, Model), 'Expected Honeybee Model. Got {}.'.format(type(hb_model_obj))
 
-    if surface_type not in ["Roof", "Facade"]:
+    if surface_type not in ["roof", "facades"]:
         dev_logger.critical(f"the surface_type is either not specified or incorrect, please check")
         # TODO @Ale, what to do to stop the program here
-    elif surface_type == "Roof":
+    elif surface_type == "roof":
         hb_face_list = get_hb_faces_list_according_to_type(hb_model_obj, is_roof)
     else:
         hb_face_list = get_hb_faces_list_according_to_type(hb_model_obj, is_facade)
@@ -289,39 +289,6 @@ def generate_lb_mesh2d_from_lb_polygon2d(polygon, x_dim, y_dim, generate_centroi
     _new_mesh._face_areas = x_dim * y_dim
 
     return _new_mesh
-
-
-def check_number_mesh_grid_BUA(input, name):
-    assert isinstance(input, (float, int)), '{} for Face3D.get_mesh_grid' \
-                                            ' must be a number. Got {}.'.format(name, type(input))
-
-
-""" todo : to delete if nnot necessary"""
-
-
-# def is_point_inside_BUA(polygon_face, point, test_vector=Vector2D(1, 0.00001)):
-#     """Test whether a Point2D lies inside or outside the polygon.
-#
-#
-#     Args:
-#         point: A Point2D for which the inside/outside relationship will be tested.
-#         test_vector: Optional vector to set the direction in which intersections
-#             with the polygon edges will be evaluated to determine if the
-#             point is inside. Default is a slight variation of the X-unit
-#             vector with a low probability of encountering the unsupported
-#             fringe cases.
-#
-#     Returns:
-#         A boolean denoting whether the point lies inside (True) or outside (False).
-#     """
-#     test_ray = Ray2D(point, test_vector)
-#     n_int = 0
-#     for _s in polygon_face.segments:
-#         if does_intersection_exist_line2d(_s, test_ray):
-#             n_int += 1
-#     if n_int % 2 == 0:
-#         return False
-#     return True
 
 def middle_point2d(point2d_1, point2d_2):
     """

@@ -16,45 +16,41 @@ class LoadArguments:
         :param parser: parser object containing the user parameters
         :return parser: parser object with the argument added
         """
-        # General user parameters
+        # Configuration
         parser.add_argument("-f", "--path_simulation_folder", help="path to the simulation folder", nargs='?',
-                            default=default_path_folder_simulation)
-
-        # Grasshopper parameters
+                            default=default_path_simulation_folder)
         parser.add_argument("-c", "--gh_component_name",
                             help="name of the component in gh that execute the code",
                             nargs='?',
                             default=None)
-
-        # Geometry parameters
-        parser.add_argument("-g", "--path_gis_folder",
-                            help="path to gis folder containing all the sub gis files",
-                            nargs='?', default=default_path_gis)
-        parser.add_argument("-u", "--gis_unit", help="unit of the GIS", nargs='?', default=default_unit_gis)
-        parser.add_argument("-d", "--path_dic_additional_gis_attribute_keys",
-                            help="path to the additional key dictionary of the attributes in the GIS file",
-                            nargs='?',
-                            default=None)
+        # General
         parser.add_argument("--path_folder",
                             help="path to a folder that will be useful for the simulation", nargs='?',
                             default=None)
         parser.add_argument("--path_file",
                             help="path to a single file that will be useful for the simulation", nargs='?',
                             default=None)
-
-        # Building manipulation parameters
         parser.add_argument("-l", "--building_id_list",
                             help="list of the names of the buildings in the urban canopy "
-                                 "we want to run the simulation on", nargs='?',
-                            default=None)
-        parser.add_argument("-s", "--are_buildings_simulated",
-                            help="boolean (here '0' or '1') telling if the buildings inputed in the component should"
-                                 " be turned to simulated buildings ", nargs='?', default=False)
+                                 "we want to run the simulation on", nargs='?', default=None)
+        parser.add_argument("--silent", help="if True run the simulation without opening the terminal",
+                            nargs='?', default=False)
+        parser.add_argument("--overwrite", help="if True overwrite the previous simulation",
+                            nargs='?', default=False)
+        # Building manipulation
         parser.add_argument("-t", "--are_buildings_target",
                             help="boolean (here '0' or '1') telling if the buildings inputed in the component are "
                                  "target ", nargs='?', default=False)
-        # it will be a string,
-        # with each id seperate by a space that will be parsed in the main script
+
+        # Extract Geometry GIS
+        parser.add_argument("-g", "--path_gis_folder",
+                            help="path to gis folder containing all the sub gis files",
+                            nargs='?', default=default_path_gis)
+        parser.add_argument("-u", "--gis_unit", help="unit of the GIS", nargs='?', default=default_unit_gis)
+        parser.add_argument("-d", "--path_dic_additional_gis_attribute_keys",
+                            help="path to the additional key dictionary of the attributes in the GIS file",
+                            nargs='?', default=None)
+        # Building model generation parameters
         parser.add_argument("--run_on_building_to_simulate",
                             help="boolean (here '0' or '1') telling if it should be run on all buildings to simulate",
                             nargs='?', default=False)
@@ -67,7 +63,10 @@ class LoadArguments:
         parser.add_argument("--use_properties_from_typology",
                             help="boolean (here '0' or '1') telling if it should be run on all buildings to simulate",
                             nargs='?', default=False)
-
+        # Mesh faces parameters
+        parser.add_argument("--orient_roof_according_to_building_orientation",
+                            help="True if the roof mesh should be oriented according to the building orientation, else False",
+                            default=True)
         # Context filter algorithm parameters
         parser.add_argument("--mvfc",
                             help="float, value of the minimum view factor criterion", nargs='?',
@@ -75,30 +74,41 @@ class LoadArguments:
         parser.add_argument("--nb_of_rays",
                             help="int, number of rays used for the raytracing", nargs='?',
                             default=default_shading_number_of_rays_context_filter_second_pass)
-        # General simulation parameters
-        parser.add_argument("--overwrite", help="boolean, if True, the simulation will overwrite the previous one, "
-                                                "can be used for any simulation if relevant", default=False)
-        # Weather parameters
+        # Simulation general
         parser.add_argument("-w", "--path_weather_file", help="path to the weather file used",
                             default=default_path_weather_file)
-        # Mesh and Solar radiation parameters
         parser.add_argument("--north_angle",
                             help="angle of the north in degree", default=0)
-        parser.add_argument("--orient_roof_mesh_to_according_to_building_orientation",
-                            help="True if the roof mesh should be oriented according to the building orientation, else False",
-                            default=True)
-        parser.add_argument("--grid_size",
-                            help="size of the grid of the mesh for the buildings, it should be about "
-                                 "the size of a panel + BOS", default=default_grid_size)
-        parser.add_argument("--offset_dist",
-                            help="Number for the distance to move points from the surfaces of the "
-                                 "geometry of the model", default=default_offset_dist)
+        # Sensorgrid
         parser.add_argument("--on_roof", help="True if the simulation is to be run on the roof, else False",
                             default=default_on_roof)
         parser.add_argument("--on_facades",
                             help="True if the simulation is to be run on the facades, else False",
                             default=default_on_facades)
-        # Panel simulation parameters
+        parser.add_argument("--grid_size",
+                            help="size of the grid of the mesh for the buildings, it should be about "
+                                 "the size of a panel + BOS",
+                            default=default_grid_size)  # todo to delete when new version working
+        parser.add_argument("--roof_grid_size_x",
+                            help="size of the grid of the mesh for the buildings in the x direction, "
+                                 "it should be about the size of a panel + BOS",
+                            default=default_roof_grid_size_x)
+        parser.add_argument("--roof_grid_size_y",
+                            help="size of the grid of the mesh for the buildings in the y direction, "
+                                    "it should be about the size of a panel + BOS",
+                            default=default_roof_grid_size_y)
+        parser.add_argument("--facade_grid_size_x",
+                            help="size of the grid of the mesh for the buildings in the x direction, "
+                                    "it should be about the size of a panel + BOS",
+                            default=default_facade_grid_size_x)
+        parser.add_argument("--facade_grid_size_y",
+                            help="size of the grid of the mesh for the buildings in the y direction, "
+                                    "it should be about the size of a panel + BOS",
+                            default=default_facade_grid_size_y)
+        parser.add_argument("--offset_dist",
+                            help="Number for the distance to move points from the surfaces of the "
+                                 "geometry of the model", default=default_offset_dist)
+        # BIPV
         parser.add_argument("--path_pv_tech_dictionary",
                             help="path to the json containing the PVPanelTechnologies",
                             default=default_path_pv_tech_dictionary)
@@ -210,14 +220,12 @@ class LoadArguments:
 
         # post process of some arguments
         buildings_id_list = parse_and_clean_building_id_list_from_argument_parser(args.building_id_list)
-        are_buildings_target = bool(
-            int(args.are_buildings_target))  # to convert the string ("0" or "1") to a boolean
 
         # Create a dictionary with the arguments and the name of their variable that will be imported in the main script
         # todo @Elie, complete the dictionary with the new arguments through the development
         arguments_dictionary = {
             # Configuration
-            "path_folder_simulation": args.path_simulation_folder,
+            "path_simulation_folder": args.path_simulation_folder,
             "gh_component_name": args.gh_component_name,
             # General
             "path_folder": args.path_folder,
@@ -225,11 +233,16 @@ class LoadArguments:
             "building_id_list": buildings_id_list,
             "silent": bool(int(args.silent)),
             "overwrite": bool(int(args.overwrite)),
+            # Building manipulation
+            "are_buildings_target": bool(int(args.are_buildings_target)),
             # Extract geometry
             "path_gis": args.path_gis_folder,
             "unit_gis": args.gis_unit,
             "path_additional_gis_attribute_key_dict": args.path_dic_additional_gis_attribute_keys,
-            "are_buildings_target": bool(int(args.are_buildings_target)),
+            # Mesh faces parameters
+            "orient_roof_according_to_building_orientation": bool(
+                int(args.orient_roof_according_to_building_orientation)),
+            # todo @Elie add the new arguments for the new features when operational
             # Simulation general
             "path_weather_file": args.path_weather_file,
             "north_angle": float(args.north_angle),
@@ -260,18 +273,24 @@ class LoadArguments:
         # Create a dictionary with the arguments and the name of their variable that will be imported in the main script
         # # todo @Elie, complete the dictionary with the new arguments through the development
         step_dictionary = {
+            # Initialization and wrapping
             "run_make_simulation_folder": bool(int(args.make_simulation_folder)),
             "run_create_or_load_urban_canopy_object": bool(int(args.create_or_load_urban_canopy_object)),
             "run_save_urban_canopy_object_to_pickle": bool(int(args.save_urban_canopy_object_to_pickle)),
             "run_save_urban_canopy_object_to_json": bool(int(args.save_urban_canopy_object_to_json)),
+            # Import geometry
             "run_extract_gis": bool(int(args.extract_gis)),
             "run_extract_buildings_from_hbjson_models": bool(int(args.extract_buildings_from_hbjson_models)),
+            # Building manipulation
             "run_move_buildings_to_origin": bool(int(args.move_buildings_to_origin)),
-            "run_remove_building_list_from_urban_canopy": bool(int(args.remove_building_list_from_urban_canopy)),
+            "run_remove_building_list_from_urban_canopy": bool(
+                int(args.remove_building_list_from_urban_canopy)),
             "run_make_merged_faces_hb_model": bool(int(args.make_merged_faces_hb_model)),
             "run_generate_bounding_boxes": bool(int(args.generate_bounding_boxes)),
-            "run_perform_context_filtering": bool(int(args.perform_context_filtering)),
             "run_generate_model_with_building_envelop": bool(int(args.generate_model_with_building_envelop)),
+            # Context filtering
+            "run_perform_context_filtering": bool(int(args.perform_context_filtering)),
+            # Solar and BIPV simulation
             "run_generate_sensorgrids_on_buildings": bool(int(args.generate_sensorgrid)),
             "run_run_solar_radiation_simulation": bool(int(args.run_solar_radiation_simulation)),
             "run_radiation_simulation": bool(int(args.do_radiation_simulation)),

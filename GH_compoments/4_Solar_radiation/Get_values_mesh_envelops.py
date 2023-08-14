@@ -61,23 +61,23 @@ if _run:
             # for the roof
             path_values_roof = urban_canopy_dict["buildings"][_building_id]["path_values_roof"]
             values_roof = get_values_in_list(path_values_roof)
-            sensor_grid_dict_roof = urban_canopy_dict["buildings"][_building_id]["SensorGrid_dict"]["Roof"]
+            sensor_grid_dict_roof = urban_canopy_dict["buildings"][_building_id]["SensorGrid_dict"]["roof"]
             mesh_roof = get_rhino_mesh_from_sensor_grid(sensor_grid_dict_roof)
 
             # for the facades
             path_values_facades = urban_canopy_dict["buildings"][_building_id]["path_values_facades"]
             values_facades = get_values_in_list(path_values_facades)
-            sensor_grid_dict_facades = urban_canopy_dict["buildings"][_building_id]["SensorGrid_dict"]["Facades"]
+            sensor_grid_dict_facades = urban_canopy_dict["buildings"][_building_id]["SensorGrid_dict"]["facades"]
             mesh_facades = get_rhino_mesh_from_sensor_grid(sensor_grid_dict_roof)
 
         if plot_on_roof_ and not plot_on_facades_:
             path_values_roof = urban_canopy_dict["buildings"][_building_id]["path_values_roof"]
             values_roof = get_values_in_list(path_values_roof)
-            sensor_grid_dict_roof = urban_canopy_dict["buildings"][_building_id]["SensorGrid_dict"]["Roof"]
+            sensor_grid_dict_roof = urban_canopy_dict["buildings"][_building_id]["SensorGrid_dict"]["roof"]
             mesh_roof = get_rhino_mesh_from_sensor_grid(sensor_grid_dict_roof)
 
         if plot_on_facades_ and not plot_on_roof_:
             path_values_facades = urban_canopy_dict["buildings"][_building_id]["path_values_facades"]
             values_facades = get_values_in_list(path_values_facades)
-            sensor_grid_dict_facades = urban_canopy_dict["buildings"][_building_id]["SensorGrid_dict"]["Facades"]
+            sensor_grid_dict_facades = urban_canopy_dict["buildings"][_building_id]["SensorGrid_dict"]["facades"]
             mesh_facades = get_rhino_mesh_from_sensor_grid(sensor_grid_dict_roof)

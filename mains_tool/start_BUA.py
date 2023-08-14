@@ -36,17 +36,17 @@ def main():
     # Make simulation folder
     if simulation_step_dictionary["run_make_simulation_folder"]:
         SimulationCommonMethods.make_simulation_folder(
-            path_folder_simulation=arguments_dictionary["path_folder_simulation"])
+            path_simulation_folder=arguments_dictionary["path_simulation_folder"])
 
     # # Create the log files for the user
-    # user_handler = logging.FileHandler(os.path.join(arguments_dictionary['path_folder_simulation'],name_gh_components_logs_folder, arguments_dictionary['gh_component_name']+".log"))
+    # user_handler = logging.FileHandler(os.path.join(arguments_dictionary['path_simulation_folder'],name_gh_components_logs_folder, arguments_dictionary['gh_component_name']+".log"))
     # user_handler.setFormatter(user_formatter)
     # user_logger.addHandler(user_handler)
 
     # Create or load urban canopy object
     if simulation_step_dictionary["run_create_or_load_urban_canopy_object"]:
         urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object(
-            path_folder_simulation=arguments_dictionary["path_folder_simulation"])
+            path_simulation_folder=arguments_dictionary["path_simulation_folder"])
 
     # Load Buildings #
     # Extract GIS data
@@ -103,19 +103,21 @@ def main():
     if simulation_step_dictionary["run_solar_radiation_simulation"]:
         SimFunSolarRadAndBipv.run_annual_solar_irradiance_simulation(
             urban_canopy_object=urban_canopy_object,
-            path_folder_simulation=arguments_dictionary["path_folder_simulation"],
+            path_simulation_folder=arguments_dictionary["path_simulation_folder"],
             building_id_list=arguments_dictionary["building_id_list"],
             path_weather_file=arguments_dictionary["path_weather_file"],
             overwrite=arguments_dictionary["overwrite"],
             north_angle=arguments_dictionary["north_angle"],
             silent=arguments_dictionary["silent"])
 
+
+
     # Solar radiation analysis #  todo @Elie : old version to delete
     # Perform Solar radiation
     if simulation_step_dictionary["run_radiation_simulation"]:
         SolarOrPanelSimulation.solar_radiation_simulation(urban_canopy_object=urban_canopy_object,
-                                                          path_folder_simulation=arguments_dictionary[
-                                                              "path_folder_simulation"],
+                                                          path_simulation_folder=arguments_dictionary[
+                                                              "path_simulation_folder"],
                                                           path_weather_file=arguments_dictionary["path_weather_file"],
                                                           list_id=arguments_dictionary["building_id_list"],
                                                           grid_size=arguments_dictionary["grid_size"],
@@ -127,7 +129,7 @@ def main():
     # perform LCA and DMFA
     if simulation_step_dictionary["run_panel_simulation"]:
         SolarOrPanelSimulation.panel_simulation(urban_canopy_object=urban_canopy_object,
-                                                path_folder_simulation=arguments_dictionary["path_folder_simulation"],
+                                                path_simulation_folder=arguments_dictionary["path_simulation_folder"],
                                                 path_pv_tech_dictionary_json=arguments_dictionary[
                                                     "path_pv_tech_dictionary"],
                                                 id_pv_tech_roof=arguments_dictionary["id_pv_tech_roof"],
@@ -154,25 +156,25 @@ def main():
     # Export Urban canopy to pickle
     if simulation_step_dictionary["run_save_urban_canopy_object_to_pickle"]:
         SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,
-                                                                   path_folder_simulation=arguments_dictionary[
-                                                                       "path_folder_simulation"])
+                                                                   path_simulation_folder=arguments_dictionary[
+                                                                       "path_simulation_folder"])
     # Export Urban canopy to json
     if simulation_step_dictionary["run_save_urban_canopy_object_to_json"]:
         SimulationCommonMethods.save_urban_canopy_to_json(urban_canopy_object=urban_canopy_object,
-                                                          path_folder_simulation=arguments_dictionary[
-                                                              "path_folder_simulation"])
+                                                          path_simulation_folder=arguments_dictionary[
+                                                              "path_simulation_folder"])
 
     # Post-processing panels
     if simulation_step_dictionary["generate_panels_results_in_csv"]:
         SimulationPostProcessingAndPlots.generate_csv_panels_simulation_results(urban_canopy_object=urban_canopy_object,
-                                                                                path_folder_simulation=
+                                                                                path_simulation_folder=
                                                                                 arguments_dictionary[
-                                                                                    "path_folder_simulation"])
+                                                                                    "path_simulation_folder"])
 
     if simulation_step_dictionary["plot_graph_results_building_panel_simulation"]:
         SimulationPostProcessingAndPlots.plot_graphs(urban_canopy_object=urban_canopy_object,
-                                                     path_folder_simulation=arguments_dictionary[
-                                                         "path_folder_simulation"],
+                                                     path_simulation_folder=arguments_dictionary[
+                                                         "path_simulation_folder"],
                                                      study_duration_years=arguments_dictionary[
                                                          "study_duration_years"],
                                                      country_ghe_cost=arguments_dictionary[
@@ -181,8 +183,8 @@ def main():
     # Save logs for the components
     if arguments_dictionary["gh_component_name"] is not None:
         SimulationCommonMethods.write_gh_component_user_logs(urban_canopy_object=urban_canopy_object,
-                                                             path_folder_simulation=arguments_dictionary[
-                                                                 "path_folder_simulation"],
+                                                             path_simulation_folder=arguments_dictionary[
+                                                                 "path_simulation_folder"],
                                                              logs=None)  # add the logs
 
 

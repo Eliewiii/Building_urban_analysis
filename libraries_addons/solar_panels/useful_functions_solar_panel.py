@@ -19,7 +19,7 @@ def load_panels_on_sensor_grid(sensor_grid, pv_technology_object, yearly_solar_r
     """
     Take a sensor grid and create a list of panels that correspond to each face of the mesh of the sensor grid
     The panels are initialized as switched on
-    :param sensor_grid: sensor_grid of the face, roof, facade... we want to load the panels on
+    :param sensor_grid: sensor_grid of the face, roof, facades... we want to load the panels on
     :param pv_technology_object: PVPanelTechnology object
     :param yearly_solar_radiation_values: list of floats: list of the yearly cumulative solar radiation got by the solar
     radiation simulation in Wh/panel/year

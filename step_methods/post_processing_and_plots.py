@@ -15,11 +15,11 @@ class SimulationPostProcessingAndPlots:
 
     @staticmethod
     def generate_hb_model_contains_all_building_envelopes_to_plot_Grasshopper(urban_canopy_object,
-                                                                              path_folder_simulation):
+                                                                              path_simulation_folder):
         """
             todo @Elie, change it, so tha it is writen in the json file
         """
-        urban_canopy_object.make_HB_model_envelops_from_buildings(path_folder=path_folder_simulation)
+        urban_canopy_object.make_HB_model_envelops_from_buildings(path_folder=path_simulation_folder)
         user_logger.info("HB model for the building envelop created successfully")
         dev_logger.info("HB model for the building envelop created successfully")
 
@@ -34,25 +34,25 @@ class SimulationPostProcessingAndPlots:
         dev_logger.info(" ")  # todo
 
     @staticmethod
-    def generate_csv_panels_simulation_results(urban_canopy_object, path_folder_simulation):
+    def generate_csv_panels_simulation_results(urban_canopy_object, path_simulation_folder):
         UrbanCanopyAdditionalFunction.write_to_csv_panels_simulation_results(json_dict=urban_canopy_object.json_dict,
                                                                              building_dict=urban_canopy_object.
                                                                              building_dict,
-                                                                             path_folder_simulation=
-                                                                             path_folder_simulation)
+                                                                             path_simulation_folder=
+                                                                             path_simulation_folder)
         UrbanCanopyAdditionalFunction.write_to_csv_urban_canopy_results(building_dict=urban_canopy_object.building_dict,
-                                                                        path_folder_simulation=path_folder_simulation)
+                                                                        path_simulation_folder=path_simulation_folder)
 
     @staticmethod
-    def plot_graphs_each_building(urban_canopy_object, path_folder_simulation, study_duration_years, country_ghe_cost):
-        urban_canopy_object.plot_graphs_buildings(path_folder_simulation=path_folder_simulation,
+    def plot_graphs_each_building(urban_canopy_object, path_simulation_folder, study_duration_years, country_ghe_cost):
+        urban_canopy_object.plot_graphs_buildings(path_simulation_folder=path_simulation_folder,
                                                   study_duration_years=study_duration_years,
                                                   country_ghe_cost=country_ghe_cost)
 
     @staticmethod
-    def plot_graphs_total_urban_canopy(urban_canopy_object, path_folder_simulation, study_duration_years,
+    def plot_graphs_total_urban_canopy(urban_canopy_object, path_simulation_folder, study_duration_years,
                                        country_ghe_cost):
-        urban_canopy_object.plot_graphs_urban_canopy(path_folder_simulation=path_folder_simulation,
+        urban_canopy_object.plot_graphs_urban_canopy(path_simulation_folder=path_simulation_folder,
                                                      study_duration_years=study_duration_years,
                                                      country_ghe_cost=country_ghe_cost)
 

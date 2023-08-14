@@ -55,9 +55,9 @@ dev_logger.info("Extraction of context and hb_model complete")
 # Since we suppose that we already have a hb_building, we suppose all the shades, faces, roofs are already defined
 
 # PRE PROCESSING
-# Roof
+# roof
 model_sensorgrid_roofs=  hb_model_to_hb_SensorGrid_roofs("SensorGrid_Roofs", hb_model_roofs, 3, 0.1, True)
-# Facades
+# facades
 model_sensorgrid_facades = hb_model_to_hb_SensorGrid_facades("SensorGrid_Facades", hb_model_facades, 3, 0.1, True)
 
 user_logger.info("Pre-processing complete")
@@ -67,11 +67,11 @@ dev_logger.info("Pre-processing complete")
 
 path_folder_simulation = os.path.join("C:\\Users\\User\OneDrive - Technion\Documents\\test", "Radiation Simulation")
 path_folder_simulation_roofs = os.path.join(path_folder_simulation, "Roofs")
-path_folder_simulation_facades = os.path.join(path_folder_simulation, "Facades")
+path_folder_simulation_facades = os.path.join(path_folder_simulation, "facades")
 # Roofs
 settings_roofs = hb_recipe_settings(path_folder_simulation_roofs)
 hb_annual_irr_roofs = hb_ann_irr_sim(model_sensorgrid_roofs, wea_folder, settings_roofs)
-# Facades
+# facades
 settings_facades = hb_recipe_settings(path_folder_simulation_facades)
 hb_annual_irr_facades = hb_ann_irr_sim(model_sensorgrid_facades, wea_folder, settings_facades)
 

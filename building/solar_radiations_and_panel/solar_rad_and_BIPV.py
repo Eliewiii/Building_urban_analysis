@@ -9,7 +9,8 @@ import shutil
 from honeybee_radiance.sensorgrid import SensorGrid
 
 from building.solar_radiations_and_panel.utils_sensorgrid import generate_sensor_grid_for_hb_model
-from building.solar_radiations_and_panel.utils_solar_radiation import run_hb_model_annual_irradiance_simulation, \
+from building.solar_radiations_and_panel.utils_solar_radiation import \
+    run_hb_model_annual_irradiance_simulation, \
     move_radiation_results
 
 from utils.utils_configuration import name_temporary_files_folder, name_radiation_simulation_folder
@@ -18,13 +19,13 @@ user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")
 
 empty_parameter_dict = {
-    "Roof": {
+    "roof": {
         "grid_x": None,
         "grid_y": None,
         "offset": None,
         "panel_technology": None
     },
-    "Facade": {
+    "facades": {
         "grid_x": None,
         "grid_y": None,
         "offset": None,
@@ -35,11 +36,31 @@ empty_parameter_dict = {
     "replacement_scenario": {}
 }
 empty_results_dict = {
-    "Roof": {
-        "annual_panel_irradiance_list": None
+    "roof": {
+        "annual_panel_irradiance_list": None,
+        "energy_harvested": {"yearly": None, "total": None},
+        "lca_cradle_to_installation_primary_energy": {"yearly": None, "total": None},
+        "lca_cradle_to_installation_carbon": {"yearly": None, "total": None},
+        "dmfa_waste": {"yearly": None, "total": None},
+        "lca_recycling_primary_energy": {"yearly": None, "total": None},
+        "lca_recycling_carbon": {"yearly": None, "total": None}
     },
-    "Facade": {
-        "annual_panel_irradiance_list": None
+    "facades": {
+        "annual_panel_irradiance_list": None,
+        "energy_harvested": {"yearly": None, "total": None},
+        "lca_cradle_to_installation_primary_energy": {"yearly": None, "total": None},
+        "lca_cradle_to_installation_carbon": {"yearly": None, "total": None},
+        "dmfa_waste": {"yearly": None, "total": None},
+        "lca_recycling_primary_energy": {"yearly": None, "total": None},
+        "lca_recycling_carbon": {"yearly": None, "total": None}
+    },
+"facades": {
+        "energy_harvested": {"yearly": None, "total": None},
+        "lca_cradle_to_installation_primary_energy": {"yearly": None, "total": None},
+        "lca_cradle_to_installation_carbon": {"yearly": None, "total": None},
+        "dmfa_waste": {"yearly": None, "total": None},
+        "lca_recycling_primary_energy": {"yearly": None, "total": None},
+        "lca_recycling_carbon": {"yearly": None, "total": None}
     }
 }
 
@@ -80,12 +101,12 @@ class SolarRadAndBipvSimulation:
         """
         self.on_roof = do_simulation_on_roof
         self.on_facade = do_simulation_on_facade
-        self.parameter_dict["Roof"]["grid_x"] = roof_grid_size_x
-        self.parameter_dict["Roof"]["grid_y"] = roof_grid_size_y
-        self.parameter_dict["Facade"]["grid_x"] = facade_grid_size_x
-        self.parameter_dict["Facade"]["grid_y"] = facade_grid_size_y
-        self.parameter_dict["Roof"]["offset"] = offset_dist
-        self.parameter_dict["Facade"]["offset"] = offset_dist
+        self.parameter_dict["roof"]["grid_x"] = roof_grid_size_x
+        self.parameter_dict["roof"]["grid_y"] = roof_grid_size_y
+        self.parameter_dict["facades"]["grid_x"] = facade_grid_size_x
+        self.parameter_dict["facades"]["grid_y"] = facade_grid_size_y
+        self.parameter_dict["roof"]["offset"] = offset_dist
+        self.parameter_dict["facades"]["offset"] = offset_dist
 
     def generate_sensorgrids(self, hb_model_obj, roof_grid_size_x=1, facade_grid_size_x=1, roof_grid_size_y=1,
                              facade_grid_size_y=1, offset_dist=0.1):
@@ -99,10 +120,12 @@ class SolarRadAndBipvSimulation:
 
         if self.on_roof:
             self.roof_sensorgrid_dict = generate_sensor_grid_for_hb_model(hb_model_obj, roof_grid_size_x,
-                                                                          roof_grid_size_y, offset_dist, "Roof")
+                                                                          roof_grid_size_y, offset_dist,
+                                                                          "roof")
         elif self.on_facade:
             self.facade_sensorgrid_dict = generate_sensor_grid_for_hb_model(hb_model_obj, facade_grid_size_x,
-                                                                            facade_grid_size_y, offset_dist, "Facade")
+                                                                            facade_grid_size_y, offset_dist,
+                                                                            "facades")
 
 
         else:
@@ -123,17 +146,19 @@ class SolarRadAndBipvSimulation:
                                           str(building_id))
         annual_irradiance_file_name = str(building_id) + ".ill"
 
-        # Distinguish between roof and facade
+        # Distinguish between roof and facades
         if self.roof_sensorgrid_dict is not None:
             # Check if the simulation has already been run
-            if self.results_dict["Roof"]["annual_panel_irradiance_list"] is None or overwrite:
+            if self.results_dict["roof"]["annual_panel_irradiance_list"] is None or overwrite:
                 # Make a copy of the Honeybee Model and add the sensorgrid and context to it
                 hb_model_copy_roof = hb_model_obj.duplicate()
-                hb_model_copy_roof.properties.radiance.add_sensor_grid(SensorGrid.from_dict(self.roof_sensorgrid_dict))
+                hb_model_copy_roof.properties.radiance.add_sensor_grid(
+                    SensorGrid.from_dict(self.roof_sensorgrid_dict))
                 hb_model_copy_roof.add_shades(context_shading_hb_aperture_list)
                 # run in the temporary folder
-                path_folder_run_radiation_temp_roof = os.path.join(path_folder_run_radiation_temp, "Roof")
-                self.results_dict["Roof"]["annual_panel_irradiance_list"] = run_hb_model_annual_irradiance_simulation(
+                path_folder_run_radiation_temp_roof = os.path.join(path_folder_run_radiation_temp, "roof")
+                self.results_dict["roof"][
+                    "annual_panel_irradiance_list"] = run_hb_model_annual_irradiance_simulation(
                     hb_model_obj=hb_model_obj,
                     path_folder_run=path_folder_run_radiation_temp_roof,
                     path_weather_file=path_epw_file,
@@ -144,7 +169,8 @@ class SolarRadAndBipvSimulation:
                 # Delete the useless results files and mov ethe results to the right folder
                 annual_irradiance_roof_result_file_name = "roof" + ".ill"
                 path_temp_result_folder_roof = path_folder_run_radiation_temp_roof = os.path.join(
-                    path_folder_simulation, name_temporary_files_folder, str(building_id), "Roof", "annual_irradiance",
+                    path_folder_simulation, name_temporary_files_folder, str(building_id), "roof",
+                    "annual_irradiance",
                     "results", "total")
                 move_radiation_results(path_temp_result_folder=path_temp_result_folder_roof,
                                        path_result_folder=path_result_folder,
@@ -154,15 +180,16 @@ class SolarRadAndBipvSimulation:
         # Do not run the simulation if there is no SensorGrid on the facades
         if self.facade_sensorgrid_dict is not None:
             # Check if the simulation has already been run
-            if self.results_dict["Facade"]["annual_panel_irradiance_list"] is None or overwrite:
+            if self.results_dict["facades"]["annual_panel_irradiance_list"] is None or overwrite:
                 # Make a copy of the Honeybee Model and add the SensorGrid and context to it
                 hb_model_copy_facade = hb_model_obj.duplicate()
                 hb_model_copy_facade.properties.radiance.add_sensor_grid(
                     SensorGrid.from_dict(self.facade_sensorgrid_dict))
                 hb_model_copy_facade.add_shades(context_shading_hb_aperture_list)
                 # run in the temporary folder
-                path_folder_run_radiation_temp_facade = os.path.join(path_folder_run_radiation_temp, "Facade")
-                self.results_dict["Facade"]["annual_panel_irradiance_list"] = run_hb_model_annual_irradiance_simulation(
+                path_folder_run_radiation_temp_facade = os.path.join(path_folder_run_radiation_temp, "facades")
+                self.results_dict["facades"][
+                    "annual_panel_irradiance_list"] = run_hb_model_annual_irradiance_simulation(
                     hb_model_obj=hb_model_obj,
                     path_folder_run=path_folder_run_radiation_temp_facade,
                     path_weather_file=path_epw_file,
@@ -171,9 +198,9 @@ class SolarRadAndBipvSimulation:
                     radiance_parameters='-ab 2 -ad 5000 -lw 2e-05',
                     silent=silent)
                 # Delete the useless results files and mov ethe results to the right folder
-                annual_irradiance_facade_result_file_name = "facade" + ".ill"
+                annual_irradiance_facade_result_file_name = "facades" + ".ill"
                 path_temp_result_folder_facade = path_folder_run_radiation_temp_facade = os.path.join(
-                    path_folder_simulation, name_temporary_files_folder, str(building_id), "Facade",
+                    path_folder_simulation, name_temporary_files_folder, str(building_id), "facades",
                     "annual_irradiance", "results", "total")
                 move_radiation_results(path_temp_result_folder=path_temp_result_folder_facade,
                                        path_result_folder=path_result_folder,

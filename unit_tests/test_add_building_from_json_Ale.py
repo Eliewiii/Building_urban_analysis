@@ -15,16 +15,16 @@ dev_handler.setFormatter(dev_formatter)
 dev_logger.addHandler(dev_handler)
 
 # Make folder
-SimulationCommonMethods.make_simulation_folder(default_path_folder_simulation)
+SimulationCommonMethods.make_simulation_folder(default_path_simulation_folder)
 
 user_handler = logging.FileHandler(
-    os.path.join(default_path_folder_simulation, name_gh_components_logs_folder, "zob.log"), mode='w')
+    os.path.join(default_path_simulation_folder, name_gh_components_logs_folder, "zob.log"), mode='w')
 user_handler.setFormatter(user_formatter)
 user_logger.addHandler(user_handler)
 
 # Create urban_canopy
 urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object(
-    path_folder_simulation=default_path_folder_simulation)
+    path_simulation_folder=default_path_simulation_folder)
 
 # Load Buildings from json
 path_folder_json = None
@@ -46,8 +46,8 @@ SimulationBuildingManipulationFunctions.move_buildings_to_origin(urban_canopy_ob
 # make envelop
 SimulationPostProcessingAndPlots.generate_hb_model_contains_all_building_envelopes_to_plot_Grasshopper(
     urban_canopy_object=urban_canopy_object,
-    path_folder_simulation=default_path_folder_simulation)
+    path_simulation_folder=default_path_simulation_folder)
 
 # Export urban_canopy to pickle
 SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,
-                                                           path_folder_simulation=default_path_folder_simulation)
+                                                           path_simulation_folder=default_path_simulation_folder)

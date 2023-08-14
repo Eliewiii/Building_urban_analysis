@@ -89,7 +89,7 @@ class Typology:
         If some parameters are not available in the json file and are critical for the simulation, default values will be set
         * path      : path to the json file containing the typology details
         """
-        # todo @Sharon and @Elie: for now let's assume that the json file are properly made
+        # todo  @Elie: for now let's assume that the json file are properly made
         #  (but later full verification), let's just check that the constructions and programs are available
         #  in the honeybee library
         user_logger.info("extracting typology with path file :" + path_folder_typology)
@@ -123,7 +123,7 @@ class Typology:
             # window/floor area per direction
             typo_obj.window_floor_area_ratio_per_direction = json_dict["window_floor_area_ratio_per_direction"]
 
-            # todo @Elie (not urgent): add window facade percentage per direction and the function
+            # todo @Elie (not urgent): add window facades percentage per direction and the function
             #  to compute the window accordingly
 
 

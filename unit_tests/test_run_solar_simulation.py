@@ -2,7 +2,7 @@ from unit_tests.utils_main_import_scripts import *
 
 # Create urban_canopy
 # urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object(
-#    path_folder_simulation=default_path_folder_simulation)
+#    path_simulation_folder=default_path_simulation_folder)
 
 
 # Load Buildings from json
@@ -16,10 +16,10 @@ path_file_json = None
 
 # path_folder_json = "C:\\Users\\User\\OneDrive - Technion\BUA\\Hilany\\Samples"
 # urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object(
-#    path_folder_simulation=path_folder_json)
+#    path_simulation_folder=path_folder_json)
 
 urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object(
-    path_folder_simulation=default_path_folder_simulation)
+    path_simulation_folder=default_path_simulation_folder)
 
 #path_folder_json = "C:\\Users\\elie-medioni\\OneDrive\\OneDrive - Technion\\BUA\\Hilany\\Samples\\mesh_issue"
 #SimulationLoadBuildingOrGeometry.add_buildings_from_hbjson_to_urban_canopy(urban_canopy_object=urban_canopy_object,
@@ -30,7 +30,7 @@ urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object
 
 # Run radiation simulation on the Urban Canopy
 SolarOrPanelSimulation.solar_radiation_simulation(urban_canopy_object=urban_canopy_object,
-                                                  path_folder_simulation=default_path_folder_simulation,
+                                                  path_simulation_folder=default_path_simulation_folder,
                                                   path_weather_file=default_path_weather_file,
                                                   list_id=None,
                                                   grid_size=0.8,
@@ -40,7 +40,7 @@ SolarOrPanelSimulation.solar_radiation_simulation(urban_canopy_object=urban_cano
 
 # Export urban_canopy to pickle
 SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,
-                                                           path_folder_simulation=default_path_folder_simulation)
+                                                           path_simulation_folder=default_path_simulation_folder)
 # Export urban_canopy to json
 SimulationCommonMethods.save_urban_canopy_to_json(urban_canopy_object=urban_canopy_object,
-                                                  path_folder_simulation=default_path_folder_simulation)
+                                                  path_simulation_folder=default_path_simulation_folder)

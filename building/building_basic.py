@@ -32,7 +32,7 @@ default_gis_attribute_key_dict = {
 class BuildingBasic:
     """BuildingBasic class, representing one building in an urban canopy."""
 
-    def __init__(self, identifier, LB_face_footprint, urban_canopy=None, building_index_in_GIS=None):
+    def __init__(self, identifier, lb_face_footprint, urban_canopy=None, building_index_in_GIS=None):
         """Initialize a building obj"""
         # urban canopy and key to access to the object from building_dict
         self.urban_canopy = urban_canopy
@@ -49,10 +49,10 @@ class BuildingBasic:
         self.elevation = 0  # elevation of the building in meter
         self.floor_height = None  # height of the floors in meter
         # Geometry
-        self.LB_face_footprint = LB_face_footprint  # footprint of the building, including the holes in the LB geometry face format
+        self.lb_face_footprint = lb_face_footprint  # footprint of the building, including the holes in the LB geometry face format
         # Context filter algorithm
-        self.LB_polyface3d_oriented_bounding_box = None  # oriented bounding box of the building
-        self.LB_polyface3d_extruded_footprint = None  # extruded footprint of the building
+        self.lb_polyface3d_oriented_bounding_box = None  # oriented bounding box of the building
+        self.lb_polyface3d_extruded_footprint = None  # extruded footprint of the building
         # Position
         self.moved_to_origin = False  # boolean to know if the building has been moved
 
@@ -67,18 +67,18 @@ class BuildingBasic:
         None
 
     @classmethod
-    def make_buildingbasic_from_LB_footprint(cls, LB_face_footprint, identifier, urban_canopy=None,
+    def make_buildingbasic_from_LB_footprint(cls, lb_face_footprint, identifier, urban_canopy=None,
                                              building_index_in_GIS=None):
         """Generate a BuildingBasic from a Ladybug footprint."""
-        return cls(identifier, LB_face_footprint, urban_canopy, building_index_in_GIS)
+        return cls(identifier, lb_face_footprint, urban_canopy, building_index_in_GIS)
 
     @classmethod
     def make_buildingbasic_from_shapely_polygon(cls, polygon, identifier, unit, urban_canopy=None,
                                                 building_index_in_GIS=None):
         """Generate a BuildingBasic from a shapely polygon."""
-        LB_face_footprint = polygon_to_LB_footprint(polygon, unit)
-        if LB_face_footprint is not None:
-            return cls(identifier, LB_face_footprint, urban_canopy, building_index_in_GIS)
+        lb_face_footprint = polygon_to_LB_footprint(polygon, unit)
+        if lb_face_footprint is not None:
+            return cls(identifier, lb_face_footprint, urban_canopy, building_index_in_GIS)
         else:
             return None
 
@@ -270,18 +270,18 @@ class BuildingBasic:
         :param overwrite: if True, overwrite the existing LB_polyface3d_oriented_bounding_box
         :return: LB_polyface3d_oriented_bounding_box, a LB Polyface3D object
         """
-        if overwrite or self.LB_polyface3d_extruded_footprint is None:
-            self.LB_polyface3d_extruded_footprint = LB_face_footprint_to_lB_polyface3D_extruded_footprint(
-                LB_face_footprint=self.LB_face_footprint, height=self.height, elevation=self.elevation)
+        if overwrite or self.lb_polyface3d_extruded_footprint is None:
+            self.lb_polyface3d_extruded_footprint = LB_face_footprint_to_lB_polyface3D_extruded_footprint(
+                lb_face_footprint=self.lb_face_footprint, height=self.height, elevation=self.elevation)
 
     def make_LB_polyface3d_oriented_bounding_box(self, overwrite=False):
         """ make the oriented bounding box of the building
         :param overwrite: if True, overwrite the existing LB_polyface3d_oriented_bounding_box
         :return: LB_polyface3d_oriented_bounding_box, a LB Polyface3D object
         """
-        if overwrite or self.LB_polyface3d_oriented_bounding_box is None:
-            self.LB_polyface3d_oriented_bounding_box = make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint(
-                LB_face_footprint=self.LB_face_footprint, height=self.height, elevation=self.elevation)
+        if overwrite or self.lb_polyface3d_oriented_bounding_box is None:
+            self.lb_polyface3d_oriented_bounding_box = make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint(
+                lb_face_footprint=self.lb_face_footprint, height=self.height, elevation=self.elevation)
 
     def move(self, vector):
         """
@@ -289,10 +289,10 @@ class BuildingBasic:
         :param vector: [x,y,z]
         """
         # move the LB footprint
-        self.LB_face_footprint = self.LB_face_footprint.move(Vector3D(vector[0], vector[1], 0))
+        self.lb_face_footprint = self.lb_face_footprint.move(Vector3D(vector[0], vector[1], 0))
         # move the oriented bounding box if it exists
-        if self.LB_polyface3d_oriented_bounding_box:
-            self.LB_polyface3d_oriented_bounding_box = self.LB_polyface3d_oriented_bounding_box.move(
+        if self.lb_polyface3d_oriented_bounding_box:
+            self.lb_polyface3d_oriented_bounding_box = self.lb_polyface3d_oriented_bounding_box.move(
                 Vector3D(vector[0], vector[1], 0))
         # adjust the elevation
         self.elevation = self.elevation + vector[2]
@@ -306,7 +306,7 @@ class BuildingBasic:
         :return: HB Room envelop
         """
         # convert the envelop of the building to a HB Room
-        HB_room_envelop = RoomsAddons.LB_face_footprint_to_elevated_HB_room_envelop(LB_face_footprint=self.LB_face_footprint,
+        HB_room_envelop = RoomsAddons.LB_face_footprint_to_elevated_HB_room_envelop(lb_face_footprint=self.lb_face_footprint,
                                                                                     building_id=self.id,
                                                                                     height=self.height,
                                                                                     elevation=self.elevation)
@@ -342,7 +342,7 @@ class BuildingBasic:
 
             if automatic_subdivision:  # then divide the footprint into apartments and cores with Dragonfly
                 None  # todo @Elie, not top priority
-            else:  # then just create one room per floor with the actual LB_face_footprint
+            else:  # then just create one room per floor with the actual lb_face_footprint
                 None  # todo @Elie
 
         if properties_from_typology:  # Apply all the properties from the self.typology to the HB model
