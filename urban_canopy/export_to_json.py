@@ -64,7 +64,7 @@ class ExportUrbanCanopyToJson:
         # todo @Elie, add the other data when ready
 
     @staticmethod
-    def init_urban_canopy_json_dict(urban_canopy_obj):
+    def init_json_dict(urban_canopy_obj):
         """ Initialize the json dictionary of the urban canopy object. """
         urban_canopy_obj.json_dict = copy.deepcopy(tree_structure_urban_canopy_json_dict)
 
@@ -74,8 +74,8 @@ class ExportUrbanCanopyToJson:
         Initialize the buildings in the json dictionary of the urban canopy object.
         """
         for building_id in urban_canopy_obj.building_dict.keys():
-            urban_canopy_obj.building_dict["list_of_building_ids"].append(building_id)
-            urban_canopy_obj.building_dict["buildings"][building_id] = copy.deepcopy(
+            urban_canopy_obj.json_dict["list_of_building_ids"].append(building_id)
+            urban_canopy_obj.json_dict["buildings"][building_id] = copy.deepcopy(
                 tree_structure_per_building_urban_canopy_json_dict)
 
     @staticmethod

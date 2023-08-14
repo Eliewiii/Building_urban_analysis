@@ -54,7 +54,7 @@ empty_results_dict = {
         "lca_recycling_primary_energy": {"yearly": None, "total": None},
         "lca_recycling_carbon": {"yearly": None, "total": None}
     },
-"facades": {
+    "total": {
         "energy_harvested": {"yearly": None, "total": None},
         "lca_cradle_to_installation_primary_energy": {"yearly": None, "total": None},
         "lca_cradle_to_installation_carbon": {"yearly": None, "total": None},
@@ -87,7 +87,7 @@ class SolarRadAndBipvSimulation:
         # parameters
         self.parameter_dict = empty_parameter_dict
 
-    def set_mesh_paraneters(self, do_simulation_on_roof, do_simulation_on_facade, roof_grid_size_x=1,
+    def set_mesh_parameters(self, do_simulation_on_roof, do_simulation_on_facade, roof_grid_size_x=1,
                             facade_grid_size_x=1, roof_grid_size_y=1, facade_grid_size_y=1, offset_dist=0.1):
         """
         Set the mesh parameters for the simulation
@@ -108,7 +108,7 @@ class SolarRadAndBipvSimulation:
         self.parameter_dict["roof"]["offset"] = offset_dist
         self.parameter_dict["facades"]["offset"] = offset_dist
 
-    def generate_sensorgrids(self, hb_model_obj, roof_grid_size_x=1, facade_grid_size_x=1, roof_grid_size_y=1,
+    def generate_sensor_grid(self, hb_model_obj, roof_grid_size_x=1, facade_grid_size_x=1, roof_grid_size_y=1,
                              facade_grid_size_y=1, offset_dist=0.1):
         """Create a HoneyBee SensorGrid from a HoneyBe model for the roof, the facades or both and add it to the
         model

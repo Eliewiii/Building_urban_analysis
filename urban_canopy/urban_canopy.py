@@ -9,6 +9,7 @@ import logging
 from honeybee.model import Model
 
 from urban_canopy.urban_canopy_additional_functions import UrbanCanopyAdditionalFunction
+from urban_canopy.export_to_json import ExportUrbanCanopyToJson
 
 from building.building_basic import BuildingBasic
 from building.building_modeled import BuildingModeled
@@ -61,12 +62,12 @@ class UrbanCanopy:
     def to_json(self, path_simulation_folder):
         """ Save the urban canopy to a pickle json """
         # Transform the data from the urban canopy in the json dictionary
-        self.write_json_dictionary(path_simulation_folder=path_simulation_folder)
+        ExportUrbanCanopyToJson.make_urban_canopy_json_dict(urban_canopy_obj=self)
         # Write json file
         with open(os.path.join(path_simulation_folder, name_urban_canopy_export_file_json), 'w') as json_file:
             json.dump(self.json_dict, json_file)
 
-# todo @Elie : to be removed
+    # todo @Elie : to be removed
     # def to_json(self, path_simulation_folder):
     #     """ Save the urban canopy to a pickle json """
     #     # Transform the data from the urban canopy in the json dictionary
@@ -193,9 +194,11 @@ class UrbanCanopy:
         # check if the building id is already in the urban canopy
         if building_id in self.building_dict.keys():
             user_logger.warning("The building id {building_id} is already in the urban canopy, "
-                                "it will not be added again to the urban canopy".format(building_id=building_id))
+                                "it will not be added again to the urban canopy".format(
+                building_id=building_id))
             dev_logger.warning("The building id {building_id} is already in the urban canopy, "
-                               "it will not be added again to the urban canopy".format(building_id=building_id))
+                               "it will not be added again to the urban canopy".format(
+                building_id=building_id))
         else:
             # add the building to the urban canopy
             self.building_dict[building_id] = building_obj
@@ -245,10 +248,10 @@ class UrbanCanopy:
 
         ## loop to create a building_obj for each footprint in the shp file
         number_of_buildings_in_shp_file = len(shape_file['geometry'])
-        for building_index_in_GIS in range(0, number_of_buildings_in_shp_file):
+        for building_index_in_gis in range(0, number_of_buildings_in_shp_file):
             # create the building object
             building_id_list, building_obj_list = BuildingBasic.make_buildingbasic_from_GIS(self, shape_file,
-                                                                                            building_index_in_GIS,
+                                                                                            building_index_in_gis,
                                                                                             building_id_key_gis,
                                                                                             unit)
             # add the building to the urban canopy
@@ -479,9 +482,10 @@ class UrbanCanopy:
                         f"The building id {building_id} is not in the urban canopy, make sure you indicated "
                         f"the proper identifier in the input")
                 elif not isinstance(self.building_dict[building_id], BuildingModeled):
-                    user_logger.warning(f"The building id {building_id} does not have a Honeybee model, it's not "
-                                        f"possible to merge the faces. You can upgrade the building {building_id} and"
-                                        f" generate a Honeybee model out of it  with the component xxx.")
+                    user_logger.warning(
+                        f"The building id {building_id} does not have a Honeybee model, it's not "
+                        f"possible to merge the faces. You can upgrade the building {building_id} and"
+                        f" generate a Honeybee model out of it  with the component xxx.")
 
         for building_obj in self.building_dict.values():
             if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
@@ -491,8 +495,9 @@ class UrbanCanopy:
                     north_angle=north_angle)
 
     def generate_sensor_grid_on_buildings(self, building_id_list=None, do_simulation_on_roof=True,
-                                           do_simulation_on_facade=True, roof_grid_size_x=1, facade_grid_size_x=1,
-                                           roof_grid_size_y=1, facade_grid_size_y=1, offset_dist=0.1):
+                                          do_simulation_on_facade=True, roof_grid_size_x=1,
+                                          facade_grid_size_x=1,
+                                          roof_grid_size_y=1, facade_grid_size_y=1, offset_dist=0.1):
         """
         Generate the sensor grid for the buildings in the urban canopy.
         :param do_simulation_on_roof: boolean, if True, the solar radiation simulation will be performed on the roofs
@@ -515,11 +520,12 @@ class UrbanCanopy:
                     dev_logger.info(
                         f"The building id {building_id} is not in the urban canopy, make sure you indicated "
                         f"the proper identifier in the input")
-                elif not isinstance(self.building_dict[building_id], BuildingModeled) or not self.building_dict[
-                    building_id].is_target:
-                    user_logger.warning(f"The building id {building_id} is not a target building, a radiation analysis "
-                                        f"cannot be performed if the building is not a target. You can update "
-                                        f"the properties of the building {building_id} to make it a target building.")
+                elif not isinstance(self.building_dict[building_id], BuildingModeled) or not \
+                        self.building_dict[building_id].is_target:
+                    user_logger.warning(
+                        f"The building id {building_id} is not a target building, a radiation analysis "
+                        f"cannot be performed if the building is not a target. You can update "
+                        f"the properties of the building {building_id} to make it a target building.")
         # Generate the sensor grid for the buildings
         for building_obj in self.building_dict.values():
             if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
@@ -532,7 +538,8 @@ class UrbanCanopy:
                                                   facade_grid_size_y=facade_grid_size_y,
                                                   offset_dist=offset_dist)
 
-    def run_solar_radiation_simulation_for_buildings(self,path_simulation_folder, building_id_list, path_weather_file,
+    def run_solar_radiation_simulation_for_buildings(self, path_simulation_folder, building_id_list,
+                                                     path_weather_file,
                                                      overwrite=False, north_angle=0, silent=False):
         """
         Run the solar radiation simulation for the buildings in the urban canopy.
@@ -555,11 +562,13 @@ class UrbanCanopy:
                     dev_logger.info(
                         f"The building id {building_id} is not in the urban canopy, make sure you indicated "
                         f"the proper identifier in the input")
-                elif not isinstance(self.building_dict[building_id], BuildingModeled) or not self.building_dict[
-                    building_id].is_target:
-                    user_logger.warning(f"The building id {building_id} is not a target building, a radiation analysis "
-                                        f"cannot be performed if the building is not a target. You can update "
-                                        f"the properties of the building {building_id} to make it a target building.")
+                elif not isinstance(self.building_dict[building_id], BuildingModeled) or not \
+                        self.building_dict[
+                            building_id].is_target:
+                    user_logger.warning(
+                        f"The building id {building_id} is not a target building, a radiation analysis "
+                        f"cannot be performed if the building is not a target. You can update "
+                        f"the properties of the building {building_id} to make it a target building.")
                 elif self.building_dict[building_id].solar_radiation_and_bipv_simulation_obj is None:
                     user_logger.warning(f"No mesh for radiation simulation was generated for The building id "
                                         f"{building_id}, the radiation simulation will not performed for this building.")
@@ -709,8 +718,9 @@ class UrbanCanopy:
     def plot_graphs_buildings(self, path_simulation_folder, study_duration_years, country_ghe_cost):
         for building in self.building_dict.values():
             if type(building) is BuildingModeled and building.is_target:
-                if building.results_panels["roof"] and building.results_panels["facades"] and building.results_panels[
-                    "Total"]:
+                if building.results_panels["roof"] and building.results_panels["facades"] and \
+                        building.results_panels[
+                            "Total"]:
                     path_simulation_folder_building = os.path.join(path_simulation_folder,
                                                                    name_radiation_simulation_folder,
                                                                    building.id)

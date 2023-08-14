@@ -118,12 +118,12 @@ def merge_facades_and_roof_faces_in_hb_model(hb_model_obj, orient_roof_mesh_to_a
     # Make Polyface3D from the merged polygons
     polyface_3d = Polyface3D.from_faces(new_lb_face3d_list, tolerance=TOLERANCE_LBT)
     # Make HB Room from Polyface 3D
-    room_merged_facades = Room.from_polyface3d(identifier=hb_model.identifier + "_merged_facades",
+    room_merged_facades = Room.from_polyface3d(identifier=hb_model_obj.identifier + "_merged_facades",
                                                polyface=polyface_3d)
     Room.solve_adjacency([room_merged_facades], tolerance=TOLERANCE_LBT)
     # Convert the HB Room to a HB Model
     if name is None:
-        name = hb_model.identifier + "_merged_faces"
+        name = hb_model_obj.identifier + "_merged_faces"
     merged_faces_hb_model_obj = Model(identifier=name, rooms=[room_merged_facades])
     # add apertures to the Model
     add_apertures_to_merged_faces_hb_model(hb_model_obj=hb_model_obj,
@@ -244,21 +244,22 @@ def add_apertures_to_merged_faces_hb_model(hb_model_obj, merged_faces_hb_model_o
 
 
 if __name__ == "__main__":
-    for i in range(0, 10):
-        path_folder = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\Ministry of Energy Research\IBPSA US conference\hbjson_2\var_sub_optimal"
-        hb_model = Model.from_hbjson(os.path.join(path_folder, f"Buil_TA_{i}.hbjson"))
-        # hb_model_merged = merge_facades_and_roof_faces_in_hb_model(hb_model, orient_roof_mesh_to_south=True,name=hb_model.identifier + "_merged_south")
-        # hb_model_merged.add_shades(hb_model.outdoor_shades)
-        # hb_model_merged.to_hbjson(os.path.join(path_folder,"merged_south",f"Buil_TA_{i}_merged_south.hbjson"))
-
-        hb_model_merged = merge_facades_and_roof_faces_in_hb_model(hb_model, orient_roof_mesh_to_south=True,
-                                                                   name=hb_model.identifier + "_merged_or")
-        hb_model_merged.add_shades(hb_model.outdoor_shades)
-        hb_model_merged.to_hbjson(os.path.join(path_folder, "merged_or", f"Buil_TA_{i}_merged_or.hbjson"))
-
-        # hb_model = Model.from_hbjson(
-        #     f"C:\\Users\\elie-medioni\\OneDrive\\OneDrive - Technion\\Ministry of Energy Research\\IBPSA US conference\\buildings_hbjson\\variation_1\\ResidentialBldg_{i}.hbjson")
-        # hb_model_merged = merge_facades_and_roof_faces_in_hb_model(hb_model, hb_model.identifier + "_merged")
-        # hb_model_merged.add_shades(hb_model.outdoor_shades)
-        # hb_model_merged.to_hbjson(
-        #     f"C:\\Users\\elie-medioni\\OneDrive\\OneDrive - Technion\\Ministry of Energy Research\\IBPSA US conference\\buildings_hbjson\\variation_1\\ResidentialBldg_{i}_merged.hbjson")
+    None
+    # for i in range(0, 10):
+    #     path_folder = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\Ministry of Energy Research\IBPSA US conference\hbjson_2\var_sub_optimal"
+    #     hb_model = Model.from_hbjson(os.path.join(path_folder, f"Buil_TA_{i}.hbjson"))
+    #     # hb_model_merged = merge_facades_and_roof_faces_in_hb_model(hb_model, orient_roof_mesh_to_south=True,name=hb_model.identifier + "_merged_south")
+    #     # hb_model_merged.add_shades(hb_model.outdoor_shades)
+    #     # hb_model_merged.to_hbjson(os.path.join(path_folder,"merged_south",f"Buil_TA_{i}_merged_south.hbjson"))
+    #
+    #     hb_model_merged = merge_facades_and_roof_faces_in_hb_model(hb_model, orient_roof_mesh_to_south=True,
+    #                                                                name=hb_model.identifier + "_merged_or")
+    #     hb_model_merged.add_shades(hb_model.outdoor_shades)
+    #     hb_model_merged.to_hbjson(os.path.join(path_folder, "merged_or", f"Buil_TA_{i}_merged_or.hbjson"))
+    #
+    #     # hb_model = Model.from_hbjson(
+    #     #     f"C:\\Users\\elie-medioni\\OneDrive\\OneDrive - Technion\\Ministry of Energy Research\\IBPSA US conference\\buildings_hbjson\\variation_1\\ResidentialBldg_{i}.hbjson")
+    #     # hb_model_merged = merge_facades_and_roof_faces_in_hb_model(hb_model, hb_model.identifier + "_merged")
+    #     # hb_model_merged.add_shades(hb_model.outdoor_shades)
+    #     # hb_model_merged.to_hbjson(
+    #     #     f"C:\\Users\\elie-medioni\\OneDrive\\OneDrive - Technion\\Ministry of Energy Research\\IBPSA US conference\\buildings_hbjson\\variation_1\\ResidentialBldg_{i}_merged.hbjson")
