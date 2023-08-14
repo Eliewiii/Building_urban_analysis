@@ -8,7 +8,7 @@ import logging
 
 from honeybee.model import Model
 
-from urban_canopy_pack.urban_canopy_additional_functions import UrbanCanopyAdditionalFunction
+from urban_canopy.urban_canopy_additional_functions import UrbanCanopyAdditionalFunction
 
 from building.building_basic import BuildingBasic
 from building.building_modeled import BuildingModeled

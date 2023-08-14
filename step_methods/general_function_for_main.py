@@ -5,7 +5,7 @@ Common methods to most of the simulations
 import os
 import logging
 
-from urban_canopy_pack.urban_canopy import UrbanCanopy
+from urban_canopy.urban_canopy import UrbanCanopy
 from utils.utils_configuration import path_simulation_temp_folder,name_gh_components_logs_folder,name_temporary_files_folder
 
 user_logger = logging.getLogger("user")  # f"{__name__} user"
