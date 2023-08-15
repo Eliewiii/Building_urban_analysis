@@ -12,7 +12,9 @@ path_ep = "C:\\EnergyPlusV23-1-0\\energyplus.exe"  # TODO @Ale, add the path to 
 path_simulation_parameter = "C:\\Users\\alejandro.s\\AppData\\Local\\Building_urban_analysis\\Scripts\\long_wave_radiation_coupling\\Ale\\data\\simulation_parameters.json"  # TODO @Ale, add the path to your simulation parameter file
 
 # hbjson model
-path_hbjson_file = "C:\\Users\\alejandro.s\\AppData\\Local\\Building_urban_analysis\\Scripts\\long_wave_radiation_coupling\\Ale\\data\\model_no_shade_win_not_el.hbjson"  # TODO @Ale, add the path to your hbjson model
+path_hbjson_file_onebuildingonly = "C:\\Users\\alejandro.s\\AppData\\Local\\Building_urban_analysis\\Scripts\\long_wave_radiation_coupling\\Ale\\data\\model_no_shade_win_not_el.hbjson"  # TODO @Ale, add the path to your hbjson model
+path_hbjson_file_twobuildingsfirst = "C:\\Users\\alejandro.s\\Documents\\Create_input_model\\models\\model_1.hbjson"  # TODO @Ale, add the path to your hbjson model
+path_hbjson_file_twobuildingssecond = "C:\\Users\\alejandro.s\\Documents\\Create_input_model\\models\\model_2.hbjson"  # TODO @Ale, add the path to your hbjson model
 
 # epw file
 path_epw_file = default_path_weather_file
