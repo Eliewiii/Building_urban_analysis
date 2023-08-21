@@ -5,6 +5,8 @@ Contains all the functions to export the data of an urban canopy object to json 
 import os
 import copy
 
+from honeybee.room import Room
+
 from building.building_basic import BuildingBasic
 from building.building_modeled import BuildingModeled
 
@@ -12,8 +14,7 @@ from building.building_modeled import BuildingModeled
 tree_structure_urban_canopy_json_dict = {
     "name": None,
     "buildings": {},
-    "list_of_building_ids": [],
-
+    "list_of_building_ids": []
 }
 
 # Tree structure for each building
@@ -23,7 +24,7 @@ tree_structure_per_building_urban_canopy_json_dict = {
     "height": None,
     "age": None,
     "typology": None,
-    "lb_polyface3d_extruded_footprint": None,
+    "hb_room_envelope": None,
     # BuildingModeled specific attributes
     "is_target_building": False,
     "is_building_to_simulate": False,
@@ -86,8 +87,9 @@ class ExportUrbanCanopyToJson:
             urban_canopy_obj.json_dict["buildings"][building_id]["height"] = building_obj.height
             urban_canopy_obj.json_dict["buildings"][building_id]["age"] = building_obj.age
             urban_canopy_obj.json_dict["buildings"][building_id]["typology"] = building_obj.typology
-            urban_canopy_obj.json_dict["buildings"][building_id][
-                "lb_polyface3d_extruded_footprint"] = building_obj.lb_polyface3d_extruded_footprint
+            building_hb_room_envelope_dict = Room.from_polyface3d(identifier=building_id,
+                                                                  polyface=building_obj.lb_polyface3d_extruded_footprint).to_json()
+            urban_canopy_obj.json_dict["buildings"][building_id]["hb_room_envelope"]= building_hb_room_envelope_dict
 
             if isinstance(building_obj, BuildingModeled):
                 urban_canopy_obj.json_dict["buildings"][building_id][
@@ -104,15 +106,20 @@ class ExportUrbanCanopyToJson:
         for building_id, building_obj in urban_canopy_obj.building_dict.items():
             if isinstance(building_obj, BuildingModeled) \
                     and building_obj.solar_radiation_and_bipv_simulation_obj is not None:
-                urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"]["parameters"] = \
+                urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
+                    "parameters"] = \
                     building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict
-                urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"]["roof_sensorgrid"] = \
+                urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
+                    "roof_sensorgrid"] = \
                     building_obj.solar_radiation_and_bipv_simulation_obj.roof_sensorgrid_dict
-                urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"]["facade_sensorgrid"] = \
+                urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
+                    "facade_sensorgrid"] = \
                     building_obj.solar_radiation_and_bipv_simulation_obj.facade_sensorgrid_dict
-                urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"]["roof_result_dict"] = \
+                urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
+                    "roof_result_dict"] = \
                     building_obj.solar_radiation_and_bipv_simulation_obj.results_dict["roof"]
-                urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"]["facades_result_dict"] = \
+                urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
+                    "facades_result_dict"] = \
                     building_obj.solar_radiation_and_bipv_simulation_obj.results_dict["facades"]
                 urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"]["total"] = \
                     building_obj.solar_radiation_and_bipv_simulation_obj.results_dict["total"]
