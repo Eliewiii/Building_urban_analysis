@@ -72,7 +72,7 @@ if _run and (_roof_bipv or _facade_bipv):
     command = path_bat_file
     # Steps to execute
     argument = " "
-    argument = argument + "--make_simulation_folder 1 " + "--create_or_load_urban_canopy_object 1 " +  "--save_urban_canopy_object_to_pickle 1 " + "--save_urban_canopy_object_to_json 1 " + "generate_sensorgrid 1 "
+    argument = argument + "--make_simulation_folder 1 " + "--create_or_load_urban_canopy_object 1 " +  "--save_urban_canopy_object_to_pickle 1 " + "--save_urban_canopy_object_to_json 1 " + "--generate_sensorgrid 1 "
     # OPtionnal argument of the bat file/Python script
     if path_simulation_folder_ is not None:
         argument = argument + ' -f "{}"'.format(path_simulation_folder_)
