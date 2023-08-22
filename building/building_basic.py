@@ -36,7 +36,7 @@ class BuildingBasic:
         """Initialize a building obj"""
         # urban canopy and key to access to the object from building_dict
         self.urban_canopy = urban_canopy
-        self.id = identifier  # id of the building in the urban canopy building_dict
+        self.id = str(identifier)  # id of the building in the urban canopy building_dict
         # GIS specific
         self.index_in_gis = building_index_in_gis  # id in the shp file
         # Properties
@@ -101,9 +101,9 @@ class BuildingBasic:
         if building_id_key_gis is None:
             # if the building identifier is not specified in the shp file, use the index of the building in the shp file
             # todo: maybe convert into a string, the results are weird in GH, but not problematic
-            building_id = building_index_in_gis
+            building_id = str(building_index_in_gis)  # Have th id as a string
         else:
-            building_id = GIS_file[building_id_key_gis][building_index_in_gis]
+            building_id = str(GIS_file[building_id_key_gis][building_index_in_gis])
         # get the footprint of the building
         footprint = GIS_file['geometry'][building_index_in_gis]
 
@@ -265,7 +265,7 @@ class BuildingBasic:
             self.num_floor = 3
             self.floor_height = 3.
 
-    def make_LB_polyface3d_extruded_footprint(self, overwrite=False):
+    def make_lb_polyface3d_extruded_footprint(self, overwrite=False):
         """ make the oriented bounding box of the building
         :param overwrite: if True, overwrite the existing LB_polyface3d_oriented_bounding_box
         :return: LB_polyface3d_oriented_bounding_box, a LB Polyface3D object
@@ -293,7 +293,11 @@ class BuildingBasic:
         # move the oriented bounding box if it exists
         if self.lb_polyface3d_oriented_bounding_box:
             self.lb_polyface3d_oriented_bounding_box = self.lb_polyface3d_oriented_bounding_box.move(
-                Vector3D(vector[0], vector[1], 0))
+                Vector3D(vector[0], vector[1], vector[2]))
+        # move the extruded_lb_footprint if it exists
+        if self.lb_polyface3d_extruded_footprint:
+            self.lb_polyface3d_extruded_footprint = self.lb_polyface3d_extruded_footprint.move(
+                Vector3D(vector[0], vector[1], vector[2]))
         # adjust the elevation
         self.elevation = self.elevation + vector[2]
         # make it moved

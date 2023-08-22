@@ -87,20 +87,20 @@ class SolarRadAndBipvSimulation:
         # parameters
         self.parameter_dict = empty_parameter_dict
 
-    def set_mesh_parameters(self, do_simulation_on_roof, do_simulation_on_facade, roof_grid_size_x=1,
+    def set_mesh_parameters(self, bipv_on_roof, bipv_on_facade, roof_grid_size_x=1,
                             facade_grid_size_x=1, roof_grid_size_y=1, facade_grid_size_y=1, offset_dist=0.1):
         """
         Set the mesh parameters for the simulation
-        :param do_simulation_on_roof: bool: default=True
-        :param do_simulation_on_facade: bool: default=True
+        :param bipv_on_roof: bool: default=True
+        :param bipv_on_facade: bool: default=True
         :param roof_grid_size_x: Number for the size of the test grid
         :param facade_grid_size_x: Number for the size of the test grid
         :param roof_grid_size_y: Number for the size of the test grid
         :param facade_grid_size_y: Number for the size of the test grid
         :param offset_dist: Number for the distance to move points from the surfaces of the geometry of the model.
         """
-        self.on_roof = do_simulation_on_roof
-        self.on_facade = do_simulation_on_facade
+        self.on_roof = bipv_on_roof
+        self.on_facade = bipv_on_facade
         self.parameter_dict["roof"]["grid_x"] = roof_grid_size_x
         self.parameter_dict["roof"]["grid_y"] = roof_grid_size_y
         self.parameter_dict["facades"]["grid_x"] = facade_grid_size_x
@@ -122,7 +122,7 @@ class SolarRadAndBipvSimulation:
             self.roof_sensorgrid_dict = generate_sensor_grid_for_hb_model(hb_model_obj, roof_grid_size_x,
                                                                           roof_grid_size_y, offset_dist,
                                                                           "roof")
-        elif self.on_facade:
+        if self.on_facade:
             self.facade_sensorgrid_dict = generate_sensor_grid_for_hb_model(hb_model_obj, facade_grid_size_x,
                                                                             facade_grid_size_y, offset_dist,
                                                                             "facades")

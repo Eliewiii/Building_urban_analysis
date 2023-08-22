@@ -188,7 +188,7 @@ class LoadArguments:
         # Solar radiation and BIPV simulation
         parser.add_argument("--generate_sensorgrid",
                             help="Perform the generation of the mesh on the buildings", default=False)
-        parser.add_argument("--run_solar_radiation_simulation",
+        parser.add_argument("--run_annual_solar_irradiance_simulation",
                             help="Perform the generation of the mesh on the buildings", default=False)
 
         # Run the simulations todo: remove and keep only the updated version
@@ -261,7 +261,6 @@ class LoadArguments:
             "performance_ratio": float(args.performance_ratio),
             "minimum_ratio_energy_harvested_on_primary_energy": float(
                 args.minimum_ratio_energy_harvested_on_primary_energy),
-            "performance_ratio": float(args.performance_ratio),
             "study_duration_years": int(args.study_duration_years),
             "replacement_scenario": args.replacement_scenario,
             "every_X_years": int(args.every_X_years),
@@ -292,7 +291,7 @@ class LoadArguments:
             "run_perform_context_filtering": bool(int(args.perform_context_filtering)),
             # Solar and BIPV simulation
             "run_generate_sensorgrids_on_buildings": bool(int(args.generate_sensorgrid)),
-            "run_run_solar_radiation_simulation": bool(int(args.run_solar_radiation_simulation)),
+            "run_annual_solar_irradiance_simulation": bool(int(args.run_annual_solar_irradiance_simulation)),
             "run_radiation_simulation": bool(int(args.do_radiation_simulation)),
             "run_panel_simulation": bool(int(args.do_panel_simulation)),
             "generate_panels_results_in_csv": bool(int(args.generate_panels_results_in_csv)),

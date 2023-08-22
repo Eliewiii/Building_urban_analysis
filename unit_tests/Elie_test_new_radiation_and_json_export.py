@@ -1,5 +1,9 @@
 from unit_tests.utils_main_import_scripts import *
 
+# Clear simulation temp folder
+SimulationCommonMethods.clear_simulation_temp_folder()
+# Create simulation folder
+SimulationCommonMethods.make_simulation_folder()
 # Create urban_canopy
 urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object(
     path_simulation_folder=default_path_simulation_folder)
@@ -31,9 +35,9 @@ SimulationLoadBuildingOrGeometry.add_buildings_from_hbjson_to_urban_canopy(
     are_buildings_targets=True)
 
 SimulationBuildingManipulationFunctions.make_merged_face_of_buildings_in_urban_canopy(urban_canopy_object=urban_canopy_object)
-
+#
 SimFunSolarRadAndBipv.generate_sensor_grid(urban_canopy_object=urban_canopy_object)
-
+#
 
 # Export urban_canopy to pickle
 SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,

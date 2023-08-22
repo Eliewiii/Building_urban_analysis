@@ -87,8 +87,10 @@ class ExportUrbanCanopyToJson:
             urban_canopy_obj.json_dict["buildings"][building_id]["height"] = building_obj.height
             urban_canopy_obj.json_dict["buildings"][building_id]["age"] = building_obj.age
             urban_canopy_obj.json_dict["buildings"][building_id]["typology"] = building_obj.typology
+            if building_obj.lb_polyface3d_extruded_footprint is None:
+                building_obj.make_lb_polyface3d_extruded_footprint()
             building_hb_room_envelope_dict = Room.from_polyface3d(identifier=building_id,
-                                                                  polyface=building_obj.lb_polyface3d_extruded_footprint).to_json()
+                                                                  polyface=building_obj.lb_polyface3d_extruded_footprint).to_dict()
             urban_canopy_obj.json_dict["buildings"][building_id]["hb_room_envelope"]= building_hb_room_envelope_dict
 
             if isinstance(building_obj, BuildingModeled):

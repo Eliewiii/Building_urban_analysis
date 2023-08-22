@@ -248,8 +248,8 @@ class BuildingModeled(BuildingBasic):
 
         # Generate the SensorGrids for the roof and the facades on the HB model with merged facades if it exists
         self.solar_radiation_and_bipv_simulation_obj.set_mesh_parameters(
-            do_simulation_on_roof=do_simulation_on_roof,
-            do_simulation_on_facade=do_simulation_on_facade,
+            bipv_on_roof=do_simulation_on_roof,
+            bipv_on_facade=do_simulation_on_facade,
             roof_grid_size_x=roof_grid_size_x,
             facade_grid_size_x=facade_grid_size_x,
             roof_grid_size_y=roof_grid_size_y,

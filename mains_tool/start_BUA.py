@@ -38,10 +38,11 @@ def main():
         SimulationCommonMethods.make_simulation_folder(
             path_simulation_folder=arguments_dictionary["path_simulation_folder"])
 
-    # # Create the log files for the user
-    # user_handler = logging.FileHandler(os.path.join(arguments_dictionary['path_simulation_folder'],name_gh_components_logs_folder, arguments_dictionary['gh_component_name']+".log"))
-    # user_handler.setFormatter(user_formatter)
-    # user_logger.addHandler(user_handler)
+    # Create the log files for the user
+    if arguments_dictionary["gh_component_name"] is not None:
+        user_handler = logging.FileHandler(os.path.join(arguments_dictionary['path_simulation_folder'],name_gh_components_logs_folder, arguments_dictionary['gh_component_name']+".log"),mode="w")
+        user_handler.setFormatter(user_formatter)
+        user_logger.addHandler(user_handler)
 
     # Create or load urban canopy object
     if simulation_step_dictionary["run_create_or_load_urban_canopy_object"]:
@@ -90,7 +91,7 @@ def main():
     # Solar radiations and BIPV simulations
     # Generate sensor grids
     if simulation_step_dictionary["run_generate_sensorgrids_on_buildings"]:
-        SimFunSolarRadAndBipv.genrate_sensor_grid(urban_canopy_object=urban_canopy_object,
+        SimFunSolarRadAndBipv.generate_sensor_grid(urban_canopy_object=urban_canopy_object,
                                                   building_id_list=arguments_dictionary["building_id_list"],
                                                   do_simulation_on_roof=arguments_dictionary["on_roof"],
                                                   do_simulation_on_facade=arguments_dictionary["on_facades"],
@@ -100,7 +101,7 @@ def main():
                                                   facade_grid_size_y=arguments_dictionary["facade_grid_size_y"],
                                                   offset_dist=arguments_dictionary["offset_dist"])
     # Run solar radiation
-    if simulation_step_dictionary["run_solar_radiation_simulation"]:
+    if simulation_step_dictionary["run_annual_solar_irradiance_simulation"]:
         SimFunSolarRadAndBipv.run_annual_solar_irradiance_simulation(
             urban_canopy_object=urban_canopy_object,
             path_simulation_folder=arguments_dictionary["path_simulation_folder"],
@@ -180,12 +181,6 @@ def main():
                                                      country_ghe_cost=arguments_dictionary[
                                                          "country_ghe_cost"])
 
-    # Save logs for the components
-    if arguments_dictionary["gh_component_name"] is not None:
-        SimulationCommonMethods.write_gh_component_user_logs(urban_canopy_object=urban_canopy_object,
-                                                             path_simulation_folder=arguments_dictionary[
-                                                                 "path_simulation_folder"],
-                                                             logs=None)  # add the logs
 
 
 if __name__ == "__main__":

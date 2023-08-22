@@ -401,7 +401,7 @@ class UrbanCanopy:
         # todo @Elie: can be put in a separate function
         for building_obj in self.building_dict.values():
             # by default the functions don't overwrite the existing attribute if it exist already
-            building_obj.make_LB_polyface3d_extruded_footprint()
+            building_obj.make_lb_polyface3d_extruded_footprint()
             building_obj.make_LB_polyface3d_oriented_bounding_box()
 
         # Make a Pyvista mesh containing all the surfaces of all the buildings in the urban canopy
