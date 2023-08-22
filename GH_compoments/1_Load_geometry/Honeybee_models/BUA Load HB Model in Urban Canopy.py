@@ -5,9 +5,9 @@
         path_folder_simulation_: Path to the simulation folder. By default, the code will be run in Appdata\Roaming\Building_urban_analysis\Simulation_temp
         _run: Plug in a button to run the component
     Output:
-        path_folder_simulation: path to th esimulation folder to pass down to the next components"""
+        path_folder_simulation: path to the simulation folder to pass down to the next components"""
 
-ghenv.Component.Name = "BUA Load HB Model to urban Canopy"
+ghenv.Component.Name = "BUA Load HB Model in Urban Canopy"
 ghenv.Component.NickName = 'LoadHBM'
 ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
@@ -25,37 +25,34 @@ def clean_path(path):
          # todo, add the chech to see if the pass exist
 
 
-def clean_log_for_out(path_log_file):
-    with open(path_log_file, 'r') as log_file:
-        log_data = log_file.read()
-        log_line_list = log_data.split("\n")
-        log_line_list = [line.split("[INFO] ")[-1] for line in log_line_list]
-        log_line_list = [line.split("[WARNING] ")[-1] for line in log_line_list]
-        log_line_list = [line.split("[CRITICAL] ")[-1] for line in log_line_list]
-        log_line_list = [line.split("[ERROR] ")[-1] for line in log_line_list]
-    return (log_line_list)
+def read_logs(path_simulation_folder):
+    path_log_file = os.path.join(path_simulation_folder_, "gh_components_logs",
+                                 ghenv.Component.NickName + ".log")
+    if os.path.isfile(path_log_file):
+        with open(path_log_file, 'r') as log_file:
+            log_data = log_file.read()
+        return (log_data)
+    else:
+        return ("No log file found")
+
 
 
 # Get Appdata\local folder
 local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
-
 path_bat_file = os.path.join(path_tool, "Scripts", "mains_tool", "run_BUA.bat")
-
 name_folder_temporary_files = "temporary_files"
 name_hbjson_directory = "hbjsons_to_add" # name of the folder that will contain the hbjsons to add
 
 # set default value for the simulation folder if not provided
-if path_folder_simulation_ is None:
-    path_folder_simulation_ = os.path.join(path_tool, "Simulation_temp")
-# Clean the path and make sure it exist
+if path_simulation_folder_ is None:
+    path_simulation_folder_ = os.path.join(path_tool, "Simulation_temp")
 else:
-     path_folder_simulation_ = clean_path(path_folder_simulation_)
-     # todo, add the chech to see if the pass exist
+     path_simulation_folder_ = clean_path(path_simulation_folder_)
 
 if _run and _hb_model_list is not None and _hb_model_list != []:
     # Make new folder in the simulation folder to store the honeybee models converted to json
-    path_folder_honeybee_json = os.path.join(path_folder_simulation_,name_folder_temporary_files, name_hbjson_directory)
+    path_folder_honeybee_json = os.path.join(path_simulation_folder_,name_folder_temporary_files, name_hbjson_directory)
     if not os.path.exists(path_folder_honeybee_json):
         os.makedirs(path_folder_honeybee_json)
     else:
@@ -75,26 +72,20 @@ if _run and _hb_model_list is not None and _hb_model_list != []:
     command = path_bat_file
     argument = " "  # Initialize the argument
     # Steps to execute
-    argument = argument + "--make_simulation_folder 1 " + "--create_or_load_urban_canopy_object 1 " + "--path_folder {} ".format(path_folder_honeybee_json)+"--extract_buildings_from_hbjson_models 1 " + "--save_urban_canopy_object_to_pickle 1 " +"--generate_model_with_building_envelop 1 " + " --save_urban_canopy_object_to_json 1"
+    argument = argument + "--make_simulation_folder 1 " + "--create_or_load_urban_canopy_object 1 " + "--path_folder {} ".format(path_folder_honeybee_json)+"--extract_buildings_from_hbjson_models 1 " + "--save_urban_canopy_object_to_pickle 1 " + " --save_urban_canopy_object_to_json 1"
 
     # Optional argument of the bat file/Python script
-    if path_folder_simulation_ is not None:
-        argument = argument + ' -f "{}"'.format(path_folder_simulation_)
+    if path_simulation_folder_ is not None:
+        argument = argument + ' -f "{}"'.format(path_simulation_folder_)
     if type(_are_targets_) is bool:
         argument = argument + ' -t "{}"'.format(int(_are_targets_))
+    # Add the name of the component to the argument
+    argument = argument + " -c {}".format(ghenv.Component.NickName)
+    # Run the bat file
     output = os.system(command + argument)
-    print(command + argument)
-
     # Delete the folder with the honeybee models converted to json
     shutil.rmtree(path_folder_honeybee_json)
 
-# path to th elog file to plot in the report
-path_log_file = os.path.join(path_folder_simulation_, "out.txt")
-
-# Extract the log if they exist
-if os.path.isfile(path_log_file):
-    out = clean_log_for_out(path_log_file)
-    for line in out:
-        print(line)
-
+# Read the log file
+report = read_logs(path_simulation_folder_)
 

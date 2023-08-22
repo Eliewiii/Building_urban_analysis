@@ -7,7 +7,7 @@ dev_logger = logging.getLogger("dev")
 user_logger = logging.getLogger("user")
 user_logger.setLevel(logging.INFO)
 dev_logger.setLevel(logging.INFO)
-dev_handler = logging.FileHandler('dev_log.log', mode='w')
+dev_handler = logging.FileHandler('../dev_log.log', mode='w')
 user_formatter = logging.Formatter('%(message)s')
 dev_formatter = logging.Formatter(
     '%(name)s: %(asctime)s - %(levelname)s - %(filename)s (function: %(funcName)s, line: %(lineno)d) - %(message)s')
