@@ -8,8 +8,8 @@ import shutil
 
 from honeybee_radiance.sensorgrid import SensorGrid
 
-from building.solar_radiations_and_panel.utils_sensorgrid import generate_sensor_grid_for_hb_model
-from building.solar_radiations_and_panel.utils_solar_radiation import \
+from building.solar_radiation_and_bipv.utils_sensorgrid import generate_sensor_grid_for_hb_model
+from building.solar_radiation_and_bipv.utils_solar_radiation import \
     run_hb_model_annual_irradiance_simulation, \
     move_radiation_results
 

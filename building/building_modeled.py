@@ -14,7 +14,7 @@ from honeybee_radiance.sensorgrid import SensorGrid
 from building.building_basic import BuildingBasic
 from building.context_filter.building_shading_context import BuildingShadingContext
 # from building.context_filter.building_lwr_context import BuildingLWRContext  # Useful later
-from building.solar_radiations_and_panel.solar_rad_and_BIPV import SolarRadAndBipvSimulation
+from building.solar_radiation_and_bipv.solar_rad_and_BIPV import SolarRadAndBipvSimulation
 from building.merg_hb_model_faces.merge_hb_model_faces import merge_facades_and_roof_faces_in_hb_model
 
 from libraries_addons.hb_model_addons import HbAddons
