@@ -5,7 +5,7 @@ import logging
 
 import numpy as np
 
-from solar_panel.pv_panel import PvPanel
+from solar_panel.pv_panel import BipvPanel
 
 import csv
 from libraries_addons.solar_panels.pv_efficiency_functions import get_efficiency_loss_function_from_string
@@ -53,7 +53,7 @@ def load_panels_on_sensor_grid(sensor_grid, pv_technology_object, yearly_solar_r
             user_logger.warning("If a panel is put here, it won't produce enough energy to be profitable")
             dev_logger.warning("If a panel is put here, it won't produce enough energy to be profitable")
         else:
-            panel_of_face = PvPanel(mesh.faces.index(face), pv_technology_object)
+            panel_of_face = BipvPanel(mesh.faces.index(face), pv_technology_object)
             panel_of_face.initialize_or_replace_panel()
             panels.append(panel_of_face)
     return panels

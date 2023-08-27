@@ -126,8 +126,6 @@ class SolarRadAndBipvSimulation:
             self.facade_sensorgrid_dict = generate_sensor_grid_for_hb_model(hb_model_obj, facade_grid_size_x,
                                                                             facade_grid_size_y, offset_dist,
                                                                             "facades")
-
-
         else:
             user_logger.warning(f"You did not precise whether you want to run the simulation on the roof, "
                                 f"the facades or both")
@@ -210,3 +208,27 @@ class SolarRadAndBipvSimulation:
         # delete all the temporary files if they exist
         if os.path.isdir(path_folder_run_radiation_temp):
             shutil.rmtree(path_folder_run_radiation_temp)
+
+    def run_bipv_panel_simulation(self, path_simulation_folder, roof_pv_tech_obj,
+                                  facade_pv_tech_obj,
+                                  minimum_ratio_energy_harvested_on_primary_energy,
+                                  performance_ratio, study_duration_in_years, replacement_scenario,
+                                  overwrite=False, silent=False):
+        """
+        Run the simulation of the energy harvested by the bipvs
+        :param path_simulation_folder: path to the simulation folder
+        :param roof_pv_tech_obj: BipvTechnology object of the roof BIPV panels
+        :param facade_pv_tech_obj: BipvTechnology object of the facade BIPV panels
+        :param minimum_ratio_energy_harvested_on_primary_energy: float: minimum ratio of the energy harvested on the primary energy
+        :param performance_ratio: float: performance ratio of the PV
+        :param study_duration_in_years: int: duration of the study in years
+        :param replacement_scenario: dict: replacement scenario of the panels
+        :param overwrite: bool: default=False
+        :param silent: bool: default=False
+        """
+        # Run the simulation for the roof
+        if self.on_roof and self.roof_sensorgrid_dict is not None and self.results_dict["roof"][
+            "annual_panel_irradiance_list"] is not None:
+
+
+

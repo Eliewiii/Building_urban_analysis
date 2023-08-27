@@ -15,7 +15,7 @@ from building.building_basic import BuildingBasic
 from building.building_modeled import BuildingModeled
 from libraries_addons.extract_gis_files import extract_gis
 from typology.typology import Typology
-from solar_panel.pv_panel_technology import PvPanelTechnology
+from solar_panel.pv_panel_technology import BipvTechnology
 
 from utils.utils_configuration import name_urban_canopy_export_file_pkl, name_urban_canopy_export_file_json, \
     name_radiation_simulation_folder
@@ -144,6 +144,8 @@ class UrbanCanopy:
         # todo: same as above
         for building_id, building_obj in self.building_dict.items():
             building_obj.pickle_HB_attributes()
+
+    """ todo : delete this function when sure it's useless"""
 
     def json_urban_canopy_attributes(self, path_folder):
         """ Create a dictionary which will contain certain useful attributes of the urban canopy and the buildings"""
@@ -683,6 +685,39 @@ class UrbanCanopy:
                     list_id.append(building.id)
         return list_id
 
+    def run_bipv_simulation_for_buildings(self, path_simulation_folder, path_pv_tech_dictionary_json, id_pv_tech_roof,
+                                          id_pv_tech_facades, minimum_ratio_energy_harvested_on_primary_energy,
+                                          performance_ratio,
+                                          study_duration_in_years,
+                                          replacement_scenario, **kwargs):
+        """
+        Run the panels simulation on the urban canopy
+        :param path_simulation_folder: path to the simulation folder
+        :param path_pv_tech_dictionary_json: path to the json dictionary containing all PVPanelTechnology objects
+        :param id_pv_tech_roof: string: id of the roof technology used, default = "mitrex_roof c-Si"
+        :param id_pv_tech_facades: string: id of the facades technology used, default = "metsolar_facades c-Si"
+        :param minimum_ratio_energy_harvested_on_primary_energy: int: production minimal during the first year for a panel to be installed at
+        this position, Default0.5 kWh
+        :param performance_ratio: float: performance ratio of the PV, Default=0.75
+        :param study_duration_in_years: integer: duration of the study in years, default = 50
+        :param replacement_scenario: string: scenario of replacements for the panels, default = 'yearly'
+        """
+
+        # todo: check ifg the file exist and put a default value
+        pv_tech_dictionary = BipvTechnology.load_pv_technologies_from_json_to_dictionary(
+            path_pv_tech_dictionary_json)
+
+        for building_obj in self.building_dict.values():  # for every building in the urban canopy
+            if type(building_obj) is BuildingModeled and building_obj.is_target:
+                path_building_irradiance_and_bipv_result_folder = os.path.join(path_simulation_folder,
+                                                                               name_radiation_simulation_folder,
+                                                                               building_obj.id)
+                building_obj.run_bipv_simulation(path_building_irradiance_and_bipv_result_folder, pv_tech_dictionary,
+                                             id_pv_tech_roof, id_pv_tech_facades,
+                                             minimum_ratio_energy_harvested_on_primary_energy,
+                                             performance_ratio, study_duration_in_years, replacement_scenario,
+                                             **kwargs)
+
     def run_panel_simulation(self, path_simulation_folder, path_pv_tech_dictionary_json, id_pv_tech_roof,
                              id_pv_tech_facades, minimum_ratio_energy_harvested_on_primary_energy,
                              performance_ratio,
@@ -701,7 +736,7 @@ class UrbanCanopy:
         :param replacement_scenario: string: scenario of replacements for the panels, default = 'yearly'
         """
 
-        pv_tech_dictionary = PvPanelTechnology.load_pv_technologies_from_json_to_dictionary(
+        pv_tech_dictionary = BipvTechnology.load_pv_technologies_from_json_to_dictionary(
             path_pv_tech_dictionary_json)
 
         for building in self.building_dict.values():  # for every building in the urban canopy

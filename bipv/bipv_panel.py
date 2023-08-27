@@ -8,7 +8,7 @@ Panel class, modeling solar panels, to track the age and energy production of pa
 from libraries_addons.solar_panels.pv_efficiency_functions import get_efficiency_loss_function_from_string
 
 
-class PvPanel:
+class BipvPanel:
     """ """
 
     def __init__(self, index, pv_technology_object):

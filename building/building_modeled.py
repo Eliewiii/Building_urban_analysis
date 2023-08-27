@@ -458,6 +458,40 @@ class BuildingModeled(BuildingBasic):
             return energy_production_per_year_list, nb_of_panels_installed_list, nb_of_failed_panels_list
         else:
             return [], [], []
+    def panels_simulation_roof(self, path_simulation_folder_building, pv_tech,
+                               minimum_ratio_energy_harvested_on_primary_energy=1.2,
+                               performance_ratio=0.75, study_duration_in_years=50,
+                               replacement_scenario="yearly", **kwargs):
+        """
+        Run the panel simulation on the roof
+        :param path_simulation_folder_building: path to the folder corresponding to the building
+        :param pv_tech: PVPanelTechnology object
+        :param minimum_ratio_energy_harvested_on_primary_energy: int: production minimal during the first year for a panel to be installed at
+        this position, Default=1.2
+        :param performance_ratio: float: performance ratio of the PV, Default=0.75
+        :param study_duration_in_years: int: duration of the study, default = 50 years
+        :param replacement_scenario: string: name of a replacement scenario, default = 'yearly'
+        """
+        if self.sensor_grid_dict["roof"] is not None:
+            path_folder_roof_values_path = os.path.join(path_simulation_folder_building, "roof",
+                                                        "annual_radiation_values.txt")
+            with open(path_folder_roof_values_path, "r") as f:
+                data_values = f.read()
+                data_values_in_string = data_values.split(",")
+                radiation_values_in_list = list(map(float, data_values_in_string))
+
+            self.load_panels_roof(pv_tech, radiation_values_in_list,
+                                  minimum_ratio_energy_harvested_on_primary_energy,
+                                  performance_ratio)
+
+            if self.panels["roof"] is not None:
+                energy_production_per_year_list, nb_of_panels_installed_list, nb_of_failed_panels_list = \
+                    loop_over_the_years_for_solar_panels(self.panels["roof"], radiation_values_in_list,
+                                                         performance_ratio, study_duration_in_years,
+                                                         replacement_scenario, **kwargs)
+            return energy_production_per_year_list, nb_of_panels_installed_list, nb_of_failed_panels_list
+        else:
+            return [], [], []
 
     def panels_simulation_facades(self, path_simulation_folder_building, pv_tech,
                                   minimum_ratio_energy_harvested_on_primary_energy,
@@ -493,6 +527,64 @@ class BuildingModeled(BuildingBasic):
             return energy_production_per_year_list, nb_of_panels_installed_list, nb_of_failed_panels_list
         else:
             return [], [], []
+
+    def run_bipv_simulation(self, path_building_irradiance_and_bipv_result_folder, pv_technologies_dictionary,
+                        id_pv_tech_roof, id_pv_tech_facades, minimum_ratio_energy_harvested_on_primary_energy=1.2,
+                        performance_ratio=0.75, study_duration_in_years=50, replacement_scenario="yearly", **kwargs):
+        """
+        Run the panel simulation on the facades
+        :param path_simulation_folder_building: path to the folder corresponding to the building
+        :param pv_technologies_dictionary: dictionary containing the technologies data
+        :param id_pv_tech_roof: string: name of the pv tech used on the roof
+        :param id_pv_tech_facades: string: name of the pv tech used on the facades
+        :param minimum_ratio_energy_harvested_on_primary_energy: int: production minimal during the first year for a panel to be
+        installed at this position, Default=1.2
+        :param performance_ratio: float: performance ratio of the PV, Default=0.75
+        :param study_duration_in_years: int: duration of the study, default = 50 years
+        :param replacement_scenario: string: name of a replacement scenario, default = 'yearly'
+        """
+        # todo : add tries and excepts and default values
+        roof_pv_tech_obj = pv_technologies_dictionary[id_pv_tech_roof]
+        facade_pv_tech_obj = pv_technologies_dictionary[id_pv_tech_facades]
+
+        roof_results = self.panels_simulation_roof(path_simulation_folder_building, pv_tech_roof,
+                                                   minimum_ratio_energy_harvested_on_primary_energy,
+                                                   performance_ratio,
+                                                   study_duration_in_years, replacement_scenario,
+                                                   **kwargs)
+        roof_results_lists = beginning_end_of_life_lca_results_in_lists(roof_results[0], roof_results[1],
+                                                                        roof_results[2], pv_tech_roof)
+        facades_results = self.panels_simulation_facades(path_simulation_folder_building, pv_tech_facades,
+                                                         minimum_ratio_energy_harvested_on_primary_energy,
+                                                         performance_ratio,
+                                                         study_duration_in_years, replacement_scenario,
+                                                         **kwargs)
+        facades_results_lists = beginning_end_of_life_lca_results_in_lists(facades_results[0],
+                                                                           facades_results[1],
+                                                                           facades_results[2],
+                                                                           pv_tech_facades)
+
+        total_results_0 = [sum(i) for i in zip(roof_results_lists[0], facades_results_lists[0])]
+        total_results_1 = [sum(i) for i in zip(roof_results_lists[1], facades_results_lists[1])]
+        total_results_2 = [sum(i) for i in zip(roof_results_lists[2], facades_results_lists[2])]
+        total_results_3 = [sum(i) for i in zip(roof_results_lists[3], facades_results_lists[3])]
+        total_results_4 = [sum(i) for i in zip(roof_results_lists[4], facades_results_lists[4])]
+        total_results_5 = [sum(i) for i in zip(roof_results_lists[5], facades_results_lists[5])]
+
+        self.results_panels["roof"] = results_from_lists_to_dict(roof_results_lists[0], roof_results_lists[1],
+                                                                 roof_results_lists[2], roof_results_lists[3],
+                                                                 roof_results_lists[4], roof_results_lists[5])
+
+        self.results_panels["facades"] = results_from_lists_to_dict(facades_results_lists[0],
+                                                                    facades_results_lists[1],
+                                                                    facades_results_lists[2],
+                                                                    facades_results_lists[3],
+                                                                    facades_results_lists[4],
+                                                                    facades_results_lists[5])
+        self.results_panels["Total"] = results_from_lists_to_dict(total_results_0, total_results_1,
+                                                                  total_results_2,
+                                                                  total_results_3, total_results_4,
+                                                                  total_results_5)
 
     def panel_simulation_building(self, path_simulation_folder_building, pv_technologies_dictionary,
                                   id_pv_tech_roof,

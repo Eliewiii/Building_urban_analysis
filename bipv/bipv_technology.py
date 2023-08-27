@@ -7,14 +7,19 @@ import json
 from libraries_addons.solar_panels.pv_efficiency_functions import get_efficiency_loss_function_from_string
 
 
-class PvPanelTechnology:
+class BipvTechnology:
     """ """
 
     def __init__(self, identifier):
         self.identifier = identifier
+        # Efficiency
         self.efficiency_function = None
         self.initial_efficiency = None
+        self.first_year_degrading_rate = 0.02  # todo : add the parameters to the dictionnary
+        self.degrading_rate = 0.005
+        # Failure
         self.weibull_law_failure_parameters = {"lifetime": None, "shape": None}
+        # LCA and DMFA parameters
         self.panel_area = None  # in square meter
         self.primary_energy_manufacturing = None  # per square meter
         self.carbon_manufacturing = None
@@ -23,6 +28,7 @@ class PvPanelTechnology:
         self.weight = None  # per square meter
         self.primary_energy_recycling = None
         self.carbon_recycling = None
+
 
     @classmethod
     def load_pv_technologies_from_json_to_dictionary(cls, path_json_file):
@@ -37,7 +43,9 @@ class PvPanelTechnology:
             for identifier_key in pv_dict_data:  # for every technology in the json, we create and load the
                 # PVPanelTechnology object
                 pv_tech = cls(identifier_key)
-                pv_tech.efficiency_function = pv_dict_data[pv_tech.identifier]["efficiency_function"]
+                efficiency_function_name = pv_dict_data[pv_tech.identifier]["efficiency_function"]
+                # todo : add a try to check if the function exist, use the defaukt function if it does not exist, and return a warning
+                pv_tech.efficiency_function = getattr(pv_tech, efficiency_function_name)
                 pv_tech.initial_efficiency = pv_dict_data[identifier_key]["initial_efficiency"]
                 pv_tech.weibull_law_failure_parameters["lifetime"] = pv_dict_data[identifier_key]["weibull_lifetime"]
                 pv_tech.weibull_law_failure_parameters["shape"] = pv_dict_data[identifier_key]["weibull_shape"]
@@ -89,3 +97,12 @@ class PvPanelTechnology:
         # Quantile function for the Weibull distribution
         life_expectancy = ceil(lifetime * (-log(1 - y)) ** (1 / shape))
         return life_expectancy
+
+    def degrading_rate_efficiency_loss(self, age, **kwarg):
+        """ loose 2% efficiency the first year and then 0.5% every year"""
+        return self.initial_efficiency * (1 - self.first_year_degrading_rate) * (1 - self.degrading_rate) ** (age - 1)
+
+    def get_efficiency_loss_function_from_string(self,fucntion_name):
+        """todo"""
+        if fucntion_name == "degrading_rate_efficiency_loss":
+            return self.degrading_rate_efficiency_loss
