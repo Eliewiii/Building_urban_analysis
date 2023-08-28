@@ -9,6 +9,8 @@ from bipv.bipv_panel import BipvPanel
 user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")
 
+
+
 def init_bipv_on_sensor_grid(sensor_grid, pv_technology_obj, annual_panel_irradiance_list,
                                minimum_panel_eroi, panel_performance_ratio):
     """

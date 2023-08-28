@@ -3,6 +3,17 @@
 
 """
 
+import os.path
+import torch
+import pickle
+import json
+from torch.utils.data import Dataset, DataLoader
+from torchvision import transforms, utils
+import torch.nn as nn
+import torch.optim as optim
+from typology_identifier.generate_models._ml_datasets_and_network_classes import MultipleBuildingsDataset, Net
+from typology_identifier.generate_models._load_ml_parameters import load_ml_parameters
+
 def evaluate_ml_model(path_model_parameters_json, min_percentage=None):
     """
 
@@ -93,18 +104,6 @@ def make_evaluation_dictionary(shapes_to_labels_dic):
 
 # Evaluation
 if __name__ == "__main__":
-    import os.path
-    import torch
-    import pickle
-    import json
-    from torch.utils.data import Dataset, DataLoader
-    from torchvision import transforms, utils
-    import torch.nn as nn
-    import torch.optim as optim
-    from generate_models._ml_datasets_and_network_classes import MultipleBuildingsDataset, Net
-    from generate_models._load_ml_parameters import load_ml_parameters
-
-
     path_folder_model = "D:\Elie\PhD\Simulation\Input_Data\Typology\machine_learning_training\Tel_Aviv_MOE"
     path_model_parameters_json = os.path.join(path_folder_model, "model_param.json")
     evaluate_ml_model(path_model_parameters_json, min_percentage=0.90)

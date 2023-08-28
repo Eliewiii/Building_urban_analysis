@@ -12,6 +12,7 @@ from building.solar_radiation_and_bipv.utils_sensorgrid import generate_sensor_g
 from building.solar_radiation_and_bipv.utils_solar_radiation import \
     run_hb_model_annual_irradiance_simulation, \
     move_radiation_results
+from building.solar_radiation_and_bipv.utils_bipv import init_bipv_on_sensor_grid
 
 from utils.utils_configuration import name_temporary_files_folder, name_radiation_simulation_folder
 
@@ -31,7 +32,7 @@ empty_parameter_dict = {
         "offset": None,
         "panel_technology": None
     },
-    "minimum_ratio_energy_harvested_on_primary_energy": None,
+    "minimum_panel_eroi": None,
     "study_duration_in_years": None,
     "replacement_scenario": {}
 }
@@ -107,6 +108,28 @@ class SolarRadAndBipvSimulation:
         self.parameter_dict["facades"]["grid_y"] = facade_grid_size_y
         self.parameter_dict["roof"]["offset"] = offset_dist
         self.parameter_dict["facades"]["offset"] = offset_dist
+
+    def set_bipv_parameters(self, roof_pv_tech_obj, facade_pv_tech_obj, minimum_panel_eroi,
+                            study_duration_in_years, replacement_scenario, efficiency_computation_method,
+                            **kwargs):
+        """
+        Set the BIPV parameters for the simulation
+        :param roof_pv_tech_obj: PVTechnology object for the roof
+        :param facade_pv_tech_obj: PVTechnology object for the facade
+        :param minimum_panel_eroi: float : the minimum EROI of the panels
+        :param study_duration_in_years: int : the duration of the study in years
+        :param replacement_scenario: str : the replacement scenario of the panels
+        :param efficiency_computation_method: str : the method to compute the efficiency of the panels
+        :param kwargs: dict : other parameters
+        todo: add the additional paameters
+        """
+        self.parameter_dict["roof"]["panel_technology"] = roof_pv_tech_obj
+        self.parameter_dict["facades"]["panel_technology"] = facade_pv_tech_obj
+        self.parameter_dict["minimum_panel_eroi"] = minimum_panel_eroi
+        self.parameter_dict["study_duration_in_years"] = study_duration_in_years
+        self.parameter_dict["replacement_scenario"] = replacement_scenario
+        self.parameter_dict["efficiency_computation_method"] = efficiency_computation_method
+        # todo: add the additional paameters
 
     def generate_sensor_grid(self, hb_model_obj, roof_grid_size_x=1, facade_grid_size_x=1, roof_grid_size_y=1,
                              facade_grid_size_y=1, offset_dist=0.1):
@@ -185,7 +208,8 @@ class SolarRadAndBipvSimulation:
                     SensorGrid.from_dict(self.facade_sensorgrid_dict))
                 hb_model_copy_facade.add_shades(context_shading_hb_aperture_list)
                 # run in the temporary folder
-                path_folder_run_radiation_temp_facade = os.path.join(path_folder_run_radiation_temp, "facades")
+                path_folder_run_radiation_temp_facade = os.path.join(path_folder_run_radiation_temp,
+                                                                     "facades")
                 self.results_dict["facades"][
                     "annual_panel_irradiance_list"] = run_hb_model_annual_irradiance_simulation(
                     hb_model_obj=hb_model_obj,
@@ -211,9 +235,10 @@ class SolarRadAndBipvSimulation:
 
     def run_bipv_panel_simulation(self, path_simulation_folder, roof_pv_tech_obj,
                                   facade_pv_tech_obj,
-                                  minimum_ratio_energy_harvested_on_primary_energy,
+                                  minimum_panel_eroi,
                                   performance_ratio, study_duration_in_years, replacement_scenario,
-                                  overwrite=False, silent=False):
+                                  efficiency_computation_method,
+                                  **kwargs):
         """
         Run the simulation of the energy harvested by the bipvs
         :param path_simulation_folder: path to the simulation folder
@@ -226,9 +251,12 @@ class SolarRadAndBipvSimulation:
         :param overwrite: bool: default=False
         :param silent: bool: default=False
         """
+        # Set BIPV parameters
+        self.set_bipv_parameters(roof_pv_tech_obj=roof_pv_tech_obj,facade_pv_tech_obj=facade_pv_tech_obj,efficiency_computation_method=efficiency_computation_method,
+                                 minimum_panel_eroi=minimum_panel_eroi,study_duration_in_years= study_duration_in_years,replacement_scenario= replacement_scenario,**kwargs)
+
         # Run the simulation for the roof
         if self.on_roof and self.roof_sensorgrid_dict is not None and self.results_dict["roof"][
             "annual_panel_irradiance_list"] is not None:
-
-
-
+            self.roof_panel_list = init_bipv_on_sensor_grid (sensor_grid=SensorGrid.from_dict(self.roof_sensorgrid_dict), pv_technology_obj=roof_pv_tech_obj, annual_panel_irradiance_list=self.results_dict["roof"][],
+                               minimum_panel_eroi, panel_performance_ratio)
