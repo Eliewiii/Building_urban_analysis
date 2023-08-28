@@ -16,14 +16,7 @@ import os
 import shutil
 
 
-# def safe_mkdir(folder_path):
-#     if not os.path.exists(folder_path):
-#         os.makedirs(folder_path)
-
-
 def create_folders(file_paths, directory_path):
-
-    # safe_mkdir(directory_path)
 
     fmu_folders = []
     idf_folders = []
@@ -47,17 +40,7 @@ def create_folders(file_paths, directory_path):
     return [idf_folders, fmu_folders]
 
 
-def create_extra_idf_fmu_statements(fmu_path, current_fmu_filename, connected_fmu_paths, faces):
-    """POSSIBLE OPTION:
-
-ExternalInterface,           !- Object to activate external interface
-FunctionalMockupUnitExport;  !- Name of external interface
-
-ExternalInterface: FunctionalMockupUnitExport:From:Variable,
-ZONE ONE,                  !- Output:Variable Index Key Name
-Zone Mean Air Temperature, !- Output:Variable Name
-TRooMea;                   !- FMU Variable Name
-"""
+def create_extra_idf_fmu_statements(fmu_path, current_fmu_filename, connected_fmu_paths, output_faces,  input_faces):
 
     # make sure we are not connecting this FMU to itself
     assert current_fmu_filename not in connected_fmu_paths
@@ -70,97 +53,109 @@ TRooMea;                   !- FMU Variable Name
  FUNCTIONALMOCKUPUNITEXPORT;              !- Name of external interface
  
 """
-
-#     return_statements += """ExternalInterface:Variable,
-#     Surface Outside Face Temperature,                  !- Name of Erl variable
-#     1;                       !- Initial value
     
+#     return_statements += f"""Output:SQLite,
+#   SimpleAndTabular;                       !- Option Type
+
 # """
-
-
+    
+#     for output_face in output_faces:
+#         return_statements += f"""Output:Variable,*,{output_face.replace('.', '__')}_Surface_Outside_Face_Temperature,Hourly;  !- Include {output_face.replace('.', '_')}_Surface_Outside_Face_Temperature variable
+# """
 #     return_statements += """
-    
-# ExternalInterface,           !- Object to activate external interface
-#   FunctionalMockupUnitExport;  !- Name of external interface
-
-# ExternalInterface,           !- Object to activate external interface
-#   FunctionalMockupUnitImport;  !- Name of external interface
-
 # """
 
-    for connected_fmu_path in connected_fmu_paths:
-#         input_statements += f"""
-# ExternalInterface:FunctionalMockupUnitImport:From:Variable,
-# {connected_fmu_path},                !- FMU Name
-# Surface Outside Face Temperature,      !- Output Variable Name
-# {connected_fmu_path},       !- FMU Instance Name
-# {connected_fmu_path} Surface Outside Face Temperature;    !- Variable Name for Retrieving the Value"""
+#     for connected_fmu_path in connected_fmu_paths:
+# #         input_statements += f"""ExternalInterface:FunctionalMockupUnitImport:From:Variable,
+# #     {connected_fmu_path},                !- FMU Name
+# #     Surface Outside Face Temperature,      !- Output Variable Name
+# #     {connected_fmu_path},       !- FMU Instance Name
+# #     {connected_fmu_path} Surface Outside Face Temperature;    !- Variable Name for Retrieving the Value
+
+# # """
         
-        return_statements += f"""ExternalInterface:FunctionalMockupUnitImport,
-    {fmu_path},            !- FMU File Name
-    1500,                      !- FMU Timeout, check how much is needed
-    0;                       !- FMU LoggingOn to see if debugging is enabled or not
+# #         return_statements += f"""ExternalInterface:FunctionalMockupUnitImport,
+# #     {connected_fmu_path},            !- FMU File Name could be fmu_path
+# #     1500,                      !- FMU Timeout, check how much is needed
+# #     0;                       !- FMU LoggingOn to see if debugging is enabled or not
     
-"""
-        for face in faces:
-                
-#             return_statements += f"""ExternalInterface:FunctionalMockupUnitImport:From:Variable, !- Maps  the names of the output variables of EnergyPlus to the input variables of the FMU.
-#     {face},             !- EnergyPlus Key Value, ie. identifier for the FMU interface
-#     Surface Outside Face Temperature,    !- EnergyPlus Variable Name, ie. the variable in E+ that will receive the input
-#     {connected_fmu_path},            !- FMU File Name that E+ will import data from
-#     {connected_fmu_path},                  !- FMU Instance Name
-#     {face} Surface Outside Face Temperature;                 !- FMU Variable Name, ie. the variable in the FMU that will be given to E+
-    
+# # """
+#         pass
+
+#     return_statements += f"""Output:JSON,
+#     TimeSeriesAndTabular, !- timeseries data and tabular report data
+#     Yes, !- turn on or off outputJSON
+#     No, !- Output CBOR
+#     No; !- turn off or on MessagePack output
+
 # """
+
+#     return_statements += f"""OutputControl:Files,
+#   Yes, ! CSV
+#   Yes, ! MTR
+#   Yes, ! ESO
+#   No , ! EIO
+#   No , ! Tabular
+#   No , ! SQLite
+#   No , ! JSON
+#   No , ! AUDIT
+#   No , ! Zone Sizing
+#   No , ! System Sizing
+#   No , ! DXF
+#   No , ! BND
+#   No , ! RDD
+#   No , ! MDD
+#   No , ! MTD
+#   Yes, ! END
+#   No , ! SHD
+#   No , ! DFS
+#   No , ! GLHE
+#   No , ! DelightIn
+#   No , ! DelightELdmp
+#   No , ! DelightDFdmp
+#   No , ! EDD
+#   No , ! DBG
+#   No , ! PerfLog
+#   No , ! SLN
+#   No , ! SCI
+#   No , ! WRL
+#   No , ! Screen
+#   No , ! ExtShd
+#   No ; ! Tarcog
+
+# """
+    
+    for output_face in output_faces:
+        
+        # Define the output of the FMU
+        return_statements += f"""ExternalInterface:FunctionalMockupUnitExport:From:Variable,
+{output_face},             !- EnergyPlus Key Value
+Surface Outside Face Temperature,  !- EnergyPlus Variable Name
+{output_face.replace('.', '__')}_Surface_Outside_Face_Temperature;                 !- FMU Variable Name
+
+"""
+    
+        return_statements += f"""Output:Variable,
+    {output_face},                    !- Key Value
+    Surface Outside Face Temperature,   !- Variable Name
+    TimeStep;                    !- Reporting Frequency
+
+"""
             
-            return_statements += f"""ExternalInterface:FunctionalMockupUnitExport:From:Variable,
-    {face},             !- EnergyPlus Key Value
-    Surface Outside Face Temperature,  !- EnergyPlus Variable Name
-    {face} Surface Outside Face Temperature;                 !- FMU Variable Name
-    
-"""
-            return_statements += f"""ExternalInterface:FunctionalMockupUnitExport:To:Variable,
-  {face} Surface Outside Face Temperature,                       !- EnergyPlus Variable Name
-  {face} Surface Outside Face Temperature,                                   !- FMU Variable Name
-  1;                                             !- Initial Value
-  
+    for input_face in input_faces:
+
+#         return_statements += f"""ExternalInterface:Variable,
+#     {input_face}_GB_Surface_Outside_Face_Temperature,                                   !- Name of Erl variable
+#     1;                                             !- Initial value
+
+# """
+        return_statements += f"""ExternalInterface:FunctionalMockupUnitExport:To:Variable,
+    {input_face.replace('.', '_')}_Surface_Outside_Face_Temperature,                       !- EnergyPlus Variable Name
+    {input_face.replace('.', '__')}_Surface_Outside_Face_Temperature,                                   !- FMU Variable Name
+    1;                                             !- Initial Value
+
 """
         
-#         import_variable_initial_conds = f"""ExternalInterface:FunctionalMockupUnitImport:To:Variable,
-#     Shade_Signal,            !- EnergyPlus Variable Name
-#     ShadingController.fmu,   !- FMU File Name
-#     Model1,                  !- FMU Instance Name
-#     yShade,                  !- FMU Variable Name
-#     1;                       !- Initial Value
-
-# """
-
-#         input_statements += f"""
-# ExternalInterface:FunctionalMockupUnitExport:To:Schedule,
-# {connected_fmu_path},                !- FMU Name
-# Surface Outside Face Temperature Key Value,      !- Output Variable Name
-# sof_temp,       !- FMU Instance Name
-# {connected_fmu_path} Surface Outside Face Temperature;    !- Variable Name for Retrieving the Value"""
-
-#     content = input_statements + f"""
-
-# ExternalInterface:FunctionalMockupUnitImport,
-#   {current_fmu_instance_name},                    !- Instance Name
-#   {current_fmu_filepath};                !- FMU File Name
-
-# ExternalInterface:FunctionalMockupUnitImport:To:Variable,
-#   {current_fmu_instance_name},                !- FMU Name
-#   Surface Outside Face Temperature,       !- Input Variable Name
-#   {current_fmu_instance_name},       !- FMU Instance Name
-#   {current_fmu_instance_name} Surface Outside Face Temperature;     !- Variable Name for Providing the Value
-
-# Output:Variable,
-#   *,                         !- Key Value (you can replace the asterisk with a specific surface name if you want to request surface temperature for a particular surface)
-#   Surface Outside Face Temperature, !- Variable Name
-#   Timestep;                    !- Reporting Frequency (e.g., hourly, daily, monthly, etc.)
-
-
-# """
     return return_statements
 
 
@@ -179,6 +174,11 @@ def get_name_of_outdoor_bc_faces(path_hbjson_file):
                 face_name_list.append(face.identifier)
     
     return face_name_list
+
+
+def get_name_of_outdoor_bc_faces_list(paths_to_hbjson_param):
+    """ """
+    return {p: get_name_of_outdoor_bc_faces(p) for p in paths_to_hbjson_param}
 
 
 
@@ -211,6 +211,9 @@ paths_to_hbjson = [path_hbjson_file_twobuildingsfirst, path_hbjson_file_twobuild
 
 idf_folders, fmu_folders = create_folders(paths_to_hbjson, path_to_fmus)
 
+# Get the name of the surface with outdoor boundary condition
+name_of_faces_to_output_many = get_name_of_outdoor_bc_faces_list(paths_to_hbjson)
+
 # dir_to_write_idf_in = "C:\\Users\\elie-medioni\\OneDrive\\OneDrive - Technion\\BUA\\test_elie"  # Elie
 
 # dir_to_write_idf_in = "C:\\Users\\alejandro.s\\Documents\\sim_ep"  # TODO @Ale, add the path to the directory where you want to write the idf file
@@ -231,12 +234,16 @@ for count, (idf_path, fmu_path, path_hbjson_file) in enumerate(zip(idf_folders, 
 
     edit_idf_surfaces(os.path.join(idf_path, 'face_names.txt'), name_of_faces_to_output, type_of_edit='w')
 
+    input_fmu_paths = [f for f in fmu_folders if f != fmu_path]
+
     # fmu_path, current_fmu_filename, connected_fmu_paths
     content = create_extra_idf_fmu_statements(
         fmu_path=fmu_path,
+        # input_fmu_paths=input_fmu_paths,
         current_fmu_filename=os.path.splitext(os.path.basename(path_hbjson_file))[0],
         connected_fmu_paths=[pth for pth in fmu_folders if pth != fmu_path],
-        faces=name_of_faces_to_output
+        output_faces=name_of_faces_to_output,
+        input_faces=[vv for k,v in name_of_faces_to_output_many.items() for vv in v if k != path_hbjson_file]
     )
     edit_idf(path_idf, content)
 
