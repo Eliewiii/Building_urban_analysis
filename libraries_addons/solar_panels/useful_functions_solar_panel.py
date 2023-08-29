@@ -5,7 +5,7 @@ import logging
 
 import numpy as np
 
-from solar_panel.pv_panel import BipvPanel
+from bipv.bipv_panel import BipvPanel
 
 import csv
 from libraries_addons.solar_panels.pv_efficiency_functions import get_efficiency_loss_function_from_string

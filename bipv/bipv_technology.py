@@ -15,6 +15,7 @@ class BipvTechnology:
         # Efficiency
         self.efficiency_function = None
         self.initial_efficiency = None
+        self.panel_performance_ratio = None
         self.first_year_degrading_rate = 0.02  # todo : add the parameters to the dictionnary
         self.degrading_rate = 0.005
         # Failure
@@ -28,7 +29,6 @@ class BipvTechnology:
         self.weight = None  # per square meter
         self.primary_energy_recycling = None
         self.carbon_recycling = None
-
 
     @classmethod
     def load_pv_technologies_from_json_to_dictionary(cls, path_json_file):
@@ -46,22 +46,29 @@ class BipvTechnology:
                 efficiency_function_name = pv_dict_data[pv_tech.identifier]["efficiency_function"]
                 # todo : add a try to check if the function exist, use the defaukt function if it does not exist, and return a warning
                 pv_tech.efficiency_function = getattr(pv_tech, efficiency_function_name)
+                # todo add panel performance ratio
                 pv_tech.initial_efficiency = pv_dict_data[identifier_key]["initial_efficiency"]
-                pv_tech.weibull_law_failure_parameters["lifetime"] = pv_dict_data[identifier_key]["weibull_lifetime"]
-                pv_tech.weibull_law_failure_parameters["shape"] = pv_dict_data[identifier_key]["weibull_shape"]
+                pv_tech.weibull_law_failure_parameters["lifetime"] = pv_dict_data[identifier_key][
+                    "weibull_lifetime"]
+                pv_tech.weibull_law_failure_parameters["shape"] = pv_dict_data[identifier_key][
+                    "weibull_shape"]
                 pv_tech.panel_area = pv_dict_data[identifier_key]["panel_area"]
                 pv_tech.weight = pv_dict_data[identifier_key]["weight"]
                 pv_tech.primary_energy_manufacturing = pv_dict_data[identifier_key][
                     "primary_energy_manufacturing_in_kWh_per_panel"]
                 pv_tech.carbon_manufacturing = pv_dict_data[identifier_key][
                     "gh_gas_emissions_manufacturing_in_kgCO2eq_per_panel"]
-                pv_tech.primary_energy_transport = pv_dict_data[identifier_key]["primary_energy_transport_in_kWh_per_panel"]
+                pv_tech.primary_energy_transport = pv_dict_data[identifier_key][
+                    "primary_energy_transport_in_kWh_per_panel"]
                 pv_tech.carbon_transport = pv_dict_data[identifier_key]["carbon_transport_in_kgCO2_per_panel"]
                 pv_tech.weight = pv_dict_data[identifier_key]["weight"]
-                pv_tech.primary_energy_recycling = pv_dict_data[identifier_key]["end_of_life_primary_energy_in_kWh_per_panel"]
-                pv_tech.carbon_recycling = pv_dict_data[identifier_key]["end_of_life_carbon_in_kgCO2_per_panel"]
+                pv_tech.primary_energy_recycling = pv_dict_data[identifier_key][
+                    "end_of_life_primary_energy_in_kWh_per_panel"]
+                pv_tech.carbon_recycling = pv_dict_data[identifier_key][
+                    "end_of_life_carbon_in_kgCO2_per_panel"]
 
-                pv_technologies_dict[identifier_key] = pv_tech  # then we add this object to the dictionary containing
+                pv_technologies_dict[
+                    identifier_key] = pv_tech  # then we add this object to the dictionary containing
                 # all the different technologies
         return pv_technologies_dict
 
@@ -71,7 +78,8 @@ class BipvTechnology:
         # todo @Hilany, seems useless now because of load_pv_technology(), to delete?
         with open(path_json_file) as f:
             pv_dict_data = json.load(f)
-            self.weibull_law_failure_parameters["lifetime"] = pv_dict_data[self.identifier]["weibull_lifetime"]
+            self.weibull_law_failure_parameters["lifetime"] = pv_dict_data[self.identifier][
+                "weibull_lifetime"]
             self.weibull_law_failure_parameters["shape"] = pv_dict_data[self.identifier]["weibull_shape"]
 
     def add_efficiency_function(self, path_json_file):
@@ -98,11 +106,25 @@ class BipvTechnology:
         life_expectancy = ceil(lifetime * (-log(1 - y)) ** (1 / shape))
         return life_expectancy
 
-    def degrading_rate_efficiency_loss(self, age, **kwarg):
+    def degrading_rate_efficiency_loss(self, age):
         """ loose 2% efficiency the first year and then 0.5% every year"""
-        return self.initial_efficiency * (1 - self.first_year_degrading_rate) * (1 - self.degrading_rate) ** (age - 1)
+        if age == 0:
+            return self.initial_efficiency
+        else :
+            return self.initial_efficiency * (1 - self.first_year_degrading_rate) * (1 - self.degrading_rate) ** (
+                    age - 1)
 
-    def get_efficiency_loss_function_from_string(self,fucntion_name):
-        """todo"""
-        if fucntion_name == "degrading_rate_efficiency_loss":
-            return self.degrading_rate_efficiency_loss
+    def irradiance_dependent_efficiency(self, irradiance):
+        """ todo: this one is just an example, to be changed"""
+        return self.initial_efficiency * irradiance * self.param_1_irradiance + self.param_2_irradiance * irradiance ** 2
+
+    def irradiance_temperature_and_age_dependent_efficiency(self, irradiance,outdoor_temperature,age):
+        """ todo: this one is just an example, to be changed"""
+        return self.initial_efficiency * irradiance * self.param_1_irradiance + self.param_2_irradiance * irradiance ** 2
+
+
+# todo to delete
+# def get_efficiency_loss_function_from_string(self,fucntion_name):
+#     """todo"""
+#     if fucntion_name == "degrading_rate_efficiency_loss":
+#         return self.degrading_rate_efficiency_loss

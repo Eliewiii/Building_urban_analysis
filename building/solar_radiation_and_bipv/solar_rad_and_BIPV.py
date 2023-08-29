@@ -188,15 +188,19 @@ class SolarRadAndBipvSimulation:
                     radiance_parameters='-ab 2 -ad 5000 -lw 2e-05',
                     silent=silent)
                 # Delete the useless results files and mov ethe results to the right folder
-                annual_irradiance_roof_result_file_name = "roof" + ".ill"
-                path_temp_result_folder_roof = path_folder_run_radiation_temp_roof = os.path.join(
-                    path_folder_simulation, name_temporary_files_folder, str(building_id), "roof",
-                    "annual_irradiance",
-                    "results", "total")
-                move_radiation_results(path_temp_result_folder=path_temp_result_folder_roof,
-                                       path_result_folder=path_result_folder,
-                                       result_file_name=annual_irradiance_file_name,
-                                       new_result_file_name=annual_irradiance_roof_result_file_name)
+                path_folder_result_run_radiation_temp_roof = os.path.join(path_folder_run_radiation_temp_roof,
+                                                                          "annual_irradiance",
+                                                                          "results", "total")
+                path_result_file_ill = os.path.join(path_folder_result_run_radiation_temp_roof,
+                                                    str(building_id))
+                path_sun_hours_file = os.path.join(path_folder_result_run_radiation_temp_roof,
+                                                   "sun-up-hours.txt")
+                path_roof_result_folder = os.path.join(path_result_folder, "roof")
+                move_radiation_results(path_result_file_ill=path_result_file_ill,
+                                       path_sun_hours_file=path_sun_hours_file,
+                                       ill_file_name=annual_irradiance_file_name,
+                                       new_result_file_name="roof.ill",
+                                       path_result_folder=path_roof_result_folder)
 
         # Do not run the simulation if there is no SensorGrid on the facades
         if self.facade_sensorgrid_dict is not None:
@@ -221,9 +225,10 @@ class SolarRadAndBipvSimulation:
                     silent=silent)
                 # Delete the useless results files and mov ethe results to the right folder
                 annual_irradiance_facade_result_file_name = "facades" + ".ill"
-                path_temp_result_folder_facade = path_folder_run_radiation_temp_facade = os.path.join(
-                    path_folder_simulation, name_temporary_files_folder, str(building_id), "facades",
-                    "annual_irradiance", "results", "total")
+                path_temp_result_folder_facade = os.path.join(path_folder_simulation,
+                                                              name_temporary_files_folder, str(building_id),
+                                                              "facades",
+                                                              "annual_irradiance", "results", "total")
                 move_radiation_results(path_temp_result_folder=path_temp_result_folder_facade,
                                        path_result_folder=path_result_folder,
                                        result_file_name=annual_irradiance_file_name,
@@ -234,29 +239,33 @@ class SolarRadAndBipvSimulation:
             shutil.rmtree(path_folder_run_radiation_temp)
 
     def run_bipv_panel_simulation(self, path_simulation_folder, roof_pv_tech_obj,
-                                  facade_pv_tech_obj,
-                                  minimum_panel_eroi,
-                                  performance_ratio, study_duration_in_years, replacement_scenario,
-                                  efficiency_computation_method,
-                                  **kwargs):
+                                  facade_pv_tech_obj, efficiency_computation_method, minimum_panel_eroi,
+                                  study_duration_in_years, replacement_scenario, **kwargs):
         """
         Run the simulation of the energy harvested by the bipvs
         :param path_simulation_folder: path to the simulation folder
         :param roof_pv_tech_obj: BipvTechnology object of the roof BIPV panels
         :param facade_pv_tech_obj: BipvTechnology object of the facade BIPV panels
-        :param minimum_ratio_energy_harvested_on_primary_energy: float: minimum ratio of the energy harvested on the primary energy
-        :param performance_ratio: float: performance ratio of the PV
+        :param efficiency_computation_method: str: method to compute the efficiency of the panels
+        :param minimum_panel_eroi: float: minimum EROI of the PV panels
         :param study_duration_in_years: int: duration of the study in years
         :param replacement_scenario: dict: replacement scenario of the panels
-        :param overwrite: bool: default=False
-        :param silent: bool: default=False
+        :param kwargs: todo
         """
         # Set BIPV parameters
-        self.set_bipv_parameters(roof_pv_tech_obj=roof_pv_tech_obj,facade_pv_tech_obj=facade_pv_tech_obj,efficiency_computation_method=efficiency_computation_method,
-                                 minimum_panel_eroi=minimum_panel_eroi,study_duration_in_years= study_duration_in_years,replacement_scenario= replacement_scenario,**kwargs)
+        self.set_bipv_parameters(roof_pv_tech_obj=roof_pv_tech_obj, facade_pv_tech_obj=facade_pv_tech_obj,
+                                 efficiency_computation_method=efficiency_computation_method,
+                                 minimum_panel_eroi=minimum_panel_eroi,
+                                 study_duration_in_years=study_duration_in_years,
+                                 replacement_scenario=replacement_scenario, **kwargs)
 
         # Run the simulation for the roof
         if self.on_roof and self.roof_sensorgrid_dict is not None and self.results_dict["roof"][
             "annual_panel_irradiance_list"] is not None:
-            self.roof_panel_list = init_bipv_on_sensor_grid (sensor_grid=SensorGrid.from_dict(self.roof_sensorgrid_dict), pv_technology_obj=roof_pv_tech_obj, annual_panel_irradiance_list=self.results_dict["roof"][],
-                               minimum_panel_eroi, panel_performance_ratio)
+            # Init the BIPV panels on the roof
+            self.roof_panel_list = init_bipv_on_sensor_grid(
+                sensor_grid=SensorGrid.from_dict(self.roof_sensorgrid_dict),
+                pv_technology_obj=roof_pv_tech_obj,
+                annual_panel_irradiance_list=self.results_dict["roof"]["annual_panel_irradiance_list"],
+                minimum_panel_eroi=minimum_panel_eroi)
+            # Run the simulation
