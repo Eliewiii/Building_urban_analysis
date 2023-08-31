@@ -11,8 +11,10 @@ from honeybee_radiance.sensorgrid import SensorGrid
 from building.solar_radiation_and_bipv.utils_sensorgrid import generate_sensor_grid_for_hb_model
 from building.solar_radiation_and_bipv.utils_solar_radiation import \
     run_hb_model_annual_irradiance_simulation, \
-    move_radiation_results
-from building.solar_radiation_and_bipv.utils_bipv import init_bipv_on_sensor_grid
+    move_annual_irr_hb_radiance_results
+from building.solar_radiation_and_bipv.utils_bipv import init_bipv_on_sensor_grid, \
+    bipv_energy_harvesting_simulation_yearly_annual_irradiance, \
+    bipv_energy_harvesting_simulation_hourly_annual_irradiance, bipv_lca_dmfa_eol_computation
 
 from utils.utils_configuration import name_temporary_files_folder, name_radiation_simulation_folder
 
@@ -64,6 +66,12 @@ empty_results_dict = {
         "lca_recycling_carbon": {"yearly": None, "total": None}
     }
 }
+
+sun_up_hours_file_name = "sun-up-hours.txt"
+name_roof_ill_file = "roof.ill"
+name_facades_ill_file = "facades.ill"
+name_roof_sun_up_hours_file = "roof_" + sun_up_hours_file_name
+name_facades_sun_up_hours_file = "facades_" + sun_up_hours_file_name
 
 
 class SolarRadAndBipvSimulation:
@@ -156,21 +164,16 @@ class SolarRadAndBipvSimulation:
                                f"the facades or both")
 
     def run_annual_solar_radiation(self, building_id, hb_model_obj, context_shading_hb_aperture_list,
-                                   path_folder_simulation, path_epw_file, overwrite=False,
+                                   path_simulation_folder, path_epw_file, overwrite=False,
                                    north_angle=0, silent=False):
         """
 
         """
-        path_folder_run_radiation_temp = os.path.join(path_folder_simulation, name_temporary_files_folder,
+        path_folder_run_radiation_temp = os.path.join(path_simulation_folder, name_temporary_files_folder,
                                                       str(building_id))
-        path_result_folder = os.path.join(path_folder_simulation, name_radiation_simulation_folder,
+        path_result_folder = os.path.join(path_simulation_folder, name_radiation_simulation_folder,
                                           str(building_id))
         annual_irradiance_file_name = str(building_id) + ".ill"
-        sun_up_hours_file_name = "sun-up-hours.txt"
-        name_roof_ill_file = "roof.ill"
-        name_facades_ill_file = "facades.ill"
-        name_roof_sun_up_hours_file = "roof_"+sun_up_hours_file_name
-        name_facades_sun_up_hours_file = "facades_"+sun_up_hours_file_name
 
         # Distinguish between roof and facades
         if self.roof_sensorgrid_dict is not None:
@@ -200,11 +203,11 @@ class SolarRadAndBipvSimulation:
                                                     annual_irradiance_file_name)
                 path_sun_hours_file = os.path.join(path_folder_result_run_radiation_temp_roof,
                                                    sun_up_hours_file_name)
-                move_radiation_results(path_temp_ill_result_file=path_result_file_ill,
-                                       path_temp_sun_hours_file=path_sun_hours_file,
-                                       new_ill_file_name=name_roof_ill_file,
-                                       new_sun_hours_file_name=name_roof_sun_up_hours_file,
-                                       path_result_folder=path_result_folder)
+                move_annual_irr_hb_radiance_results(path_temp_ill_result_file=path_result_file_ill,
+                                                    path_temp_sun_hours_file=path_sun_hours_file,
+                                                    new_ill_file_name=name_roof_ill_file,
+                                                    new_sun_hours_file_name=name_roof_sun_up_hours_file,
+                                                    path_result_folder=path_result_folder)
 
         # Do not run the simulation if there is no SensorGrid on the facades
         if self.facade_sensorgrid_dict is not None:
@@ -217,7 +220,7 @@ class SolarRadAndBipvSimulation:
                 hb_model_copy_facade.add_shades(context_shading_hb_aperture_list)
                 # run in the temporary folder
                 path_folder_run_radiation_temp_facades = os.path.join(path_folder_run_radiation_temp,
-                                                                     "facades")
+                                                                      "facades")
                 self.results_dict["facades"][
                     "annual_panel_irradiance_list"] = run_hb_model_annual_irradiance_simulation(
                     hb_model_obj=hb_model_obj,
@@ -228,28 +231,32 @@ class SolarRadAndBipvSimulation:
                     radiance_parameters='-ab 2 -ad 5000 -lw 2e-05',
                     silent=silent)
                 # Delete the useless results files and mov ethe results to the right folder
-                path_folder_result_run_radiation_temp_facades = os.path.join(path_folder_run_radiation_temp_facades,
-                                                                          "annual_irradiance",
-                                                                          "results", "total")
+                path_folder_result_run_radiation_temp_facades = os.path.join(
+                    path_folder_run_radiation_temp_facades,
+                    "annual_irradiance",
+                    "results", "total")
                 path_result_file_ill = os.path.join(path_folder_result_run_radiation_temp_facades,
                                                     annual_irradiance_file_name)
                 path_sun_hours_file = os.path.join(path_folder_result_run_radiation_temp_facades,
                                                    sun_up_hours_file_name)
-                move_radiation_results(path_temp_ill_result_file=path_result_file_ill,
-                                       path_temp_sun_hours_file=path_sun_hours_file,
-                                       new_ill_file_name=name_facades_ill_file,
-                                       new_sun_hours_file_name=name_facades_sun_up_hours_file,
-                                       path_result_folder=path_result_folder)
+                move_annual_irr_hb_radiance_results(path_temp_ill_result_file=path_result_file_ill,
+                                                    path_temp_sun_hours_file=path_sun_hours_file,
+                                                    new_ill_file_name=name_facades_ill_file,
+                                                    new_sun_hours_file_name=name_facades_sun_up_hours_file,
+                                                    path_result_folder=path_result_folder)
         # delete all the temporary files if they exist
         if os.path.isdir(path_folder_run_radiation_temp):
             shutil.rmtree(path_folder_run_radiation_temp)
 
-    def run_bipv_panel_simulation(self, path_simulation_folder, roof_pv_tech_obj,
-                                  facade_pv_tech_obj, efficiency_computation_method, minimum_panel_eroi,
-                                  study_duration_in_years, replacement_scenario, **kwargs):
+    def run_bipv_panel_simulation(self, path_simulation_folder, building_id, roof_pv_tech_obj,
+                                  facade_pv_tech_obj, efficiency_computation_method="yearly",
+                                  minimum_panel_eroi=1.2,
+                                  study_duration_in_years=50,
+                                  replacement_scenario="replace_failed_panels_every_X_years", **kwargs):
         """
         Run the simulation of the energy harvested by the bipvs
         :param path_simulation_folder: path to the simulation folder
+        :param building_id: str: id of the building
         :param roof_pv_tech_obj: BipvTechnology object of the roof BIPV panels
         :param facade_pv_tech_obj: BipvTechnology object of the facade BIPV panels
         :param efficiency_computation_method: str: method to compute the efficiency of the panels
@@ -274,4 +281,41 @@ class SolarRadAndBipvSimulation:
                 pv_technology_obj=roof_pv_tech_obj,
                 annual_panel_irradiance_list=self.results_dict["roof"]["annual_panel_irradiance_list"],
                 minimum_panel_eroi=minimum_panel_eroi)
-            # Run the simulation
+            # Run the simulation roof
+            if efficiency_computation_method == "yearly":
+                roof_energy_harvested_per_year_list, roof_nb_of_panels_installed_per_year_list = bipv_energy_harvesting_simulation_yearly_annual_irradiance(
+                    pv_panel_obj_list=self.roof_panel_list,
+                    annual_solar_irradiance_value=self.results_dict["roof"]["annual_panel_irradiance_list"],
+                    study_duration_in_years=study_duration_in_years,
+                    replacement_scenario=replacement_scenario, **kwargs)
+            elif efficiency_computation_method == "hourly":
+                path_result_folder = os.path.join(path_simulation_folder, name_radiation_simulation_folder,
+                                                  str(building_id))
+                path_ill_file = os.path.join(path_result_folder, name_roof_ill_file)
+                path_sun_up_hours_file = os.path.join(path_result_folder, name_roof_sun_up_hours_file)
+                roof_energy_harvested_per_year_list, roof_nb_of_panels_installed_per_year_list = bipv_energy_harvesting_simulation_hourly_annual_irradiance(
+                    pv_panel_obj_list=self.roof_panel_list,
+                    path_ill_file=path_ill_file,
+                    path_sun_up_hours_file=path_sun_up_hours_file,
+                    study_duration_in_years=study_duration_in_years,
+                    replacement_scenario=replacement_scenario, **kwargs)
+            else:
+                raise ValueError("The efficiency computation method is not valid")
+            # Post process and run LCA and DMFA results
+            many_list_to_change = bipv_lca_dmfa_eol_computation(roof_nb_of_panels_installed_per_year_list, roof_pv_tech_obj)
+            # Save the results in obj
+
+        # same for facade
+
+        # Total results
+
+    def results_to_csv(self):
+        """
+
+        """
+
+    def results_to_figures(self):
+        """
+
+        """
+

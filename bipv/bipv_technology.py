@@ -4,7 +4,8 @@
 from math import log, ceil
 import random
 import json
-from libraries_addons.solar_panels.pv_efficiency_functions import get_efficiency_loss_function_from_string
+
+temp_ref = 25  # temperature reference for the efficiency of the panel
 
 
 class BipvTechnology:
@@ -72,6 +73,13 @@ class BipvTechnology:
                 # all the different technologies
         return pv_technologies_dict
 
+    def compute_transportation_energy(self):
+        """
+        Compute the energy needed for the transportation of the panels
+
+        """
+        # todo
+
     def get_life_expectancy_of_a_panel(self):
         """
         Get the probabilistic time failure of a panel using the inverse of the quantile (inverse of the cumulative
@@ -88,31 +96,31 @@ class BipvTechnology:
 
     def get_energy_harvested_by_panel(self, irradiance, age, **kwargs):
         """
-        Get the energy harvested by a panel
+        Get the energy harvested by a panel in Watt
         :param irradiance: irradiance on the panel
         :param outdoor_temperature: outdoor temperature
         :param age: age of the panel
         :return: energy_harvested: energy harvested by the panel
         """
         # todo : add the panel performance ratio
-        efficiency = self.efficiency_function(irradiance, age,**kwargs)
-        energy_harvested = efficiency * irradiance
+        efficiency = self.efficiency_function(age=age, irradiance=irradiance, **kwargs)
+        energy_harvested = efficiency * irradiance * self.panel_performance_ratio * self.panel_area
         return energy_harvested
 
-    def degrading_rate_efficiency_loss(self, age):
+    def degrading_rate_efficiency_loss(self, age, **kwargs):
         """ loose 2% efficiency the first year and then 0.5% every year"""
         if age == 0:
             return self.initial_efficiency
         else:
             return self.initial_efficiency * (1 - self.first_year_degrading_rate) * (
-                        1 - self.degrading_rate) ** (
-                    age - 1)
+                    1 - self.degrading_rate) ** (age - 1)
 
-    def irradiance_dependent_efficiency(self, irradiance):
+    def irradiance_dependent_efficiency(self, irradiance, **kwargs):
         """ todo: this one is just an example, to be changed"""
         return self.initial_efficiency * irradiance * self.param_1_irradiance + self.param_2_irradiance * irradiance ** 2
 
-    def irradiance_temperature_and_age_dependent_efficiency(self, irradiance, outdoor_temperature, age):
+    def irradiance_temperature_and_age_dependent_efficiency(self, irradiance, age,
+                                                            outdoor_temperature=temp_ref, **kwargs):
         """ todo: this one is just an example, to be changed"""
         return self.initial_efficiency * irradiance * self.param_1_irradiance + self.param_2_irradiance * irradiance ** 2
 

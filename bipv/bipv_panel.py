@@ -73,29 +73,26 @@ class BipvPanel:
                                                                             efficiency_function)
         initial_efficiency = self.panel_technology_object.initial_efficiency
         area = self.panel_technology_object.panel_area
-        energy_harvested = efficiency_loss_function(initial_efficiency, self.age) * solar_radiation_year_value * area \
-                          * performance_ratio / 1000
+        energy_harvested = efficiency_loss_function(initial_efficiency,
+                                                    self.age) * solar_radiation_year_value * area \
+                           * performance_ratio / 1000
         return energy_harvested
 
-    def pass_year(self, solar_radiation_year_value, performance_ratio):
+    def energy_harvested_in_one_year(self, irradiance, **kwargs):
         """
-        Simulate a year passing for a panel
-        :param year: year of the simulation, could impact the efficiency of the panel, if we assume that the efficiency
-        of the new panels is increasing every year
-        #todo ask @elie about it
-        :param solar_radiation_year_value: float: radiation received by a panel during an entire year in Wh/panel/year
-        :return energy_harvested: float : energy harvested by the panel through the year
-        :return panel_failed: bool: True if the panel failed, else False
+        Return the energy harvested in one year by a functioning panel
+        :param irradiance: float: radiation received by a panel during a year or a timestep  in Wh/m2
+        :return energy_harvested: float: energy harvested by the panel during the year, in Wh/panel
         """
-        energy_harvested, panel_failed = 0., False
+        energy_harvested = self.panel_technology_object.get_energy_harvested_by_panel(irradiance=irradiance,
+                                                                                      age=self.age, **kwargs)
+        return energy_harvested
 
+    def increment_age_by_one_year(self):
+        """
+        Simulate a year passing for a panel, making it fail eventually
+        """
         if self.is_panel_working():
-            # get the energy harvested by the panel over the year with the proper efficiency
-            energy_harvested = self.energy_harvested_in_one_year(solar_radiation_year_value, performance_ratio)
-            # increase the age
             self.age += 1
-            # If panel reach life expectancy, it fails and generate dmfa waste
             if self.age is self.life_expectancy:
                 self.panel_failed()
-                panel_failed = True
-        return energy_harvested, panel_failed

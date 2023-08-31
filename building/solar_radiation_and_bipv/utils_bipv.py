@@ -75,21 +75,23 @@ def init_bipv_on_sensor_grid(sensor_grid, pv_technology_obj, annual_panel_irradi
 
     return panel_obj_list
 
-def bipv_simulation_hourly_annual_irradiance(pv_panel_obj_list,path_time_step_illuminance_file):
+
+def bipv_energy_harvesting_simulation_hourly_annual_irradiance(pv_panel_obj_list, path_time_step_illuminance_file):
     """
 
     """
-def bipv_simulation_yearly_irradiance(pv_panel_obj_list,yearly_solar_radiation_values,study_duration_in_years, replacement_scenario="yearly", **kwargs):
-    """
 
-    """
-def loop_over_the_years_for_solar_panels(pv_panel_obj_list, yearly_solar_radiation_values,
-                                         study_duration_in_years, replacement_scenario="yearly", **kwargs):
+    # todo : add test to check if the type of efficiency function and if the inputs are ok,
+    #  (need epw if the efficiency is a fnction of outdorr temperature)
+
+
+def bipv_energy_harvesting_simulation_yearly_annual_irradiance(pv_panel_obj_list, annual_solar_irradiance_value,
+                                             study_duration_in_years, replacement_scenario, **kwargs):
     """
     Loop over every year of the study duration to get the energy harvested, the energy used and the dmfa waste harvested
     every year
     :param pv_panel_obj_list: list of panel objects
-    :param yearly_solar_radiation_values: list of floats: list of the yearly cumulative solar radiation got by the solar
+    :param annual_solar_irradiance_value: list of floats: list of the yearly cumulative solar radiation got by the solar
     radiation simulation in Wh/panel/year
     :param study_duration_in_years: int: duration of the study in years, Default=50
     :param replacement_scenario: string: replacement scenario chosen between
@@ -97,50 +99,85 @@ def loop_over_the_years_for_solar_panels(pv_panel_obj_list, yearly_solar_radiati
     Default="replace_failed_panels_every_X_year"
     :return energy_production_per_year_list: list of floats in kWh/year
     :return nb_of_panels_installed_list: list of int: list of the number of panels installed each year
-    :return nb_of_failed_panels_list: list of int: list of the number of panels failing each year
     """
+    # Initialize the lists
     energy_production_per_year_list = []
     nb_of_panels_installed_per_year_list = []
-    nb_of_failed_panels_per_year_list = []
-
+    # Loop over the years
     for year in range(study_duration_in_years):
         # initialize
         energy_harvested = 0.
         nb_of_new_panels = 0
-        nb_of_failed_panels = 0
         # Initialize panels for year 0
         if year == 0:
             for panel_obj in pv_panel_obj_list:
                 panel_obj.initialize_or_replace_panel()
                 nb_of_new_panels += 1
-
-        # Replace according to replacement "scenario" \(- -)/
-        if replacement_scenario == "yearly":
-            # the code inside each statement
-            for panel_obj in pv_panel_obj_list:
-                if not panel_obj.is_panel_working():
-                    panel_obj.initialize_or_replace_panel()
-                    nb_of_new_panels += 1
-        elif replacement_scenario == "every_X_years":
+        # Panel replacement according to replacement scenario
+        if replacement_scenario == "replace_failed_panels_every_X_years":
             replacement_year = kwargs["replacement_year"]
             if year != 0 and year % replacement_year == 0:
                 for panel_obj in pv_panel_obj_list:
                     if not panel_obj.is_panel_working():
                         panel_obj.initialize_or_replace_panel()
                         nb_of_new_panels += 1
+        elif replacement_scenario == "replace_all_panels_every_X_years":
+            replacement_year = kwargs["replacement_year"]
+            if year != 0 and year % replacement_year == 0:
+                for panel_obj in pv_panel_obj_list:
+                    panel_obj.initialize_or_replace_panel()
+                    nb_of_new_panels += 1
+        elif replacement_scenario == "no_replacement":
+            pass
 
-        # Increment of 1 year
-        for panel_obj in pv_panel_obj_list:
-            index_panel = pv_panel_obj_list.index(panel_obj)
-            energy_harvested_panel, panel_failed = panel_obj.pass_year(yearly_solar_radiation_values[index_panel],
-                                                                       performance_ratio)
+        # Get the energy harvesting and increment the age of panel by 1 year
+        for index, panel_obj in enumerate(pv_panel_obj_list):
+            energy_harvested_panel = panel_obj.energy_harvested_in_one_year(
+                irradiance=annual_solar_irradiance_value[index], **kwargs)
+            panel_obj.increment_age_by_one_year()
             energy_harvested += energy_harvested_panel
-            if panel_failed:
-                nb_of_failed_panels += 1
+            # Eventually the energy harvested by the panel could be stored in a list for each panel, but heavy
 
         energy_production_per_year_list.append(energy_harvested)
         nb_of_panels_installed_per_year_list.append(nb_of_new_panels)
-        nb_of_failed_panels_per_year_list.append(nb_of_failed_panels)
 
-    return energy_production_per_year_list, nb_of_panels_installed_per_year_list, nb_of_failed_panels_per_year_list
+    return energy_production_per_year_list, nb_of_panels_installed_per_year_list
 
+
+def bipv_lca_dmfa_eol_computation(nb_of_panels_installed_list, pv_tech_obj):
+    """
+    Take the results from function loop_over_the_years_for_solar_panels and use the pv_tech_obj info to transform it to data
+    :param energy_production_per_year_list: list of floats: describes the energy production each year
+    :param nb_of_panels_installed_list: list of integers: describes how many panels are installed each year
+    :param nb_of_failed_panels_list: list of integers: describes how many panels fail each year
+    :param pv_tech_obj: PVPanelTechnology object
+    :return energy_production_per_year_list: list of floats
+    :return lca_cradle_to_installation_primary_energy_list: list of floats: describes how much energy was used to manufacture the panels installed for
+    each year
+    :return lca_cradle_to_installation_carbon_list: list of floats: describes how much carbon was released to manufacture the panels installed,
+    for each year
+    :return dmfa_waste_list: list of floats: describes the dmfa waste caused by the failed panels, for each year
+    :return lca_recycling_primary_energy_list: list of float: describes how much energy was used to recycle the panels having failed
+    """
+    # todo: add comments
+    panel_energy_cradle_to_installation = pv_tech_obj.primary_energy_manufacturing + pv_tech_obj.primary_energy_transport
+    panel_carbon_cradle_to_installation = pv_tech_obj.carbon_manufacturing + pv_tech_obj.carbon_transport
+    panel_waste = pv_tech_obj.weight
+    panel_primary_energy_recycling = pv_tech_obj.primary_energy_recycling
+    panel_carbon_recycling = pv_tech_obj.carbon_recycling
+
+    cradle_to_installation_primary_energy_list = [i * panel_energy_cradle_to_installation for i in
+                                                  nb_of_panels_installed_list]
+    cradle_to_installation_carbon_list = [i * panel_carbon_cradle_to_installation for i in
+                                          nb_of_panels_installed_list]
+    dmfa_waste_list = [i * panel_waste for i in nb_of_failed_panels_list]
+    lca_recycling_primary_energy_list = [i * panel_primary_energy_recycling for i in
+                                         nb_of_panels_installed_list]
+    lca_recycling_carbon_list = [i * panel_carbon_recycling for i in nb_of_panels_installed_list]
+
+
+    # todo: sepearte the transportation cost
+
+
+    return energy_production_per_year_list, cradle_to_installation_primary_energy_list, cradle_to_installation_carbon_list, \
+        dmfa_waste_list, lca_recycling_primary_energy_list, lca_recycling_carbon_list
