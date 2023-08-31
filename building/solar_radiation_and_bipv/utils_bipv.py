@@ -75,8 +75,14 @@ def init_bipv_on_sensor_grid(sensor_grid, pv_technology_obj, annual_panel_irradi
 
     return panel_obj_list
 
-def bipv_simulation_annual_irradiance(pv_panel_obj_list,path_time_step_illuminance_file,path_time_step_illuminance_file)
+def bipv_simulation_hourly_annual_irradiance(pv_panel_obj_list,path_time_step_illuminance_file):
+    """
 
+    """
+def bipv_simulation_yearly_irradiance(pv_panel_obj_list,yearly_solar_radiation_values,study_duration_in_years, replacement_scenario="yearly", **kwargs):
+    """
+
+    """
 def loop_over_the_years_for_solar_panels(pv_panel_obj_list, yearly_solar_radiation_values,
                                          study_duration_in_years, replacement_scenario="yearly", **kwargs):
     """

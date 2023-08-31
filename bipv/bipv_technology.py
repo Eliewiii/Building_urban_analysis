@@ -72,26 +72,6 @@ class BipvTechnology:
                 # all the different technologies
         return pv_technologies_dict
 
-    def add_weibull_law_failure_parameters(self, path_json_file):
-        """ Get the Weibull parameters from json file (depending on the identifier of the technology) and load them in
-        the self"""
-        # todo @Hilany, seems useless now because of load_pv_technology(), to delete?
-        with open(path_json_file) as f:
-            pv_dict_data = json.load(f)
-            self.weibull_law_failure_parameters["lifetime"] = pv_dict_data[self.identifier][
-                "weibull_lifetime"]
-            self.weibull_law_failure_parameters["shape"] = pv_dict_data[self.identifier]["weibull_shape"]
-
-    def add_efficiency_function(self, path_json_file):
-        # todo @Hilany, seems useless now because of load_pv_technology(), to delete?
-        """ Get the efficiency loss function
-        For now, it will be considered as a linear function which depends on the initial efficiency of the PV (ie. type
-        of PV) and on its age"""
-        with open(path_json_file) as f:
-            pv_dict_data = json.load(f)
-            self.efficiency_function = get_efficiency_loss_function_from_string(pv_dict_data[self.identifier]
-                                                                                ["efficiency_function"])
-
     def get_life_expectancy_of_a_panel(self):
         """
         Get the probabilistic time failure of a panel using the inverse of the quantile (inverse of the cumulative
@@ -106,22 +86,35 @@ class BipvTechnology:
         life_expectancy = ceil(lifetime * (-log(1 - y)) ** (1 / shape))
         return life_expectancy
 
+    def get_energy_harvested_by_panel(self, irradiance, age, **kwargs):
+        """
+        Get the energy harvested by a panel
+        :param irradiance: irradiance on the panel
+        :param outdoor_temperature: outdoor temperature
+        :param age: age of the panel
+        :return: energy_harvested: energy harvested by the panel
+        """
+        # todo : add the panel performance ratio
+        efficiency = self.efficiency_function(irradiance, age,**kwargs)
+        energy_harvested = efficiency * irradiance
+        return energy_harvested
+
     def degrading_rate_efficiency_loss(self, age):
         """ loose 2% efficiency the first year and then 0.5% every year"""
         if age == 0:
             return self.initial_efficiency
-        else :
-            return self.initial_efficiency * (1 - self.first_year_degrading_rate) * (1 - self.degrading_rate) ** (
+        else:
+            return self.initial_efficiency * (1 - self.first_year_degrading_rate) * (
+                        1 - self.degrading_rate) ** (
                     age - 1)
 
     def irradiance_dependent_efficiency(self, irradiance):
         """ todo: this one is just an example, to be changed"""
         return self.initial_efficiency * irradiance * self.param_1_irradiance + self.param_2_irradiance * irradiance ** 2
 
-    def irradiance_temperature_and_age_dependent_efficiency(self, irradiance,outdoor_temperature,age):
+    def irradiance_temperature_and_age_dependent_efficiency(self, irradiance, outdoor_temperature, age):
         """ todo: this one is just an example, to be changed"""
         return self.initial_efficiency * irradiance * self.param_1_irradiance + self.param_2_irradiance * irradiance ** 2
-
 
 # todo to delete
 # def get_efficiency_loss_function_from_string(self,fucntion_name):

@@ -19,9 +19,11 @@ user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")
 
 
-def run_hb_model_annual_irradiance_simulation(hb_model_obj, path_folder_run, path_weather_file, overwrite=False,
+def run_hb_model_annual_irradiance_simulation(hb_model_obj, path_folder_run, path_weather_file,
+                                              overwrite=False,
                                               timestep=1, visible=False, north=0,
-                                              grid_filter=None, radiance_parameters='-ab 2 -ad 5000 -lw 2e-05',
+                                              grid_filter=None,
+                                              radiance_parameters='-ab 2 -ad 5000 -lw 2e-05',
                                               silent=False):
     """
     Run the Honeybee annual irradiance simulation on a Honeybee Model.
@@ -49,7 +51,8 @@ def run_hb_model_annual_irradiance_simulation(hb_model_obj, path_folder_run, pat
     # @ credit LBT
 
     # Generate the recipe settings
-    run_settings = RecipeSettings(path_folder=path_folder_run, workers=None, reload_old=not overwrite, report_out=False)
+    run_settings = RecipeSettings(path_folder=path_folder_run, workers=None, reload_old=not overwrite,
+                                  report_out=False)
 
     # create the recipe and set the input arguments
     recipe = Recipe('annual-irradiance')
@@ -69,21 +72,27 @@ def run_hb_model_annual_irradiance_simulation(hb_model_obj, path_folder_run, pat
     return annual_cum_values
 
 
-def move_radiation_results(path_temp_result_folder, path_result_folder, result_file_name, new_result_file_name):
+def move_annual_irr_hb_radiance_results(path_temp_ill_result_file, path_temp_sun_hours_file,
+                                        new_ill_file_name, new_sun_hours_file_name, path_result_folder):
     """
     Move the result file from the temp folder to the result folder
+    :param path_temp_ill_result_file : Path to the ill result file in the temporary folder
+    :param path_temp_sun_hours_file : Path to the sun hours file in the temporary folder
+    :param new_ill_file_name : New name for the .ill file
+    :param new_sun_hours_file_name : New name for the sun hours file
+    :param path_result_folder : Path to the result folder
     """
-
     # Create the result folder if it doesn't exist
     if not os.path.isdir(path_result_folder):
         os.makedirs(path_result_folder)
-
-    # Move the result file from the temp folder to the result folder
-    path_temp_result_file = os.path.join(path_temp_result_folder, result_file_name)
-    path_result_file = os.path.join(path_result_folder, new_result_file_name)
-    if os.path.isfile(path_result_file):  # Delete the file if it already exist to overwrite it
-        os.remove(path_result_file)
-    shutil.move(path_temp_result_file, path_result_file)
+    # Delete the file if it already exist to overwrite it
+    if os.path.isfile(os.path.join(path_result_folder, new_ill_file_name)):
+        os.remove(os.path.join(path_result_folder, new_ill_file_name))
+    if os.path.isfile(os.path.join(path_result_folder, new_sun_hours_file_name)):
+        os.remove(os.path.join(path_result_folder, new_sun_hours_file_name))
+    # move the files
+    shutil.move(path_temp_ill_result_file, os.path.join(path_result_folder, new_sun_hours_file_name))
+    shutil.move(path_temp_sun_hours_file, os.path.join(path_result_folder, new_sun_hours_file_name))
 
 
 def hb_ann_cum_values(path_results, hoys=None, grid_filter=None):

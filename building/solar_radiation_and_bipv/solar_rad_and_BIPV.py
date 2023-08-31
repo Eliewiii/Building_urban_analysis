@@ -166,6 +166,11 @@ class SolarRadAndBipvSimulation:
         path_result_folder = os.path.join(path_folder_simulation, name_radiation_simulation_folder,
                                           str(building_id))
         annual_irradiance_file_name = str(building_id) + ".ill"
+        sun_up_hours_file_name = "sun-up-hours.txt"
+        name_roof_ill_file = "roof.ill"
+        name_facades_ill_file = "facades.ill"
+        name_roof_sun_up_hours_file = "roof_"+sun_up_hours_file_name
+        name_facades_sun_up_hours_file = "facades_"+sun_up_hours_file_name
 
         # Distinguish between roof and facades
         if self.roof_sensorgrid_dict is not None:
@@ -187,20 +192,19 @@ class SolarRadAndBipvSimulation:
                     visible=False, north=north_angle,
                     radiance_parameters='-ab 2 -ad 5000 -lw 2e-05',
                     silent=silent)
-                # Delete the useless results files and mov ethe results to the right folder
+                # Delete the useless results files and move the results to the right folder
                 path_folder_result_run_radiation_temp_roof = os.path.join(path_folder_run_radiation_temp_roof,
                                                                           "annual_irradiance",
                                                                           "results", "total")
                 path_result_file_ill = os.path.join(path_folder_result_run_radiation_temp_roof,
-                                                    str(building_id))
+                                                    annual_irradiance_file_name)
                 path_sun_hours_file = os.path.join(path_folder_result_run_radiation_temp_roof,
-                                                   "sun-up-hours.txt")
-                path_roof_result_folder = os.path.join(path_result_folder, "roof")
-                move_radiation_results(path_result_file_ill=path_result_file_ill,
-                                       path_sun_hours_file=path_sun_hours_file,
-                                       ill_file_name=annual_irradiance_file_name,
-                                       new_result_file_name="roof.ill",
-                                       path_result_folder=path_roof_result_folder)
+                                                   sun_up_hours_file_name)
+                move_radiation_results(path_temp_ill_result_file=path_result_file_ill,
+                                       path_temp_sun_hours_file=path_sun_hours_file,
+                                       new_ill_file_name=name_roof_ill_file,
+                                       new_sun_hours_file_name=name_roof_sun_up_hours_file,
+                                       path_result_folder=path_result_folder)
 
         # Do not run the simulation if there is no SensorGrid on the facades
         if self.facade_sensorgrid_dict is not None:
@@ -212,28 +216,30 @@ class SolarRadAndBipvSimulation:
                     SensorGrid.from_dict(self.facade_sensorgrid_dict))
                 hb_model_copy_facade.add_shades(context_shading_hb_aperture_list)
                 # run in the temporary folder
-                path_folder_run_radiation_temp_facade = os.path.join(path_folder_run_radiation_temp,
+                path_folder_run_radiation_temp_facades = os.path.join(path_folder_run_radiation_temp,
                                                                      "facades")
                 self.results_dict["facades"][
                     "annual_panel_irradiance_list"] = run_hb_model_annual_irradiance_simulation(
                     hb_model_obj=hb_model_obj,
-                    path_folder_run=path_folder_run_radiation_temp_facade,
+                    path_folder_run=path_folder_run_radiation_temp_facades,
                     path_weather_file=path_epw_file,
                     timestep=1,
                     visible=False, north=north_angle,
                     radiance_parameters='-ab 2 -ad 5000 -lw 2e-05',
                     silent=silent)
                 # Delete the useless results files and mov ethe results to the right folder
-                annual_irradiance_facade_result_file_name = "facades" + ".ill"
-                path_temp_result_folder_facade = os.path.join(path_folder_simulation,
-                                                              name_temporary_files_folder, str(building_id),
-                                                              "facades",
-                                                              "annual_irradiance", "results", "total")
-                move_radiation_results(path_temp_result_folder=path_temp_result_folder_facade,
-                                       path_result_folder=path_result_folder,
-                                       result_file_name=annual_irradiance_file_name,
-                                       new_result_file_name=annual_irradiance_facade_result_file_name)
-
+                path_folder_result_run_radiation_temp_facades = os.path.join(path_folder_run_radiation_temp_facades,
+                                                                          "annual_irradiance",
+                                                                          "results", "total")
+                path_result_file_ill = os.path.join(path_folder_result_run_radiation_temp_facades,
+                                                    annual_irradiance_file_name)
+                path_sun_hours_file = os.path.join(path_folder_result_run_radiation_temp_facades,
+                                                   sun_up_hours_file_name)
+                move_radiation_results(path_temp_ill_result_file=path_result_file_ill,
+                                       path_temp_sun_hours_file=path_sun_hours_file,
+                                       new_ill_file_name=name_facades_ill_file,
+                                       new_sun_hours_file_name=name_facades_sun_up_hours_file,
+                                       path_result_folder=path_result_folder)
         # delete all the temporary files if they exist
         if os.path.isdir(path_folder_run_radiation_temp):
             shutil.rmtree(path_folder_run_radiation_temp)
