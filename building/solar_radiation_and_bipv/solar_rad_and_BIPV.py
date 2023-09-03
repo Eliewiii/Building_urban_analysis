@@ -267,10 +267,13 @@ class SolarRadAndBipvSimulation:
                                  minimum_panel_eroi=minimum_panel_eroi,
                                  study_duration_in_years=study_duration_in_years,
                                  replacement_scenario=replacement_scenario, **kwargs)
-
+        # Init flags
+        run_bipv_on_roof = False
+        run_bipv_on_facades = False
         # Roof
         if self.on_roof and self.roof_sensorgrid_dict is not None and self.results_dict["roof"][
             "annual_panel_irradiance_list"] is not None:
+            run_bipv_on_roof = True
             # Init the BIPV panels on the roof
             self.roof_panel_list = init_bipv_on_sensor_grid(
                 sensor_grid=SensorGrid.from_dict(self.roof_sensorgrid_dict),
@@ -306,11 +309,22 @@ class SolarRadAndBipvSimulation:
                 roof_dmfa_waste_yearly_lis = bipv_lca_dmfa_eol_computation(
                 nb_of_panels_installed_yearly_list=roof_nb_of_panels_installed_yearly_list,
                 pv_tech_obj=roof_pv_tech_obj)
-        # Save the results in obj
-
-        # Facade
+            # Save the results in obj
+            roof_bipv_result_dict = convert_results_to_dict(
+                energy_harvested_yearly_list=roof_energy_harvested_yearly_list,
+                primary_energy_material_extraction_and_manufacturing_yearly_list=roof_primary_energy_material_extraction_and_manufacturing_yearly_list,
+                primary_energy_transportation_yearly_list=roof_primary_energy_transportation_yearly_list,
+                primary_energy_recycling_yearly_list=roof_primary_energy_recycling_yearly_list,
+                carbon_material_extraction_and_manufacturing_yearly_list=roof_carbon_material_extraction_and_manufacturing_yearly_list,
+                carbon_transportation_yearly_list=roof_carbon_transportation_yearly_list,
+                carbon_recycling_yearly_list=roof_carbon_recycling_yearly_list,
+                dmfa_waste_yearly_list=roof_dmfa_waste_yearly_lis)
+            self.results_dict["roof"] = {**roof_bipv_result_dict,
+                                         **{self.results_dict["roof"]["annual_panel_irradiance_list"]}}
+            # Facade
         if self.on_facades and self.facades_sensorgrid_dict is not None and self.results_dict["facades"][
             "annual_panel_irradiance_list"] is not None:
+            run_bipv_on_facades = True
             # Init the BIPV panels on the facades
             self.facades_panel_list = init_bipv_on_sensor_grid(
                 sensor_grid=SensorGrid.from_dict(self.facades_sensorgrid_dict),
@@ -337,19 +351,39 @@ class SolarRadAndBipvSimulation:
                     replacement_scenario=replacement_scenario, **kwargs)
             else:
                 raise ValueError("The efficiency computation method is not valid")
-            # Post process and run LCA and DMFA results
-            facades_primary_energy_material_extraction_and_manufacturing_yearly_list, \
-                facades_primary_energy_transportation_yearly_list, facades_primary_energy_recycling_yearly_list, \
-                facades_carbon_transportation_yearly_list,\
-                facades_carbon_material_extraction_and_manufacturing_yearly_list, \
-                facades_carbon_recycling_yearly_list, \
-                facades_dmfa_waste_yearly_lis = bipv_lca_dmfa_eol_computation(
-                nb_of_panels_installed_yearly_list=facades_nb_of_panels_installed_yearly_list,
-                pv_tech_obj=facades_pv_tech_obj)
+                # Post process and run LCA and DMFA results
+                facades_primary_energy_material_extraction_and_manufacturing_yearly_list, \
+                    facades_primary_energy_transportation_yearly_list, facades_primary_energy_recycling_yearly_list, \
+                    facades_carbon_transportation_yearly_list, \
+                    facades_carbon_material_extraction_and_manufacturing_yearly_list, \
+                    facades_carbon_recycling_yearly_list, \
+                    facades_dmfa_waste_yearly_lis = bipv_lca_dmfa_eol_computation(
+                    nb_of_panels_installed_yearly_list=facades_nb_of_panels_installed_yearly_list,
+                    pv_tech_obj=facades_pv_tech_obj)
 
-        # Save the results in obj
+                # Save the results in obj
+                facades_bipv_result_dict = convert_results_to_dict(
+                    energy_harvested_yearly_list=facades_energy_harvested_yearly_list,
+                    primary_energy_material_extraction_and_manufacturing_yearly_list=facades_primary_energy_material_extraction_and_manufacturing_yearly_list,
+                    primary_energy_transportation_yearly_list=facades_primary_energy_transportation_yearly_list,
+                    primary_energy_recycling_yearly_list=facades_primary_energy_recycling_yearly_list,
+                    carbon_material_extraction_and_manufacturing_yearly_list=facades_carbon_material_extraction_and_manufacturing_yearly_list,
+                    carbon_transportation_yearly_list=facades_carbon_transportation_yearly_list,
+                    carbon_recycling_yearly_list=facades_carbon_recycling_yearly_list,
+                    dmfa_waste_yearly_list=facades_dmfa_waste_yearly_lis)
+                self.results_dict["facades"] = {**facades_bipv_result_dict,
+                                                **{self.results_dict["facades"]["annual_panel_irradiance_list"]}}
 
-    # Total results
+        # Total results
+        if run_bipv_on_roof and run_bipv_on_facades:
+            self.results_dict["total"] = sum_dicts(roof_bipv_result_dict, facades_bipv_result_dict)
+        elif run_bipv_on_roof:
+            self.results_dict["total"] = roof_bipv_result_dict
+        elif run_bipv_on_facades:
+            self.results_dict["total"] = facades_bipv_result_dict
+        else:
+            None
+
 
 
 @staticmethod
@@ -421,3 +455,21 @@ def results_to_figures(self):
     """
 
     """
+
+def sum_dicts(*args):
+    if not args:
+        return {}
+
+    result_dict = args[0].copy()
+
+    for d in args[1:]:
+        for key in d:
+            if isinstance(d[key], dict):
+                result_dict[key] = sum_dicts(result_dict[key], d[key])
+            elif isinstance(d[key], list):
+                result_dict[key] = [x + y for x, y in zip(result_dict[key], d[key])]
+            else: # assuming ints or floats
+                result_dict[key] += d[key]
+
+    return result_dict
+
