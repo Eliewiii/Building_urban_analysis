@@ -8,8 +8,27 @@ import json
 temp_ref = 25  # temperature reference for the efficiency of the panel
 
 
+
+
+
 class BipvTechnology:
-    """ """
+    """
+
+    Example of a json file containing the data of the pv technologies
+      "mitrex_roof c-Si": {
+            "weibull_lifetime": 30,
+            "weibull_shape": 5.3759,
+            "initial_efficiency": 0.1920,
+            "panel_area": 2.03,
+            "efficiency_function" : "degrading_rate_efficiency_loss",
+            "weight" : 22,
+            "primary_energy_manufacturing_in_kWh_per_panel": 2189.9,
+            "gh_gas_emissions_manufacturing_in_kgCO2eq_per_panel" : 384.849,
+            "primary_energy_transport_in_kWh_per_panel": 0,
+            "carbon_transport_in_kgCO2_per_panel": 0,
+            "end_of_life_primary_energy_in_kWh_per_panel": 16.99,
+            "end_of_life_carbon_in_kgCO2_per_panel": 8.14
+                      }"""
 
     def __init__(self, identifier):
         self.identifier = identifier
@@ -30,6 +49,9 @@ class BipvTechnology:
         self.weight = None  # per square meter
         self.primary_energy_recycling = None
         self.carbon_recycling = None
+
+        # Todo: check from the input if teh attributes ar per penel or per square meter, in the enbd everything should
+        #  be per panel in the attributes
 
     @classmethod
     def load_pv_technologies_from_json_to_dictionary(cls, path_json_file):

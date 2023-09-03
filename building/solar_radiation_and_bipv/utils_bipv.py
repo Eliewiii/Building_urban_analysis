@@ -86,7 +86,7 @@ def bipv_energy_harvesting_simulation_hourly_annual_irradiance(pv_panel_obj_list
 
 
 def bipv_energy_harvesting_simulation_yearly_annual_irradiance(pv_panel_obj_list, annual_solar_irradiance_value,
-                                             study_duration_in_years, replacement_scenario, **kwargs):
+                                                               study_duration_in_years, replacement_scenario, **kwargs):
     """
     Loop over every year of the study duration to get the energy harvested, the energy used and the dmfa waste harvested
     every year
@@ -144,40 +144,41 @@ def bipv_energy_harvesting_simulation_yearly_annual_irradiance(pv_panel_obj_list
     return energy_production_per_year_list, nb_of_panels_installed_per_year_list
 
 
-def bipv_lca_dmfa_eol_computation(nb_of_panels_installed_list, pv_tech_obj):
+def bipv_lca_dmfa_eol_computation(nb_of_panels_installed_yearly_list, pv_tech_obj):
     """
     Take the results from function loop_over_the_years_for_solar_panels and use the pv_tech_obj info to transform it to data
-    :param energy_production_per_year_list: list of floats: describes the energy production each year
-    :param nb_of_panels_installed_list: list of integers: describes how many panels are installed each year
-    :param nb_of_failed_panels_list: list of integers: describes how many panels fail each year
+    :param nb_of_panels_installed_yearly_list: list of int: list of the number of panels installed each year
     :param pv_tech_obj: PVPanelTechnology object
-    :return energy_production_per_year_list: list of floats
-    :return lca_cradle_to_installation_primary_energy_list: list of floats: describes how much energy was used to manufacture the panels installed for
-    each year
-    :return lca_cradle_to_installation_carbon_list: list of floats: describes how much carbon was released to manufacture the panels installed,
-    for each year
-    :return dmfa_waste_list: list of floats: describes the dmfa waste caused by the failed panels, for each year
-    :return lca_recycling_primary_energy_list: list of float: describes how much energy was used to recycle the panels having failed
+    :return primary_energy_transportation_yearly_list: list of floats: list of the primary energy needed for the
+    transportation of the panels each year in Wh/year
+    :return primary_energy_material_extraction_and_manufacturing_yearly_list: list of floats: list of the primary
+
     """
-    # todo: add comments
-    panel_energy_cradle_to_installation = pv_tech_obj.primary_energy_manufacturing + pv_tech_obj.primary_energy_transport
-    panel_carbon_cradle_to_installation = pv_tech_obj.carbon_manufacturing + pv_tech_obj.carbon_transport
-    panel_waste = pv_tech_obj.weight
-    panel_primary_energy_recycling = pv_tech_obj.primary_energy_recycling
-    panel_carbon_recycling = pv_tech_obj.carbon_recycling
+    # Compute LCA primary energy and carbon footprint each year
+    primary_energy_material_extraction_and_manufacturing_yearly_list = [i * pv_tech_obj.primary_energy_manufacturing for
+                                                                        i in nb_of_panels_installed_yearly_list]
+    primary_energy_transportation_yearly_list = [i * pv_tech_obj.primary_energy_transport for i in
+                                                 nb_of_panels_installed_yearly_list]
+    primary_energy_recycling_yearly_list = [i * pv_tech_obj.primary_energy_recycling for i in
+                                            nb_of_panels_installed_yearly_list]
+    carbon_material_extraction_and_manufacturing_yearly_list = [i * pv_tech_obj.carbon_manufacturing for i in
+                                                                nb_of_panels_installed_yearly_list]
+    carbon_transportation_yearly_list = [i * pv_tech_obj.carbon_transport for i in
+                                         nb_of_panels_installed_yearly_list]
+    carbon_recycling_yearly_list = [i * pv_tech_obj.carbon_recycling for i in
+                                    nb_of_panels_installed_yearly_list]
+    # Compute DMFA waste in kg for each year
+    dmfa_waste_yearly_list = [i * pv_tech_obj.weight for i in
+                              nb_of_panels_installed_yearly_list]
+    # Total values
+    total_primary_energy_yearly_list = [sum(i) for i in zip(primary_energy_transportation_yearly_list,
+                                                            primary_energy_material_extraction_and_manufacturing_yearly_list,
+                                                            primary_energy_recycling_yearly_list)]
+    total_carbon_yearly_list = [sum(i) for i in zip(carbon_transportation_yearly_list,
+                                                    carbon_material_extraction_and_manufacturing_yearly_list,
+                                                    carbon_recycling_yearly_list)]
 
-    cradle_to_installation_primary_energy_list = [i * panel_energy_cradle_to_installation for i in
-                                                  nb_of_panels_installed_list]
-    cradle_to_installation_carbon_list = [i * panel_carbon_cradle_to_installation for i in
-                                          nb_of_panels_installed_list]
-    dmfa_waste_list = [i * panel_waste for i in nb_of_failed_panels_list]
-    lca_recycling_primary_energy_list = [i * panel_primary_energy_recycling for i in
-                                         nb_of_panels_installed_list]
-    lca_recycling_carbon_list = [i * panel_carbon_recycling for i in nb_of_panels_installed_list]
-
-
-    # todo: sepearte the transportation cost
-
-
-    return energy_production_per_year_list, cradle_to_installation_primary_energy_list, cradle_to_installation_carbon_list, \
-        dmfa_waste_list, lca_recycling_primary_energy_list, lca_recycling_carbon_list
+    return primary_energy_material_extraction_and_manufacturing_yearly_list, primary_energy_transportation_yearly_list, \
+        primary_energy_recycling_yearly_list, total_primary_energy_yearly_list, \
+        carbon_material_extraction_and_manufacturing_yearly_list, carbon_transportation_yearly_list,\
+        carbon_recycling_yearly_list, total_carbon_yearly_list, dmfa_waste_yearly_list
