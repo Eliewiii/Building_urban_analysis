@@ -23,3 +23,6 @@ ghenv.Component.SubCategory = '3 :: Context filtering'
 ghenv.Component.AdditionalHelpFromDocStrings = "1"
 
 
+def clean_path(path):
+    path = path.replace("\\", "/")
+    return (path)

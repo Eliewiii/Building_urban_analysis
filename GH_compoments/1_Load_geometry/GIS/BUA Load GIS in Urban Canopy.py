@@ -22,9 +22,11 @@ import json
 
 def clean_path(path):
     path = path.replace("\\", "/")
+    return (path)
 
 
 def read_logs(path_simulation_folder):
+
     path_log_file = os.path.join(path_simulation_folder_, "gh_components_logs",
                                  ghenv.Component.NickName + ".log")
     if os.path.isfile(path_log_file):
@@ -41,10 +43,12 @@ path_bat_file = os.path.join(path_tool, "Scripts", "mains_tool", "run_BUA.bat")
 name_folder_temporary_files = "temporary_files"
 
 # set default value for the simulation folder if not provided
+
 if path_simulation_folder_ is None:
     path_simulation_folder_ = os.path.join(path_tool, "Simulation_temp")
 else:
-     path_simulation_folder_ = clean_path(path_simulation_folder_)
+     clean_path(path_simulation_folder_)
+
 
 if _run:
     # if there are additionnal keys for GIS attributes, make a json file containing the values

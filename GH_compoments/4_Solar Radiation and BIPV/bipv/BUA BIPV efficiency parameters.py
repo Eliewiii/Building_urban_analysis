@@ -16,4 +16,8 @@ ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '4 :: Solar Radiation and BIPV'
 ghenv.Component.AdditionalHelpFromDocStrings = "1"
 
+def clean_path(path):
+    path = path.replace("\\", "/")
+    return (path)
+
 # Raise error if the compuattion method is not compatible with the BIPV type

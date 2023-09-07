@@ -15,3 +15,7 @@ ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '4 :: Solar Radiation and BIPV'
 ghenv.Component.AdditionalHelpFromDocStrings = "1"
+
+def clean_path(path):
+    path = path.replace("\\", "/")
+    return (path)

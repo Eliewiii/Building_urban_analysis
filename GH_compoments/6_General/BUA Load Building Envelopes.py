@@ -29,6 +29,10 @@ from honeybee.room import Room
 
 from ladybug_rhino.fromgeometry import from_polyface3d
 
+def clean_path(path):
+    path = path.replace("\\", "/")
+    return (path)
+
 # Get Appdata\local folder
 local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
