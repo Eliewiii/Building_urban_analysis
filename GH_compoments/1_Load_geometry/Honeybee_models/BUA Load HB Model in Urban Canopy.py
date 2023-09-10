@@ -22,6 +22,7 @@ from honeybee.model import Model
 
 def clean_path(path):
     path = path.replace("\\", "/")
+    return (path)
          # todo, add the chech to see if the pass exist
 
 
@@ -48,7 +49,7 @@ name_hbjson_directory = "hbjsons_to_add" # name of the folder that will contain 
 if path_simulation_folder_ is None:
     path_simulation_folder_ = os.path.join(path_tool, "Simulation_temp")
 else:
-     path_simulation_folder_ = clean_path(path_simulation_folder_)
+     clean_path(path_simulation_folder_)
 
 if _run and _hb_model_list is not None and _hb_model_list != []:
     # Make new folder in the simulation folder to store the honeybee models converted to json

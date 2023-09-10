@@ -26,6 +26,7 @@ import os
 
 def clean_path(path):
     path = path.replace("\\", "/")
+    return (path)
 
 def read_logs(path_simulation_folder):
     path_log_file = os.path.join(path_simulation_folder_, "gh_components_logs",

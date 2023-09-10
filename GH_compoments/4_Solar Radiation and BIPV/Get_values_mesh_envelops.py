@@ -29,6 +29,9 @@ if plot_on_roof_ is None:
 if plot_on_facades_ is None:
     plot_on_facades_ = True
 
+def clean_path(path):
+    path = path.replace("\\", "/")
+    return (path)
 
 def get_values_in_list(path):
     with open(path, "r") as f:

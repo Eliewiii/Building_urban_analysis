@@ -32,6 +32,9 @@ path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 if path_folder_simulation_ is None:
     path_folder_simulation_ = os.path.join(path_tool, "Simulation_temp")
 
+def clean_path(path):
+    path = path.replace("\\", "/")
+    return (path)
 
 def get_values_in_list(path):
     with open(path, "r") as f:

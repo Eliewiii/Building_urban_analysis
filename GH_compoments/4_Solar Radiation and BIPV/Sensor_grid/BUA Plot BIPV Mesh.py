@@ -27,6 +27,10 @@ import os
 from honeybee_radiance.sensorgrid import SensorGrid
 from ladybug_rhino.fromgeometry import from_mesh3d
 
+def clean_path(path):
+    path = path.replace("\\", "/")
+    return (path)
+
 
 def get_rhino_mesh_from_sensor_grid(sensor_grid_dict):
     sensor_grid = SensorGrid.from_dict(sensor_grid_dict)

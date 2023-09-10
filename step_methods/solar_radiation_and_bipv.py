@@ -76,7 +76,8 @@ class SimFunSolarRadAndBipv:
     @staticmethod
     def run_bipv_harvesting_and_lca_simulation(urban_canopy_object,
                                                path_simulation_folder=default_path_simulation_folder,
-                                               building_id_list=None):
+                                               building_id_list=None,
+                                               ):
         """
         Make oriented bounding boxes of buildings in the urban canopy
         :param urban_canopy_object: urban canopy object

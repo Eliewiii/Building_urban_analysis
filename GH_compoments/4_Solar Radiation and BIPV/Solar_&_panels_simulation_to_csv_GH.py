@@ -29,6 +29,7 @@ import json
 
 def clean_path(path):
     path = path.replace("\\", "/")
+    return (path)
 
 
 def clean_log_for_out(path_log_file):
