@@ -69,6 +69,7 @@ name_roof_ill_file = "roof.ill"
 name_facades_ill_file = "facades.ill"
 name_roof_sun_up_hours_file = "roof_" + sun_up_hours_file_name
 name_facades_sun_up_hours_file = "facades_" + sun_up_hours_file_name
+name_results_file_csv ="bipv_results.csv"
 
 
 class SolarRadAndBipvSimulation:
@@ -311,7 +312,7 @@ class SolarRadAndBipvSimulation:
                 nb_of_panels_installed_yearly_list=roof_nb_of_panels_installed_yearly_list,
                 pv_tech_obj=roof_pv_tech_obj)
             # Save the results in obj
-            self.bipv_results_dict["roof"] = convert_results_to_dict(
+            self.bipv_results_dict["roof"] = self.convert_results_to_dict(
                 energy_harvested_yearly_list=roof_energy_harvested_yearly_list,
                 primary_energy_material_extraction_and_manufacturing_yearly_list=roof_primary_energy_material_extraction_and_manufacturing_yearly_list,
                 primary_energy_transportation_yearly_list=roof_primary_energy_transportation_yearly_list,
@@ -360,7 +361,7 @@ class SolarRadAndBipvSimulation:
                     pv_tech_obj=facades_pv_tech_obj)
 
                 # Save the results in obj
-                self.bipv_results_dict["facades"] = convert_results_to_dict(
+                self.bipv_results_dict["facades"] = self.convert_results_to_dict(
                     energy_harvested_yearly_list=facades_energy_harvested_yearly_list,
                     primary_energy_material_extraction_and_manufacturing_yearly_list=facades_primary_energy_material_extraction_and_manufacturing_yearly_list,
                     primary_energy_transportation_yearly_list=facades_primary_energy_transportation_yearly_list,
@@ -454,28 +455,31 @@ class SolarRadAndBipvSimulation:
         return bipv_results_dict
 
 
-def bipv_results_to_csv(path_csv_file,result_dict):
-    """
-    Save bipv simulation results in a csv file
-    """
-    with open(path_csv_file, mode='w', newline='') as file:
+    def bipv_results_to_csv(self,path_simulation_folder,building_id):
+        """
+        Save bipv simulation results in a csv file
+        """
+        path_result_folder = os.path.join(path_simulation_folder, name_radiation_simulation_folder,
+                                          str(building_id))
+        path_csv_file=os.path.join(path_result_folder,name_results_file_csv)
+        with open(path_csv_file, mode='w', newline='') as file:
 
-        flattened_dict = flatten_dict(result_dict)
-        fieldnames = ["years"]
-        for k in flattened_dict.keys():
-            if not k.endswith("_total"):
-                fieldnames.append(k)
-
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-        writer.writeheader()
-
-        for i in range(self.parameter_dict["study_duration_in_years"]):
-            row_data = {f"{i + 1}"}
-            for k, v in flattened_dict.items():
-                # do not include the
+            flattened_dict = flatten_dict(self.bipv_results_dict)
+            fieldnames = ["years"]
+            for k in flattened_dict.keys():
                 if not k.endswith("_total"):
-                    row_data[k] = v[i]
-            writer.writerow(row_data)
+                    fieldnames.append(k)
+
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writeheader()
+
+            for i in range(self.parameter_dict["study_duration_in_years"]):
+                row_data = {f"{i + 1}"}
+                for k, v in flattened_dict.items():
+                    # do not include the
+                    if not k.endswith("_total"):
+                        row_data[k] = v[i]
+                writer.writerow(row_data)
 
 
 

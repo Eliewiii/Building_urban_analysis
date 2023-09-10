@@ -15,7 +15,7 @@ from building.building_basic import BuildingBasic
 from building.building_modeled import BuildingModeled
 from libraries_addons.extract_gis_files import extract_gis
 from typology.typology import Typology
-from solar_panel.pv_panel_technology import BipvTechnology
+from bipv.bipv_technology import BipvTechnology
 
 from utils.utils_configuration import name_urban_canopy_export_file_pkl, name_urban_canopy_export_file_json, \
     name_radiation_simulation_folder
@@ -147,49 +147,49 @@ class UrbanCanopy:
 
     """ todo : delete this function when sure it's useless"""
 
-    def json_urban_canopy_attributes(self, path_folder):
-        """ Create a dictionary which will contain certain useful attributes of the urban canopy and the buildings"""
-        list_id = self.get_list_id_buildings_urban_canopy(path_folder)
-        urban_canopy_attributes_dict = {'list_id_buildings': list_id, 'buildings': {}}
-        for building in self.building_dict.values():
-            if type(building) is BuildingModeled:
-                path_building = os.path.join(path_folder, 'Radiation Simulation', building.id)
-                if building.sensor_grid_dict['roof'] is not None and building.sensor_grid_dict[
-                    'facades'] is not None:
-                    path_building_roof_values = os.path.join(path_building, 'roof',
-                                                             'annual_radiation_values.txt')
-                    path_building_facades_values = os.path.join(path_building, 'facades',
-                                                                'annual_radiation_values.txt')
-                    building_attributes_dict = {'SensorGrid_dict': building.sensor_grid_dict,
-                                                'hb_model_dict': building.hb_model_dict,
-                                                'path_values_roof': path_building_roof_values,
-                                                'path_values_facades': path_building_facades_values}
-
-                elif building.sensor_grid_dict['roof'] is not None and building.sensor_grid_dict[
-                    'facades'] is None:
-                    path_building_roof_values = os.path.join(path_building, 'roof',
-                                                             'annual_radiation_values.txt')
-                    building_attributes_dict = {'SensorGrid_dict': building.sensor_grid_dict,
-                                                'hb_model_dict': building.hb_model_dict,
-                                                'path_values_roof': path_building_roof_values,
-                                                'path_values_facades': None}
-
-                elif building.sensor_grid_dict['roof'] is None and building.sensor_grid_dict[
-                    'facades'] is not None:
-                    path_building_facades_values = os.path.join(path_building, 'facades',
-                                                                'annual_radiation_values.txt')
-                    building_attributes_dict = {'SensorGrid_dict': building.sensor_grid_dict,
-                                                'hb_model_dict': building.hb_model_dict,
-                                                'path_values_roof': None,
-                                                'path_values_facades': path_building_facades_values}
-
-                else:
-                    building_attributes_dict = {'SensorGrid_dict': building.sensor_grid_dict,
-                                                'hb_model_dict': building.hb_model_dict,
-                                                'path_values_roof': None,
-                                                'path_values_facades': None}
-                urban_canopy_attributes_dict['buildings'][building.id] = building_attributes_dict
-        return urban_canopy_attributes_dict
+    # def json_urban_canopy_attributes(self, path_folder):
+    #     """ Create a dictionary which will contain certain useful attributes of the urban canopy and the buildings"""
+    #     list_id = self.get_list_id_buildings_urban_canopy(path_folder)
+    #     urban_canopy_attributes_dict = {'list_id_buildings': list_id, 'buildings': {}}
+    #     for building in self.building_dict.values():
+    #         if type(building) is BuildingModeled:
+    #             path_building = os.path.join(path_folder, 'Radiation Simulation', building.id)
+    #             if building.sensor_grid_dict['roof'] is not None and building.sensor_grid_dict[
+    #                 'facades'] is not None:
+    #                 path_building_roof_values = os.path.join(path_building, 'roof',
+    #                                                          'annual_radiation_values.txt')
+    #                 path_building_facades_values = os.path.join(path_building, 'facades',
+    #                                                             'annual_radiation_values.txt')
+    #                 building_attributes_dict = {'SensorGrid_dict': building.sensor_grid_dict,
+    #                                             'hb_model_dict': building.hb_model_dict,
+    #                                             'path_values_roof': path_building_roof_values,
+    #                                             'path_values_facades': path_building_facades_values}
+    #
+    #             elif building.sensor_grid_dict['roof'] is not None and building.sensor_grid_dict[
+    #                 'facades'] is None:
+    #                 path_building_roof_values = os.path.join(path_building, 'roof',
+    #                                                          'annual_radiation_values.txt')
+    #                 building_attributes_dict = {'SensorGrid_dict': building.sensor_grid_dict,
+    #                                             'hb_model_dict': building.hb_model_dict,
+    #                                             'path_values_roof': path_building_roof_values,
+    #                                             'path_values_facades': None}
+    #
+    #             elif building.sensor_grid_dict['roof'] is None and building.sensor_grid_dict[
+    #                 'facades'] is not None:
+    #                 path_building_facades_values = os.path.join(path_building, 'facades',
+    #                                                             'annual_radiation_values.txt')
+    #                 building_attributes_dict = {'SensorGrid_dict': building.sensor_grid_dict,
+    #                                             'hb_model_dict': building.hb_model_dict,
+    #                                             'path_values_roof': None,
+    #                                             'path_values_facades': path_building_facades_values}
+    #
+    #             else:
+    #                 building_attributes_dict = {'SensorGrid_dict': building.sensor_grid_dict,
+    #                                             'hb_model_dict': building.hb_model_dict,
+    #                                             'path_values_roof': None,
+    #                                             'path_values_facades': None}
+    #             urban_canopy_attributes_dict['buildings'][building.id] = building_attributes_dict
+    #     return urban_canopy_attributes_dict
 
     def add_building_to_dict(self, building_id, building_obj):
         """ Add a building to the urban canopy"""
@@ -540,9 +540,9 @@ class UrbanCanopy:
                                                   facade_grid_size_y=facade_grid_size_y,
                                                   offset_dist=offset_dist)
 
-    def run_solar_radiation_simulation_for_buildings(self, path_simulation_folder, building_id_list,
-                                                     path_weather_file,
-                                                     overwrite=False, north_angle=0, silent=False):
+    def run_annual_solar_irradiance_simulation_on_buildings(self, path_simulation_folder, building_id_list,
+                                                            path_weather_file, overwrite=False, north_angle=0,
+                                                            silent=False):
         """
         Run the solar radiation simulation for the buildings in the urban canopy.
         :param building_id_list: list of the building id to run the simulation, if None or empty list, all the target
@@ -565,8 +565,7 @@ class UrbanCanopy:
                         f"The building id {building_id} is not in the urban canopy, make sure you indicated "
                         f"the proper identifier in the input")
                 elif not isinstance(self.building_dict[building_id], BuildingModeled) or not \
-                        self.building_dict[
-                            building_id].is_target:
+                        self.building_dict[building_id].is_target:
                     user_logger.warning(
                         f"The building id {building_id} is not a target building, a radiation analysis "
                         f"cannot be performed if the building is not a target. You can update "
@@ -584,112 +583,11 @@ class UrbanCanopy:
                                                             overwrite=overwrite,
                                                             north_angle=north_angle, silent=silent)
 
-    def radiation_simulation_urban_canopy(self, path_simulation_folder, path_weather_file, list_id, grid_size,
-                                          offset_dist, on_roof, on_facades):
-        path_folder_radiation_simulation = os.path.join(path_simulation_folder,
-                                                        name_radiation_simulation_folder)
-        for building in self.building_dict.values():  # for every building in the urban canopy
-            if list_id is None:
-                if type(building) is BuildingModeled and building.is_target:
-                    path_folder_building = os.path.join(path_folder_radiation_simulation, building.id)
-                    if on_roof and on_facades:
-                        # we run the radiation simulation on all the roofs of the buildings within the urban canopy
-                        values_roof = building.solar_radiations(str(building.id), path_folder_building,
-                                                                path_weather_file, grid_size, offset_dist,
-                                                                on_facades=False)
-                        name_file = os.path.join(path_folder_building, 'roof', 'annual_radiation_values.txt')
-                        with open(name_file, 'w') as f:
-                            tmp = (','.join(str(n) for n in values_roof[0]))
-                            f.write('{}'.format(tmp))
-                        # then we run it on all the facades of the buildings within the urban canopy
-                        values_facades = building.solar_radiations(str(building.id), path_folder_building,
-                                                                   path_weather_file, grid_size, offset_dist,
-                                                                   on_roof=False)
-                        name_file = os.path.join(path_folder_building, 'facades',
-                                                 'annual_radiation_values.txt')
-                        with open(name_file, 'w') as f:
-                            tmp = (','.join(str(n) for n in values_facades[0]))
-                            f.write('{}'.format(tmp))
-                    elif on_roof and not on_facades:
-                        # we only run the radiation simulation on the facades of the buildings
-                        values_roof = building.solar_radiations(str(building.id), path_folder_building,
-                                                                path_weather_file, grid_size, offset_dist,
-                                                                on_facades=False)
-                        name_file = os.path.join(path_folder_building, 'roof', 'annual_radiation_values.txt')
-                        with open(name_file, 'w') as f:
-                            tmp = (','.join(str(n) for n in values_roof[0]))
-                            f.write('{}'.format(tmp))
-                    elif on_facades and not on_roof:
-                        # we only run the radiation simulation on the facades of the buildings
-                        values_facades = building.solar_radiations(str(building.id), path_folder_building,
-                                                                   path_weather_file, grid_size, offset_dist,
-                                                                   on_roof=False)
-                        name_file = os.path.join(path_folder_building, 'facades',
-                                                 'annual_radiation_values.txt')
-                        with open(name_file, 'w') as f:
-                            tmp = (','.join(str(n) for n in values_facades[0]))
-                            f.write('{}'.format(tmp))
-            else:
-                if type(building) is BuildingModeled and building.id in list_id:
-                    path_folder_building = os.path.join(path_folder_radiation_simulation, building.id)
-                    if on_roof and on_facades:
-                        # we run the radiation simulation on all the roofs of the buildings within the urban canopy
-                        values_roof = building.solar_radiations(str(building.id), path_folder_building,
-                                                                path_weather_file,
-                                                                grid_size, offset_dist, on_facades=False)
-                        name_file = os.path.join(path_folder_building, 'roof', 'annual_radiation_values.txt')
-                        with open(name_file, 'w') as f:
-                            tmp = (','.join(str(n) for n in values_roof[0]))
-                            f.write('{}'.format(tmp))
-                        # then we run it on all the facades of the buildings within the urban canopy
-                        values_facades = building.solar_radiations(str(building.id), path_folder_building,
-                                                                   path_weather_file
-                                                                   , grid_size, offset_dist, on_roof=False)
-                        name_file = os.path.join(path_folder_building, 'facades',
-                                                 'annual_radiation_values.txt')
-                        with open(name_file, 'w') as f:
-                            tmp = (','.join(str(n) for n in values_facades[0]))
-                            f.write('{}'.format(tmp))
-                    elif on_roof and not on_facades:
-                        # we only run the radiation simulation on the facades of the buildings
-                        values_roof = building.solar_radiations(str(building.id), path_folder_building,
-                                                                path_weather_file,
-                                                                grid_size,
-                                                                offset_dist, on_facades=False)
-                        name_file = os.path.join(path_folder_building, 'roof', 'annual_radiation_values.txt')
-                        with open(name_file, 'w') as f:
-                            tmp = (','.join(str(n) for n in values_roof[0]))
-                            f.write('{}'.format(tmp))
-                    elif on_facades and not on_roof:
-                        # we only run the radiation simulation on the facades of the buildings
-                        values_facades = building.solar_radiations(str(building.id), path_folder_building,
-                                                                   path_weather_file
-                                                                   , grid_size, offset_dist, on_roof=False)
-                        name_file = os.path.join(path_folder_building, 'facades',
-                                                 'annual_radiation_values.txt')
-                        with open(name_file, 'w') as f:
-                            tmp = (','.join(str(n) for n in values_facades[0]))
-                            f.write('{}'.format(tmp))
-                print("Another radiation simulation was done")
-
-    def get_list_id_buildings_urban_canopy(self, path_folder):
-        path_json = os.path.join(path_folder, 'urban_canopy.json')
-        if os.path.isfile(path_json):
-            with open(path_json) as f:
-                urban_canopy_dictionary = json.load(f)
-                list_id = urban_canopy_dictionary["list_id_buildings"]
-        else:
-            list_id = []
-            for building in self.building_dict.values():  # for every building in the urban canopy
-                if type(building) is BuildingModeled:
-                    list_id.append(building.id)
-        return list_id
-
-    def run_bipv_simulation_for_buildings(self, path_simulation_folder, path_pv_tech_dictionary_json, id_pv_tech_roof,
-                                          id_pv_tech_facades, minimum_ratio_energy_harvested_on_primary_energy,
-                                          performance_ratio,
-                                          study_duration_in_years,
-                                          replacement_scenario, **kwargs):
+    def run_bipv_panel_simulation_on_buildings(self, path_simulation_folder, path_pv_tech_dictionary_json,
+                                               building_id_list, roof_id_pv_tech, facades_id_pv_tech,
+                                               efficiency_computation_method="yearly", minimum_panel_eroi=1.2,
+                                               study_duration_in_years=50,
+                                               replacement_scenario="replace_failed_panels_every_X_years", **kwargs):
         """
         Run the panels simulation on the urban canopy
         :param path_simulation_folder: path to the simulation folder
@@ -704,51 +602,56 @@ class UrbanCanopy:
         """
 
         # todo: check ifg the file exist and put a default value
-        pv_tech_dictionary = BipvTechnology.load_pv_technologies_from_json_to_dictionary(
+        pv_technologies_dictionary = BipvTechnology.load_pv_technologies_from_json_to_dictionary(
             path_pv_tech_dictionary_json)
 
-        for building_obj in self.building_dict.values():  # for every building in the urban canopy
-            if type(building_obj) is BuildingModeled and building_obj.is_target:
-                path_building_irradiance_and_bipv_result_folder = os.path.join(path_simulation_folder,
-                                                                               name_radiation_simulation_folder,
-                                                                               building_obj.id)
-                building_obj.run_bipv_simulation(path_building_irradiance_and_bipv_result_folder, pv_tech_dictionary,
-                                             id_pv_tech_roof, id_pv_tech_facades,
-                                             minimum_ratio_energy_harvested_on_primary_energy,
-                                             performance_ratio, study_duration_in_years, replacement_scenario,
-                                             **kwargs)
+        # Checks of the building_id_list parameter to give feedback to the user if there is an issue with an id
+        if not (building_id_list is None or building_id_list is []):
+            for building_id in building_id_list:
+                if building_id not in self.building_dict.keys():
+                    user_logger.warning(f"The building id {building_id} is not in the urban canopy")
+                    dev_logger.info(
+                        f"The building id {building_id} is not in the urban canopy, make sure you indicated "
+                        f"the proper identifier in the input")
+                elif not isinstance(self.building_dict[building_id], BuildingModeled) or not \
+                        self.building_dict[building_id].is_target:
+                    user_logger.warning(
+                        f"The building id {building_id} is not a target building, a radiation analysis "
+                        f"cannot be performed if the building is not a target. You can update "
+                        f"the properties of the building {building_id} to make it a target building.")
+                elif self.building_dict[building_id].solar_radiation_and_bipv_simulation_obj is None:
+                    user_logger.warning(f"No mesh for radiation simulation was generated for The building id "
+                                        f"{building_id}, the radiation simulation will not performed for this building.")
+                elif self.building_dict[
+                    building_id].solar_radiation_and_bipv_simulation_obj.roof_annual_panel_irradiance_list is None and \
+                        self.building_dict[
+                            building_id].solar_radiation_and_bipv_simulation_obj.facades_annual_panel_irradiance_list is None:
+                    user_logger.warning(f"No irradiance simulation was run for The building id "
+                                        f"{building_id}, the BIPV simulation will not be run for this building.")
 
-    def run_panel_simulation(self, path_simulation_folder, path_pv_tech_dictionary_json, id_pv_tech_roof,
-                             id_pv_tech_facades, minimum_ratio_energy_harvested_on_primary_energy,
-                             performance_ratio,
-                             study_duration_in_years,
-                             replacement_scenario, **kwargs):
+        for building_obj in self.building_dict.values():
+            if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
+                    and isinstance(building_obj, BuildingModeled) and building_obj.is_target \
+                    and building_obj.solar_radiation_and_bipv_simulation_obj is not None and (self.building_dict[
+                                                                                                  building_id].solar_radiation_and_bipv_simulation_obj.roof_annual_panel_irradiance_list is not None or \
+                                                                                              self.building_dict[
+                                                                                                  building_id].solar_radiation_and_bipv_simulation_obj.facades_annual_panel_irradiance_list is not None):
+                # Run the BIPV simulation
+                building_obj.run_bipv_panel_simulation(path_simulation_folder=path_simulation_folder,
+                                                       pv_technologies_dictionary=pv_technologies_dictionary,
+                                                       roof_id_pv_tech=roof_id_pv_tech,
+                                                       facades_id_pv_tech=facades_id_pv_tech,
+                                                       efficiency_computation_method=efficiency_computation_method,
+                                                       minimum_panel_eroi=minimum_panel_eroi,
+                                                       study_duration_in_years=study_duration_in_years,
+                                                       replacement_scenario=replacement_scenario,
+                                                       **kwargs)
+
+    def post_process_bipv_results_at_urban_scale(self, path_simulation_folder, building_id_list):
         """
-        Run the panels simulation on the urban canopy
-        :param path_simulation_folder: path to the simulation folder
-        :param path_pv_tech_dictionary_json: path to the json dictionary containing all PVPanelTechnology objects
-        :param id_pv_tech_roof: string: id of the roof technology used, default = "mitrex_roof c-Si"
-        :param id_pv_tech_facades: string: id of the facades technology used, default = "metsolar_facades c-Si"
-        :param minimum_ratio_energy_harvested_on_primary_energy: int: production minimal during the first year for a panel to be installed at
-        this position, Default0.5 kWh
-        :param performance_ratio: float: performance ratio of the PV, Default=0.75
-        :param study_duration_in_years: integer: duration of the study in years, default = 50
-        :param replacement_scenario: string: scenario of replacements for the panels, default = 'yearly'
+
         """
 
-        pv_tech_dictionary = BipvTechnology.load_pv_technologies_from_json_to_dictionary(
-            path_pv_tech_dictionary_json)
-
-        for building in self.building_dict.values():  # for every building in the urban canopy
-            if type(building) is BuildingModeled and building.is_target:
-                path_folder_building = os.path.join(path_simulation_folder,
-                                                    name_radiation_simulation_folder,
-                                                    building.id)
-                building.panel_simulation_building(path_folder_building, pv_tech_dictionary, id_pv_tech_roof,
-                                                   id_pv_tech_facades,
-                                                   minimum_ratio_energy_harvested_on_primary_energy,
-                                                   performance_ratio,
-                                                   study_duration_in_years, replacement_scenario, **kwargs)
 
     def plot_graphs_buildings(self, path_simulation_folder, study_duration_years, country_ghe_cost):
         for building in self.building_dict.values():
