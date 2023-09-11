@@ -295,8 +295,10 @@ class BuildingModeled(BuildingBasic):
                 f"The building {self.id} was not simulated for the annual solar radiation simulation no mesh for the PVs was generated")
             return
         # run the annual solar radiation simulation
-        self.solar_radiation_and_bipv_simulation_obj.run_annual_solar_radiation_simulation(
-            path_simulation_folder=path_simulation_folder, path_epw_file=path_epw_file, overwrite=overwrite,
+        self.solar_radiation_and_bipv_simulation_obj.run_annual_solar_irradiance(
+            path_simulation_folder=path_simulation_folder, hb_model_obj=self.hb_model_obj,
+            context_shading_hb_shade_list=self.shading_context_obj.context_shading_hb_shade_list,
+            path_epw_file=path_epw_file, overwrite=overwrite,
             north_angle=north_angle, silent=silent)
 
     def run_bipv_panel_simulation(self, path_simulation_folder, pv_technologies_dictionary, roof_id_pv_tech,
@@ -311,13 +313,16 @@ class BuildingModeled(BuildingBasic):
         facade_pv_tech_obj = pv_technologies_dictionary[facades_id_pv_tech]
         # Run the simulation
         self.solar_radiation_and_bipv_simulation_obj.run_bipv_panel_simulation(
-            path_simulation_folder=path_simulation_folder, building_id=self.id, roof_pv_tech_obj=roof_pv_tech_obj,
-            facades_pv_tech_obj=facade_pv_tech_obj, efficiency_computation_method=efficiency_computation_method,
+            path_simulation_folder=path_simulation_folder, building_id=self.id,
+            roof_pv_tech_obj=roof_pv_tech_obj,
+            facades_pv_tech_obj=facade_pv_tech_obj,
+            efficiency_computation_method=efficiency_computation_method,
             minimum_panel_eroi=minimum_panel_eroi, study_duration_in_years=study_duration_in_years,
             replacement_scenario=replacement_scenario, **kwargs)
         # Write the results in a csv file
-        self.solar_radiation_and_bipv_simulation_obj.bipv_results_to_csv(path_simulation_folder=path_simulation_folder,
-                                                                         building_id=self.id)
+        self.solar_radiation_and_bipv_simulation_obj.bipv_results_to_csv(
+            path_simulation_folder=path_simulation_folder,
+            building_id=self.id)
 
     def plot_panels_energy_results(self, path_simulation_folder_building, study_duration_years):
 

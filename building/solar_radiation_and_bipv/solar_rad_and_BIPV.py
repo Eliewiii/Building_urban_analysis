@@ -8,6 +8,7 @@ import shutil
 import csv
 
 from copy import deepcopy
+from datetime import datetime
 
 from honeybee_radiance.sensorgrid import SensorGrid
 
@@ -39,7 +40,8 @@ empty_parameter_dict = {
     },
     "minimum_panel_eroi": None,
     "study_duration_in_years": None,
-    "replacement_scenario": {}
+    "replacement_scenario": {},
+    "start_year": None,
 }
 empty_sub_bipv_results_dict = {
     "energy_harvested": {"yearly": None, "total": None},
@@ -69,7 +71,7 @@ name_roof_ill_file = "roof.ill"
 name_facades_ill_file = "facades.ill"
 name_roof_sun_up_hours_file = "roof_" + sun_up_hours_file_name
 name_facades_sun_up_hours_file = "facades_" + sun_up_hours_file_name
-name_results_file_csv ="bipv_results.csv"
+name_results_file_csv = "bipv_results.csv"
 
 
 class SolarRadAndBipvSimulation:
@@ -98,7 +100,8 @@ class SolarRadAndBipvSimulation:
         self.parameter_dict = empty_parameter_dict
 
     def set_mesh_parameters(self, bipv_on_roof, bipv_on_facades, roof_grid_size_x=1,
-                            facades_grid_size_x=1, roof_grid_size_y=1, facades_grid_size_y=1, offset_dist=0.1):
+                            facades_grid_size_x=1, roof_grid_size_y=1, facades_grid_size_y=1,
+                            offset_dist=0.1):
         """
         Set the mesh parameters for the simulation
         :param bipv_on_roof: bool: default=True
@@ -119,7 +122,8 @@ class SolarRadAndBipvSimulation:
         self.parameter_dict["facades"]["offset"] = offset_dist
 
     def set_bipv_parameters(self, roof_pv_tech_obj, facades_pv_tech_obj, minimum_panel_eroi,
-                            study_duration_in_years, replacement_scenario, efficiency_computation_method,
+                            study_duration_in_years, start_year, replacement_scenario,
+                            efficiency_computation_method,
                             **kwargs):
         """
         Set the BIPV parameters for the simulation
@@ -127,6 +131,7 @@ class SolarRadAndBipvSimulation:
         :param facades_pv_tech_obj: PVTechnology object for the facades
         :param minimum_panel_eroi: float : the minimum EROI of the panels
         :param study_duration_in_years: int : the duration of the study in years
+        :param start_year: int : the start year of the study
         :param replacement_scenario: str : the replacement scenario of the panels
         :param efficiency_computation_method: str : the method to compute the efficiency of the panels
         :param kwargs: dict : other parameters
@@ -138,9 +143,11 @@ class SolarRadAndBipvSimulation:
         self.parameter_dict["study_duration_in_years"] = study_duration_in_years
         self.parameter_dict["replacement_scenario"] = replacement_scenario
         self.parameter_dict["efficiency_computation_method"] = efficiency_computation_method
+        self.parameter_dict["start_year"] = start_year
         # todo: add the additional paameters
 
-    def generate_sensor_grid(self, hb_model_obj, roof_grid_size_x=1, facades_grid_size_x=1, roof_grid_size_y=1,
+    def generate_sensor_grid(self, hb_model_obj, roof_grid_size_x=1, facades_grid_size_x=1,
+                             roof_grid_size_y=1,
                              facades_grid_size_y=1, offset_dist=0.1):
         """Create a HoneyBee SensorGrid from a HoneyBe model for the roof, the facades or both and add it to the
         model
@@ -155,7 +162,8 @@ class SolarRadAndBipvSimulation:
                                                                           roof_grid_size_y, offset_dist,
                                                                           "roof")
         if self.on_facades:
-            self.facades_sensorgrid_dict = generate_sensor_grid_for_hb_model(hb_model_obj, facades_grid_size_x,
+            self.facades_sensorgrid_dict = generate_sensor_grid_for_hb_model(hb_model_obj,
+                                                                             facades_grid_size_x,
                                                                              facades_grid_size_y, offset_dist,
                                                                              "facades")
         else:
@@ -164,11 +172,19 @@ class SolarRadAndBipvSimulation:
             dev_logger.warning(f"You did not precise whether you want to run the simulation on the roof, "
                                f"the facades or both")
 
-    def run_annual_solar_radiation(self, building_id, hb_model_obj, context_shading_hb_aperture_list,
-                                   path_simulation_folder, path_epw_file, overwrite=False,
-                                   north_angle=0, silent=False):
+    def run_annual_solar_irradiance(self, path_simulation_folder, building_id, hb_model_obj,
+                                    context_shading_hb_shade_list, path_epw_file, overwrite=False,
+                                    north_angle=0, silent=False):
         """
-
+        Run the annual solar radiation simulation for the roof and/or the facades
+        :param path_simulation_folder: str : the path to the simulation folder
+        :param building_id: int : the id of the building
+        :param hb_model_obj: Honeybee Model object
+        :param context_shading_hb_shade_list: list of Honeybee Aperture objects for the context shading
+        :param path_epw_file: str : the path to the epw file
+        :param overwrite: bool : whether to overwrite the existing results
+        :param north_angle: float : the north angle of the building
+        :param silent: bool : whether to print the logs or not
         """
         path_folder_run_radiation_temp = os.path.join(path_simulation_folder, name_temporary_files_folder,
                                                       str(building_id))
@@ -184,7 +200,7 @@ class SolarRadAndBipvSimulation:
                 hb_model_copy_roof = hb_model_obj.duplicate()
                 hb_model_copy_roof.properties.radiance.add_sensor_grid(
                     SensorGrid.from_dict(self.roof_sensorgrid_dict))
-                hb_model_copy_roof.add_shades(context_shading_hb_aperture_list)
+                hb_model_copy_roof.add_shades(context_shading_hb_shade_list)
                 # run in the temporary folder
                 path_folder_run_radiation_temp_roof = os.path.join(path_folder_run_radiation_temp, "roof")
                 self.roof_annual_panel_irradiance_list = run_hb_model_annual_irradiance_simulation(
@@ -217,7 +233,7 @@ class SolarRadAndBipvSimulation:
                 hb_model_copy_facades = hb_model_obj.duplicate()
                 hb_model_copy_facades.properties.radiance.add_sensor_grid(
                     SensorGrid.from_dict(self.facades_sensorgrid_dict))
-                hb_model_copy_facades.add_shades(context_shading_hb_aperture_list)
+                hb_model_copy_facades.add_shades(context_shading_hb_shade_list)
                 # run in the temporary folder
                 path_folder_run_radiation_temp_facades = os.path.join(path_folder_run_radiation_temp,
                                                                       "facades")
@@ -249,7 +265,7 @@ class SolarRadAndBipvSimulation:
 
     def run_bipv_panel_simulation(self, path_simulation_folder, building_id, roof_pv_tech_obj,
                                   facades_pv_tech_obj, efficiency_computation_method="yearly",
-                                  minimum_panel_eroi=1.2,
+                                  minimum_panel_eroi=1.2, start_year=datetime.now().year,
                                   study_duration_in_years=50,
                                   replacement_scenario="replace_failed_panels_every_X_years", **kwargs):
         """
@@ -261,6 +277,7 @@ class SolarRadAndBipvSimulation:
         :param efficiency_computation_method: str: method to compute the efficiency of the panels
         :param minimum_panel_eroi: float: minimum EROI of the PV panels
         :param study_duration_in_years: int: duration of the study in years
+        :param start_year: int: start year of the study
         :param replacement_scenario: dict: replacement scenario of the panels
         :param kwargs: todo
         """
@@ -268,7 +285,7 @@ class SolarRadAndBipvSimulation:
         self.set_bipv_parameters(roof_pv_tech_obj=roof_pv_tech_obj, facades_pv_tech_obj=facades_pv_tech_obj,
                                  efficiency_computation_method=efficiency_computation_method,
                                  minimum_panel_eroi=minimum_panel_eroi,
-                                 study_duration_in_years=study_duration_in_years,
+                                 study_duration_in_years=study_duration_in_years, start_year=start_year,
                                  replacement_scenario=replacement_scenario, **kwargs)
         # Init flags
         run_bipv_on_roof = False
@@ -373,7 +390,8 @@ class SolarRadAndBipvSimulation:
 
         # Total results
         if run_bipv_on_roof and run_bipv_on_facades:
-            self.bipv_results_dict["total"] = sum_dicts(self.bipv_results_dict["roof"], self.bipv_results_dict["facades"])
+            self.bipv_results_dict["total"] = sum_dicts(self.bipv_results_dict["roof"],
+                                                        self.bipv_results_dict["facades"])
         elif run_bipv_on_roof:
             self.bipv_results_dict["total"] = self.bipv_results_dict["roof"]
         elif run_bipv_on_facades:
@@ -382,7 +400,7 @@ class SolarRadAndBipvSimulation:
             None
 
     @classmethod
-    def sum_bipv_results_at_urban_scale(cls,solar_rad_and_bipv_obj_list):
+    def sum_bipv_results_at_urban_scale(cls, solar_rad_and_bipv_obj_list):
         """
         Sum the results dictionary of the BIPV simulations at the urban scale
         :param solar_rad_and_bipv_simulation_list: list of SolarRadAndBipvSimulation objects
@@ -393,13 +411,11 @@ class SolarRadAndBipvSimulation:
             bipv_results_dict = sum_dicts(bipv_results_dict, solar_rad_and_bipv_obj.bipv_results_dict)
         return bipv_results_dict
 
-
-
-
     @staticmethod
     def convert_results_to_dict(energy_harvested_yearly_list,
                                 primary_energy_material_extraction_and_manufacturing_yearly_list,
-                                primary_energy_transportation_yearly_list, primary_energy_recycling_yearly_list,
+                                primary_energy_transportation_yearly_list,
+                                primary_energy_recycling_yearly_list,
                                 carbon_material_extraction_and_manufacturing_yearly_list,
                                 carbon_transportation_yearly_list, carbon_recycling_yearly_list,
                                 dmfa_waste_yearly_list):
@@ -425,12 +441,16 @@ class SolarRadAndBipvSimulation:
             "yearly"] = primary_energy_material_extraction_and_manufacturing_yearly_list
         bipv_results_dict["lca_primary_energy"]["material_extraction_and_manufacturing"][
             "total"] = sum(primary_energy_material_extraction_and_manufacturing_yearly_list)
-        bipv_results_dict["lca_primary_energy"]["transportation"]["yearly"] = primary_energy_transportation_yearly_list
-        bipv_results_dict["lca_primary_energy"]["transportation"]["total"] = sum(primary_energy_transportation_yearly_list)
+        bipv_results_dict["lca_primary_energy"]["transportation"][
+            "yearly"] = primary_energy_transportation_yearly_list
+        bipv_results_dict["lca_primary_energy"]["transportation"]["total"] = sum(
+            primary_energy_transportation_yearly_list)
         bipv_results_dict["lca_primary_energy"]["recycling"]["yearly"] = primary_energy_recycling_yearly_list
-        bipv_results_dict["lca_primary_energy"]["recycling"]["total"] = sum(primary_energy_recycling_yearly_list)
+        bipv_results_dict["lca_primary_energy"]["recycling"]["total"] = sum(
+            primary_energy_recycling_yearly_list)
         bipv_results_dict["lca_primary_energy"]["total"]["yearly"] = [sum(i) for i in zip(
-            primary_energy_transportation_yearly_list, primary_energy_material_extraction_and_manufacturing_yearly_list,
+            primary_energy_transportation_yearly_list,
+            primary_energy_material_extraction_and_manufacturing_yearly_list,
             primary_energy_recycling_yearly_list)]
         bipv_results_dict["lca_primary_energy"]["total"]["total"] = sum(
             bipv_results_dict["lca_primary_energy"]["total"]["yearly"])
@@ -439,8 +459,10 @@ class SolarRadAndBipvSimulation:
             "yearly"] = carbon_material_extraction_and_manufacturing_yearly_list
         bipv_results_dict["lca_carbon_footprint"]["material_extraction_and_manufacturing"][
             "total"] = sum(carbon_material_extraction_and_manufacturing_yearly_list)
-        bipv_results_dict["lca_carbon_footprint"]["transportation"]["yearly"] = carbon_transportation_yearly_list
-        bipv_results_dict["lca_carbon_footprint"]["transportation"]["total"] = sum(carbon_transportation_yearly_list)
+        bipv_results_dict["lca_carbon_footprint"]["transportation"][
+            "yearly"] = carbon_transportation_yearly_list
+        bipv_results_dict["lca_carbon_footprint"]["transportation"]["total"] = sum(
+            carbon_transportation_yearly_list)
         bipv_results_dict["lca_carbon_footprint"]["recycling"]["yearly"] = carbon_recycling_yearly_list
         bipv_results_dict["lca_carbon_footprint"]["recycling"]["total"] = sum(carbon_recycling_yearly_list)
         bipv_results_dict["lca_carbon_footprint"]["total"]["yearly"] = [sum(i) for i in zip(
@@ -454,16 +476,64 @@ class SolarRadAndBipvSimulation:
 
         return bipv_results_dict
 
+    @classmethod
+    def urban_canopy_make_bipv_results_scenario(cls, solar_rad_and_bipv_obj_list):
+        """
+        Sum the results dictionary of the BIPV simulations at the urban scale
+        :param solar_rad_and_bipv_simulation_list: list of SolarRadAndBipvSimulation objects
+        :return: dict of the results
+        """
+        bipv_results_dict_list = [result_dict for result_dict in
+                                  solar_rad_and_bipv_obj_list.bipv_results_dict]
+        starting_year_list = [solar_rad_and_bipv_obj.parameter_dict["start_year"] for solar_rad_and_bipv_obj
+                              in solar_rad_and_bipv_obj_list]
+        study_duration_list = [solar_rad_and_bipv_obj.parameter_dict["study_duration_in_years"] for
+                               solar_rad_and_bipv_obj in solar_rad_and_bipv_obj_list]
+        earliest_year, latest_year = cls.urban_canopy_scenarios_boundary_years(starting_year_list,
+                                                                               study_duration_list)
 
-    def bipv_results_to_csv(self,path_simulation_folder,building_id):
+        uc_bipv_results_dict = deepcopy(bipv_results_dict_list[0])
+        starting_year_it = starting_year_list[0]  # Initialize the starting year
+        for i, bipv_results_dict in enumerate(bipv_results_dict_list, start=1):
+            starting_year_list = [starting_year_it, starting_year_list[i]]
+            uc_bipv_results_dict = cls.urban_canopy_sum_bipv_results_dicts_with_different_years(
+                dict_1=uc_bipv_results_dict, dict_2=bipv_results_dict, starting_year_list=starting_year_list,
+                earliest_year=earliest_year, latest_year=latest_year)
+            starting_year_it = earliest_year  # After the first iteration, the starting year is the earliest year
+
+        new_solar_rad_and_bipv_obj = cls()
+        new_solar_rad_and_bipv_obj.bipv_results_dict = uc_bipv_results_dict
+        new_solar_rad_and_bipv_obj.parameter_dict["start_year"] = earliest_year
+        new_solar_rad_and_bipv_obj.parameter_dict["study_duration_in_years"] = latest_year - earliest_year + 1
+
+        return new_solar_rad_and_bipv_obj
+
+    # def urban_canopy_concatenate_bipv_result_scenario(cls, solar_rad_and_bipv_obj_list):
+    #     """
+    #     Sum the results dictionary of the BIPV simulations at the urban scale
+    #     :param solar_rad_and_bipv_simulation_list: list of SolarRadAndBipvSimulation objects
+    #     :return: dict of the results
+    #     """
+    #     bipv_results_dict = deepcopy(empty_bipv_results_dict)
+    #     for solar_rad_and_bipv_obj in solar_rad_and_bipv_obj_list:
+    #         bipv_results_dict = sum_dicts(bipv_results_dict, solar_rad_and_bipv_obj.bipv_results_dict)
+    #
+    #     return bipv_results_dict
+
+    def bipv_results_to_csv(self, path_simulation_folder, building_id_or_uc_scenario_name):
         """
         Save bipv simulation results in a csv file
+        :param: path_simulation_folder: path to the simulation folder
+        :param: building_id_or_uc_scenario_name: building id or urban canopy scenario name
         """
         path_result_folder = os.path.join(path_simulation_folder, name_radiation_simulation_folder,
-                                          str(building_id))
-        path_csv_file=os.path.join(path_result_folder,name_results_file_csv)
+                                          str(building_id_or_uc_scenario_name))
+        # create the folder if it does not exist, especially for the urban canopy
+        if not os.path.isdir(path_result_folder):
+            os.makedirs(path_result_folder)
+        path_csv_file = os.path.join(path_result_folder, name_results_file_csv)
         with open(path_csv_file, mode='w', newline='') as file:
-
+            # flatten the dict to read and write the data easily
             flattened_dict = flatten_dict(self.bipv_results_dict)
             fieldnames = ["years"]
             for k in flattened_dict.keys():
@@ -474,20 +544,67 @@ class SolarRadAndBipvSimulation:
             writer.writeheader()
 
             for i in range(self.parameter_dict["study_duration_in_years"]):
-                row_data = {f"{i + 1}"}
+                row_data = {f"{self.parameter_dict['start_year'] + i}"}
                 for k, v in flattened_dict.items():
-                    # do not include the
+                    # do not include the total values
                     if not k.endswith("_total"):
                         row_data[k] = v[i]
                 writer.writerow(row_data)
-
-
-
 
     def results_to_figures(self):
         """
 
         """
+
+    @staticmethod
+    def urban_canopy_sum_bipv_results_dicts_with_different_years(dict_1, dict_2, starting_year_list,
+                                                                 earliest_year, latest_year):
+        """
+            Sum the values dictionnaries
+            :param dict_1: dict of the results
+            :param dict_2: dict of the results
+            :param starting_year_list: list of the starting years of the simulations
+            :param earliest_year: earliest year of the simulations
+            :param latest_year: latest year of the simulations
+            :return: dict of the results
+        """
+
+        result_dict = {}
+        for key in dict_1:
+            if isinstance(dict_1[key], dict):
+                result_dict[key] = sum_dicts(dict_1[key], dict_2[key], starting_year_list, earliest_year,
+                                             latest_year)
+            elif isinstance(dict_1[key], list):
+                list_1 = [0.0] * (latest_year - earliest_year + 1)
+                list_1[
+                starting_year_list[0] - earliest_year:starting_year_list[0] - earliest_year + len(
+                    dict_1[key])] = \
+                    dict_1[key]
+                list_2 = [0.0] * (latest_year - earliest_year + 1)
+                list_2[
+                starting_year_list[1] - earliest_year:starting_year_list[1] - earliest_year + len(
+                    dict_2[key])] = \
+                    dict_2[key]
+                result_dict[key] = [x + y for x, y in zip(list_1, list_2)]
+            else:  # assuming ints or floats
+                result_dict[key] = dict_1[key] + dict_2[key]
+
+        return result_dict
+
+    @staticmethod
+    def urban_canopy_scenarios_boundary_years(starting_year_list, study_duration_list):
+        """
+        Find the earliest and latest years across all dictionaries
+        :param starting_year_list: list of the starting years of the simulations
+        :param study_duration_list: list of the study durations of the simulations
+        """
+        # Find the earliest and latest years across all dictionaries
+        earliest_year = min(starting_year_list)
+        latest_year = max(starting_year + study_duration - 1 for starting_year, study_duration in
+                          zip(starting_year_list, study_duration_list))
+        """ -1 because the first year is included """
+
+        return earliest_year, latest_year
 
 
 def sum_dicts(*args):
@@ -510,6 +627,7 @@ def sum_dicts(*args):
 
     return result_dict
 
+
 def flatten_dict(d):
     """
     Flatten a nested dictionnary
@@ -519,7 +637,7 @@ def flatten_dict(d):
         if isinstance(value, dict):
             nested = flatten_dict(value)
             for k, v in nested.items():
-                    result[f"{key}_{k}"] = v
+                result[f"{key}_{k}"] = v
         else:
             result[key] = value
     return result

@@ -3,6 +3,7 @@
 """
 
 import os
+from datetime import datetime
 
 from utils.utils_configuration import path_tool, path_simulation_temp_folder, path_libraries_tool_folder
 
@@ -66,6 +67,7 @@ default_id_pv_tech_facades = "mitrex_facades c-Si"
 default_minimum_ratio_energy_harvested_on_primary_energy = 1.2
 default_performance_ratio = 0.80
 default_study_duration_years = 50
+default_start_year = datetime.now().year
 default_replacement_scenario = "yearly"
 default_evey_X_years = 5
 default_country_ghe_cost = 0.57874

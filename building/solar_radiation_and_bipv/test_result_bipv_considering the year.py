@@ -54,7 +54,12 @@ def boudary_years(data_dicts,starting_years):
 
 starting_years = [2020, 2022]
 
-earliest_year,latest_year= boudary_years([result_dict1, result_dict2], starting_years)
+earliest_year,latest_year= boudary_years([result_dict1, result_dict3], starting_years)
 
-result = sum_dicts(result_dict1, result_dict2, starting_years,earliest_year,latest_year)
+earliest_year = earliest_year -1
+
+result = sum_dicts(result_dict1, result_dict3, starting_years,earliest_year,latest_year)
 print(result)
+
+
+
