@@ -1,9 +1,15 @@
 """
 BuildingShadingContext class, used to perform and store the result of the context filtering for shading computation using the 2 pass filtering method
 """
+import logging
+
 from building.context_filter.building_context import BuildingContext
 
-from building.context_filter.utils_functions_context_filter import is_vector3d_vertical, are_hb_face_or_lb_face3d_facing,ray_list_from_emitter_to_receiver
+from building.context_filter.utils_functions_context_filter import is_vector3d_vertical, \
+    are_hb_face_or_lb_face3d_facing, ray_list_from_emitter_to_receiver
+
+user_logger = logging.getLogger("user")
+dev_logger = logging.getLogger("dev")
 
 possible_numbers_of_rays_list = [1, 3, 6, 9]
 
@@ -15,22 +21,24 @@ class BuildingShadingContext(BuildingContext):
         """ todo """
         super().__init__(min_vf_criterion=min_vf_criterion)  # inherit from all the attributes of the super class
         self.number_of_rays = self.set_number_of_rays(number_of_rays)
-        self.hb_face_context_list = []
+        self.hb_shade_context_list = []
 
     def set_number_of_rays(self, number_of_rays):
         """ todo """
         if isinstance(number_of_rays, int) and number_of_rays in possible_numbers_of_rays_list:
             self.number_of_rays = number_of_rays
         else:
-            self.number_of_rays = None
+            self.number_of_rays = 3
+            user_logger.warning(f"The number of ray inputted was not valid, the number of ray was set to 3")
 
     def select_non_obstructed_context_faces_with_ray_tracing(self, target_lb_polyface3d_extruded_footprint,
                                                              context_hb_model_list_to_test,
                                                              full_urban_canopy_pyvista_mesh):
         """"""
-        self.hb_face_context_list = self.select_non_obstructed_surfaces_of_context_hb_model_for_target_lb_polyface3d(
+        hb_face_context_list = self.select_non_obstructed_surfaces_of_context_hb_model_for_target_lb_polyface3d(
             target_lb_polyface3d_extruded_footprint, context_hb_model_list_to_test, full_urban_canopy_pyvista_mesh,
             number_of_rays=self.number_of_rays)
+        self.hb_shade_context_list = None  # todo : Transform the faces into shades
 
     def select_non_obstructed_surfaces_of_context_hb_model_for_target_lb_polyface3d(self,
                                                                                     target_lb_polyface3d_extruded_footprint,
@@ -52,6 +60,7 @@ class BuildingShadingContext(BuildingContext):
             # Loop through the rooms of the context Honeybee model
             for hb_Room in context_hb_model_to_test.rooms:
                 # Loop through the faces of the context Honeybee model
+                # todo !! don't use the face, use punched geometry of the faces ad the aperture
                 for hb_face_surface_to_test in hb_Room.faces:
                     if not self.is_hb_face_context_surface_obstructed_for_target_lb_polyface3d(
                             target_lb_polyface3d_extruded_footprint=target_lb_polyface3d_extruded_footprint,

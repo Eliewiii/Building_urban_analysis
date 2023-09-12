@@ -145,52 +145,6 @@ class UrbanCanopy:
         for building_id, building_obj in self.building_dict.items():
             building_obj.pickle_HB_attributes()
 
-    """ todo : delete this function when sure it's useless"""
-
-    # def json_urban_canopy_attributes(self, path_folder):
-    #     """ Create a dictionary which will contain certain useful attributes of the urban canopy and the buildings"""
-    #     list_id = self.get_list_id_buildings_urban_canopy(path_folder)
-    #     urban_canopy_attributes_dict = {'list_id_buildings': list_id, 'buildings': {}}
-    #     for building in self.building_dict.values():
-    #         if type(building) is BuildingModeled:
-    #             path_building = os.path.join(path_folder, 'Radiation Simulation', building.id)
-    #             if building.sensor_grid_dict['roof'] is not None and building.sensor_grid_dict[
-    #                 'facades'] is not None:
-    #                 path_building_roof_values = os.path.join(path_building, 'roof',
-    #                                                          'annual_radiation_values.txt')
-    #                 path_building_facades_values = os.path.join(path_building, 'facades',
-    #                                                             'annual_radiation_values.txt')
-    #                 building_attributes_dict = {'SensorGrid_dict': building.sensor_grid_dict,
-    #                                             'hb_model_dict': building.hb_model_dict,
-    #                                             'path_values_roof': path_building_roof_values,
-    #                                             'path_values_facades': path_building_facades_values}
-    #
-    #             elif building.sensor_grid_dict['roof'] is not None and building.sensor_grid_dict[
-    #                 'facades'] is None:
-    #                 path_building_roof_values = os.path.join(path_building, 'roof',
-    #                                                          'annual_radiation_values.txt')
-    #                 building_attributes_dict = {'SensorGrid_dict': building.sensor_grid_dict,
-    #                                             'hb_model_dict': building.hb_model_dict,
-    #                                             'path_values_roof': path_building_roof_values,
-    #                                             'path_values_facades': None}
-    #
-    #             elif building.sensor_grid_dict['roof'] is None and building.sensor_grid_dict[
-    #                 'facades'] is not None:
-    #                 path_building_facades_values = os.path.join(path_building, 'facades',
-    #                                                             'annual_radiation_values.txt')
-    #                 building_attributes_dict = {'SensorGrid_dict': building.sensor_grid_dict,
-    #                                             'hb_model_dict': building.hb_model_dict,
-    #                                             'path_values_roof': None,
-    #                                             'path_values_facades': path_building_facades_values}
-    #
-    #             else:
-    #                 building_attributes_dict = {'SensorGrid_dict': building.sensor_grid_dict,
-    #                                             'hb_model_dict': building.hb_model_dict,
-    #                                             'path_values_roof': None,
-    #                                             'path_values_facades': None}
-    #             urban_canopy_attributes_dict['buildings'][building.id] = building_attributes_dict
-    #     return urban_canopy_attributes_dict
-
     def add_building_to_dict(self, building_id, building_obj):
         """ Add a building to the urban canopy"""
         # check if the building id is already in the urban canopy
@@ -303,6 +257,9 @@ class UrbanCanopy:
         UrbanCanopyAdditionalFunction.add_hb_model_of_urban_canopy_envelop_to_json_dict(
             json_dict=self.json_dict,
             building_dict=self.building_dict)
+
+
+# todo : to delete, it is useless
 
     def make_HB_model_envelops_from_buildings(self, path_folder=None):
         """ Make the hb model for the building envelop and save it to hbjson file if the path is provided """
@@ -442,7 +399,7 @@ class UrbanCanopy:
         self.moving_vector_to_origin = [-center_of_mass_x, -center_of_mass_y, -min_elevation]
 
     def move_buildings_to_origin(self):
-        """ Move the buildings to the origin if the the urban canopy has not already been moved to the origin"""
+        """ Move the buildings to the origin if the urban canopy has not already been moved to the origin"""
         # Check if the the urban canopy has already been moved to the origin
         if self.moving_vector_to_origin is not None:
             logging.info(
@@ -578,7 +535,7 @@ class UrbanCanopy:
             if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
                     and isinstance(building_obj, BuildingModeled) and building_obj.is_target \
                     and building_obj.solar_radiation_and_bipv_simulation_obj is not None:
-                building_obj.run_solar_radiation_simulation(path_simulation_folder=path_simulation_folder,
+                building_obj.run_annual_solar_irradiance_simulation(path_simulation_folder=path_simulation_folder,
                                                             path_weather_file=path_weather_file,
                                                             overwrite=overwrite,
                                                             north_angle=north_angle, silent=silent)

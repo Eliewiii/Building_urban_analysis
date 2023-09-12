@@ -294,8 +294,16 @@ class BuildingModeled(BuildingBasic):
             user_logger.info(
                 f"The building {self.id} was not simulated for the annual solar radiation simulation no mesh for the PVs was generated")
             return
+        # check if the building has context
+        if self.shading_context_obj is None or self.shading_context_obj.self.shading_context_obj.context_shading_hb_shade_list == []:
+            dev_logger.info(
+                f"The building {self.id} does not have shades. consider running the shading simulation first or add your shades manually")
+            user_logger.info(
+                f"The building {self.id} does not have shades. consider running the shading simulation first or add your shades manually")
+            return
+
         # run the annual solar radiation simulation
-        self.solar_radiation_and_bipv_simulation_obj.run_annual_solar_irradiance(
+        self.solar_radiation_and_bipv_simulation_obj.run_annual_solar_irradiance_simulation(
             path_simulation_folder=path_simulation_folder, hb_model_obj=self.hb_model_obj,
             context_shading_hb_shade_list=self.shading_context_obj.context_shading_hb_shade_list,
             path_epw_file=path_epw_file, overwrite=overwrite,

@@ -44,20 +44,20 @@ empty_parameter_dict = {
     "start_year": None,
 }
 empty_sub_bipv_results_dict = {
-    "energy_harvested": {"yearly": None, "total": None},
+    "energy_harvested": {"yearly": [], "cumulative": None, "total": None},
     "lca_primary_energy": {
-        "material_extraction_and_manufacturing": {"yearly": None, "total": None},
-        "transportation": {"yearly": None, "total": None},
-        "recycling": {"yearly": None, "total": None},
-        "total": {"yearly": None, "total": None}
+        "material_extraction_and_manufacturing": {"yearly": [], "cumulative": None, "total": None},
+        "transportation": {"yearly": [], "cumulative": None, "total": None},
+        "recycling": {"yearly": [], "cumulative": None, "total": None},
+        "total": {"yearly": [], "cumulative": None, "total": None}
     },
     "lca_carbon_footprint": {
-        "material_extraction_and_manufacturing": {"yearly": None, "total": None},
-        "transportation": {"yearly": None, "total": None},
-        "recycling": {"yearly": None, "total": None},
-        "total": {"yearly": None, "total": None}
+        "material_extraction_and_manufacturing": {"yearly": [], "cumulative": None, "total": None},
+        "transportation": {"yearly": [], "cumulative": None, "total": None},
+        "recycling": {"yearly": [], "cumulative": None, "total": None},
+        "total": {"yearly": [], "cumulative": None, "total": None}
     },
-    "dmfa_waste": {"yearly": None, "total": None}
+    "dmfa_waste": {"yearly": [], "cumulative": None, "total": None}
 }
 
 empty_bipv_results_dict = {
@@ -172,7 +172,7 @@ class SolarRadAndBipvSimulation:
             dev_logger.warning(f"You did not precise whether you want to run the simulation on the roof, "
                                f"the facades or both")
 
-    def run_annual_solar_irradiance(self, path_simulation_folder, building_id, hb_model_obj,
+    def run_annual_solar_irradiance_simulation(self, path_simulation_folder, building_id, hb_model_obj,
                                     context_shading_hb_shade_list, path_epw_file, overwrite=False,
                                     north_angle=0, silent=False):
         """
@@ -267,7 +267,7 @@ class SolarRadAndBipvSimulation:
                                   facades_pv_tech_obj, efficiency_computation_method="yearly",
                                   minimum_panel_eroi=1.2, start_year=datetime.now().year,
                                   study_duration_in_years=50,
-                                  replacement_scenario="replace_failed_panels_every_X_years", **kwargs):
+                                  replacement_scenario="replace_failed_panels_every_X_years",continue_simulation=False, **kwargs):
         """
         Run the simulation of the energy harvested by the bipvs
         :param path_simulation_folder: path to the simulation folder
@@ -290,15 +290,33 @@ class SolarRadAndBipvSimulation:
         # Init flags
         run_bipv_on_roof = False
         run_bipv_on_facades = False
+        simulation_continued = False
         # Roof
         if self.on_roof and self.roof_sensorgrid_dict is not None and self.roof_annual_panel_irradiance_list is not None:
             run_bipv_on_roof = True
-            # Init the BIPV panels on the roof
-            self.roof_panel_list = init_bipv_on_sensor_grid(
-                sensor_grid=SensorGrid.from_dict(self.roof_sensorgrid_dict),
-                pv_technology_obj=roof_pv_tech_obj,
-                annual_panel_irradiance_list=self.roof_annual_panel_irradiance_list,
-                minimum_panel_eroi=minimum_panel_eroi)
+
+            # Init the BIPV panels on the roof if necessary
+            if not continue_simulation or self.roof_panel_list is None:
+                """ If there is no panel list, we init the panels, but if we want to continue the simulation and there 
+                are already panels, we do not init them again """
+                simulation_continued=True
+                self.roof_panel_list = init_bipv_on_sensor_grid(
+                    sensor_grid=SensorGrid.from_dict(self.roof_sensorgrid_dict),
+                    pv_technology_obj=roof_pv_tech_obj,
+                    annual_panel_irradiance_list=self.roof_annual_panel_irradiance_list,
+                    minimum_panel_eroi=minimum_panel_eroi)
+            else:  # Force the previous simulation parameters
+                simulation_continued = True
+                roof_pv_tech_obj = self.parameter_dict["roof"]["panel_technology"]
+                efficiency_computation_method = self.parameter_dict["efficiency_computation_method"]
+                minimum_panel_eroi = self.parameter_dict["minimum_panel_eroi"]
+                start_year = self.parameter_dict["start_year"]
+                replacement_scenario = self.parameter_dict["replacement_scenario"]
+                kwargs["replacement_years"]
+                # todo: finish
+
+
+
             # Run the simulation roof
             if efficiency_computation_method == "yearly":
                 roof_energy_harvested_yearly_list, roof_nb_of_panels_installed_yearly_list = bipv_energy_harvesting_simulation_yearly_annual_irradiance(
@@ -329,7 +347,8 @@ class SolarRadAndBipvSimulation:
                 nb_of_panels_installed_yearly_list=roof_nb_of_panels_installed_yearly_list,
                 pv_tech_obj=roof_pv_tech_obj)
             # Save the results in obj
-            self.bipv_results_dict["roof"] = self.convert_results_to_dict(
+            self.bipv_results_dict["roof"] = self.add_results_to_dict(
+                bipv_reults_dict=self.bipv_results_dict["roof"],
                 energy_harvested_yearly_list=roof_energy_harvested_yearly_list,
                 primary_energy_material_extraction_and_manufacturing_yearly_list=roof_primary_energy_material_extraction_and_manufacturing_yearly_list,
                 primary_energy_transportation_yearly_list=roof_primary_energy_transportation_yearly_list,
@@ -341,12 +360,18 @@ class SolarRadAndBipvSimulation:
             # Facade
         if self.on_facades and self.facades_sensorgrid_dict is not None and self.facade_annual_panel_irradiance_list is not None:
             run_bipv_on_facades = True
-            # Init the BIPV panels on the facades
-            self.facades_panel_list = init_bipv_on_sensor_grid(
-                sensor_grid=SensorGrid.from_dict(self.facades_sensorgrid_dict),
-                pv_technology_obj=facades_pv_tech_obj,
-                annual_panel_irradiance_list=self.facade_annual_panel_irradiance_list,
-                minimum_panel_eroi=minimum_panel_eroi)
+            # Init the BIPV panels on the facades if necessary
+            if not continue_simulation or self.facades_panel_list is None:
+                """ If there is no panel list, we init the panels, but if we want to continue the simulation and there 
+                are already panels, we do not init them again """
+                self.facades_panel_list = init_bipv_on_sensor_grid(
+                    sensor_grid=SensorGrid.from_dict(self.facades_sensorgrid_dict),
+                    pv_technology_obj=facades_pv_tech_obj,
+                    annual_panel_irradiance_list=self.facade_annual_panel_irradiance_list,
+                    minimum_panel_eroi=minimum_panel_eroi)
+            else :
+                simulation_continued = True
+                # todo: add the parameters
             # Run the simulation facades
             if efficiency_computation_method == "yearly":
                 facades_energy_harvested_yearly_list, facades_nb_of_panels_installed_yearly_list = bipv_energy_harvesting_simulation_yearly_annual_irradiance(
@@ -378,7 +403,8 @@ class SolarRadAndBipvSimulation:
                     pv_tech_obj=facades_pv_tech_obj)
 
                 # Save the results in obj
-                self.bipv_results_dict["facades"] = self.convert_results_to_dict(
+                self.bipv_results_dict["facades"] = self.add_results_to_dict(
+                    bipv_reults_dict=self.bipv_results_dict["facades"],
                     energy_harvested_yearly_list=facades_energy_harvested_yearly_list,
                     primary_energy_material_extraction_and_manufacturing_yearly_list=facades_primary_energy_material_extraction_and_manufacturing_yearly_list,
                     primary_energy_transportation_yearly_list=facades_primary_energy_transportation_yearly_list,
@@ -399,6 +425,12 @@ class SolarRadAndBipvSimulation:
         else:
             None
 
+        self.set_bipv_parameters(roof_pv_tech_obj=roof_pv_tech_obj, facades_pv_tech_obj=facades_pv_tech_obj,
+                                 efficiency_computation_method=efficiency_computation_method,
+                                 minimum_panel_eroi=minimum_panel_eroi,
+                                 study_duration_in_years=study_duration_in_years, start_year=start_year,
+                                 replacement_scenario=replacement_scenario, **kwargs)
+
     @classmethod
     def sum_bipv_results_at_urban_scale(cls, solar_rad_and_bipv_obj_list):
         """
@@ -412,7 +444,7 @@ class SolarRadAndBipvSimulation:
         return bipv_results_dict
 
     @staticmethod
-    def convert_results_to_dict(energy_harvested_yearly_list,
+    def add_results_to_dict(bipv_results_dict,energy_harvested_yearly_list,
                                 primary_energy_material_extraction_and_manufacturing_yearly_list,
                                 primary_energy_transportation_yearly_list,
                                 primary_energy_recycling_yearly_list,
@@ -421,6 +453,7 @@ class SolarRadAndBipvSimulation:
                                 dmfa_waste_yearly_list):
         """
         Convert the results to a dict
+        :param bipv_results_dict: dict of the results
         :param energy_harvested_yearly_list: list of the energy harvested yearly
         :param primary_energy_material_extraction_and_manufacturing_yearly_list: list of the primary energy used for the material extraction and manufacturing
         :param primary_energy_transportation_yearly_list: list of the primary energy used for the transportation
@@ -432,47 +465,31 @@ class SolarRadAndBipvSimulation:
         :return: dict of the results
         """
 
-        bipv_results_dict = deepcopy(empty_bipv_results_dict)
         # Energy harvested
-        bipv_results_dict["energy_harvested"]["yearly"] = energy_harvested_yearly_list
-        bipv_results_dict["energy_harvested"]["total"] = sum(energy_harvested_yearly_list)
+        bipv_results_dict["energy_harvested"]["yearly"] += energy_harvested_yearly_list
         # LCA primary
         bipv_results_dict["lca_primary_energy"]["material_extraction_and_manufacturing"][
-            "yearly"] = primary_energy_material_extraction_and_manufacturing_yearly_list
-        bipv_results_dict["lca_primary_energy"]["material_extraction_and_manufacturing"][
-            "total"] = sum(primary_energy_material_extraction_and_manufacturing_yearly_list)
+            "yearly"] += primary_energy_material_extraction_and_manufacturing_yearly_list
         bipv_results_dict["lca_primary_energy"]["transportation"][
-            "yearly"] = primary_energy_transportation_yearly_list
-        bipv_results_dict["lca_primary_energy"]["transportation"]["total"] = sum(
-            primary_energy_transportation_yearly_list)
-        bipv_results_dict["lca_primary_energy"]["recycling"]["yearly"] = primary_energy_recycling_yearly_list
-        bipv_results_dict["lca_primary_energy"]["recycling"]["total"] = sum(
-            primary_energy_recycling_yearly_list)
-        bipv_results_dict["lca_primary_energy"]["total"]["yearly"] = [sum(i) for i in zip(
+            "yearly"] += primary_energy_transportation_yearly_list
+        bipv_results_dict["lca_primary_energy"]["recycling"]["yearly"] += primary_energy_recycling_yearly_list
+        bipv_results_dict["lca_primary_energy"]["total"]["yearly"] += [sum(i) for i in zip(
             primary_energy_transportation_yearly_list,
             primary_energy_material_extraction_and_manufacturing_yearly_list,
             primary_energy_recycling_yearly_list)]
-        bipv_results_dict["lca_primary_energy"]["total"]["total"] = sum(
-            bipv_results_dict["lca_primary_energy"]["total"]["yearly"])
         # LCA carbon footprint
         bipv_results_dict["lca_carbon_footprint"]["material_extraction_and_manufacturing"][
-            "yearly"] = carbon_material_extraction_and_manufacturing_yearly_list
-        bipv_results_dict["lca_carbon_footprint"]["material_extraction_and_manufacturing"][
-            "total"] = sum(carbon_material_extraction_and_manufacturing_yearly_list)
+            "yearly"] += carbon_material_extraction_and_manufacturing_yearly_list
         bipv_results_dict["lca_carbon_footprint"]["transportation"][
-            "yearly"] = carbon_transportation_yearly_list
-        bipv_results_dict["lca_carbon_footprint"]["transportation"]["total"] = sum(
-            carbon_transportation_yearly_list)
-        bipv_results_dict["lca_carbon_footprint"]["recycling"]["yearly"] = carbon_recycling_yearly_list
-        bipv_results_dict["lca_carbon_footprint"]["recycling"]["total"] = sum(carbon_recycling_yearly_list)
-        bipv_results_dict["lca_carbon_footprint"]["total"]["yearly"] = [sum(i) for i in zip(
+            "yearly"] += carbon_transportation_yearly_list
+        bipv_results_dict["lca_carbon_footprint"]["recycling"]["yearly"] += carbon_recycling_yearly_list
+        bipv_results_dict["lca_carbon_footprint"]["total"]["yearly"] += [sum(i) for i in zip(
             carbon_transportation_yearly_list, carbon_material_extraction_and_manufacturing_yearly_list,
             carbon_recycling_yearly_list)]
-        bipv_results_dict["lca_carbon_footprint"]["total"]["total"] = sum(
-            bipv_results_dict["lca_carbon_footprint"]["total"]["yearly"])
         # DMFA
-        bipv_results_dict["dmfa_waste"]["yearly"] = dmfa_waste_yearly_list
-        bipv_results_dict["dmfa_waste"]["total"] = sum(dmfa_waste_yearly_list)
+        bipv_results_dict["dmfa_waste"]["yearly"] += dmfa_waste_yearly_list
+        # Compute cumulative and total values
+        bipv_results_dict = compute_cumulative_and_total_value_bipv_result_dict(bipv_results_dict)
 
         return bipv_results_dict
 
@@ -551,10 +568,10 @@ class SolarRadAndBipvSimulation:
                         row_data[k] = v[i]
                 writer.writerow(row_data)
 
-    def results_to_figures(self):
-        """
-
-        """
+    # def results_to_figures(self):
+    #     """
+    #
+    #     """
 
     @staticmethod
     def urban_canopy_sum_bipv_results_dicts_with_different_years(dict_1, dict_2, starting_year_list,
@@ -605,6 +622,21 @@ class SolarRadAndBipvSimulation:
         """ -1 because the first year is included """
 
         return earliest_year, latest_year
+
+
+def compute_cumulative_and_total_value_bipv_result_dict(bipv_results_dict):
+    """
+    Sum the values dictionnaries
+    """
+
+    for key in bipv_results_dict:
+        if isinstance(bipv_results_dict[key], dict):
+            bipv_results_dict[key] = compute_cumulative_and_total_value_bipv_result_dict(bipv_results_dict[key])
+        elif isinstance(bipv_results_dict[key], list) and key == "yearly":
+            bipv_results_dict["cumulative"] = [sum(bipv_results_dict["yearly"][0:i]) for i in range (1, len(bipv_results_dict["yearly"])+1)]
+            bipv_results_dict["total"] = bipv_results_dict["cumulative"][-1]
+
+    return bipv_results_dict
 
 
 def sum_dicts(*args):

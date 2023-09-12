@@ -131,9 +131,9 @@ def bipv_energy_harvesting_simulation_yearly_annual_irradiance(pv_panel_obj_list
             pass
 
         # Get the energy harvesting and increment the age of panel by 1 year
-        for index, panel_obj in enumerate(pv_panel_obj_list):
+        for panel_obj in enumerate(pv_panel_obj_list):
             energy_harvested_panel = panel_obj.energy_harvested_in_one_year(
-                irradiance=annual_solar_irradiance_value[index], **kwargs)
+                irradiance=annual_solar_irradiance_value[panel_obj.index], **kwargs)
             panel_obj.increment_age_by_one_year()
             energy_harvested += energy_harvested_panel
             # Eventually the energy harvested by the panel could be stored in a list for each panel, but heavy
