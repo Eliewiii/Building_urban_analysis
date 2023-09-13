@@ -123,7 +123,7 @@ def main():
         SolarOrPanelSimulation.solar_radiation_simulation(urban_canopy_object=urban_canopy_object,
                                                           path_simulation_folder=arguments_dictionary[
                                                               "path_simulation_folder"],
-                                                          path_weather_file=arguments_dictionary[
+                                                          path_epw_file=arguments_dictionary[
                                                               "path_weather_file"],
                                                           list_id=arguments_dictionary["building_id_list"],
                                                           grid_size=arguments_dictionary["grid_size"],

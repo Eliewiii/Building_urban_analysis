@@ -21,6 +21,8 @@ from utils.utils_configuration import name_urban_canopy_export_file_pkl, name_ur
     name_radiation_simulation_folder
 from utils.utils_constants import TOLERANCE_LBT
 
+from utils.utils_default_values_user_parameters import default_path_weather_file
+
 dev_logger = logging.getLogger("dev")
 user_logger = logging.getLogger("user")
 
@@ -82,8 +84,6 @@ class UrbanCanopy:
         Not 100% necessary as te dictionary is written after the urban canopy is pickled, but some of
         """
         self.json_dict = {}
-
-
 
     def load_typologies(self, typology_folder_path):
         """ Load the typologies from the folder
@@ -235,8 +235,7 @@ class UrbanCanopy:
             json_dict=self.json_dict,
             building_dict=self.building_dict)
 
-
-# todo : to delete, it is useless
+    # todo : to delete, it is useless
 
     def make_HB_model_envelops_from_buildings(self, path_folder=None):
         """ Make the hb model for the building envelop and save it to hbjson file if the path is provided """
@@ -472,14 +471,15 @@ class UrbanCanopy:
                                                   facades_grid_size_y=facades_grid_size_y,
                                                   offset_dist=offset_dist)
 
-    def run_annual_solar_irradiance_simulation_on_buildings(self, path_simulation_folder, building_id_list,
-                                                            path_weather_file, overwrite=False, north_angle=0,
-                                                            silent=False):
+    def run_annual_solar_irradiance_simulation_on_buildings(self, path_simulation_folder,
+                                                            building_id_list=None,
+                                                            path_epw_file=default_path_weather_file,
+                                                            overwrite=False, north_angle=0, silent=False):
         """
         Run the solar radiation simulation for the buildings in the urban canopy.
         :param building_id_list: list of the building id to run the simulation, if None or empty list, all the target
         :param path_simulation_folder: string, path to the folder where the simulation will be performed.
-        :param path_weather_file: string, path to the weather file.
+        :param path_epw_file: string, path to the weather file.
         :param overwrite: boolean, if True, the simulation will be run again and the results will overwrite the
             existing ones.
         :param north_angle: float, angle of the north in degrees.
@@ -502,24 +502,22 @@ class UrbanCanopy:
                         f"The building id {building_id} is not a target building, a radiation analysis "
                         f"cannot be performed if the building is not a target. You can update "
                         f"the properties of the building {building_id} to make it a target building.")
-                elif self.building_dict[building_id].solar_radiation_and_bipv_simulation_obj is None:
-                    user_logger.warning(f"No mesh for radiation simulation was generated for The building id "
-                                        f"{building_id}, the radiation simulation will not performed for this building.")
         # Run the simulation for the buildings
         for building_obj in self.building_dict.values():
             if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
-                    and isinstance(building_obj, BuildingModeled) and building_obj.is_target \
-                    and building_obj.solar_radiation_and_bipv_simulation_obj is not None:
-                building_obj.run_annual_solar_irradiance_simulation(path_simulation_folder=path_simulation_folder,
-                                                            path_weather_file=path_weather_file,
-                                                            overwrite=overwrite,
-                                                            north_angle=north_angle, silent=silent)
+                    and isinstance(building_obj, BuildingModeled) and building_obj.is_target :
+                building_obj.run_annual_solar_irradiance_simulation(
+                    path_simulation_folder=path_simulation_folder,
+                    path_epw_file=path_epw_file,
+                    overwrite=overwrite,
+                    north_angle=north_angle, silent=silent)
 
     def run_bipv_panel_simulation_on_buildings(self, path_simulation_folder, path_pv_tech_dictionary_json,
                                                building_id_list, roof_id_pv_tech, facades_id_pv_tech,
                                                efficiency_computation_method="yearly", minimum_panel_eroi=1.2,
                                                study_duration_in_years=50,
-                                               replacement_scenario="replace_failed_panels_every_X_years", **kwargs):
+                                               replacement_scenario="replace_failed_panels_every_X_years",
+                                               **kwargs):
         """
         Run the panels simulation on the urban canopy
         :param path_simulation_folder: path to the simulation folder
@@ -564,10 +562,11 @@ class UrbanCanopy:
         for building_obj in self.building_dict.values():
             if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
                     and isinstance(building_obj, BuildingModeled) and building_obj.is_target \
-                    and building_obj.solar_radiation_and_bipv_simulation_obj is not None and (self.building_dict[
-                                                                                                  building_id].solar_radiation_and_bipv_simulation_obj.roof_annual_panel_irradiance_list is not None or \
-                                                                                              self.building_dict[
-                                                                                                  building_id].solar_radiation_and_bipv_simulation_obj.facades_annual_panel_irradiance_list is not None):
+                    and building_obj.solar_radiation_and_bipv_simulation_obj is not None and (
+                    self.building_dict[
+                        building_id].solar_radiation_and_bipv_simulation_obj.roof_annual_panel_irradiance_list is not None or \
+                    self.building_dict[
+                        building_id].solar_radiation_and_bipv_simulation_obj.facades_annual_panel_irradiance_list is not None):
                 # Run the BIPV simulation
                 building_obj.run_bipv_panel_simulation(path_simulation_folder=path_simulation_folder,
                                                        pv_technologies_dictionary=pv_technologies_dictionary,
@@ -583,7 +582,6 @@ class UrbanCanopy:
         """
 
         """
-
 
     def plot_graphs_buildings(self, path_simulation_folder, study_duration_years, country_ghe_cost):
         for building in self.building_dict.values():

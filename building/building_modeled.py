@@ -199,7 +199,6 @@ class BuildingModeled(BuildingBasic):
         self.shading_context_obj.set_min_vf_criterion(min_vf_criterion=min_vf_criterion)
         self.shading_context_obj.set_number_of_rays(number_of_rays=number_of_rays)
 
-
     def select_shading_context_buildings(self, building_dictionary):
         """
         todo @Elie
@@ -263,12 +262,12 @@ class BuildingModeled(BuildingBasic):
         :param north_angle: float : north angle of the building in degrees
         :param silent: bool: default=False
         """
-        # check if the solar radiation and BIPV simulation object was initialized
-        if self.solar_radiation_and_bipv_simulation_obj is None:
+        #         # check if the solar radiation and BIPV simulation object was initialized
+        if self.solar_radiation_and_bipv_simulation_obj.roof_sensorgrid_dict is None or self.solar_radiation_and_bipv_simulation_obj.facades_sensorgrid_dict is None:
             dev_logger.info(
-                f"The solar radiation and BIPV simulation object was not initialized for the building {self.id}, it will be ignored")
+                f"The SenssorGrid of building {self.id} was not generated, it will be ignored")
             user_logger.info(
-                f"The building {self.id} was not simulated for the annual solar radiation simulation no mesh for the PVs was generated")
+                f"No mesh was generated on the building {self.id}, please generate one. On the meantime it will be ignored")
             return
         # check if the epw file exists (should be check in the components in Grasshopper as well)
         if not os.path.isfile(path_epw_file):
@@ -277,16 +276,15 @@ class BuildingModeled(BuildingBasic):
                 f"The building {self.id} was not simulated for the annual solar radiation simulation no mesh for the PVs was generated")
             return
         # check if the building has context
-        if self.shading_context_obj is None or self.shading_context_obj.self.shading_context_obj.context_shading_hb_shade_list == []:
+        if self.shading_context_obj is None or self.shading_context_obj.context_shading_hb_shade_list == []:
             dev_logger.info(
                 f"The building {self.id} does not have shades. consider running the shading simulation first or add your shades manually")
             user_logger.info(
                 f"The building {self.id} does not have shades. consider running the shading simulation first or add your shades manually")
-            return
 
         # run the annual solar radiation simulation
         self.solar_radiation_and_bipv_simulation_obj.run_annual_solar_irradiance_simulation(
-            path_simulation_folder=path_simulation_folder, hb_model_obj=self.hb_model_obj,
+            path_simulation_folder=path_simulation_folder, building_id=self.id, hb_model_obj=self.hb_model_obj,
             context_shading_hb_shade_list=self.shading_context_obj.context_shading_hb_shade_list,
             path_epw_file=path_epw_file, overwrite=overwrite,
             north_angle=north_angle, silent=silent)

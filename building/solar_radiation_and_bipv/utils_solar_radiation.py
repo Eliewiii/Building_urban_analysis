@@ -51,7 +51,7 @@ def run_hb_model_annual_irradiance_simulation(hb_model_obj, path_folder_run, pat
     # @ credit LBT
 
     # Generate the recipe settings
-    run_settings = RecipeSettings(path_folder=path_folder_run, workers=None, reload_old=not overwrite,
+    run_settings = RecipeSettings(folder=path_folder_run, workers=None, reload_old=not overwrite,
                                   report_out=False)
 
     # create the recipe and set the input arguments
@@ -91,7 +91,7 @@ def move_annual_irr_hb_radiance_results(path_temp_ill_result_file, path_temp_sun
     if os.path.isfile(os.path.join(path_result_folder, new_sun_hours_file_name)):
         os.remove(os.path.join(path_result_folder, new_sun_hours_file_name))
     # move the files
-    shutil.move(path_temp_ill_result_file, os.path.join(path_result_folder, new_sun_hours_file_name))
+    shutil.move(path_temp_ill_result_file, os.path.join(path_result_folder, new_ill_file_name))
     shutil.move(path_temp_sun_hours_file, os.path.join(path_result_folder, new_sun_hours_file_name))
 
 

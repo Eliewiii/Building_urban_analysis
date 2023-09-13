@@ -99,26 +99,32 @@ class SolarRadAndBipvSimulation:
         # parameters
         self.parameter_dict = empty_parameter_dict
 
-    def set_mesh_parameters(self, bipv_on_roof, bipv_on_facades, roof_grid_size_x=1,
-                            facades_grid_size_x=1, roof_grid_size_y=1, facades_grid_size_y=1,
-                            offset_dist=0.1):
+    def set_roof_mesh_parameters(self, bipv_on_roof, roof_grid_size_x=1, roof_grid_size_y=1,
+                                 offset_dist=0.1):
         """
         Set the mesh parameters for the simulation
         :param bipv_on_roof: bool: default=True
-        :param bipv_on_facades: bool: default=True
         :param roof_grid_size_x: Number for the size of the test grid
-        :param facades_grid_size_x: Number for the size of the test grid
         :param roof_grid_size_y: Number for the size of the test grid
-        :param facades_grid_size_y: Number for the size of the test grid
         :param offset_dist: Number for the distance to move points from the surfaces of the geometry of the model.
         """
         self.on_roof = bipv_on_roof
-        self.on_facades = bipv_on_facades
         self.parameter_dict["roof"]["grid_x"] = roof_grid_size_x
         self.parameter_dict["roof"]["grid_y"] = roof_grid_size_y
+        self.parameter_dict["roof"]["offset"] = offset_dist
+
+    def set_facades_mesh_parameters(self, bipv_on_facades, facades_grid_size_x=1, facades_grid_size_y=1,
+                                    offset_dist=0.1):
+        """
+        Set the mesh parameters for the simulation
+        :param bipv_on_facades: bool: default=True
+        :param facades_grid_size_x: Number for the size of the test grid
+        :param facades_grid_size_y: Number for the size of the test grid
+        :param offset_dist: Number for the distance to move points from the surfaces of the geometry of the model.
+        """
+        self.on_facades = bipv_on_facades
         self.parameter_dict["facades"]["grid_x"] = facades_grid_size_x
         self.parameter_dict["facades"]["grid_y"] = facades_grid_size_y
-        self.parameter_dict["roof"]["offset"] = offset_dist
         self.parameter_dict["facades"]["offset"] = offset_dist
 
     def set_bipv_parameters(self, roof_pv_tech_obj, facades_pv_tech_obj, minimum_panel_eroi,
@@ -148,7 +154,7 @@ class SolarRadAndBipvSimulation:
 
     def generate_sensor_grid(self, hb_model_obj, bipv_on_roof=True, bipv_on_facades=True, roof_grid_size_x=1,
                              facades_grid_size_x=1, roof_grid_size_y=1, facades_grid_size_y=1,
-                             offset_dist=0.1):
+                             offset_dist=0.1, overwrite=False):
         """
         Generate the sensor grid for the BIPV simulation
         :param hb_model_obj: Honeybee model object
@@ -159,29 +165,37 @@ class SolarRadAndBipvSimulation:
         :param roof_grid_size_y: Number for the size of the test grid
         :param facades_grid_size_y: Number for the size of the test grid
         :param offset_dist: Number for the distance to move points from the surfaces of the geometry
+        :param overwrite: bool: Overwrite the existing mesh if there is one default=False
+
         of the model.
         """
 
-        # Set the parameters
-        self.set_mesh_parameters(bipv_on_roof=bipv_on_roof, bipv_on_facades=bipv_on_facades,
-                                 roof_grid_size_x=roof_grid_size_x, facades_grid_size_x=facades_grid_size_x,
-                                 roof_grid_size_y=roof_grid_size_y, facades_grid_size_y=facades_grid_size_y,
-                                 offset_dist=offset_dist)
-        # Generate the sensor grid on roof or facades
-        if self.on_roof:
-            self.roof_sensorgrid_dict = generate_sensor_grid_for_hb_model(hb_model_obj, roof_grid_size_x,
-                                                                          roof_grid_size_y, offset_dist,
-                                                                          "roof")
-        if self.on_facades:
-            self.facades_sensorgrid_dict = generate_sensor_grid_for_hb_model(hb_model_obj,
-                                                                             facades_grid_size_x,
-                                                                             facades_grid_size_y, offset_dist,
-                                                                             "facades")
-        if not self.on_roof and not self.on_facades:
+        if not bipv_on_roof and not bipv_on_facades :
             user_logger.warning(f"You did not precise whether you want to run the simulation on the roof, "
                                 f"the facades or both")
             dev_logger.warning(f"You did not precise whether you want to run the simulation on the roof, "
                                f"the facades or both")
+            return
+
+        # Generate the sensor grid on roof or facades
+        if bipv_on_roof and (self.roof_sensorgrid_dict is None or overwrite):
+            self.roof_sensorgrid_dict = generate_sensor_grid_for_hb_model(hb_model_obj, roof_grid_size_x,
+                                                                          roof_grid_size_y, offset_dist,
+                                                                          "roof")
+            self.set_roof_mesh_parameters(bipv_on_roof=bipv_on_roof, roof_grid_size_x=roof_grid_size_x,
+                                          roof_grid_size_y=roof_grid_size_y, offset_dist=offset_dist)
+        if bipv_on_facades and (self.facades_sensorgrid_dict is None or overwrite):
+            self.facades_sensorgrid_dict = generate_sensor_grid_for_hb_model(hb_model_obj,
+                                                                             facades_grid_size_x,
+                                                                             facades_grid_size_y, offset_dist,
+                                                                             "facades")
+            self.set_facades_mesh_parameters(bipv_on_facades=bipv_on_facades,
+                                             facades_grid_size_x=facades_grid_size_x,
+                                             facades_grid_size_y=facades_grid_size_y,
+                                             offset_dist=offset_dist)
+
+
+
 
     def run_annual_solar_irradiance_simulation(self, path_simulation_folder, building_id, hb_model_obj,
                                                context_shading_hb_shade_list, path_epw_file, overwrite=False,
@@ -201,7 +215,8 @@ class SolarRadAndBipvSimulation:
                                                       str(building_id))
         path_result_folder = os.path.join(path_simulation_folder, name_radiation_simulation_folder,
                                           str(building_id))
-        annual_irradiance_file_name = str(building_id) + ".ill"
+
+
 
         # Distinguish between roof and facades
         if self.roof_sensorgrid_dict is not None:
@@ -215,7 +230,7 @@ class SolarRadAndBipvSimulation:
                 # run in the temporary folder
                 path_folder_run_radiation_temp_roof = os.path.join(path_folder_run_radiation_temp, "roof")
                 self.roof_annual_panel_irradiance_list = run_hb_model_annual_irradiance_simulation(
-                    hb_model_obj=hb_model_obj,
+                    hb_model_obj=hb_model_copy_roof,
                     path_folder_run=path_folder_run_radiation_temp_roof,
                     path_weather_file=path_epw_file,
                     timestep=1,
@@ -226,6 +241,8 @@ class SolarRadAndBipvSimulation:
                 path_folder_result_run_radiation_temp_roof = os.path.join(path_folder_run_radiation_temp_roof,
                                                                           "annual_irradiance",
                                                                           "results", "total")
+                annual_irradiance_file_name = SensorGrid.from_dict(
+                    self.roof_sensorgrid_dict).identifier + ".ill"
                 path_result_file_ill = os.path.join(path_folder_result_run_radiation_temp_roof,
                                                     annual_irradiance_file_name)
                 path_sun_hours_file = os.path.join(path_folder_result_run_radiation_temp_roof,
@@ -239,7 +256,7 @@ class SolarRadAndBipvSimulation:
         # Do not run the simulation if there is no SensorGrid on the facades
         if self.facades_sensorgrid_dict is not None:
             # Check if the simulation has already been run
-            if self.facade_annual_panel_irradiance_list is None or overwrite:
+            if self.facades_annual_panel_irradiance_list is None or overwrite:
                 # Make a copy of the Honeybee Model and add the SensorGrid and context to it
                 hb_model_copy_facades = hb_model_obj.duplicate()
                 hb_model_copy_facades.properties.radiance.add_sensor_grid(
@@ -248,8 +265,8 @@ class SolarRadAndBipvSimulation:
                 # run in the temporary folder
                 path_folder_run_radiation_temp_facades = os.path.join(path_folder_run_radiation_temp,
                                                                       "facades")
-                self.facade_annual_panel_irradiance_list = run_hb_model_annual_irradiance_simulation(
-                    hb_model_obj=hb_model_obj,
+                self.facades_annual_panel_irradiance_list = run_hb_model_annual_irradiance_simulation(
+                    hb_model_obj=hb_model_copy_facades,
                     path_folder_run=path_folder_run_radiation_temp_facades,
                     path_weather_file=path_epw_file,
                     timestep=1,
@@ -261,6 +278,8 @@ class SolarRadAndBipvSimulation:
                     path_folder_run_radiation_temp_facades,
                     "annual_irradiance",
                     "results", "total")
+                annual_irradiance_file_name = SensorGrid.from_dict(
+                    self.facades_sensorgrid_dict).identifier + ".ill"
                 path_result_file_ill = os.path.join(path_folder_result_run_radiation_temp_facades,
                                                     annual_irradiance_file_name)
                 path_sun_hours_file = os.path.join(path_folder_result_run_radiation_temp_facades,

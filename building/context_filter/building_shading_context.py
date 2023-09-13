@@ -21,7 +21,7 @@ class BuildingShadingContext(BuildingContext):
         """ todo """
         super().__init__()  # inherit from all the attributes of the super class
         self.number_of_rays = None
-        self.hb_shade_context_list = []
+        self.context_shading_hb_shade_list = []
 
     def set_number_of_rays(self, number_of_rays):
         """ todo """
@@ -38,7 +38,7 @@ class BuildingShadingContext(BuildingContext):
         hb_face_context_list = self.select_non_obstructed_surfaces_of_context_hb_model_for_target_lb_polyface3d(
             target_lb_polyface3d_extruded_footprint, context_hb_model_list_to_test, full_urban_canopy_pyvista_mesh,
             number_of_rays=self.number_of_rays)
-        self.hb_shade_context_list = None  # todo : Transform the faces into shades
+        self.context_shading_hb_shade_list = None  # todo : Transform the faces into shades
 
     def select_non_obstructed_surfaces_of_context_hb_model_for_target_lb_polyface3d(self,
                                                                                     target_lb_polyface3d_extruded_footprint,
