@@ -53,9 +53,9 @@ default_on_facades = True
 
 # Default value mesh generation
 default_roof_grid_size_x = 1.5
-default_facade_grid_size_x = 1.5
+default_facades_grid_size_x = 1.5
 default_roof_grid_size_y = 1.5
-default_facade_grid_size_y = 1.5
+default_facades_grid_size_y = 1.5
 default_offset_dist = 0.1
 
 # Default values for panel simulation

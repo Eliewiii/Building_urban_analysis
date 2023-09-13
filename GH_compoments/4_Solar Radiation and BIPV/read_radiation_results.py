@@ -86,14 +86,14 @@ if _run and os.path.isfile(path_json):
 
         # for the facades
         path_values_facades = os.path.join(path_folder_simulation_,"Radiation Simulation",building_id,"Facades", 'annual_radiation_values.txt')
-        values_facade_list.append(get_values_in_list(path_values_facades))
+        values_facades_list.append(get_values_in_list(path_values_facades))
         sensor_grid_dict_facades = urban_canopy_dict["buildings"][building_id]["Solar_radiation"]["Sensor_grids_dict"]["Facades"]
-        mesh_facade_list.append(get_rhino_mesh_from_sensor_grid(sensor_grid_dict_facades))
+        mesh_facades_list.append(get_rhino_mesh_from_sensor_grid(sensor_grid_dict_facades))
 
     values_roof_tree= th.list_to_tree(values_roof_list)
     mesh_roof_tree= th.list_to_tree(mesh_roof_list)
-    values_facade_tree=th.list_to_tree(values_facade_list)
-    mesh_facade_tree =th.list_to_tree(mesh_facade_list)
+    values_facades_tree=th.list_to_tree(values_facades_list)
+    mesh_facades_tree =th.list_to_tree(mesh_facades_list)
 
 if not os.path.isfile(path_json):
     print("the json file of the urban canopy does not exist")

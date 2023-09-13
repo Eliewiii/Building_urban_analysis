@@ -52,12 +52,12 @@ class BuildingModeled(BuildingBasic):
         self.to_simulate = False
         self.is_target = False
         # Shading computation
-        self.shading_context_obj = None
+        self.shading_context_obj = BuildingShadingContext()
 
         self.first_pass_context_building_id_list = []  # todo @Elie delete
 
         # Solar and panel radiation
-        self.solar_radiation_and_bipv_simulation_obj = None
+        self.solar_radiation_and_bipv_simulation_obj = SolarRadAndBipvSimulation()
 
         self.sensor_grid_dict = {'roof': None, 'facades': None}
         self.panels = {"roof": None, "facades": None}
@@ -189,19 +189,16 @@ class BuildingModeled(BuildingBasic):
                                                                              north_angle=north_angle)
         self.merged_faces_hb_model_dict = merged_faces_hb_model_obj.to_dict()
 
-    def init_shading_context_obj(self, min_VF_criterion, number_of_rays):
+    def init_shading_context_obj(self, min_vf_criterion, number_of_rays):
         """
         todo @Elie
         todo @Elie
         :return:
         """
-        # Initialize if the building does not have a shading_context already or if the parameters are different
-        if self.shading_context_obj is None or self.shading_context_obj.min_VF_criterion != min_VF_criterion:
-            self.shading_context_obj = BuildingShadingContext(min_VF_criterion, number_of_rays)
-        elif self.shading_context_obj.number_of_rays != number_of_rays:
-            self.shading_context_obj.set_number_of_rays(number_of_rays)
-        else:
-            pass  # do nothing if the BuildingShadingContext already exist or if the parameters are the same
+
+        self.shading_context_obj.set_min_vf_criterion(min_vf_criterion=min_vf_criterion)
+        self.shading_context_obj.set_number_of_rays(number_of_rays=number_of_rays)
+
 
     def select_shading_context_buildings(self, building_dictionary):
         """
@@ -219,55 +216,40 @@ class BuildingModeled(BuildingBasic):
 
         return self.shading_context_obj.context_building_list
 
-    def init_solar_radiation_and_bipv_simulation_object(self):
-        """
-        Initialize the solar radiation and BIPV simulation object
-        """
-        if self.solar_radiation_and_bipv_simulation_obj is None:
-            self.solar_radiation_and_bipv_simulation_obj = SolarRadAndBipvSimulation()
-
-    def generate_sensor_grid(self, do_simulation_on_roof=True, do_simulation_on_facade=True,
-                             roof_grid_size_x=1, facade_grid_size_x=1, roof_grid_size_y=1,
-                             facade_grid_size_y=1, offset_dist=0.1):
+    def generate_sensor_grid(self, bipv_on_roof=True, bipv_on_facades=True,
+                             roof_grid_size_x=1, facades_grid_size_x=1, roof_grid_size_y=1,
+                             facades_grid_size_y=1, offset_dist=0.1):
         """
         Generate Honeybee SensorGrid on the roof and/or on the facades for the building.
         It does not add the SendorgGrid to the HB model.
-        :param do_simulation_on_roof: Boolean to indicate if the simulation should be done on the roof
-        :param do_simulation_on_facade: Boolean to indicate if the simulation should be done on the facades
+        :param bipv_on_roof: Boolean to indicate if the simulation should be done on the roof
+        :param bipv_on_facades: Boolean to indicate if the simulation should be done on the facades
         :param roof_grid_size_x: Number for the size of the test grid on the roof in the x direction
-        :param facade_grid_size_x: Number for the size of the test grid on the facades in the x direction
+        :param facades_grid_size_x: Number for the size of the test grid on the facades in the x direction
         :param roof_grid_size_y: Number for the size of the test grid on the roof in the y direction
-        :param facade_grid_size_y: Number for the size of the test grid on the facades in the y direction
+        :param facades_grid_size_y: Number for the size of the test grid on the facades in the y direction
         :param offset_dist: Number for the distance to move points from the surfaces of the geometry of the model.
         """
-        # Initialize the solar radiation and BIPV simulation object if it is not already initialized (if possible
-        if self.is_target:
-            self.init_solar_radiation_and_bipv_simulation_object()
-            dev_logger.info(
-                f"The building {self.id} was target, thus the solar radiation and BIPV simulation object "
-                f"was initialized with the default values.")
-        else:
+        # Do not generate the SensorGrid if the building is not a target
+        if not self.is_target:
+            dev_logger.info(f"The building {self.id} is not target, no SensorGrid will be generated."
+                            f"Please set the building as target if you want to generate the mesh and perform "
+                            f"BIPV simulation ")
             return
 
-        # Generate the SensorGrids for the roof and the facades on the HB model with merged facades if it exists
-        self.solar_radiation_and_bipv_simulation_obj.set_mesh_parameters(
-            bipv_on_roof=do_simulation_on_roof,
-            bipv_on_facade=do_simulation_on_facade,
-            roof_grid_size_x=roof_grid_size_x,
-            facade_grid_size_x=facade_grid_size_x,
-            roof_grid_size_y=roof_grid_size_y,
-            facade_grid_size_y=facade_grid_size_y,
-            offset_dist=offset_dist)
         # Use the merged faces HB model if it exists, otherwise use the original HB model
         if self.merged_faces_hb_model_dict is not None:
             hb_model_obj = Model.from_dict(self.merged_faces_hb_model_dict)
         else:
             hb_model_obj = self.hb_model_obj
+        # generate the sensor grid
         self.solar_radiation_and_bipv_simulation_obj.generate_sensor_grid(hb_model_obj=hb_model_obj,
+                                                                          bipv_on_roof=bipv_on_roof,
+                                                                          bipv_on_facades=bipv_on_facades,
                                                                           roof_grid_size_x=roof_grid_size_x,
-                                                                          facade_grid_size_x=facade_grid_size_x,
+                                                                          facades_grid_size_x=facades_grid_size_x,
                                                                           roof_grid_size_y=roof_grid_size_y,
-                                                                          facade_grid_size_y=facade_grid_size_y,
+                                                                          facades_grid_size_y=facades_grid_size_y,
                                                                           offset_dist=offset_dist)
 
     def run_annual_solar_irradiance_simulation(self, path_simulation_folder, path_epw_file, overwrite=False,

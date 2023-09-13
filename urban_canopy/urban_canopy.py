@@ -83,30 +83,7 @@ class UrbanCanopy:
         """
         self.json_dict = {}
 
-    def write_json_dictionary(self, path_simulation_folder):
-        """ Create a dictionary which will contain certain useful attributes of the urban canopy and the buildings """
-        # Add buildings and list of buildings to the json dictionary
-        UrbanCanopyAdditionalFunction.add_buildings_and_list_of_buildings_to_json_dict(
-            json_dict=self.json_dict,
-            building_dict=self.building_dict)
-        # Add building envelop and model (room)
-        UrbanCanopyAdditionalFunction.add_building_HB_models_and_envelop_to_json_dict(
-            json_dict=self.json_dict,
-            building_dict=self.building_dict)
-        # add the various attributes of the buildings to the json dictionary
-        UrbanCanopyAdditionalFunction.add_building_attributes_to_json_dict(json_dict=self.json_dict,
-                                                                           building_dict=self.building_dict)
-        UrbanCanopyAdditionalFunction.add_radiation_attributes_to_json_dict(json_dict=self.json_dict,
-                                                                            building_dict=self.building_dict,
-                                                                            path_simulation_folder=path_simulation_folder)
-        UrbanCanopyAdditionalFunction.add_panel_attributes_to_json_dict(json_dict=self.json_dict,
-                                                                        building_dict=self.building_dict)
 
-    def generate_building_envelop_and_add_it_to_json_dict(self):
-        """"""
-        UrbanCanopyAdditionalFunction.add_hb_model_of_urban_canopy_envelop_to_json_dict(
-            json_dict=self.json_dict,
-            building_dict=self.building_dict)
 
     def load_typologies(self, typology_folder_path):
         """ Load the typologies from the folder
@@ -453,22 +430,20 @@ class UrbanCanopy:
                     orient_roof_mesh_to_according_to_building_orientation=orient_roof_mesh_to_according_to_building_orientation,
                     north_angle=north_angle)
 
-    def generate_sensor_grid_on_buildings(self, building_id_list=None, do_simulation_on_roof=True,
-                                          do_simulation_on_facade=True, roof_grid_size_x=1,
-                                          facade_grid_size_x=1,
-                                          roof_grid_size_y=1, facade_grid_size_y=1, offset_dist=0.1):
+    def generate_sensor_grid_on_buildings(self, building_id_list=None, bipv_on_roof=True,
+                                          bipv_on_facades=True, roof_grid_size_x=1,
+                                          facades_grid_size_x=1,
+                                          roof_grid_size_y=1, facades_grid_size_y=1, offset_dist=0.1):
         """
         Generate the sensor grid for the buildings in the urban canopy.
-        :param do_simulation_on_roof: boolean, if True, the solar radiation simulation will be performed on the roofs
-            of the buildings.
-        :param do_simulation_on_facade: boolean, if True, the solar radiation simulation will be performed on the
-            facades of the buildings.
+        :param bipv_on_roof: Boolean to indicate if the simulation should be done on the roof
+        :param bipv_on_facades: Boolean to indicate if the simulation should be done on the facades
         :param building_id_list: list of the building id to generate the sensor grid,
             if None or empty list, all the target buildings will be initialized.
         :param roof_grid_size_x: float, grid size of the sensor grid on the roof in the x direction.
-        :param facade_grid_size_x: float, grid size of the sensor grid on the facades in the x direction.
+        :param facades_grid_size_x: float, grid size of the sensor grid on the facades in the x direction.
         :param roof_grid_size_y: float, grid size of the sensor grid on the roof in the y direction.
-        :param facade_grid_size_y: float, grid size of the sensor grid on the facades in the y direction.
+        :param facades_grid_size_y: float, grid size of the sensor grid on the facades in the y direction.
         :param offset_dist: float, offset distance between the sensor grid and the building.
         """
         # Checks of the building_id_list parameter to give feedback to the user if there is an issue with an id
@@ -489,12 +464,12 @@ class UrbanCanopy:
         for building_obj in self.building_dict.values():
             if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
                     and isinstance(building_obj, BuildingModeled) and building_obj.is_target:
-                building_obj.generate_sensor_grid(do_simulation_on_roof=do_simulation_on_roof,
-                                                  do_simulation_on_facade=do_simulation_on_facade,
+                building_obj.generate_sensor_grid(bipv_on_roof=bipv_on_roof,
+                                                  bipv_on_facades=bipv_on_facades,
                                                   roof_grid_size_x=roof_grid_size_x,
-                                                  facade_grid_size_x=facade_grid_size_x,
+                                                  facades_grid_size_x=facades_grid_size_x,
                                                   roof_grid_size_y=roof_grid_size_y,
-                                                  facade_grid_size_y=facade_grid_size_y,
+                                                  facades_grid_size_y=facades_grid_size_y,
                                                   offset_dist=offset_dist)
 
     def run_annual_solar_irradiance_simulation_on_buildings(self, path_simulation_folder, building_id_list,

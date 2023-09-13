@@ -97,14 +97,14 @@ class LoadArguments:
                             help="size of the grid of the mesh for the buildings in the y direction, "
                                     "it should be about the size of a panel + BOS",
                             default=default_roof_grid_size_y)
-        parser.add_argument("--facade_grid_size_x",
+        parser.add_argument("--facades_grid_size_x",
                             help="size of the grid of the mesh for the buildings in the x direction, "
                                     "it should be about the size of a panel + BOS",
-                            default=default_facade_grid_size_x)
-        parser.add_argument("--facade_grid_size_y",
+                            default=default_facades_grid_size_x)
+        parser.add_argument("--facades_grid_size_y",
                             help="size of the grid of the mesh for the buildings in the y direction, "
                                     "it should be about the size of a panel + BOS",
-                            default=default_facade_grid_size_y)
+                            default=default_facades_grid_size_y)
         parser.add_argument("--offset_dist",
                             help="Number for the distance to move points from the surfaces of the "
                                  "geometry of the model", default=default_offset_dist)
@@ -250,9 +250,9 @@ class LoadArguments:
             "on_roof": bool(int(args.on_roof)),
             "on_facades": bool(int(args.on_facades)),
             "roof_grid_size_x": float(args.roof_grid_size_x),
-            "facade_grid_size_x": float(args.facade_grid_size_x),
+            "facades_grid_size_x": float(args.facades_grid_size_x),
             "roof_grid_size_y": float(args.roof_grid_size_y),
-            "facade_grid_size_y": float(args.facade_grid_size_y),
+            "facades_grid_size_y": float(args.facades_grid_size_y),
             "offset_dist": float(args.offset_dist),
             # BIPV
             "path_pv_tech_dictionary": args.path_pv_tech_dictionary,

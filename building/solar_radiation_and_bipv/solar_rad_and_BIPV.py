@@ -135,7 +135,7 @@ class SolarRadAndBipvSimulation:
         :param replacement_scenario: str : the replacement scenario of the panels
         :param efficiency_computation_method: str : the method to compute the efficiency of the panels
         :param kwargs: dict : other parameters
-        todo: add the additional paameters
+        todo: add the additional parameters
         """
         self.parameter_dict["roof"]["panel_technology"] = roof_pv_tech_obj
         self.parameter_dict["facades"]["panel_technology"] = facades_pv_tech_obj
@@ -146,17 +146,28 @@ class SolarRadAndBipvSimulation:
         self.parameter_dict["start_year"] = start_year
         # todo: add the additional paameters
 
-    def generate_sensor_grid(self, hb_model_obj, roof_grid_size_x=1, facades_grid_size_x=1,
-                             roof_grid_size_y=1,
-                             facades_grid_size_y=1, offset_dist=0.1):
-        """Create a HoneyBee SensorGrid from a HoneyBe model for the roof, the facades or both and add it to the
-        model
-        todo @Elie
-        :param grid_size : Number for the size of the test grid
-        :param offset_dist : Number for the distance to move points from the surfaces of the geometry of the model. Typically, this
-        :param on_roof: bool: default=True
-        :param on_facades: bool: default=True"""
+    def generate_sensor_grid(self, hb_model_obj, bipv_on_roof=True, bipv_on_facades=True, roof_grid_size_x=1,
+                             facades_grid_size_x=1, roof_grid_size_y=1, facades_grid_size_y=1,
+                             offset_dist=0.1):
+        """
+        Generate the sensor grid for the BIPV simulation
+        :param hb_model_obj: Honeybee model object
+        :param bipv_on_roof: bool: default=True
+        :param bipv_on_facades: bool: default=True
+        :param roof_grid_size_x: Number for the size of the test grid
+        :param facades_grid_size_x: Number for the size of the test grid
+        :param roof_grid_size_y: Number for the size of the test grid
+        :param facades_grid_size_y: Number for the size of the test grid
+        :param offset_dist: Number for the distance to move points from the surfaces of the geometry
+        of the model.
+        """
 
+        # Set the parameters
+        self.set_mesh_parameters(bipv_on_roof=bipv_on_roof, bipv_on_facades=bipv_on_facades,
+                                 roof_grid_size_x=roof_grid_size_x, facades_grid_size_x=facades_grid_size_x,
+                                 roof_grid_size_y=roof_grid_size_y, facades_grid_size_y=facades_grid_size_y,
+                                 offset_dist=offset_dist)
+        # Generate the sensor grid on roof or facades
         if self.on_roof:
             self.roof_sensorgrid_dict = generate_sensor_grid_for_hb_model(hb_model_obj, roof_grid_size_x,
                                                                           roof_grid_size_y, offset_dist,
@@ -166,15 +177,15 @@ class SolarRadAndBipvSimulation:
                                                                              facades_grid_size_x,
                                                                              facades_grid_size_y, offset_dist,
                                                                              "facades")
-        else:
+        if not self.on_roof and not self.on_facades:
             user_logger.warning(f"You did not precise whether you want to run the simulation on the roof, "
                                 f"the facades or both")
             dev_logger.warning(f"You did not precise whether you want to run the simulation on the roof, "
                                f"the facades or both")
 
     def run_annual_solar_irradiance_simulation(self, path_simulation_folder, building_id, hb_model_obj,
-                                    context_shading_hb_shade_list, path_epw_file, overwrite=False,
-                                    north_angle=0, silent=False):
+                                               context_shading_hb_shade_list, path_epw_file, overwrite=False,
+                                               north_angle=0, silent=False):
         """
         Run the annual solar radiation simulation for the roof and/or the facades
         :param path_simulation_folder: str : the path to the simulation folder
@@ -267,7 +278,8 @@ class SolarRadAndBipvSimulation:
                                   facades_pv_tech_obj, efficiency_computation_method="yearly",
                                   minimum_panel_eroi=1.2, start_year=datetime.now().year,
                                   study_duration_in_years=50,
-                                  replacement_scenario="replace_failed_panels_every_X_years",continue_simulation=False, **kwargs):
+                                  replacement_scenario="replace_failed_panels_every_X_years",
+                                  continue_simulation=False, **kwargs):
         """
         Run the simulation of the energy harvested by the bipvs
         :param path_simulation_folder: path to the simulation folder
@@ -299,7 +311,7 @@ class SolarRadAndBipvSimulation:
             if not continue_simulation or self.roof_panel_list is None:
                 """ If there is no panel list, we init the panels, but if we want to continue the simulation and there 
                 are already panels, we do not init them again """
-                simulation_continued=True
+                simulation_continued = True
                 self.roof_panel_list = init_bipv_on_sensor_grid(
                     sensor_grid=SensorGrid.from_dict(self.roof_sensorgrid_dict),
                     pv_technology_obj=roof_pv_tech_obj,
@@ -314,8 +326,6 @@ class SolarRadAndBipvSimulation:
                 replacement_scenario = self.parameter_dict["replacement_scenario"]
                 kwargs["replacement_years"]
                 # todo: finish
-
-
 
             # Run the simulation roof
             if efficiency_computation_method == "yearly":
@@ -369,7 +379,7 @@ class SolarRadAndBipvSimulation:
                     pv_technology_obj=facades_pv_tech_obj,
                     annual_panel_irradiance_list=self.facade_annual_panel_irradiance_list,
                     minimum_panel_eroi=minimum_panel_eroi)
-            else :
+            else:
                 simulation_continued = True
                 # todo: add the parameters
             # Run the simulation facades
@@ -444,13 +454,13 @@ class SolarRadAndBipvSimulation:
         return bipv_results_dict
 
     @staticmethod
-    def add_results_to_dict(bipv_results_dict,energy_harvested_yearly_list,
-                                primary_energy_material_extraction_and_manufacturing_yearly_list,
-                                primary_energy_transportation_yearly_list,
-                                primary_energy_recycling_yearly_list,
-                                carbon_material_extraction_and_manufacturing_yearly_list,
-                                carbon_transportation_yearly_list, carbon_recycling_yearly_list,
-                                dmfa_waste_yearly_list):
+    def add_results_to_dict(bipv_results_dict, energy_harvested_yearly_list,
+                            primary_energy_material_extraction_and_manufacturing_yearly_list,
+                            primary_energy_transportation_yearly_list,
+                            primary_energy_recycling_yearly_list,
+                            carbon_material_extraction_and_manufacturing_yearly_list,
+                            carbon_transportation_yearly_list, carbon_recycling_yearly_list,
+                            dmfa_waste_yearly_list):
         """
         Convert the results to a dict
         :param bipv_results_dict: dict of the results
@@ -631,9 +641,11 @@ def compute_cumulative_and_total_value_bipv_result_dict(bipv_results_dict):
 
     for key in bipv_results_dict:
         if isinstance(bipv_results_dict[key], dict):
-            bipv_results_dict[key] = compute_cumulative_and_total_value_bipv_result_dict(bipv_results_dict[key])
+            bipv_results_dict[key] = compute_cumulative_and_total_value_bipv_result_dict(
+                bipv_results_dict[key])
         elif isinstance(bipv_results_dict[key], list) and key == "yearly":
-            bipv_results_dict["cumulative"] = [sum(bipv_results_dict["yearly"][0:i]) for i in range (1, len(bipv_results_dict["yearly"])+1)]
+            bipv_results_dict["cumulative"] = [sum(bipv_results_dict["yearly"][0:i]) for i in
+                                               range(1, len(bipv_results_dict["yearly"]) + 1)]
             bipv_results_dict["total"] = bipv_results_dict["cumulative"][-1]
 
     return bipv_results_dict

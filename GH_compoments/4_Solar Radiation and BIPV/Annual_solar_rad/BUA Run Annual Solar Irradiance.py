@@ -1,4 +1,4 @@
-"""Generate mesh on buildings for BIPV simulation
+"""Run the annual solar irradiance simulation
     Inputs:
         path_simulation_folder_: Path to the folder. Default = Appdata\Local\Building_urban_analysis\Simulation_temp
         building_id_list_: list of ints: list of buildings we want to run the simulation on
@@ -53,7 +53,7 @@ local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 path_bat_file = os.path.join(path_tool, "Scripts", "mains_tool", "run_BUA.bat")
 
-if _run and (_roof_bipv or _facade_bipv):
+if _run :
     # Write the command
     command = path_bat_file
     # Steps to execute

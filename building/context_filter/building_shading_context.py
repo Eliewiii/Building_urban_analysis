@@ -17,10 +17,10 @@ possible_numbers_of_rays_list = [1, 3, 6, 9]
 class BuildingShadingContext(BuildingContext):
     """ todo """
 
-    def __init__(self, min_vf_criterion, number_of_rays):
+    def __init__(self):
         """ todo """
-        super().__init__(min_vf_criterion=min_vf_criterion)  # inherit from all the attributes of the super class
-        self.number_of_rays = self.set_number_of_rays(number_of_rays)
+        super().__init__()  # inherit from all the attributes of the super class
+        self.number_of_rays = None
         self.hb_shade_context_list = []
 
     def set_number_of_rays(self, number_of_rays):

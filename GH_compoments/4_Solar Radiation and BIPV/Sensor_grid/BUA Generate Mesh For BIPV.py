@@ -3,14 +3,14 @@
         path_simulation_folder_: Path to the folder. Default = Appdata\Local\Building_urban_analysis\Simulation_temp
         building_id_list_: list of ints: list of buildings we want to run the simulation on
         _roof_bipv: bool : True if we want to run the simulation on the roof
-        _facade_bipv: bool : True if we want to run the simulation on the facade
+        _facades_bipv: bool : True if we want to run the simulation on the facades
         _roof_grid_size_x_: float : Number for the distance to move points from the surfaces of the geometry of the model.
                     Default = 1.5
         _roof_grid_size_y_: float : Number for the distance to move points from the surfaces of the geometry of the model.
                     Default = 1.5
-        _facade_grid_size_x_: float : Number for the distance to move points from the surfaces of the geometry of the model.
+        _facades_grid_size_x_: float : Number for the distance to move points from the surfaces of the geometry of the model.
                     Default = 1.5
-        _facade_grid_size_y_: float : Number for the distance to move points from the surfaces of the geometry of the model.
+        _facades_grid_size_y_: float : Number for the distance to move points from the surfaces of the geometry of the model.
                     Default = 1.5
         _offset_dist_: float:  Number for the distance to move points from the surfaces of the geometry of the model.
                     Typically, this should be a small positive number to ensure points are not blocked by the mesh.
@@ -67,7 +67,7 @@ local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 path_bat_file = os.path.join(path_tool, "Scripts", "mains_tool", "run_BUA.bat")
 
-if _run and (_roof_bipv or _facade_bipv):
+if _run and (_roof_bipv or _facades_bipv):
 
     # Write the command
     command = path_bat_file
@@ -81,16 +81,16 @@ if _run and (_roof_bipv or _facade_bipv):
         argument = argument + ' --building_id_list "{}"'.format(building_id_list_)
     if _roof_bipv:
         argument = argument + " --on_roof 1 "
-    if _facade_bipv:
-        argument = argument + " --on_facade 1 "
+    if _facades_bipv:
+        argument = argument + " --on_facades 1 "
     if _roof_grid_size_x_ is not None:
         argument = argument + " --roof_grid_size_x {}".format(_roof_grid_size_x_)
     if _roof_grid_size_y_ is not None:
         argument = argument + " --roof_grid_size_y {}".format(_roof_grid_size_y_)
-    if _facade_grid_size_x_ is not None:
-        argument = argument + " --facade_grid_size_x {}".format(_facade_grid_size_x_)
-    if _facade_grid_size_y_ is not None:
-        argument = argument + " --facade_grid_size_y {}".format(_facade_grid_size_y_)
+    if _facades_grid_size_x_ is not None:
+        argument = argument + " --facades_grid_size_x {}".format(_facades_grid_size_x_)
+    if _facades_grid_size_y_ is not None:
+        argument = argument + " --facades_grid_size_y {}".format(_facades_grid_size_y_)
     if _offset_dist_ is not None:
         argument = argument + " --offset_dist {}".format(_offset_dist_)
     if merge_building_faces_:

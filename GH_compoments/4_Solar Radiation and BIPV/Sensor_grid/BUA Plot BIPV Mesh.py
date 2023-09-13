@@ -7,7 +7,7 @@
         report: report
         path_simulation_folder_: Path to the folder.
         roof_hb_sensorgrid_tree: Tree of meshes for the roof
-        facade_hb_sensorgrid_tree: Tree of meshes for the facade"""
+        facades_hb_sensorgrid_tree: Tree of meshes for the facades"""
 
 __author__ = "Eliewiii"
 __version__ = "2023.08.21"
@@ -53,7 +53,7 @@ if _run and os.path.isfile(path_json):
 
     # Init
     mesh_roof_list = []
-    mesh_facade_list = []
+    mesh_facades_list = []
     with open(path_json, 'r') as json_file:
         urban_canopy_dict = json.load(json_file)
     for id in list(urban_canopy_dict["buildings"].keys()):
@@ -65,13 +65,13 @@ if _run and os.path.isfile(path_json):
                 mesh_roof_list.append(get_rhino_mesh_from_sensor_grid(sensor_grid_dict_roof))
             # Facade
             if urban_canopy_dict["buildings"][id]["solar_radiation_and_bipv"][
-                "facade_sensorgrid"] is not None:
-                sensor_grid_dict_facade = urban_canopy_dict["buildings"][id]["solar_radiation_and_bipv"][
-                    "facade_sensorgrid"]
-                mesh_facade_list.append(get_rhino_mesh_from_sensor_grid(sensor_grid_dict_facade))
+                "facades_sensorgrid"] is not None:
+                sensor_grid_dict_facades = urban_canopy_dict["buildings"][id]["solar_radiation_and_bipv"][
+                    "facades_sensorgrid"]
+                mesh_facades_list.append(get_rhino_mesh_from_sensor_grid(sensor_grid_dict_facades))
 
     roof_hb_sensorgrid_tree = th.list_to_tree(mesh_roof_list)
-    facade_hb_sensorgrid_tree = th.list_to_tree(mesh_facade_list)
+    facades_hb_sensorgrid_tree = th.list_to_tree(mesh_facades_list)
 
 if not os.path.isfile(path_json):
     print("the json file of the urban canopy does not exist")
