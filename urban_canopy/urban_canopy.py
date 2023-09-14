@@ -6,10 +6,13 @@ import pickle
 import json
 import logging
 
+from datetime import datetime
+
 from honeybee.model import Model
 
 from urban_canopy.urban_canopy_additional_functions import UrbanCanopyAdditionalFunction
 from urban_canopy.export_to_json import ExportUrbanCanopyToJson
+from urban_canopy.bipv_urban_canopy import BipvScenario
 
 from building.building_basic import BuildingBasic
 from building.building_modeled import BuildingModeled
@@ -38,6 +41,8 @@ class UrbanCanopy:
         self.json_dict = {}  # dictionary containing relevant attributes of the urban canopy to be exported to json
 
         # BIPV simulation
+        self.bipv_simulation_scenarios = {}  # dictionary of the BIPV scenarios
+        self.bipv_simulation_time_boundary = {"start_year": None, "end_year": None}
         self.solar_radiation_and_bipv_simulation_obj = SolarRadAndBipvSimulation()
 
     def __len__(self):
@@ -516,12 +521,13 @@ class UrbanCanopy:
                     overwrite=overwrite,
                     north_angle=north_angle, silent=silent)
 
-    def run_bipv_panel_simulation_on_buildings(self, path_simulation_folder, path_pv_tech_dictionary_json,
-                                               building_id_list, roof_id_pv_tech, facades_id_pv_tech,
-                                               efficiency_computation_method="yearly", minimum_panel_eroi=1.2,
-                                               study_duration_in_years=50,
+    def run_bipv_panel_simulation_on_buildings(self, path_simulation_folder, bipv_scenario_identifier,
+                                               path_pv_tech_dictionary_json, building_id_list, roof_id_pv_tech,
+                                               facades_id_pv_tech, efficiency_computation_method="yearly",
+                                               minimum_panel_eroi=1.2, start_year=datetime.now().year,
+                                               end_year=datetime.now().year + 50,
                                                replacement_scenario="replace_failed_panels_every_X_years",
-                                               **kwargs):
+                                               continue_simulation=False, **kwargs):
         """
         Run the panels simulation on the urban canopy
         :param path_simulation_folder: path to the simulation folder
@@ -535,13 +541,21 @@ class UrbanCanopy:
         :param replacement_scenario: string: scenario of replacements for the panels, default = 'yearly'
         """
 
-        # todo: check ifg the file exist and put a default value
-        pv_technologies_dictionary = BipvTechnology.load_pv_technologies_from_json_to_dictionary(
-            path_pv_tech_dictionary_json)
+        # If start_year is higher than end_year, raise an error
+        if start_year >= end_year:
+            raise ValueError("The start year is higher than the end year, the simulation will not be performed")
 
-        # Initialize the BIPV simulation for the Urban Canopy if not done already (and not overwrite)
-        # todo
+        # Add a new scenario if it does not exist already
+        if bipv_scenario_identifier not in self.bipv_scenario_dict.keys() or not continue_simulation:
+            self.bipv_scenario_dict[bipv_scenario_identifier] = BipvScenario(identifier=bipv_scenario_identifier,
+                                                                             start_year=start_year,
+                                                                             end_year=end_year)
+        # Continue the simulation with the existing scenario
+        else:
+            self.bipv_scenario_dict[bipv_scenario_identifier].continue_simulation(start_year=start_year,
+                                                                                  end_year=end_year)
 
+        bipv_scenario_obj = self.bipv_scenario_dict[bipv_scenario_identifier]
 
         # Checks of the building_id_list parameter to give feedback to the user if there is an issue with an id
         if not (building_id_list is None or building_id_list is []):
@@ -567,17 +581,16 @@ class UrbanCanopy:
                     user_logger.warning(f"No irradiance simulation was run for The building id "
                                         f"{building_id}, the BIPV simulation will not be run for this building.")
 
+        # todo: check ifg the file exist and put a default value
+        pv_technologies_dictionary = BipvTechnology.load_pv_technologies_from_json_to_dictionary(
+            path_pv_tech_dictionary_json)
+
         # If continue run continue for all the buildings that have started a bipv sim already.
 
         for building_obj in self.building_dict.values():
-            if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
-                    and isinstance(building_obj, BuildingModeled) and building_obj.is_target \
-                    and building_obj.solar_radiation_and_bipv_simulation_obj is not None and (
-                    self.building_dict[
-                        building_id].solar_radiation_and_bipv_simulation_obj.roof_annual_panel_irradiance_list is not None or \
-                    self.building_dict[
-                        building_id].solar_radiation_and_bipv_simulation_obj.facades_annual_panel_irradiance_list is not None):
-                # Run the BIPV simulation
+            if self.does_building_fits_bipv_requirement(building_obj=building_obj, building_id_list=building_id_list,
+                                                        continue_simulation=continue_simulation):
+                # Run the BIPV simulation  todo: add the last version of th earguments
                 building_obj.run_bipv_panel_simulation(path_simulation_folder=path_simulation_folder,
                                                        pv_technologies_dictionary=pv_technologies_dictionary,
                                                        roof_id_pv_tech=roof_id_pv_tech,
@@ -587,6 +600,29 @@ class UrbanCanopy:
                                                        study_duration_in_years=study_duration_in_years,
                                                        replacement_scenario=replacement_scenario,
                                                        **kwargs)
+
+    @staticmethod
+    def does_building_fits_bipv_requirement(building_obj, building_id_list, continue_simulation):
+        """
+        Check if the building fits the requirements to run the BIPV simulation
+        :param building_obj: Building object
+        :param building_id_list: list of the building id to run the simulation, if None or empty list, all the target
+        :param continue_simulation: boolean, if True, the simulation will be continued
+        :return: boolean, True if the building fits the requirements, False if it does not
+        """
+        # Building is in the list of buildings to simulate or the list is empty
+        condition_1 = ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list)
+        # Building is a BuildingModeled and is a target
+        condition_2 = isinstance(building_obj, BuildingModeled) and building_obj.is_target
+        # The annual irradiance of the building were computed
+        condition_3 = building_obj.solar_radiation_and_bipv_simulation_obj.roof_annual_panel_irradiance_list is not None or \
+                      building_obj.solar_radiation_and_bipv_simulation_obj.facades_annual_panel_irradiance_list is not None
+        condition_4 = building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["roof"][
+                          "start_year"] is not None or \
+                      building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["facades"][
+                          "start_year"] is not None
+
+        return (condition_1 and condition_2 and condition_3) or (condition_2 and condition_3 and 4 and continue_simulation)
 
     def post_process_bipv_results_at_urban_scale(self, path_simulation_folder, building_id_list):
         """

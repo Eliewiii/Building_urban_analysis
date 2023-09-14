@@ -44,20 +44,20 @@ empty_parameter_dict = {
     "facades": deepcopy(empty_sub_parameter_dict)
 }
 empty_sub_bipv_results_dict = {
-    "energy_harvested": {"yearly": [], "cumulative": None, "total": None},
+    "energy_harvested": {"yearly": [], "cumulative": [], "total": 0.0},
     "lca_primary_energy": {
-        "material_extraction_and_manufacturing": {"yearly": [], "cumulative": None, "total": None},
-        "transportation": {"yearly": [], "cumulative": None, "total": None},
-        "recycling": {"yearly": [], "cumulative": None, "total": None},
-        "total": {"yearly": [], "cumulative": None, "total": None}
+        "material_extraction_and_manufacturing": {"yearly": [], "cumulative": [], "total": 0.0},
+        "transportation": {"yearly": [], "cumulative": [], "total": 0.0},
+        "recycling": {"yearly": [], "cumulative": [], "total": 0.0},
+        "total": {"yearly": [], "cumulative": [], "total": 0.0}
     },
     "lca_carbon_footprint": {
-        "material_extraction_and_manufacturing": {"yearly": [], "cumulative": None, "total": None},
-        "transportation": {"yearly": [], "cumulative": None, "total": None},
-        "recycling": {"yearly": [], "cumulative": None, "total": None},
-        "total": {"yearly": [], "cumulative": None, "total": None}
+        "material_extraction_and_manufacturing": {"yearly": [], "cumulative": [], "total": 0.0},
+        "transportation": {"yearly": [], "cumulative": [], "total": 0.0},
+        "recycling": {"yearly": [], "cumulative": [], "total": 0.0},
+        "total": {"yearly": [], "cumulative": [], "total": 0.0}
     },
-    "dmfa_waste": {"yearly": [], "cumulative": None, "total": None}
+    "dmfa_waste": {"yearly": [], "cumulative": [], "total": 0.0}
 }
 
 empty_bipv_results_dict = {
@@ -284,219 +284,247 @@ class SolarRadAndBipvSimulation:
         if os.path.isdir(path_folder_run_radiation_temp):
             shutil.rmtree(path_folder_run_radiation_temp)
 
-    def run_bipv_panel_simulation(self, path_simulation_folder, building_id, roof_pv_tech_obj,
-                                  facades_pv_tech_obj, uc_start_year, uc_current_year, uc_last_year,
-                                  efficiency_computation_method="yearly",
-                                  minimum_panel_eroi=1.2,
-                                  replacement_scenario="replace_failed_panels_every_X_years",
+    # def run_bipv_panel_simulation(self, path_simulation_folder, building_id, roof_pv_tech_obj,
+    #                               facades_pv_tech_obj, uc_start_year, uc_current_year, uc_last_year,
+    #                               efficiency_computation_method="yearly",
+    #                               minimum_panel_eroi=1.2,
+    #                               replacement_scenario="replace_failed_panels_every_X_years",
+    #                               continue_simulation=False, **kwargs):
+    #     """
+    #     Run the simulation of the energy harvested by the bipvs
+    #     :param path_simulation_folder: path to the simulation folder
+    #     :param building_id: str: id of the building
+    #     :param roof_pv_tech_obj: BipvTechnology object of the roof BIPV panels
+    #     :param facades_pv_tech_obj: BipvTechnology object of the facades BIPV panels
+    #     :param efficiency_computation_method: str: method to compute the efficiency of the panels
+    #     :param minimum_panel_eroi: float: minimum EROI of the PV panels
+    #     :param iteration_duration_in_years: int: duration of the iteration in years, optionnal parameter, relevant only
+    #     :param current_year: int: start year of the iteration
+    #     :param replacement_scenario: dict: replacement scenario of the panels
+    #     :param kwargs: todo
+    #     """
+    #     # Set BIPV parameters
+    #
+    #     # Init flags
+    #     run_bipv_on_roof = False
+    #     run_bipv_on_facades = False
+    #     simulation_continued = False
+    #     # Roof
+    #     if self.on_roof and self.roof_sensorgrid_dict is not None and self.roof_annual_panel_irradiance_list is not None:
+    #         run_bipv_on_roof = True
+    #
+    #         # Init the BIPV panels on the roof if necessary
+    #         if not continue_simulation or self.roof_panel_list is None:
+    #             """ If there is no panel list, we init the panels, but if we want to continue the simulation and there
+    #             are already panels, we do not init them again """
+    #
+    #             self.set_bipv_parameters(roof_pv_tech_obj=roof_pv_tech_obj, facades_pv_tech_obj=facades_pv_tech_obj,
+    #                                      efficiency_computation_method=efficiency_computation_method,
+    #                                      minimum_panel_eroi=minimum_panel_eroi,
+    #                                      study_duration_in_years=uc_last_year - uc_current_year,
+    #                                      start_year=uc_current_year,
+    #                                      replacement_scenario=replacement_scenario, **kwargs)
+    #
+    #             self.roof_panel_list = init_bipv_on_sensor_grid(
+    #                 sensor_grid=SensorGrid.from_dict(self.roof_sensorgrid_dict),
+    #                 pv_technology_obj=roof_pv_tech_obj,
+    #                 annual_panel_irradiance_list=self.roof_annual_panel_irradiance_list,
+    #                 minimum_panel_eroi=minimum_panel_eroi)
+    #
+    #         else:  # If the simulation continue we keep the existing panels and the parameters
+    #             simulation_continued = True
+    #             # Update the panel technology,
+    #             """ The new panel that will be installed will have the new technology, it will affect their efficiency
+    #             and the LCA and DMFA results. It will not affect the existing panels as the computation of LCA and DMFA
+    #             is done at the moment of the installation of the panels and the panel know which panel technology they
+    #             belong to."""
+    #             # todo : maybe to make a function out of it
+    #             if kwargs["update_panel"] == True:
+    #                 self.parameter_dict["roof"]["panel_technology"] = roof_pv_tech_obj
+    #             else:
+    #                 roof_pv_tech_obj = self.parameter_dict["roof"]["panel_technology"]
+    #
+    #             start_year = self.parameter_dict["start_year"]
+    #             self.parameter_dict["study_duration_in_years"] = self.parameter_dict["start_year"] - uc_last_year
+    #
+    #             efficiency_computation_method = self.parameter_dict["efficiency_computation_method"]["id"]
+    #             # add the parameters if the efficiency computation method id needed
+    #             minimum_panel_eroi = self.parameter_dict["minimum_panel_eroi"]
+    #             replacement_scenario = self.parameter_dict["replacement_scenario"]["id"]
+    #             # todo with the kwarg as well and put it ion a function eventually
+    #             if self.parameter_dict["replacement_scenario"]["replacement_frequency_in_years"] is not None:
+    #                 kwargs["replacement_frequency_in_years"] = self.parameter_dict["replacement_scenario"][
+    #                     "replacement_frequency_in_years"]
+    #
+    #         # Run the simulation roof
+    #         if efficiency_computation_method == "yearly":
+    #             roof_energy_harvested_yearly_list, roof_nb_of_panels_installed_yearly_list = bipv_energy_harvesting_simulation_yearly_annual_irradiance(
+    #                 pv_panel_obj_list=self.roof_panel_list,
+    #                 annual_solar_irradiance_value=self.roof_annual_panel_irradiance_list,
+    #                 iteration_duration_in_years=iteration_duration_in_years,
+    #                 replacement_scenario=replacement_scenario, **kwargs)
+    #         # The hourly method is not implemented yet
+    #         elif efficiency_computation_method == "hourly":
+    #             path_result_folder = os.path.join(path_simulation_folder, name_radiation_simulation_folder,
+    #                                               str(building_id))
+    #             path_ill_file = os.path.join(path_result_folder, name_roof_ill_file)
+    #             path_sun_up_hours_file = os.path.join(path_result_folder, name_roof_sun_up_hours_file)
+    #             roof_energy_harvested_yearly_list, roof_nb_of_panels_installed_yearly_list = bipv_energy_harvesting_simulation_hourly_annual_irradiance(
+    #                 pv_panel_obj_list=self.roof_panel_list,
+    #                 path_ill_file=path_ill_file,
+    #                 path_sun_up_hours_file=path_sun_up_hours_file,
+    #                 iteration_duration_in_years=iteration_duration_in_years,
+    #                 replacement_scenario=replacement_scenario, **kwargs)
+    #         else:
+    #             raise ValueError("The efficiency computation method is not valid")
+    #         # Post process and run LCA and DMFA results
+    #         roof_primary_energy_material_extraction_and_manufacturing_yearly_list, \
+    #             roof_primary_energy_transportation_yearly_list, roof_primary_energy_recycling_yearly_list, \
+    #             roof_total_primary_energy_yearly_list, roof_carbon_transportation_yearly_list, \
+    #             roof_carbon_material_extraction_and_manufacturing_yearly_list, \
+    #             roof_carbon_recycling_yearly_list, roof_total_carbon_yearly_list, \
+    #             roof_dmfa_waste_yearly_lis = bipv_lca_dmfa_eol_computation(
+    #             nb_of_panels_installed_yearly_list=roof_nb_of_panels_installed_yearly_list,
+    #             pv_tech_obj=roof_pv_tech_obj)
+    #         # Save the results in obj
+    #         self.bipv_results_dict["roof"] = self.add_results_to_dict(
+    #             bipv_reults_dict=self.bipv_results_dict["roof"],
+    #             energy_harvested_yearly_list=roof_energy_harvested_yearly_list,
+    #             primary_energy_material_extraction_and_manufacturing_yearly_list=roof_primary_energy_material_extraction_and_manufacturing_yearly_list,
+    #             primary_energy_transportation_yearly_list=roof_primary_energy_transportation_yearly_list,
+    #             primary_energy_recycling_yearly_list=roof_primary_energy_recycling_yearly_list,
+    #             carbon_material_extraction_and_manufacturing_yearly_list=roof_carbon_material_extraction_and_manufacturing_yearly_list,
+    #             carbon_transportation_yearly_list=roof_carbon_transportation_yearly_list,
+    #             carbon_recycling_yearly_list=roof_carbon_recycling_yearly_list,
+    #             dmfa_waste_yearly_list=roof_dmfa_waste_yearly_lis)
+    #         # Facade
+    #     if self.on_facades and self.facades_sensorgrid_dict is not None and self.facade_annual_panel_irradiance_list is not None:
+    #         run_bipv_on_facades = True
+    #         # Init the BIPV panels on the facades if necessary
+    #         if not continue_simulation or self.facades_panel_list is None:
+    #             """ If there is no panel list, we init the panels, but if we want to continue the simulation and there
+    #             are already panels, we do not init them again """
+    #             self.facades_panel_list = init_bipv_on_sensor_grid(
+    #                 sensor_grid=SensorGrid.from_dict(self.facades_sensorgrid_dict),
+    #                 pv_technology_obj=facades_pv_tech_obj,
+    #                 annual_panel_irradiance_list=self.facade_annual_panel_irradiance_list,
+    #                 minimum_panel_eroi=minimum_panel_eroi)
+    #         else:
+    #             simulation_continued = True
+    #             # todo: add the parameters
+    #         # Run the simulation facades
+    #         if efficiency_computation_method == "yearly":
+    #             facades_energy_harvested_yearly_list, facades_nb_of_panels_installed_yearly_list = bipv_energy_harvesting_simulation_yearly_annual_irradiance(
+    #                 pv_panel_obj_list=self.facades_panel_list,
+    #                 annual_solar_irradiance_value=self.facade_annual_panel_irradiance_list,
+    #                 study_duration_in_years=study_duration_in_years,
+    #                 replacement_scenario=replacement_scenario, **kwargs)
+    #         elif efficiency_computation_method == "hourly":
+    #             path_result_folder = os.path.join(path_simulation_folder, name_radiation_simulation_folder,
+    #                                               str(building_id))
+    #             path_ill_file = os.path.join(path_result_folder, name_facades_ill_file)
+    #             path_sun_up_hours_file = os.path.join(path_result_folder, name_facades_sun_up_hours_file)
+    #             facades_energy_harvested_yearly_list, facades_nb_of_panels_installed_yearly_list = bipv_energy_harvesting_simulation_hourly_annual_irradiance(
+    #                 pv_panel_obj_list=self.facades_panel_list,
+    #                 path_ill_file=path_ill_file,
+    #                 path_sun_up_hours_file=path_sun_up_hours_file,
+    #                 study_duration_in_years=study_duration_in_years,
+    #                 replacement_scenario=replacement_scenario, **kwargs)
+    #         else:
+    #             raise ValueError("The efficiency computation method is not valid")
+    #
+    #         """ Even if the """
+    #         # Post process and run LCA and DMFA results
+    #         facades_primary_energy_material_extraction_and_manufacturing_yearly_list, \
+    #             facades_primary_energy_transportation_yearly_list, facades_primary_energy_recycling_yearly_list, \
+    #             facades_carbon_transportation_yearly_list, \
+    #             facades_carbon_material_extraction_and_manufacturing_yearly_list, \
+    #             facades_carbon_recycling_yearly_list, \
+    #             facades_dmfa_waste_yearly_lis = bipv_lca_dmfa_eol_computation(
+    #             nb_of_panels_installed_yearly_list=facades_nb_of_panels_installed_yearly_list,
+    #             pv_tech_obj=facades_pv_tech_obj)
+    #
+    #         # Save the results in obj
+    #         self.bipv_results_dict["facades"] = self.add_results_to_dict(
+    #             bipv_reults_dict=self.bipv_results_dict["facades"],
+    #             energy_harvested_yearly_list=facades_energy_harvested_yearly_list,
+    #             primary_energy_material_extraction_and_manufacturing_yearly_list=facades_primary_energy_material_extraction_and_manufacturing_yearly_list,
+    #             primary_energy_transportation_yearly_list=facades_primary_energy_transportation_yearly_list,
+    #             primary_energy_recycling_yearly_list=facades_primary_energy_recycling_yearly_list,
+    #             carbon_material_extraction_and_manufacturing_yearly_list=facades_carbon_material_extraction_and_manufacturing_yearly_list,
+    #             carbon_transportation_yearly_list=facades_carbon_transportation_yearly_list,
+    #             carbon_recycling_yearly_list=facades_carbon_recycling_yearly_list,
+    #             dmfa_waste_yearly_list=facades_dmfa_waste_yearly_lis)
+    #
+    #     # Total results
+    #     if run_bipv_on_roof and run_bipv_on_facades:
+    #         self.bipv_results_dict["total"] = sum_dicts(self.bipv_results_dict["roof"],
+    #                                                     self.bipv_results_dict["facades"])
+    #     elif run_bipv_on_roof:
+    #         self.bipv_results_dict["total"] = self.bipv_results_dict["roof"]
+    #     elif run_bipv_on_facades:
+    #         self.bipv_results_dict["total"] = self.bipv_results_dict["facades"]
+    #     else:
+    #         None
+    #
+    #     self.set_bipv_parameters(roof_pv_tech_obj=roof_pv_tech_obj, facades_pv_tech_obj=facades_pv_tech_obj,
+    #                              efficiency_computation_method=efficiency_computation_method,
+    #                              minimum_panel_eroi=minimum_panel_eroi,
+    #                              study_duration_in_years=study_duration_in_years, start_year=start_year,
+    #                              replacement_scenario=replacement_scenario, **kwargs)
+
+    def run_bipv_panel_simulation(self, path_simulation_folder, building_id, roof_pv_tech_obj, facades_pv_tech_obj,
+                                  uc_end_year, uc_start_year, uc_current_year, efficiency_computation_method="yearly",
+                                  minimum_panel_eroi=1.2, replacement_scenario="replace_failed_panels_every_X_years",
                                   continue_simulation=False, **kwargs):
         """
-        Run the simulation of the energy harvested by the bipvs
-        :param path_simulation_folder: path to the simulation folder
-        :param building_id: str: id of the building
-        :param roof_pv_tech_obj: BipvTechnology object of the roof BIPV panels
-        :param facades_pv_tech_obj: BipvTechnology object of the facades BIPV panels
-        :param efficiency_computation_method: str: method to compute the efficiency of the panels
-        :param minimum_panel_eroi: float: minimum EROI of the PV panels
-        :param iteration_duration_in_years: int: duration of the iteration in years, optionnal parameter, relevant only
-        :param current_year: int: start year of the iteration
-        :param replacement_scenario: dict: replacement scenario of the panels
-        :param kwargs: todo
-        """
-        # Set BIPV parameters
-
-        # Init flags
-        run_bipv_on_roof = False
-        run_bipv_on_facades = False
-        simulation_continued = False
-        # Roof
-        if self.on_roof and self.roof_sensorgrid_dict is not None and self.roof_annual_panel_irradiance_list is not None:
-            run_bipv_on_roof = True
-
-            # Init the BIPV panels on the roof if necessary
-            if not continue_simulation or self.roof_panel_list is None:
-                """ If there is no panel list, we init the panels, but if we want to continue the simulation and there 
-                are already panels, we do not init them again """
-
-                self.set_bipv_parameters(roof_pv_tech_obj=roof_pv_tech_obj, facades_pv_tech_obj=facades_pv_tech_obj,
-                                         efficiency_computation_method=efficiency_computation_method,
-                                         minimum_panel_eroi=minimum_panel_eroi,
-                                         study_duration_in_years=uc_last_year - uc_current_year,
-                                         start_year=uc_current_year,
-                                         replacement_scenario=replacement_scenario, **kwargs)
-
-                self.roof_panel_list = init_bipv_on_sensor_grid(
-                    sensor_grid=SensorGrid.from_dict(self.roof_sensorgrid_dict),
-                    pv_technology_obj=roof_pv_tech_obj,
-                    annual_panel_irradiance_list=self.roof_annual_panel_irradiance_list,
-                    minimum_panel_eroi=minimum_panel_eroi)
-
-            else:  # If the simulation continue we keep the existing panels and the parameters
-                simulation_continued = True
-                # Update the panel technology,
-                """ The new panel that will be installed will have the new technology, it will affect their efficiency 
-                and the LCA and DMFA results. It will not affect the existing panels as the computation of LCA and DMFA
-                is done at the moment of the installation of the panels and the panel know which panel technology they
-                belong to."""
-                # todo : maybe to make a function out of it
-                if kwargs["update_panel"] == True:
-                    self.parameter_dict["roof"]["panel_technology"] = roof_pv_tech_obj
-                else:
-                    roof_pv_tech_obj = self.parameter_dict["roof"]["panel_technology"]
-
-                start_year = self.parameter_dict["start_year"]
-                self.parameter_dict["study_duration_in_years"] = self.parameter_dict["start_year"] - uc_last_year
-
-                efficiency_computation_method = self.parameter_dict["efficiency_computation_method"]["id"]
-                # add the parameters if the efficiency computation method id needed
-                minimum_panel_eroi = self.parameter_dict["minimum_panel_eroi"]
-                replacement_scenario = self.parameter_dict["replacement_scenario"]["id"]
-                # todo with the kwarg as well and put it ion a function eventually
-                if self.parameter_dict["replacement_scenario"]["replacement_frequency_in_years"] is not None:
-                    kwargs["replacement_frequency_in_years"] = self.parameter_dict["replacement_scenario"][
-                        "replacement_frequency_in_years"]
-
-            # Run the simulation roof
-            if efficiency_computation_method == "yearly":
-                roof_energy_harvested_yearly_list, roof_nb_of_panels_installed_yearly_list = bipv_energy_harvesting_simulation_yearly_annual_irradiance(
-                    pv_panel_obj_list=self.roof_panel_list,
-                    annual_solar_irradiance_value=self.roof_annual_panel_irradiance_list,
-                    iteration_duration_in_years=iteration_duration_in_years,
-                    replacement_scenario=replacement_scenario, **kwargs)
-            # The hourly method is not implemented yet
-            elif efficiency_computation_method == "hourly":
-                path_result_folder = os.path.join(path_simulation_folder, name_radiation_simulation_folder,
-                                                  str(building_id))
-                path_ill_file = os.path.join(path_result_folder, name_roof_ill_file)
-                path_sun_up_hours_file = os.path.join(path_result_folder, name_roof_sun_up_hours_file)
-                roof_energy_harvested_yearly_list, roof_nb_of_panels_installed_yearly_list = bipv_energy_harvesting_simulation_hourly_annual_irradiance(
-                    pv_panel_obj_list=self.roof_panel_list,
-                    path_ill_file=path_ill_file,
-                    path_sun_up_hours_file=path_sun_up_hours_file,
-                    iteration_duration_in_years=iteration_duration_in_years,
-                    replacement_scenario=replacement_scenario, **kwargs)
-            else:
-                raise ValueError("The efficiency computation method is not valid")
-            # Post process and run LCA and DMFA results
-            roof_primary_energy_material_extraction_and_manufacturing_yearly_list, \
-                roof_primary_energy_transportation_yearly_list, roof_primary_energy_recycling_yearly_list, \
-                roof_total_primary_energy_yearly_list, roof_carbon_transportation_yearly_list, \
-                roof_carbon_material_extraction_and_manufacturing_yearly_list, \
-                roof_carbon_recycling_yearly_list, roof_total_carbon_yearly_list, \
-                roof_dmfa_waste_yearly_lis = bipv_lca_dmfa_eol_computation(
-                nb_of_panels_installed_yearly_list=roof_nb_of_panels_installed_yearly_list,
-                pv_tech_obj=roof_pv_tech_obj)
-            # Save the results in obj
-            self.bipv_results_dict["roof"] = self.add_results_to_dict(
-                bipv_reults_dict=self.bipv_results_dict["roof"],
-                energy_harvested_yearly_list=roof_energy_harvested_yearly_list,
-                primary_energy_material_extraction_and_manufacturing_yearly_list=roof_primary_energy_material_extraction_and_manufacturing_yearly_list,
-                primary_energy_transportation_yearly_list=roof_primary_energy_transportation_yearly_list,
-                primary_energy_recycling_yearly_list=roof_primary_energy_recycling_yearly_list,
-                carbon_material_extraction_and_manufacturing_yearly_list=roof_carbon_material_extraction_and_manufacturing_yearly_list,
-                carbon_transportation_yearly_list=roof_carbon_transportation_yearly_list,
-                carbon_recycling_yearly_list=roof_carbon_recycling_yearly_list,
-                dmfa_waste_yearly_list=roof_dmfa_waste_yearly_lis)
-            # Facade
-        if self.on_facades and self.facades_sensorgrid_dict is not None and self.facade_annual_panel_irradiance_list is not None:
-            run_bipv_on_facades = True
-            # Init the BIPV panels on the facades if necessary
-            if not continue_simulation or self.facades_panel_list is None:
-                """ If there is no panel list, we init the panels, but if we want to continue the simulation and there 
-                are already panels, we do not init them again """
-                self.facades_panel_list = init_bipv_on_sensor_grid(
-                    sensor_grid=SensorGrid.from_dict(self.facades_sensorgrid_dict),
-                    pv_technology_obj=facades_pv_tech_obj,
-                    annual_panel_irradiance_list=self.facade_annual_panel_irradiance_list,
-                    minimum_panel_eroi=minimum_panel_eroi)
-            else:
-                simulation_continued = True
-                # todo: add the parameters
-            # Run the simulation facades
-            if efficiency_computation_method == "yearly":
-                facades_energy_harvested_yearly_list, facades_nb_of_panels_installed_yearly_list = bipv_energy_harvesting_simulation_yearly_annual_irradiance(
-                    pv_panel_obj_list=self.facades_panel_list,
-                    annual_solar_irradiance_value=self.facade_annual_panel_irradiance_list,
-                    study_duration_in_years=study_duration_in_years,
-                    replacement_scenario=replacement_scenario, **kwargs)
-            elif efficiency_computation_method == "hourly":
-                path_result_folder = os.path.join(path_simulation_folder, name_radiation_simulation_folder,
-                                                  str(building_id))
-                path_ill_file = os.path.join(path_result_folder, name_facades_ill_file)
-                path_sun_up_hours_file = os.path.join(path_result_folder, name_facades_sun_up_hours_file)
-                facades_energy_harvested_yearly_list, facades_nb_of_panels_installed_yearly_list = bipv_energy_harvesting_simulation_hourly_annual_irradiance(
-                    pv_panel_obj_list=self.facades_panel_list,
-                    path_ill_file=path_ill_file,
-                    path_sun_up_hours_file=path_sun_up_hours_file,
-                    study_duration_in_years=study_duration_in_years,
-                    replacement_scenario=replacement_scenario, **kwargs)
-            else:
-                raise ValueError("The efficiency computation method is not valid")
-                # Post process and run LCA and DMFA results
-                facades_primary_energy_material_extraction_and_manufacturing_yearly_list, \
-                    facades_primary_energy_transportation_yearly_list, facades_primary_energy_recycling_yearly_list, \
-                    facades_carbon_transportation_yearly_list, \
-                    facades_carbon_material_extraction_and_manufacturing_yearly_list, \
-                    facades_carbon_recycling_yearly_list, \
-                    facades_dmfa_waste_yearly_lis = bipv_lca_dmfa_eol_computation(
-                    nb_of_panels_installed_yearly_list=facades_nb_of_panels_installed_yearly_list,
-                    pv_tech_obj=facades_pv_tech_obj)
-
-                # Save the results in obj
-                self.bipv_results_dict["facades"] = self.add_results_to_dict(
-                    bipv_reults_dict=self.bipv_results_dict["facades"],
-                    energy_harvested_yearly_list=facades_energy_harvested_yearly_list,
-                    primary_energy_material_extraction_and_manufacturing_yearly_list=facades_primary_energy_material_extraction_and_manufacturing_yearly_list,
-                    primary_energy_transportation_yearly_list=facades_primary_energy_transportation_yearly_list,
-                    primary_energy_recycling_yearly_list=facades_primary_energy_recycling_yearly_list,
-                    carbon_material_extraction_and_manufacturing_yearly_list=facades_carbon_material_extraction_and_manufacturing_yearly_list,
-                    carbon_transportation_yearly_list=facades_carbon_transportation_yearly_list,
-                    carbon_recycling_yearly_list=facades_carbon_recycling_yearly_list,
-                    dmfa_waste_yearly_list=facades_dmfa_waste_yearly_lis)
-
-        # Total results
-        if run_bipv_on_roof and run_bipv_on_facades:
-            self.bipv_results_dict["total"] = sum_dicts(self.bipv_results_dict["roof"],
-                                                        self.bipv_results_dict["facades"])
-        elif run_bipv_on_roof:
-            self.bipv_results_dict["total"] = self.bipv_results_dict["roof"]
-        elif run_bipv_on_facades:
-            self.bipv_results_dict["total"] = self.bipv_results_dict["facades"]
-        else:
-            None
-
-        self.set_bipv_parameters(roof_pv_tech_obj=roof_pv_tech_obj, facades_pv_tech_obj=facades_pv_tech_obj,
-                                 efficiency_computation_method=efficiency_computation_method,
-                                 minimum_panel_eroi=minimum_panel_eroi,
-                                 study_duration_in_years=study_duration_in_years, start_year=start_year,
-                                 replacement_scenario=replacement_scenario, **kwargs)
-
-    def run_bipv_panel_simulation(self):
-        """
 
         """
 
-        run_bipv_on_roof = self.run_bipv_panel_simulation_on_roof_or_facades(roof_or_facades="roof")
+        run_bipv_on_roof = self.run_bipv_panel_simulation_on_roof_or_facades(roof_or_facades="roof",
+                                                                             on_roof_or_facades=self.on_roof,
+                                                                             sensorgrid_dict=self.roof_sensorgrid_dict,
+                                                                             annual_panel_irradiance_list=self.roof_annual_panel_irradiance_list,
+                                                                             panel_list=self.roof_panel_list,
+                                                                             path_simulation_folder=path_simulation_folder,
+                                                                             building_id=building_id,
+                                                                             pv_tech_obj=roof_pv_tech_obj,
+                                                                             uc_end_year=uc_end_year,
+                                                                             uc_start_year=uc_start_year,
+                                                                             uc_current_year=uc_current_year,
+                                                                             efficiency_computation_method=efficiency_computation_method,
+                                                                             minimum_panel_eroi=minimum_panel_eroi,
+                                                                             replacement_scenario=replacement_scenario,
+                                                                             continue_simulation=False,
+                                                                             **kwargs)
+
         run_bipv_on_facades = self.run_bipv_panel_simulation_on_roof_or_facades(roof_or_facades="facades")
 
         # Total results
         if run_bipv_on_roof and run_bipv_on_facades:
-            self.bipv_results_dict["total"] = sum_dicts(self.bipv_results_dict["roof"],
-                                                        self.bipv_results_dict["facades"])
+            earliest_year = min(
+                [self.parameter_dict["roof"]["start_year"], self.parameter_dict["facades"]["start_year"]])
+            latest_year = max(
+                [self.parameter_dict["roof"]["start_year"] + self.parameter_dict["roof"]["study_duration_in_years"],
+                 self.parameter_dict["facades"]["start_year"] + self.parameter_dict["facades"][
+                     "study_duration_in_years"]])
+
+            self.bipv_results_dict["total"] = self.sum_bipv_results_dicts_with_different_years(
+                dict_1=self.bipv_results_dict["roof"], dict_2=self.bipv_results_dict["facades"],
+                start_year_1=self.parameter_dict["roof"]["start_year"],
+                start_year_2=self.parameter_dict["facades"]["start_year"], earliest_year=earliest_year,
+                latest_year=latest_year)
+
         elif run_bipv_on_roof:
             self.bipv_results_dict["total"] = self.bipv_results_dict["roof"]
-        elif run_bipv_on_facades:
-            self.bipv_results_dict["total"] = self.bipv_results_dict["facades"]
-        else:
-            None
+        elif run_bipv_on_facades: \
+                self.bipv_results_dict["total"] = self.bipv_results_dict["facades"]
 
     def run_bipv_panel_simulation_on_roof_or_facades(self, roof_or_facades, on_roof_or_facades, sensorgrid_dict,
                                                      annual_panel_irradiance_list, panel_list, path_simulation_folder,
-                                                     building_id, pv_tech_obj,
-                                                     uc_last_year,
-                                                     efficiency_computation_method, minimum_panel_eroi, uc_current_year,
-                                                     study_duration_in_years, start_year, replacement_scenario,
-                                                     continue_simulation=False, **kwargs):
+                                                     building_id, pv_tech_obj, uc_end_year, uc_start_year,
+                                                     uc_current_year, efficiency_computation_method, minimum_panel_eroi,
+                                                     replacement_scenario, continue_simulation=False, **kwargs):
         """
 
         """
@@ -512,7 +540,7 @@ class SolarRadAndBipvSimulation:
                 self.set_bipv_parameters(roof_or_facades=roof_or_facades, pv_tech_obj=pv_tech_obj,
                                          efficiency_computation_method=efficiency_computation_method,
                                          minimum_panel_eroi=minimum_panel_eroi,
-                                         study_duration_in_years=uc_last_year - uc_current_year,
+                                         study_duration_in_years=uc_end_year - uc_current_year,
                                          start_year=uc_current_year,
                                          replacement_scenario=replacement_scenario, **kwargs)
 
@@ -525,7 +553,13 @@ class SolarRadAndBipvSimulation:
             # If the simulation continue we keep the existing panels and the parameters
             else:
                 simulation_continued = True
-                # Update the panel technology,
+
+                # Check if the simulation has already been run for the requested years, if so, we do not run it again
+                if self.parameter_dict[roof_or_facades]["start_year"] + self.parameter_dict[roof_or_facades][
+                    "study_duration_in_years"] >= uc_end_year:
+                    return
+
+                    # Update the panel technology,
                 """ The new panel that will be installed will have the new technology, it will affect their efficiency 
                 and the LCA and DMFA results. It will not affect the existing panels as the computation of LCA and DMFA
                 is done at the moment of the installation of the panels and the panel know which panel technology they
@@ -536,11 +570,9 @@ class SolarRadAndBipvSimulation:
                     pv_tech_obj = self.parameter_dict[roof_or_facades]["panel_technology"]
                 # Update the study duiration and keep the start year
                 start_year = self.parameter_dict["start_year"]
-                self.parameter_dict["study_duration_in_years"] = self.parameter_dict["start_year"] - uc_last_year
                 # Keep all the other parameters
                 efficiency_computation_method = self.parameter_dict["efficiency_computation_method"][
                     "id"]  # add the parameters if the efficiency computation method id needed
-                minimum_panel_eroi = self.parameter_dict["minimum_panel_eroi"]
                 replacement_scenario = self.parameter_dict["replacement_scenario"]["id"]
                 # todo with the kwarg as well and put it ion a function eventually
                 if self.parameter_dict[roof_or_facades]["replacement_scenario"][
@@ -553,8 +585,11 @@ class SolarRadAndBipvSimulation:
                 energy_harvested_yearly_list, nb_of_panels_installed_yearly_list = bipv_energy_harvesting_simulation_yearly_annual_irradiance(
                     pv_panel_obj_list=panel_list,
                     annual_solar_irradiance_value=annual_panel_irradiance_list,
-                    iteration_duration_in_years=iteration_duration_in_years,
-                    replacement_scenario=replacement_scenario, **kwargs)
+                    start_year=self.parameter_dict[roof_or_facades]["start_year"],
+                    current_study_duration_in_years=self.parameter_dict[roof_or_facades][
+                        "study_duration_in_years"],
+                    uc_start_year=uc_start_year, uc_end_year=uc_end_year, replacement_scenario=replacement_scenario,
+                    pv_tech_obj=pv_tech_obj, **kwargs)
             # The hourly method is not implemented yet
             elif efficiency_computation_method == "hourly":
                 path_result_folder = os.path.join(path_simulation_folder, name_radiation_simulation_folder,
@@ -562,18 +597,25 @@ class SolarRadAndBipvSimulation:
                 if roof_or_facades == "roof":
                     path_ill_file = os.path.join(path_result_folder, name_roof_ill_file)
                     path_sun_up_hours_file = os.path.join(path_result_folder, name_roof_sun_up_hours_file)
-                elif roof_or_facades == "facades":
+                else:
                     path_ill_file = os.path.join(path_result_folder, name_facades_ill_file)
                     path_sun_up_hours_file = os.path.join(path_result_folder, name_facades_sun_up_hours_file)
 
-                roof_energy_harvested_yearly_list, roof_nb_of_panels_installed_yearly_list = bipv_energy_harvesting_simulation_hourly_annual_irradiance(
+                energy_harvested_yearly_list, nb_of_panels_installed_yearly_list = bipv_energy_harvesting_simulation_hourly_annual_irradiance(
                     pv_panel_obj_list=self.roof_panel_list,
                     path_ill_file=path_ill_file,
-                    path_sun_up_hours_file=path_sun_up_hours_file,
-                    iteration_duration_in_years=iteration_duration_in_years,
-                    replacement_scenario=replacement_scenario, **kwargs)
+                    path_sun_up_hours_file=path_sun_up_hours_file, start_year=self.parameter_dict[roof_or_facades][
+                        "start_year"],
+                    current_study_duration_in_years=self.parameter_dict[roof_or_facades][
+                        "study_duration_in_years"],
+                    uc_start_year=uc_start_year, uc_end_year=uc_end_year, replacement_scenario=replacement_scenario,
+                    pv_tech_obj=pv_tech_obj, **kwargs)
             else:
                 raise ValueError("The efficiency computation method is not valid")
+
+            """ Even if energy_harvested_yearly_list and nb_of_panels_installed_yearly_list are empty, because 
+            the simulation for this building was already run in a previous iteration for the requested years, 
+            the simulation will still run properly"""
 
             # Post process and run LCA and DMFA results
             primary_energy_material_extraction_and_manufacturing_yearly_list, \
@@ -597,7 +639,8 @@ class SolarRadAndBipvSimulation:
                 dmfa_waste_yearly_list=dmfa_waste_yearly_lis)
 
             # Update the duration in year of the simulation
-            self.parameter_dict[roof_or_facades]["study_duration_in_years"] = self.parameter_dict["start_year"] - uc_last_year
+            self.parameter_dict[roof_or_facades]["study_duration_in_years"] = uc_end_year - self.parameter_dict[
+                "start_year"]
 
         else:
             simulation_has_run = False
@@ -675,10 +718,14 @@ class SolarRadAndBipvSimulation:
         """
         bipv_results_dict_list = [result_dict for result_dict in
                                   solar_rad_and_bipv_obj_list.bipv_results_dict]
-        starting_year_list = [solar_rad_and_bipv_obj.parameter_dict["start_year"] for solar_rad_and_bipv_obj
-                              in solar_rad_and_bipv_obj_list]
-        study_duration_list = [solar_rad_and_bipv_obj.parameter_dict["study_duration_in_years"] for
-                               solar_rad_and_bipv_obj in solar_rad_and_bipv_obj_list]
+        starting_year_list = [solar_rad_and_bipv_obj.parameter_dict["roof"]["start_year"] for solar_rad_and_bipv_obj
+                              in solar_rad_and_bipv_obj_list] + [
+                                 solar_rad_and_bipv_obj.parameter_dict["facades"]["start_year"] for
+                                 solar_rad_and_bipv_obj in solar_rad_and_bipv_obj_list]
+        study_duration_list = [solar_rad_and_bipv_obj.parameter_dict["roof"]["study_duration_in_years"] for
+                               solar_rad_and_bipv_obj in solar_rad_and_bipv_obj_list] + [
+                                  solar_rad_and_bipv_obj.parameter_dict["facades"]["study_duration_in_years"] for
+                                  solar_rad_and_bipv_obj in solar_rad_and_bipv_obj_list]
         earliest_year, latest_year = cls.urban_canopy_scenarios_boundary_years(starting_year_list,
                                                                                study_duration_list)
 
@@ -741,60 +788,57 @@ class SolarRadAndBipvSimulation:
                         row_data[k] = v[i]
                 writer.writerow(row_data)
 
-    # def results_to_figures(self):
-    #     """
-    #
-    #     """
 
-    @staticmethod
-    def urban_canopy_sum_bipv_results_dicts_with_different_years(dict_1, dict_2, starting_year_list,
-                                                                 earliest_year, latest_year):
-        """
-            Sum the values dictionnaries
-            :param dict_1: dict of the results
-            :param dict_2: dict of the results
-            :param starting_year_list: list of the starting years of the simulations
-            :param earliest_year: earliest year of the simulations
-            :param latest_year: latest year of the simulations
-            :return: dict of the results
-        """
+def urban_canopy_scenarios_boundary_years(starting_year_list, study_duration_list):
+    """
+    Find the earliest and latest years across all dictionaries
+    :param starting_year_list: list of the starting years of the simulations
+    :param study_duration_list: list of the study durations of the simulations
+    """
+    # Find the earliest and latest years across all dictionaries
+    earliest_year = min(starting_year_list)
+    latest_year = max(starting_year + study_duration - 1 for starting_year, study_duration in
+                      zip(starting_year_list, study_duration_list))
+    """ -1 because the first year is included """
 
-        result_dict = {}
-        for key in dict_1:
-            if isinstance(dict_1[key], dict):
-                result_dict[key] = sum_dicts(dict_1[key], dict_2[key], starting_year_list, earliest_year,
-                                             latest_year)
-            elif isinstance(dict_1[key], list):
-                list_1 = [0.0] * (latest_year - earliest_year + 1)
-                list_1[
-                starting_year_list[0] - earliest_year:starting_year_list[0] - earliest_year + len(
-                    dict_1[key])] = \
-                    dict_1[key]
-                list_2 = [0.0] * (latest_year - earliest_year + 1)
-                list_2[
-                starting_year_list[1] - earliest_year:starting_year_list[1] - earliest_year + len(
-                    dict_2[key])] = \
-                    dict_2[key]
-                result_dict[key] = [x + y for x, y in zip(list_1, list_2)]
-            else:  # assuming ints or floats
-                result_dict[key] = dict_1[key] + dict_2[key]
+    return earliest_year, latest_year
 
-        return result_dict
 
-    @staticmethod
-    def urban_canopy_scenarios_boundary_years(starting_year_list, study_duration_list):
-        """
-        Find the earliest and latest years across all dictionaries
-        :param starting_year_list: list of the starting years of the simulations
-        :param study_duration_list: list of the study durations of the simulations
-        """
-        # Find the earliest and latest years across all dictionaries
-        earliest_year = min(starting_year_list)
-        latest_year = max(starting_year + study_duration - 1 for starting_year, study_duration in
-                          zip(starting_year_list, study_duration_list))
-        """ -1 because the first year is included """
+def sum_bipv_results_dicts_with_different_years(dict_1, dict_2, start_year_1, start_year_2,
+                                                earliest_year, latest_year):
+    """
+        Sum the values dictionnaries
+        :param dict_1: dict of the results
+        :param dict_2: dict of the results
+        :param start_year_1: starting year of the first simulation
+        :param start_year_2: starting year of the second simulation
+        :param earliest_year: the earliest year of the simulations
+        :param latest_year: latest year of the simulations
+        :return: dict of the results
+    """
 
-        return earliest_year, latest_year
+    result_dict = {}
+    for key in dict_1:
+        if isinstance(dict_1[key], dict):
+            result_dict[key] = sum_bipv_results_dicts_with_different_years(dict_1[key], dict_2[key], start_year_1,
+                                                                           start_year_2, earliest_year,
+                                                                           latest_year)
+        elif isinstance(dict_1[key], list):
+            list_1 = [0.0] * (latest_year - earliest_year + 1)
+            list_1[
+            start_year_1 - earliest_year:start_year_1 - earliest_year + len(
+                dict_1[key])] = \
+                dict_1[key]
+            list_2 = [0.0] * (latest_year - earliest_year + 1)
+            list_2[
+            start_year_2 - earliest_year:start_year_2 - earliest_year + len(
+                dict_2[key])] = \
+                dict_2[key]
+            result_dict[key] = [x + y for x, y in zip(list_1, list_2)]
+        else:  # assuming ints or floats
+            result_dict[key] = dict_1[key] + dict_2[key]
+
+    return result_dict
 
 
 def compute_cumulative_and_total_value_bipv_result_dict(bipv_results_dict):
