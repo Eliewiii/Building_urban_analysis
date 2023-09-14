@@ -86,47 +86,70 @@ def bipv_energy_harvesting_simulation_hourly_annual_irradiance(pv_panel_obj_list
 
 
 def bipv_energy_harvesting_simulation_yearly_annual_irradiance(pv_panel_obj_list, annual_solar_irradiance_value,
-                                                               study_duration_in_years, replacement_scenario, **kwargs):
+                                                               start_year, study_duration_in_years, uc_start_year,
+                                                               uc_current_year, uc_last_year, replacement_scenario,
+                                                               pv_tech_obj=None, **kwargs):
     """
     Loop over every year of the study duration to get the energy harvested, the energy used and the dmfa waste harvested
     every year
     :param pv_panel_obj_list: list of panel objects
     :param annual_solar_irradiance_value: list of floats: list of the yearly cumulative solar radiation got by the solar
     radiation simulation in Wh/panel/year
-    :param study_duration_in_years: int: duration of the study in years, Default=50
+    :param iteration_duration_in_years: int: Number of year during which the simulation is run
     :param replacement_scenario: string: replacement scenario chosen between
     "replace_failed_panels_every_X_year" and "replace_all_panels_every_X_year",
     Default="replace_failed_panels_every_X_year"
     :return energy_production_per_year_list: list of floats in kWh/year
     :return nb_of_panels_installed_list: list of int: list of the number of panels installed each year
     """
+
+
     # Initialize the lists
     energy_production_per_year_list = []
     nb_of_panels_installed_per_year_list = []
     # Loop over the years
-    for year in range(study_duration_in_years):
+    iteration_start_year = uc_current_year
+
+    # todo: make sure that we don't simulate the current year twice
+    for year in range(current_year, current_year + iteration_duration_in_years + 1):
         # initialize
         energy_harvested = 0.
         nb_of_new_panels = 0
-        # Initialize panels for year 0
-        if year == 0:
+        # Initialize panels for the first year they are installed
+        if (start_year - current_year) == 0:
             for panel_obj in pv_panel_obj_list:
-                panel_obj.initialize_or_replace_panel()
+                panel_obj.initialize_or_replace_panel(pv_tech_obj=pv_tech_obj)
                 nb_of_new_panels += 1
         # Panel replacement according to replacement scenario
-        if replacement_scenario == "replace_failed_panels_every_X_years":
-            replacement_year = kwargs["replacement_year"]
-            if year != 0 and year % replacement_year == 0:
+        elif replacement_scenario == "replace_failed_panels_every_X_years":
+            replacement_frequency_in_years = kwargs["replacement_frequency_in_years"]
+            if year % replacement_frequency_in_years == 0:
                 for panel_obj in pv_panel_obj_list:
                     if not panel_obj.is_panel_working():
-                        panel_obj.initialize_or_replace_panel()
+                        panel_obj.initialize_or_replace_panel(pv_tech_obj=pv_tech_obj)
                         nb_of_new_panels += 1
         elif replacement_scenario == "replace_all_panels_every_X_years":
-            replacement_year = kwargs["replacement_year"]
-            if year != 0 and year % replacement_year == 0:
+            replacement_frequency_in_years = kwargs["replacement_frequency_in_years"]
+            if year % replacement_frequency_in_years == 0:
                 for panel_obj in pv_panel_obj_list:
-                    panel_obj.initialize_or_replace_panel()
+                    panel_obj.initialize_or_replace_panel(pv_tech_obj=pv_tech_obj)
                     nb_of_new_panels += 1
+
+        elif replacement_scenario == "uc_replace_failed_panels_every_X_years":
+            replacement_frequency_in_years = kwargs["replacement_frequency_in_years"]
+            if (year - uc_start_year) % replacement_frequency_in_years == 0:
+                for panel_obj in pv_panel_obj_list:
+                    if not panel_obj.is_panel_working():
+                        panel_obj.initialize_or_replace_panel(pv_tech_obj=pv_tech_obj)
+                        nb_of_new_panels += 1
+
+        elif replacement_scenario == "uc_replace_all_panels_every_X_years":
+            replacement_frequency_in_years = kwargs["replacement_frequency_in_years"]
+            if (year - uc_start_year) % replacement_frequency_in_years == 0:
+                for panel_obj in pv_panel_obj_list:
+                    panel_obj.initialize_or_replace_panel(pv_tech_obj=pv_tech_obj)
+                    nb_of_new_panels += 1
+
         elif replacement_scenario == "no_replacement":
             pass
 
@@ -180,5 +203,5 @@ def bipv_lca_dmfa_eol_computation(nb_of_panels_installed_yearly_list, pv_tech_ob
 
     return primary_energy_material_extraction_and_manufacturing_yearly_list, primary_energy_transportation_yearly_list, \
         primary_energy_recycling_yearly_list, total_primary_energy_yearly_list, \
-        carbon_material_extraction_and_manufacturing_yearly_list, carbon_transportation_yearly_list,\
+        carbon_material_extraction_and_manufacturing_yearly_list, carbon_transportation_yearly_list, \
         carbon_recycling_yearly_list, total_carbon_yearly_list, dmfa_waste_yearly_list

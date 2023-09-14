@@ -13,6 +13,7 @@ from urban_canopy.export_to_json import ExportUrbanCanopyToJson
 
 from building.building_basic import BuildingBasic
 from building.building_modeled import BuildingModeled
+from building.solar_radiation_and_bipv.solar_rad_and_BIPV import SolarRadAndBipvSimulation
 from libraries_addons.extract_gis_files import extract_gis
 from typology.typology import Typology
 from bipv.bipv_technology import BipvTechnology
@@ -35,6 +36,9 @@ class UrbanCanopy:
         self.typology_dict = {}  # dictionary of the typologies loaded the urban canopy
         self.moving_vector_to_origin = None  # moving vector of the urban canopy that moved the urban canopy to the origin
         self.json_dict = {}  # dictionary containing relevant attributes of the urban canopy to be exported to json
+
+        # BIPV simulation
+        self.solar_radiation_and_bipv_simulation_obj = SolarRadAndBipvSimulation()
 
     def __len__(self):
         """ Return the number of buildings in the urban canopy """
@@ -505,7 +509,7 @@ class UrbanCanopy:
         # Run the simulation for the buildings
         for building_obj in self.building_dict.values():
             if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
-                    and isinstance(building_obj, BuildingModeled) and building_obj.is_target :
+                    and isinstance(building_obj, BuildingModeled) and building_obj.is_target:
                 building_obj.run_annual_solar_irradiance_simulation(
                     path_simulation_folder=path_simulation_folder,
                     path_epw_file=path_epw_file,
@@ -535,6 +539,10 @@ class UrbanCanopy:
         pv_technologies_dictionary = BipvTechnology.load_pv_technologies_from_json_to_dictionary(
             path_pv_tech_dictionary_json)
 
+        # Initialize the BIPV simulation for the Urban Canopy if not done already (and not overwrite)
+        # todo
+
+
         # Checks of the building_id_list parameter to give feedback to the user if there is an issue with an id
         if not (building_id_list is None or building_id_list is []):
             for building_id in building_id_list:
@@ -558,6 +566,8 @@ class UrbanCanopy:
                             building_id].solar_radiation_and_bipv_simulation_obj.facades_annual_panel_irradiance_list is None:
                     user_logger.warning(f"No irradiance simulation was run for The building id "
                                         f"{building_id}, the BIPV simulation will not be run for this building.")
+
+        # If continue run continue for all the buildings that have started a bipv sim already.
 
         for building_obj in self.building_dict.values():
             if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
