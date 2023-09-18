@@ -99,14 +99,14 @@ class SolarRadAndBipvSimulation:
         # parameters
         self.parameter_dict = empty_parameter_dict
 
-    def set_mesh_parameters(self, roof_or_facades, on_roof_or_facades, roof_grid_size_x=1, roof_grid_size_y=1,
+    def set_mesh_parameters(self, roof_or_facades, on_roof_or_facades, grid_size_x=1, grid_size_y=1,
                             offset_dist=0.1):
         """
         Set the mesh parameters for the simulation
         :param roof_or_facades: str: roof or facades
         :param on_roof_or_facades: bool: default=True, whether to run the simulation on the roof or the facades
-        :param roof_grid_size_x: Number for the size of the test grid
-        :param roof_grid_size_y: Number for the size of the test grid
+        :param grid_size_x: Number for the size of the test grid
+        :param grid_size_y: Number for the size of the test grid
         :param offset_dist: Number for the distance to move points from the surfaces of the geometry of the model.
         """
         if roof_or_facades == "roof":
@@ -117,8 +117,8 @@ class SolarRadAndBipvSimulation:
             dev_logger.warning(f"The roof_or_facades parameter should be either roof or facades")
             return
         if on_roof_or_facades:
-            self.parameter_dict[roof_or_facades]["grid_x"] = roof_grid_size_x
-            self.parameter_dict[roof_or_facades]["grid_y"] = roof_grid_size_y
+            self.parameter_dict[roof_or_facades]["grid_x"] = grid_size_x
+            self.parameter_dict[roof_or_facades]["grid_y"] = grid_size_y
             self.parameter_dict[roof_or_facades]["offset"] = offset_dist
 
     def set_bipv_parameters(self, roof_or_facades, pv_tech_obj, minimum_panel_eroi, start_year, replacement_scenario,
@@ -175,7 +175,7 @@ class SolarRadAndBipvSimulation:
                                                                           roof_grid_size_y, offset_dist,
                                                                           "roof")
             self.set_mesh_parameters(roof_or_facades="roof", on_roof_or_facades=bipv_on_roof,
-                                     roof_grid_size_x=roof_grid_size_x, roof_grid_size_y=roof_grid_size_y,
+                                     grid_size_x=roof_grid_size_x, grid_size_y=roof_grid_size_y,
                                      offset_dist=offset_dist)
         if bipv_on_facades and (self.facades_sensorgrid_dict is None or overwrite):
             self.facades_sensorgrid_dict = generate_sensor_grid_for_hb_model(hb_model_obj,
@@ -183,8 +183,8 @@ class SolarRadAndBipvSimulation:
                                                                              facades_grid_size_y, offset_dist,
                                                                              "facades")
             self.set_mesh_parameters(roof_or_facades="facades", on_roof_or_facades=bipv_on_facades,
-                                     facades_grid_size_x=facades_grid_size_x,
-                                     facades_grid_size_y=facades_grid_size_y,
+                                     grid_size_x=facades_grid_size_x,
+                                     grid_size_y=facades_grid_size_y,
                                      offset_dist=offset_dist)
 
     def run_annual_solar_irradiance_simulation(self, path_simulation_folder, building_id, hb_model_obj,

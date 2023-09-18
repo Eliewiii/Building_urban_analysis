@@ -95,15 +95,15 @@ class LoadArguments:
                             default=default_roof_grid_size_x)
         parser.add_argument("--roof_grid_size_y",
                             help="size of the grid of the mesh for the buildings in the y direction, "
-                                    "it should be about the size of a panel + BOS",
+                                 "it should be about the size of a panel + BOS",
                             default=default_roof_grid_size_y)
         parser.add_argument("--facades_grid_size_x",
                             help="size of the grid of the mesh for the buildings in the x direction, "
-                                    "it should be about the size of a panel + BOS",
+                                 "it should be about the size of a panel + BOS",
                             default=default_facades_grid_size_x)
         parser.add_argument("--facades_grid_size_y",
                             help="size of the grid of the mesh for the buildings in the y direction, "
-                                    "it should be about the size of a panel + BOS",
+                                 "it should be about the size of a panel + BOS",
                             default=default_facades_grid_size_y)
         parser.add_argument("--offset_dist",
                             help="Number for the distance to move points from the surfaces of the "
@@ -117,7 +117,7 @@ class LoadArguments:
         parser.add_argument("--id_pv_tech_roof", help="name of the pv tech used on the roof",
                             default=default_id_pv_tech_roof)
         parser.add_argument("--id_pv_tech_facades", help="name of the pv tech used on the facades",
-                            default=default_id_pv_tech_facades)\
+                            default=default_id_pv_tech_facades)
         parser.add_argument("--start_year", help="Start year of the simulation",
                             default=default_start_year)
         parser.add_argument("--end_year", help="End year of the simulation",
@@ -125,17 +125,21 @@ class LoadArguments:
         parser.add_argument("--minimum_panel_eroi",
                             help="minimum energy production during the first year for the panel to be installed",
                             default=default_minimum_panel_eroi)
-        parser.add_argument("--efficiency_computation_method", help="Method used to compute the efficiency of the panel",
+        parser.add_argument("--efficiency_computation_method",
+                            help="Method used to compute the efficiency of the panel",
                             default=default_efficiency_computation_method)
         parser.add_argument("--replacement_scenario",
                             help="replacement scenario chosen for the failed panels",
                             default=default_replacement_scenario)
         parser.add_argument("--replacement_frequency_in_years", help="replacement every x years scenario",
                             default=default_replacement_frequency_in_years)
-        #todo: take care of tehe last one
+        parser.add_argument("--update_panel_technology",
+                            help="Update the panel technology with the new values", default=False)
+        # todo: take care of tehe last one
         parser.add_argument("--country_ghe_cost",
                             help="Cost in gCO2eq per kWh depending on the country energy mix",
                             default=default_country_ghe_cost)
+
 
     @staticmethod
     def add_user_simulation_features_to_parser(parser):
@@ -190,18 +194,13 @@ class LoadArguments:
                                  "object that will be stored in the json dic of the urban canopy object",
                             nargs='?', default=False)
         # Solar radiation and BIPV simulation
-        parser.add_argument("--generate_sensorgrid",
+        parser.add_argument("--generate_sensorgrids_on_buildings",
                             help="Perform the generation of the mesh on the buildings", default=False)
         parser.add_argument("--run_annual_solar_irradiance_simulation",
                             help="Perform the generation of the mesh on the buildings", default=False)
+        parser.add_argument("--run_bipv_harvesting_and_lca_simulation",
+                            help="Perform the generation of the mesh on the buildings", default=False)
 
-        # Run the simulations todo: remove and keep only the updated version
-        parser.add_argument("--do_radiation_simulation",
-                            help="On each building targeted in the urban canopy, "
-                                 "run the solar simulation", default=False)
-        parser.add_argument("--do_panel_simulation",
-                            help="On each building targeted in the urban canopy, run the "
-                                 "panel simulation", default=False)
         # Post-processing
         parser.add_argument("--generate_panels_results_in_csv",
                             help="Generate the csv file containing all the useful "
@@ -263,13 +262,14 @@ class LoadArguments:
             "path_pv_tech_dictionary": args.path_pv_tech_dictionary,
             "id_pv_tech_roof": args.id_pv_tech_roof,
             "id_pv_tech_facades": args.id_pv_tech_facades,
-            "minimum_panel_eroi": float(
-                args.minimum_panel_eroi),
+            "start_year": int(args.start_year),
+            "end_year": int(args.end_year),
+            "minimum_panel_eroi": float(args.minimum_panel_eroi),
+            "efficiency_computation_method": args.efficiency_computation_method,
             "replacement_scenario": args.replacement_scenario,
-            "every_X_years": int(args.every_X_years),
+            "replacement_frequency_in_years": int(args.replacement_frequency_in_years),
+            "update_panel_technology": bool(int(args.update_panel_technology)),
             "country_ghe_cost": float(args.country_ghe_cost),
-            # old to delete
-            "grid_size": float(args.grid_size)
         }
 
         # Create a dictionary with the arguments and the name of their variable that will be imported in the main script
@@ -293,10 +293,9 @@ class LoadArguments:
             # Context filtering
             "run_perform_context_filtering": bool(int(args.perform_context_filtering)),
             # Solar and BIPV simulation
-            "run_generate_sensorgrids_on_buildings": bool(int(args.generate_sensorgrid)),
+            "run_generate_sensorgrids_on_buildings": bool(int(args.generate_sensorgrids_on_buildings)),
             "run_annual_solar_irradiance_simulation": bool(int(args.run_annual_solar_irradiance_simulation)),
-            "run_radiation_simulation": bool(int(args.do_radiation_simulation)),
-            "run_panel_simulation": bool(int(args.do_panel_simulation)),
+            "run_bipv_harvesting_and_lca_simulation": bool(int(args.run_bipv_harvesting_and_lca_simulation)),
             "generate_panels_results_in_csv": bool(int(args.generate_panels_results_in_csv)),
             "plot_graph_results_building_panel_simulation": bool(
                 int(args.plot_graph_results_building_panel_simulation)),

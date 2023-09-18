@@ -31,6 +31,10 @@ class BipvTechnology:
 
     def __init__(self, identifier):
         self.identifier = identifier
+        #
+        self.panel_area = None  # in square meter
+        self.weight = None  # per square meter
+
         # Efficiency
         self.efficiency_function = None
         self.initial_efficiency = None
@@ -40,12 +44,10 @@ class BipvTechnology:
         # Failure
         self.weibull_law_failure_parameters = {"lifetime": None, "shape": None}
         # LCA and DMFA parameters
-        self.panel_area = None  # in square meter
         self.primary_energy_manufacturing = None  # per square meter
         self.carbon_manufacturing = None
         self.primary_energy_transport = None
         self.carbon_transport = None
-        self.weight = None  # per square meter
         self.primary_energy_recycling = None
         self.carbon_recycling = None
 
@@ -69,7 +71,6 @@ class BipvTechnology:
                         # PVPanelTechnology object
                         pv_tech = cls(identifier_key)
                         efficiency_function_name = pv_dict_data[pv_tech.identifier]["efficiency_function"]
-                        # todo : add a try to check if the function exist, use the defaukt function if it does not exist, and return a warning
                         pv_tech.efficiency_function = getattr(pv_tech, efficiency_function_name)
                         # todo add panel performance ratio
                         pv_tech.initial_efficiency = pv_dict_data[identifier_key]["initial_efficiency"]

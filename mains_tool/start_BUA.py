@@ -117,81 +117,78 @@ def main():
             north_angle=arguments_dictionary["north_angle"],
             silent=arguments_dictionary["silent"])
 
-    # Solar radiation analysis #  todo @Elie : old version to delete
-    # Perform Solar radiation
-    if simulation_step_dictionary["run_radiation_simulation"]:
-        SolarOrPanelSimulation.solar_radiation_simulation(urban_canopy_object=urban_canopy_object,
-                                                          path_simulation_folder=arguments_dictionary[
-                                                              "path_simulation_folder"],
-                                                          path_epw_file=arguments_dictionary[
-                                                              "path_weather_file"],
-                                                          list_id=arguments_dictionary["building_id_list"],
-                                                          grid_size=arguments_dictionary["grid_size"],
-                                                          offset_dist=arguments_dictionary["offset_dist"],
-                                                          on_roof=arguments_dictionary["on_roof"],
-                                                          on_facades=arguments_dictionary["on_facades"])
+    # Run panel simulation
+    if simulation_step_dictionary["run_bipv_harvesting_and_lca_simulation"]:
+        SimFunSolarRadAndBipv.run_bipv_harvesting_and_lca_simulation(urban_canopy_object,
+                                                                     path_simulation_folder=arguments_dictionary[
+                                                                         "path_simulation_folder"],
+                                                                     bipv_scenario_identifier=arguments_dictionary[
+                                                                         "bipv_scenario_identifier"],
+                                                                     path_folder_pv_tech_dictionary_json=
+                                                                     arguments_dictionary[
+                                                                         "path_folder_pv_tech_dictionary_json"],
+                                                                     building_id_list=arguments_dictionary[
+                                                                         "building_id_list"],
+                                                                     roof_id_pv_tech=arguments_dictionary[
+                                                                         "roof_id_pv_tech"],
+                                                                     facades_id_pv_tech=arguments_dictionary[
+                                                                         "facades_id_pv_tech"],
+                                                                     efficiency_computation_method=arguments_dictionary[
+                                                                         "efficiency_computation_method"],
+                                                                     minimum_panel_eroi=arguments_dictionary[
+                                                                         "minimum_panel_eroi"],
+                                                                     start_year=arguments_dictionary["start_year"],
+                                                                     end_year=arguments_dictionary["end_year"],
+                                                                     replacement_scenario=arguments_dictionary[
+                                                                         "replacement_scenario"],
+                                                                     continue_simulation=(
+                                                                         not arguments_dictionary["overwrite"]),
+                                                                     replacement_frequency_in_years=
+                                                                     arguments_dictionary[
+                                                                         "replacement_frequency_in_years"],
+                                                                     update_panel_technology=arguments_dictionary[
+                                                                         "update_panel_technology"])
 
-    # LCA and DMFA #
-    # perform LCA and DMFA
-    if simulation_step_dictionary["run_panel_simulation"]:
-        SolarOrPanelSimulation.panel_simulation(urban_canopy_object=urban_canopy_object,
-                                                path_simulation_folder=arguments_dictionary[
-                                                    "path_simulation_folder"],
-                                                path_pv_tech_dictionary_json=arguments_dictionary[
-                                                    "path_pv_tech_dictionary"],
-                                                id_pv_tech_roof=arguments_dictionary["id_pv_tech_roof"],
-                                                id_pv_tech_facades=arguments_dictionary["id_pv_tech_facades"],
-                                                minimum_ratio_energy_harvested_on_primary_energy=
-                                                arguments_dictionary[
-                                                    "minimum_ratio_energy_harvested_on_primary_energy"],
-                                                performance_ratio=arguments_dictionary["performance_ratio"],
-                                                study_duration_in_years=arguments_dictionary[
-                                                    "study_duration_years"],
-                                                replacement_scenario=arguments_dictionary[
-                                                    "replacement_scenario"],
-                                                replacement_year=arguments_dictionary["every_X_years"])
+        # Microclimate weather files
 
-    # Microclimate weather files
+        # Preprocessing Longwave radiation #
 
-    # Preprocessing Longwave radiation #
+        # Building Energy Simulation #
 
-    # Building Energy Simulation #
+        # Postprocessing and plots #
+        if simulation_step_dictionary["run_generate_model_with_building_envelop"]:
+            SimulationPostProcessingAndPlots.add_building_envelops_to_urban_canopy_json(
+                urban_canopy_object=urban_canopy_object)
 
-    # Postprocessing and plots #
-    if simulation_step_dictionary["run_generate_model_with_building_envelop"]:
-        SimulationPostProcessingAndPlots.add_building_envelops_to_urban_canopy_json(
-            urban_canopy_object=urban_canopy_object)
+        # Exports #
+        # Export Urban canopy to pickle
+        if simulation_step_dictionary["run_save_urban_canopy_object_to_pickle"]:
+            SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,
+                                                                       path_simulation_folder=
+                                                                       arguments_dictionary[
+                                                                           "path_simulation_folder"])
+        # Export Urban canopy to json
+        if simulation_step_dictionary["run_save_urban_canopy_object_to_json"]:
+            SimulationCommonMethods.save_urban_canopy_to_json(urban_canopy_object=urban_canopy_object,
+                                                              path_simulation_folder=arguments_dictionary[
+                                                                  "path_simulation_folder"])
 
-    # Exports #
-    # Export Urban canopy to pickle
-    if simulation_step_dictionary["run_save_urban_canopy_object_to_pickle"]:
-        SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,
-                                                                   path_simulation_folder=
-                                                                   arguments_dictionary[
-                                                                       "path_simulation_folder"])
-    # Export Urban canopy to json
-    if simulation_step_dictionary["run_save_urban_canopy_object_to_json"]:
-        SimulationCommonMethods.save_urban_canopy_to_json(urban_canopy_object=urban_canopy_object,
-                                                          path_simulation_folder=arguments_dictionary[
-                                                              "path_simulation_folder"])
+        # Post-processing panels
+        if simulation_step_dictionary["generate_panels_results_in_csv"]:
+            SimulationPostProcessingAndPlots.generate_csv_panels_simulation_results(
+                urban_canopy_object=urban_canopy_object,
+                path_simulation_folder=
+                arguments_dictionary[
+                    "path_simulation_folder"])
 
-    # Post-processing panels
-    if simulation_step_dictionary["generate_panels_results_in_csv"]:
-        SimulationPostProcessingAndPlots.generate_csv_panels_simulation_results(
-            urban_canopy_object=urban_canopy_object,
-            path_simulation_folder=
-            arguments_dictionary[
-                "path_simulation_folder"])
+        if simulation_step_dictionary["plot_graph_results_building_panel_simulation"]:
+            SimulationPostProcessingAndPlots.plot_graphs(urban_canopy_object=urban_canopy_object,
+                                                         path_simulation_folder=arguments_dictionary[
+                                                             "path_simulation_folder"],
+                                                         study_duration_years=arguments_dictionary[
+                                                             "study_duration_years"],
+                                                         country_ghe_cost=arguments_dictionary[
+                                                             "country_ghe_cost"])
 
-    if simulation_step_dictionary["plot_graph_results_building_panel_simulation"]:
-        SimulationPostProcessingAndPlots.plot_graphs(urban_canopy_object=urban_canopy_object,
-                                                     path_simulation_folder=arguments_dictionary[
-                                                         "path_simulation_folder"],
-                                                     study_duration_years=arguments_dictionary[
-                                                         "study_duration_years"],
-                                                     country_ghe_cost=arguments_dictionary[
-                                                         "country_ghe_cost"])
-
-
-if __name__ == "__main__":
-    main()
+    if __name__ == "__main__":
+        main()
