@@ -39,8 +39,8 @@ class BipvTechnology:
         self.efficiency_function = None
         self.initial_efficiency = None
         self.panel_performance_ratio = None
-        self.first_year_degrading_rate = 0.02  # todo : add the parameters to the dictionnary
-        self.degrading_rate = 0.005
+        self.first_year_degrading_rate = None  # todo : add the parameters to the dictionnary
+        self.degrading_rate = None
         # Failure
         self.weibull_law_failure_parameters = {"lifetime": None, "shape": None}
         # LCA and DMFA parameters
@@ -63,39 +63,54 @@ class BipvTechnology:
         """
         pv_technologies_dict = {}  # initialize the dictionary
         for json_file in os.listdir(path_json_folder):  # for every json file in the folder
-            if not json_file.endswith(".json"):
+            if json_file.endswith(".json"):
                 path_json_file = os.path.join(path_json_folder, json_file)  # get the path to the json file
                 with open(path_json_file) as f:  # open and load the json file
                     pv_dict_data = json.load(f)
                     for identifier_key in pv_dict_data:  # for every technology in the json, we create and load the
-                        # PVPanelTechnology object
-                        pv_tech = cls(identifier_key)
-                        efficiency_function_name = pv_dict_data[pv_tech.identifier]["efficiency_function"]
-                        pv_tech.efficiency_function = getattr(pv_tech, efficiency_function_name)
-                        # todo add panel performance ratio
-                        pv_tech.initial_efficiency = pv_dict_data[identifier_key]["initial_efficiency"]
-                        pv_tech.weibull_law_failure_parameters["lifetime"] = pv_dict_data[identifier_key][
-                            "weibull_lifetime"]
-                        pv_tech.weibull_law_failure_parameters["shape"] = pv_dict_data[identifier_key][
-                            "weibull_shape"]
-                        pv_tech.panel_area = pv_dict_data[identifier_key]["panel_area"]
-                        pv_tech.weight = pv_dict_data[identifier_key]["weight"]
-                        pv_tech.primary_energy_manufacturing = pv_dict_data[identifier_key][
-                            "primary_energy_manufacturing_in_kWh_per_panel"]
-                        pv_tech.carbon_manufacturing = pv_dict_data[identifier_key][
-                            "gh_gas_emissions_manufacturing_in_kgCO2eq_per_panel"]
-                        pv_tech.primary_energy_transport = pv_dict_data[identifier_key][
-                            "primary_energy_transport_in_kWh_per_panel"]
-                        pv_tech.carbon_transport = pv_dict_data[identifier_key]["carbon_transport_in_kgCO2_per_panel"]
-                        pv_tech.weight = pv_dict_data[identifier_key]["weight"]
-                        pv_tech.primary_energy_recycling = pv_dict_data[identifier_key][
-                            "end_of_life_primary_energy_in_kWh_per_panel"]
-                        pv_tech.carbon_recycling = pv_dict_data[identifier_key][
-                            "end_of_life_carbon_in_kgCO2_per_panel"]
+                        # Initialize the object
+                        pv_tech_obj = cls(identifier_key)
+                        # Load physical paramters
+                        pv_tech_obj.panel_area = pv_dict_data[identifier_key]["physical_parameters"][
+                            "panel_area"]
+                        pv_tech_obj.weight = pv_dict_data[identifier_key]["physical_parameters"][
+                            "panel_weight"]
+                        # Load failure parameters
+                        pv_tech_obj.weibull_law_failure_parameters["lifetime"] = pv_dict_data[identifier_key][
+                            "failure_parameters"]["weibull_scale_parameter"]
+                        pv_tech_obj.weibull_law_failure_parameters["shape"] = pv_dict_data[identifier_key][
+                            "failure_parameters"]["weibull_shape_parameter"]
+                        # Load efficiency parameters
+                        pv_tech_obj.initial_efficiency = \
+                        pv_dict_data[identifier_key]["efficiency_parameters"][
+                            "initial_efficiency"]
+                        pv_tech_obj.first_year_degrading_rate = \
+                        pv_dict_data[identifier_key]["efficiency_parameters"][
+                            "first_year_degrading_rate"]
+                        pv_tech_obj.degrading_rate = pv_dict_data[identifier_key]["efficiency_parameters"][
+                            "degrading_rate"]
+                        pv_tech_obj.panel_performance_ratio = \
+                        pv_dict_data[identifier_key]["efficiency_parameters"][
+                            "panel_performance_ratio"]
+                        efficiency_function_name = pv_dict_data[identifier_key]["efficiency_function"]
+                        pv_tech_obj.efficiency_function = getattr(pv_tech_obj, efficiency_function_name)
+                        # Load LCA parameters
+                        pv_tech_obj.primary_energy_manufacturing = \
+                        pv_dict_data[identifier_key]["lca_parameters"][
+                            "primary_energy_manufacturing"]
+                        pv_tech_obj.carbon_manufacturing = pv_dict_data[identifier_key]["lca_parameters"][
+                            "carbon_footprint_manufacturing_in_kgCO2eq_per_panel"]
+                        pv_tech_obj.primary_energy_transport = pv_dict_data[identifier_key]["lca_parameters"][
+                            "primary_energy_transport"]
+                        pv_tech_obj.carbon_transport = pv_dict_data[identifier_key]["lca_parameters"][
+                            "carbon_footprint_transport_in_kgCO2eq_per_panel"]
 
-                        pv_technologies_dict[
-                            identifier_key] = pv_tech  # then we add this object to the dictionary containing
-                        # all the different technologies
+                        pv_tech_obj.primary_energy_recycling = pv_dict_data[identifier_key]["lca_parameters"][
+                            "end_of_life_primary_energy_in_kWh_per_panel"]
+                        pv_tech_obj.carbon_recycling = pv_dict_data[identifier_key]["lca_parameters"][
+                            "end_of_life_carbon_footprint_in_kgCO2_per_panel"]
+
+                        pv_technologies_dict[identifier_key] = pv_tech_obj
         return pv_technologies_dict
 
     def compute_transportation_energy(self):
