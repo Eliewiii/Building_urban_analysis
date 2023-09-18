@@ -289,26 +289,23 @@ class BuildingModeled(BuildingBasic):
             path_epw_file=path_epw_file, overwrite=overwrite,
             north_angle=north_angle, silent=silent)
 
-    def run_bipv_panel_simulation(self, path_simulation_folder, pv_technologies_dictionary, roof_id_pv_tech,
-                                  facades_id_pv_tech, efficiency_computation_method="yearly",
-                                  minimum_panel_eroi=1.2, study_duration_in_years=50,
-                                  replacement_scenario="replace_failed_panels_every_X_years", **kwargs):
+    def run_bipv_panel_simulation(self, path_simulation_folder, roof_pv_tech_obj, facade_pv_tech_obj, uc_start_year,
+                                  uc_current_year, uc_end_year, efficiency_computation_method="yearly",
+                                  minimum_panel_eroi=1.2, replacement_scenario="replace_failed_panels_every_X_years",
+                                  continue_simulation=False, **kwargs):
         """
 
         """
-        # Load the PV technologies
-        roof_pv_tech_obj = pv_technologies_dictionary[roof_id_pv_tech]
-        facade_pv_tech_obj = pv_technologies_dictionary[facades_id_pv_tech]
+
         # Run the simulation
         self.solar_radiation_and_bipv_simulation_obj.run_bipv_panel_simulation(
-            path_simulation_folder=path_simulation_folder, building_id=self.id,
-            roof_pv_tech_obj=roof_pv_tech_obj,
-            facades_pv_tech_obj=facade_pv_tech_obj,
-            efficiency_computation_method=efficiency_computation_method,
-            minimum_panel_eroi=minimum_panel_eroi, study_duration_in_years=study_duration_in_years,
-            replacement_scenario=replacement_scenario, **kwargs)
+            path_simulation_folder=path_simulation_folder, building_id=self.id, roof_pv_tech_obj=roof_pv_tech_obj,
+            facades_pv_tech_obj=facade_pv_tech_obj, uc_end_year=uc_end_year, uc_start_year=uc_start_year,
+            uc_current_year=uc_current_year, efficiency_computation_method=efficiency_computation_method,
+            minimum_panel_eroi=minimum_panel_eroi, replacement_scenario=replacement_scenario,
+            continue_simulation=continue_simulation, **kwargs)
         # Write the results in a csv file
-        self.solar_radiation_and_bipv_simulation_obj.bipv_results_to_csv(
+        self.solar_radiation_and_bipv_simulation_obj.write_bipv_results_to_csv(
             path_simulation_folder=path_simulation_folder,
             building_id=self.id)
 

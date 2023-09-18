@@ -109,26 +109,30 @@ class LoadArguments:
                             help="Number for the distance to move points from the surfaces of the "
                                  "geometry of the model", default=default_offset_dist)
         # BIPV
-        parser.add_argument("--path_pv_tech_dictionary",
-                            help="path to the json containing the PVPanelTechnologies",
-                            default=default_path_pv_tech_dictionary)
+        parser.add_argument("--bipv_scenario_identifier",
+                            help="Identifier of the BIPV scenario", default=default_bipv_scenario_identifier)
+        parser.add_argument("--path_pv_tech_dictionary_folder",
+                            help="path to the folder containing the json with PVPanelTechnologies",
+                            default=default_path_pv_tech_dictionary_folder)
         parser.add_argument("--id_pv_tech_roof", help="name of the pv tech used on the roof",
                             default=default_id_pv_tech_roof)
         parser.add_argument("--id_pv_tech_facades", help="name of the pv tech used on the facades",
-                            default=default_id_pv_tech_facades)
-        parser.add_argument("--minimum_ratio_energy_harvested_on_primary_energy",
-                            help="minimum energy production during the first year for the"
-                                 " panel to be installed",
-                            default=default_minimum_ratio_energy_harvested_on_primary_energy)
-        parser.add_argument("--performance_ratio", help="performance ratio of the panels",
-                            default=default_performance_ratio)
-        parser.add_argument("--study_duration_years", help="duration of the study in years",
-                            default=default_study_duration_years)
+                            default=default_id_pv_tech_facades)\
+        parser.add_argument("--start_year", help="Start year of the simulation",
+                            default=default_start_year)
+        parser.add_argument("--end_year", help="End year of the simulation",
+                            default=default_end_year)
+        parser.add_argument("--minimum_panel_eroi",
+                            help="minimum energy production during the first year for the panel to be installed",
+                            default=default_minimum_panel_eroi)
+        parser.add_argument("--efficiency_computation_method", help="Method used to compute the efficiency of the panel",
+                            default=default_efficiency_computation_method)
         parser.add_argument("--replacement_scenario",
                             help="replacement scenario chosen for the failed panels",
                             default=default_replacement_scenario)
-        parser.add_argument("--every_X_years", help="replacement every x years scenario",
-                            default=default_evey_X_years)
+        parser.add_argument("--replacement_frequency_in_years", help="replacement every x years scenario",
+                            default=default_replacement_frequency_in_years)
+        #todo: take care of tehe last one
         parser.add_argument("--country_ghe_cost",
                             help="Cost in gCO2eq per kWh depending on the country energy mix",
                             default=default_country_ghe_cost)
@@ -255,13 +259,12 @@ class LoadArguments:
             "facades_grid_size_y": float(args.facades_grid_size_y),
             "offset_dist": float(args.offset_dist),
             # BIPV
+            "bipv_scenario_identifier": args.bipv_scenario_identifier,
             "path_pv_tech_dictionary": args.path_pv_tech_dictionary,
             "id_pv_tech_roof": args.id_pv_tech_roof,
             "id_pv_tech_facades": args.id_pv_tech_facades,
-            "performance_ratio": float(args.performance_ratio),
-            "minimum_ratio_energy_harvested_on_primary_energy": float(
-                args.minimum_ratio_energy_harvested_on_primary_energy),
-            "study_duration_years": int(args.study_duration_years),
+            "minimum_panel_eroi": float(
+                args.minimum_panel_eroi),
             "replacement_scenario": args.replacement_scenario,
             "every_X_years": int(args.every_X_years),
             "country_ghe_cost": float(args.country_ghe_cost),

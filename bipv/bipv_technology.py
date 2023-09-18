@@ -1,14 +1,13 @@
 """
 
 """
-from math import log, ceil
-import random
+import os
 import json
+import random
+
+from math import log, ceil
 
 temp_ref = 25  # temperature reference for the efficiency of the panel
-
-
-
 
 
 class BipvTechnology:
@@ -54,45 +53,48 @@ class BipvTechnology:
         #  be per panel in the attributes
 
     @classmethod
-    def load_pv_technologies_from_json_to_dictionary(cls, path_json_file):
+    def load_pv_technologies_from_json_to_dictionary(cls, path_json_folder):
         """
         Create the PanelTechnology objects from json file and save them in a dictionary
-        :param path_json_file: path to a json file database of the pv technologies
+        :param path_json_folder: path to the folder containing the json file
         : return pv_technologies_dict: dictionary of the technologies
         """
         pv_technologies_dict = {}  # initialize the dictionary
-        with open(path_json_file) as f:  # open and load the json file
-            pv_dict_data = json.load(f)
-            for identifier_key in pv_dict_data:  # for every technology in the json, we create and load the
-                # PVPanelTechnology object
-                pv_tech = cls(identifier_key)
-                efficiency_function_name = pv_dict_data[pv_tech.identifier]["efficiency_function"]
-                # todo : add a try to check if the function exist, use the defaukt function if it does not exist, and return a warning
-                pv_tech.efficiency_function = getattr(pv_tech, efficiency_function_name)
-                # todo add panel performance ratio
-                pv_tech.initial_efficiency = pv_dict_data[identifier_key]["initial_efficiency"]
-                pv_tech.weibull_law_failure_parameters["lifetime"] = pv_dict_data[identifier_key][
-                    "weibull_lifetime"]
-                pv_tech.weibull_law_failure_parameters["shape"] = pv_dict_data[identifier_key][
-                    "weibull_shape"]
-                pv_tech.panel_area = pv_dict_data[identifier_key]["panel_area"]
-                pv_tech.weight = pv_dict_data[identifier_key]["weight"]
-                pv_tech.primary_energy_manufacturing = pv_dict_data[identifier_key][
-                    "primary_energy_manufacturing_in_kWh_per_panel"]
-                pv_tech.carbon_manufacturing = pv_dict_data[identifier_key][
-                    "gh_gas_emissions_manufacturing_in_kgCO2eq_per_panel"]
-                pv_tech.primary_energy_transport = pv_dict_data[identifier_key][
-                    "primary_energy_transport_in_kWh_per_panel"]
-                pv_tech.carbon_transport = pv_dict_data[identifier_key]["carbon_transport_in_kgCO2_per_panel"]
-                pv_tech.weight = pv_dict_data[identifier_key]["weight"]
-                pv_tech.primary_energy_recycling = pv_dict_data[identifier_key][
-                    "end_of_life_primary_energy_in_kWh_per_panel"]
-                pv_tech.carbon_recycling = pv_dict_data[identifier_key][
-                    "end_of_life_carbon_in_kgCO2_per_panel"]
+        for json_file in os.listdir(path_json_folder):  # for every json file in the folder
+            if not json_file.endswith(".json"):
+                path_json_file = os.path.join(path_json_folder, json_file)  # get the path to the json file
+                with open(path_json_file) as f:  # open and load the json file
+                    pv_dict_data = json.load(f)
+                    for identifier_key in pv_dict_data:  # for every technology in the json, we create and load the
+                        # PVPanelTechnology object
+                        pv_tech = cls(identifier_key)
+                        efficiency_function_name = pv_dict_data[pv_tech.identifier]["efficiency_function"]
+                        # todo : add a try to check if the function exist, use the defaukt function if it does not exist, and return a warning
+                        pv_tech.efficiency_function = getattr(pv_tech, efficiency_function_name)
+                        # todo add panel performance ratio
+                        pv_tech.initial_efficiency = pv_dict_data[identifier_key]["initial_efficiency"]
+                        pv_tech.weibull_law_failure_parameters["lifetime"] = pv_dict_data[identifier_key][
+                            "weibull_lifetime"]
+                        pv_tech.weibull_law_failure_parameters["shape"] = pv_dict_data[identifier_key][
+                            "weibull_shape"]
+                        pv_tech.panel_area = pv_dict_data[identifier_key]["panel_area"]
+                        pv_tech.weight = pv_dict_data[identifier_key]["weight"]
+                        pv_tech.primary_energy_manufacturing = pv_dict_data[identifier_key][
+                            "primary_energy_manufacturing_in_kWh_per_panel"]
+                        pv_tech.carbon_manufacturing = pv_dict_data[identifier_key][
+                            "gh_gas_emissions_manufacturing_in_kgCO2eq_per_panel"]
+                        pv_tech.primary_energy_transport = pv_dict_data[identifier_key][
+                            "primary_energy_transport_in_kWh_per_panel"]
+                        pv_tech.carbon_transport = pv_dict_data[identifier_key]["carbon_transport_in_kgCO2_per_panel"]
+                        pv_tech.weight = pv_dict_data[identifier_key]["weight"]
+                        pv_tech.primary_energy_recycling = pv_dict_data[identifier_key][
+                            "end_of_life_primary_energy_in_kWh_per_panel"]
+                        pv_tech.carbon_recycling = pv_dict_data[identifier_key][
+                            "end_of_life_carbon_in_kgCO2_per_panel"]
 
-                pv_technologies_dict[
-                    identifier_key] = pv_tech  # then we add this object to the dictionary containing
-                # all the different technologies
+                        pv_technologies_dict[
+                            identifier_key] = pv_tech  # then we add this object to the dictionary containing
+                        # all the different technologies
         return pv_technologies_dict
 
     def compute_transportation_energy(self):

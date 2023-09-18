@@ -2,8 +2,8 @@
 
 """
 
-from building.solar_radiation_and_bipv.solar_rad_and_BIPV import SolarRadAndBipvSimulation, empty_bipv_results_dict, \
-    sum_bipv_results_dicts_with_different_years
+from building.solar_radiation_and_bipv.solar_rad_and_BIPV import empty_bipv_results_dict, \
+    sum_bipv_results_dicts_with_different_years, bipv_results_to_csv
 
 
 class BipvScenario:
@@ -76,3 +76,12 @@ class BipvScenario:
             start_year_2=earliest_year,
             earliest_year=earliest_year,
             latest_year=latest_year)
+
+    def write_bipv_results_to_csv(self, path_simulation_folder):
+        """
+        Write the BIPV results to a csv file
+        :param path_to_csv: str: path to the csv file
+        """
+        bipv_results_to_csv(path_simulation_folder=path_simulation_folder, building_id_or_uc_scenario_name=self.id,
+                            bipv_results_dict=self.bipv_results_dict, start_year=self.start_year,
+                            study_duration_in_years=self.end_year - self.start_year)

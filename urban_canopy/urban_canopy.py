@@ -522,7 +522,7 @@ class UrbanCanopy:
                     north_angle=north_angle, silent=silent)
 
     def run_bipv_panel_simulation_on_buildings(self, path_simulation_folder, bipv_scenario_identifier,
-                                               path_pv_tech_dictionary_json, building_id_list, roof_id_pv_tech,
+                                               path_folder_pv_tech_dictionary_json, building_id_list, roof_id_pv_tech,
                                                facades_id_pv_tech, efficiency_computation_method="yearly",
                                                minimum_panel_eroi=1.2, start_year=datetime.now().year,
                                                end_year=datetime.now().year + 50,
@@ -531,14 +531,20 @@ class UrbanCanopy:
         """
         Run the panels simulation on the urban canopy
         :param path_simulation_folder: path to the simulation folder
-        :param path_pv_tech_dictionary_json: path to the json dictionary containing all PVPanelTechnology objects
-        :param id_pv_tech_roof: string: id of the roof technology used, default = "mitrex_roof c-Si"
-        :param id_pv_tech_facades: string: id of the facades technology used, default = "metsolar_facades c-Si"
-        :param minimum_ratio_energy_harvested_on_primary_energy: int: production minimal during the first year for a panel to be installed at
-        this position, Default0.5 kWh
-        :param performance_ratio: float: performance ratio of the PV, Default=0.75
-        :param study_duration_in_years: integer: duration of the study in years, default = 50
+        :param bipv_scenario_identifier: string: identifier of the BIPV scenario
+        :param path_folder_pv_tech_dictionary_json: string: path to the folder containing the pv tech dictionary json
+        :param building_id_list: list of string: list of the building id to run the simulation on
+        :param roof_id_pv_tech: string: id of the roof technology used, default = "mitrex_roof c-Si"
+        :param facades_id_pv_tech: string: id of the facades technology used, default = "metsolar_facades c-Si"
+        :param efficiency_computation_method: string: method used to compute the efficiency of the panels,
+            default = "yearly"
+        :param minimum_panel_eroi: float: minimum energy return on investment of the panels, default = 1.2
+        :param start_year: int: start year of the simulation, default = datetime.now().year
+        :param end_year: int: end year of the simulation, default = datetime.now().year + 50
         :param replacement_scenario: string: scenario of replacements for the panels, default = 'yearly'
+        :param continue_simulation: bool: if True, continue the simulation, default = False
+        :param kwargs: dict: additional arguments to be passed to the run_bipv_panel_simulation method of the
+            BuildingModeled object
         """
 
         # If start_year is higher than end_year, raise an error
@@ -582,24 +588,33 @@ class UrbanCanopy:
                                         f"{building_id}, the BIPV simulation will not be run for this building.")
 
         # todo: check ifg the file exist and put a default value
-        pv_technologies_dictionary = BipvTechnology.load_pv_technologies_from_json_to_dictionary(
-            path_pv_tech_dictionary_json)
+        pv_technologies_dictionary = BipvTechnology.load_pv_technologies_from_json_to_dictionary(path_json_folder=
+                                                                                                 path_folder_pv_tech_dictionary_json)
 
-        # If continue run continue for all the buildings that have started a bipv sim already.
-
+        # Run the simulation for the buildings
+        solar_rad_and_bipv_obj_list = []
         for building_obj in self.building_dict.values():
             if self.does_building_fits_bipv_requirement(building_obj=building_obj, building_id_list=building_id_list,
                                                         continue_simulation=continue_simulation):
-                # Run the BIPV simulation  todo: add the last version of th earguments
+                roof_pv_tech_obj = pv_technologies_dictionary[roof_id_pv_tech]
+                facade_pv_tech_obj = pv_technologies_dictionary[facades_id_pv_tech]
                 building_obj.run_bipv_panel_simulation(path_simulation_folder=path_simulation_folder,
-                                                       pv_technologies_dictionary=pv_technologies_dictionary,
-                                                       roof_id_pv_tech=roof_id_pv_tech,
-                                                       facades_id_pv_tech=facades_id_pv_tech,
+                                                       roof_pv_tech_obj=roof_pv_tech_obj,
+                                                       facades_pv_tech_obj=facade_pv_tech_obj,
+                                                       uc_start_year=bipv_scenario_obj.start_year,
+                                                       uc_current_year=start_year,
+                                                       uc_end_year=bipv_scenario_obj.end_year,
                                                        efficiency_computation_method=efficiency_computation_method,
                                                        minimum_panel_eroi=minimum_panel_eroi,
-                                                       study_duration_in_years=study_duration_in_years,
                                                        replacement_scenario=replacement_scenario,
-                                                       **kwargs)
+                                                       continue_simulation=continue_simulation, **kwargs)
+                solar_rad_and_bipv_obj_list.append(building_obj.solar_radiation_and_bipv_simulation_obj)
+
+        # Compute the results at urban scale
+        bipv_scenario_obj.sum_bipv_results_at_urban_scale(solar_rad_and_bipv_obj_list=solar_rad_and_bipv_obj_list)
+        # Write urban scale results to CSV file (overwrite existing file if it exists)
+        bipv_scenario_obj.write_bipv_results_to_csv(path_simulation_folder=path_simulation_folder)
+        # todo: another function to plot the graphs
 
     @staticmethod
     def does_building_fits_bipv_requirement(building_obj, building_id_list, continue_simulation):
@@ -617,12 +632,14 @@ class UrbanCanopy:
         # The annual irradiance of the building were computed
         condition_3 = building_obj.solar_radiation_and_bipv_simulation_obj.roof_annual_panel_irradiance_list is not None or \
                       building_obj.solar_radiation_and_bipv_simulation_obj.facades_annual_panel_irradiance_list is not None
+        # The simulationm for this building is ongoing
         condition_4 = building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["roof"][
                           "start_year"] is not None or \
                       building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["facades"][
                           "start_year"] is not None
 
-        return (condition_1 and condition_2 and condition_3) or (condition_2 and condition_3 and 4 and continue_simulation)
+        return (condition_1 and condition_2 and condition_3) or (
+                condition_2 and condition_3 and condition_4 and continue_simulation)
 
     def post_process_bipv_results_at_urban_scale(self, path_simulation_folder, building_id_list):
         """

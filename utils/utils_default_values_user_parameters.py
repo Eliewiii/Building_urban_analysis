@@ -59,15 +59,15 @@ default_facades_grid_size_y = 1.5
 default_offset_dist = 0.1
 
 # Default values for panel simulation
-
-default_path_pv_tech_dictionary = os.path.join(path_tool, "Libraries", "Solar_panels",
-                                               "pv_technologies.json")  # todo @Elie to delete
+default_path_pv_tech_dictionary_folder = os.path.join(path_tool, "Libraries", "Solar_panels")
 default_id_pv_tech_roof = "mitrex_roof c-Si"
 default_id_pv_tech_facades = "mitrex_facades c-Si"
-default_minimum_ratio_energy_harvested_on_primary_energy = 1.2
-default_performance_ratio = 0.80
-default_study_duration_years = 50
+default_minimum_panel_eroi = 1.2
 default_start_year = datetime.now().year
-default_replacement_scenario = "yearly"
-default_evey_X_years = 5
+default_end_year = default_start_year + 50
+default_efficiency_computation_method = "yearly"
+default_replacement_scenario = "replace_failed_panels_every_X_years"
+default_replacement_frequency_in_years = 20
+default_bipv_scenario_identifier = "new_uc_scenario"
+# Default values for panel simulation - LCA
 default_country_ghe_cost = 0.57874

@@ -121,16 +121,13 @@ class SolarRadAndBipvSimulation:
             self.parameter_dict[roof_or_facades]["grid_y"] = roof_grid_size_y
             self.parameter_dict[roof_or_facades]["offset"] = offset_dist
 
-    def set_bipv_parameters(self, roof_or_facades, pv_tech_obj, minimum_panel_eroi,
-                            study_duration_in_years, start_year, replacement_scenario,
-                            efficiency_computation_method,
-                            **kwargs):
+    def set_bipv_parameters(self, roof_or_facades, pv_tech_obj, minimum_panel_eroi, start_year, replacement_scenario,
+                            efficiency_computation_method, **kwargs):
         """
         Set the BIPV parameters for the simulation
         :param roof_or_facades: str: roof or facades
         :param pv_tech_obj: PVPanelTechnology object
         :param minimum_panel_eroi: float : the minimum EROI of the panels
-        :param study_duration_in_years: int : the duration of the study in years
         :param start_year: int : the start year of the study
         :param replacement_scenario: str : the replacement scenario of the panels
         :param efficiency_computation_method: str : the method to compute the efficiency of the panels
@@ -533,7 +530,7 @@ class SolarRadAndBipvSimulation:
             simulation_has_run = True  # run flag
 
             # Init the BIPV panels if necessary
-            if not continue_simulation or self.roof_panel_list is None:
+            if not continue_simulation or self.panel_list is None:
                 """ If there is no panel list, we init the panels, but if we want to continue the simulation and there 
                 are already panels, we do not init them again """
 
@@ -557,7 +554,11 @@ class SolarRadAndBipvSimulation:
                 # Check if the simulation has already been run for the requested years, if so, we do not run it again
                 if self.parameter_dict[roof_or_facades]["start_year"] + self.parameter_dict[roof_or_facades][
                     "study_duration_in_years"] >= uc_end_year:
-                    return
+                    user_logger.info(f"The bipv simulation was already run for building {self.id} during the input time"
+                                     f" period, the simulation was not run for this building")
+
+                    simulation_has_run = False  # run flag
+                    return simulation_has_run
 
                     # Update the panel technology,
                 """ The new panel that will be installed will have the new technology, it will affect their efficiency 
@@ -568,10 +569,8 @@ class SolarRadAndBipvSimulation:
                     self.parameter_dict[roof_or_facades]["panel_technology"] = pv_tech_obj
                 else:
                     pv_tech_obj = self.parameter_dict[roof_or_facades]["panel_technology"]
-                # Update the study duiration and keep the start year
-                start_year = self.parameter_dict["start_year"]
                 # Keep all the other parameters
-                efficiency_computation_method = self.parameter_dict["efficiency_computation_method"][
+                efficiency_computation_method = self.parameter_dict[roof_or_facades]["efficiency_computation_method"][
                     "id"]  # add the parameters if the efficiency computation method id needed
                 replacement_scenario = self.parameter_dict["replacement_scenario"]["id"]
                 # todo with the kwarg as well and put it ion a function eventually
@@ -745,48 +744,75 @@ class SolarRadAndBipvSimulation:
 
         return new_solar_rad_and_bipv_obj
 
-    # def urban_canopy_concatenate_bipv_result_scenario(cls, solar_rad_and_bipv_obj_list):
-    #     """
-    #     Sum the results dictionary of the BIPV simulations at the urban scale
-    #     :param solar_rad_and_bipv_simulation_list: list of SolarRadAndBipvSimulation objects
-    #     :return: dict of the results
-    #     """
-    #     bipv_results_dict = deepcopy(empty_bipv_results_dict)
-    #     for solar_rad_and_bipv_obj in solar_rad_and_bipv_obj_list:
-    #         bipv_results_dict = sum_dicts(bipv_results_dict, solar_rad_and_bipv_obj.bipv_results_dict)
-    #
-    #     return bipv_results_dict
+    def write_bipv_results_to_csv(self, path_simulation_folder, building_id):
+        """
+        Write the BIPV results to a csv file
+        :param path_simulation_folder: path to the simulation folder
+        :param building_id: building id
+        """
+        # Find the earliest and latest years across all dictionaries
+        earliest_year = min(
+            [self.parameter_dict["roof"]["start_year"], self.parameter_dict["facades"]["start_year"]])
+        latest_year = max(
+            [self.parameter_dict["roof"]["start_year"] + self.parameter_dict["roof"]["study_duration_in_years"],
+             self.parameter_dict["facades"]["start_year"] + self.parameter_dict["facades"][
+                 "study_duration_in_years"]])
+        # adjust the dictionaries to have the same size
+        result_dict_adjusted = deepcopy(self.bipv_results_dict)
+        # Sum with an empty dict and force the proper boundaries for the years
+        result_dict_adjusted["roof"] = sum_bipv_results_dicts_with_different_years(
+            dict_1=empty_sub_bipv_results_dict,
+            dict_2=result_dict_adjusted["roof"],
+            start_year_1=earliest_year,
+            start_year_2=self.parameter_dict["roof"]["start_year"],
+            earliest_year=earliest_year,
+            latest_year=latest_year)
+        # sum the results for the facades
+        result_dict_adjusted["facades"] = sum_bipv_results_dicts_with_different_years(
+            dict_1=empty_sub_bipv_results_dict,
+            dict_2=result_dict_adjusted["facades"],
+            start_year_1=earliest_year,
+            start_year_2=self.parameter_dict["facades"]["start_year"],
+            earliest_year=earliest_year,
+            latest_year=latest_year)
 
-    def bipv_results_to_csv(self, path_simulation_folder, building_id_or_uc_scenario_name):
-        """
-        Save bipv simulation results in a csv file
-        :param: path_simulation_folder: path to the simulation folder
-        :param: building_id_or_uc_scenario_name: building id or urban canopy scenario name
-        """
-        path_result_folder = os.path.join(path_simulation_folder, name_radiation_simulation_folder,
-                                          str(building_id_or_uc_scenario_name))
-        # create the folder if it does not exist, especially for the urban canopy
-        if not os.path.isdir(path_result_folder):
-            os.makedirs(path_result_folder)
-        path_csv_file = os.path.join(path_result_folder, name_results_file_csv)
-        with open(path_csv_file, mode='w', newline='') as file:
-            # flatten the dict to read and write the data easily
-            flattened_dict = flatten_dict(self.bipv_results_dict)
-            fieldnames = ["years"]
-            for k in flattened_dict.keys():
+        # empty dict with proper size
+        bipv_results_to_csv(path_simulation_folder=path_simulation_folder, building_id_or_uc_scenario_name=building_id,
+                            bipv_results_dict=result_dict_adjusted, star_year=earliest_year,
+                            study_duration_in_years=earliest_year - latest_year)
+
+
+def bipv_results_to_csv(path_simulation_folder, building_id_or_uc_scenario_name, bipv_results_dict, start_year,
+                        study_duration_in_years):
+    """
+    Save bipv simulation results in a csv file
+    :param: path_simulation_folder: path to the simulation folder
+    :param: building_id_or_uc_scenario_name: building id or urban canopy scenario name
+    """
+    path_result_folder = os.path.join(path_simulation_folder, name_radiation_simulation_folder,
+                                      str(building_id_or_uc_scenario_name))
+    # create the folder if it does not exist, especially for the urban canopy
+    if not os.path.isdir(path_result_folder):
+        os.makedirs(path_result_folder)
+    path_csv_file = os.path.join(path_result_folder, name_results_file_csv)
+    with open(path_csv_file, mode='w', newline='') as file:
+        # flatten the dict to read and write the data easily
+        flattened_dict = flatten_dict(bipv_results_dict)
+        fieldnames = ["years"]
+        for k in flattened_dict.keys():
+            if not k.endswith("_total"):
+                fieldnames.append(k)
+
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+
+        for i in range(study_duration_in_years):
+            row_data = {f"{start_year + i}"}
+            for k, v in flattened_dict.items():
+                # do not include the total values
                 if not k.endswith("_total"):
-                    fieldnames.append(k)
-
-            writer = csv.DictWriter(file, fieldnames=fieldnames)
-            writer.writeheader()
-
-            for i in range(self.parameter_dict["study_duration_in_years"]):
-                row_data = {f"{self.parameter_dict['start_year'] + i}"}
-                for k, v in flattened_dict.items():
-                    # do not include the total values
-                    if not k.endswith("_total"):
-                        row_data[k] = v[i]
-                writer.writerow(row_data)
+                    row_data[k] = v[i]
+            writer.writerow(row_data)
 
 
 def urban_canopy_scenarios_boundary_years(starting_year_list, study_duration_list):
