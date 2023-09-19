@@ -51,8 +51,6 @@ class BipvTechnology:
         self.primary_energy_recycling = None
         self.carbon_recycling = None
 
-
-
     @classmethod
     def load_pv_technologies_from_json_to_dictionary(cls, path_json_folder):
         """
@@ -91,23 +89,24 @@ class BipvTechnology:
                         pv_tech_obj.panel_performance_ratio = \
                             pv_dict_data[identifier_key]["efficiency_parameters"][
                                 "panel_performance_ratio"]
-                        efficiency_function_name = pv_dict_data[identifier_key]["efficiency_function"]
+                        efficiency_function_name = pv_dict_data[identifier_key]["efficiency_parameters"][
+                            "efficiency_function"]
                         pv_tech_obj.efficiency_function = getattr(pv_tech_obj, efficiency_function_name)
                         # Load LCA parameters
                         pv_tech_obj.primary_energy_manufacturing = \
                             pv_dict_data[identifier_key]["lca_parameters"][
-                                "primary_energy_manufacturing"]
+                                "primary_energy_manufacturing_in_kWh_per_panel"]
                         pv_tech_obj.carbon_manufacturing = pv_dict_data[identifier_key]["lca_parameters"][
                             "carbon_footprint_manufacturing_in_kgCO2eq_per_panel"]
                         pv_tech_obj.primary_energy_transport = pv_dict_data[identifier_key]["lca_parameters"][
-                            "primary_energy_transport"]
+                            "primary_energy_transport_in_kWh_per_panel"]
                         pv_tech_obj.carbon_transport = pv_dict_data[identifier_key]["lca_parameters"][
                             "carbon_footprint_transport_in_kgCO2eq_per_panel"]
 
                         pv_tech_obj.primary_energy_recycling = pv_dict_data[identifier_key]["lca_parameters"][
                             "end_of_life_primary_energy_in_kWh_per_panel"]
                         pv_tech_obj.carbon_recycling = pv_dict_data[identifier_key]["lca_parameters"][
-                            "end_of_life_carbon_footprint_in_kgCO2_per_panel"]
+                            "end_of_life_carbon_footprint_in_kgCO2eq_per_panel"]
 
                         pv_technologies_dict[identifier_key] = pv_tech_obj
         return pv_technologies_dict
@@ -137,14 +136,31 @@ class BipvTechnology:
         """
         Get the energy harvested by a panel in Watt
         :param irradiance: irradiance on the panel
-        :param outdoor_temperature: outdoor temperature
         :param age: age of the panel
+        :param kwargs: kwargs
+
+
         :return: energy_harvested: energy harvested by the panel
         """
-        # todo : add the panel performance ratio
-        efficiency = self.efficiency_function(age=age, irradiance=irradiance, **kwargs)
+
+        # Check if the efficiency function is defined in the kwargs
+        if "efficiency_function" in kwargs and kwargs["efficiency_function"] in [
+            getattr(self, method_name) for method_name in dir(self) if callable(getattr(self, method_name))]:
+            """ The efficiency function can be defined in the kwargs. If it is not defined, the default efficiency function
+                    is used. If it is defined, the efficiency function is used. The efficiency function must be a method of the
+                    class."""
+            efficiency_function = kwargs["efficiency_function"]
+            efficiency = efficiency_function(age=age, irradiance=irradiance, **kwargs)
+        else:
+            efficiency = self.efficiency_function(age=age, irradiance=irradiance, **kwargs)
+
         energy_harvested = efficiency * irradiance * self.panel_performance_ratio * self.panel_area
+
         return energy_harvested
+
+    def constant_efficiency(self, **kwargs):
+        """ Constant efficiency through the life of the panel """
+        return self.initial_efficiency
 
     def degrading_rate_efficiency_loss(self, age, **kwargs):
         """ loose 2% efficiency the first year and then 0.5% every year"""

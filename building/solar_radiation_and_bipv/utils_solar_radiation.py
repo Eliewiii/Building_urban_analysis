@@ -67,7 +67,7 @@ def run_hb_model_annual_irradiance_simulation(hb_model_obj, path_folder_run, pat
     project_folder = recipe.run(run_settings, radiance_check=True, silent=silent)
     # Compute the cumulative annual irradiance
     path_result = os.path.join(project_folder, "annual_irradiance", "results", "total")
-    annual_cum_values = hb_ann_cum_values(path_results=[path_result])
+    annual_cum_values = hb_ann_cum_values(path_results=[path_result])[0]  # it's a list of one item
 
     return annual_cum_values
 

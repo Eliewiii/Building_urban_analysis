@@ -47,7 +47,7 @@ class BipvScenario:
         """
 
         earliest_year = self.start_year
-        latest_year = self.end_year - 1  # because the last year is not included in the simulation
+        latest_year = self.end_year
 
         # Sum the dictionaries
         for solar_rad_and_bipv_obj in solar_rad_and_bipv_obj_list:

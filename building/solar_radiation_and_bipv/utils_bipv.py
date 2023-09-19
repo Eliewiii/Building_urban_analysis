@@ -4,13 +4,16 @@ Functions used to load bipvs and to perfom  the simulation of the energy harvest
 
 import logging
 
+from honeybee_radiance.sensorgrid import SensorGrid
+
 from bipv.bipv_panel import BipvPanel
+from bipv.bipv_technology import BipvTechnology
 
 user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")
 
 
-def init_bipv_on_sensor_grid(sensor_grid, pv_technology_obj, annual_panel_irradiance_list,
+def init_bipv_on_sensor_grid(sensor_grid: SensorGrid, pv_technology_obj, annual_panel_irradiance_list,
                              minimum_panel_eroi):
     """
     Initialize the bipvs on the sensor_grid and return a list of the bipvs.
@@ -27,22 +30,30 @@ def init_bipv_on_sensor_grid(sensor_grid, pv_technology_obj, annual_panel_irradi
     # initialize the list of the panel objects
     panel_obj_list = []
     # Extract the parameters from the Sensorgrid qbd the pv_technology_obj
-    lb_mesh_obj = sensor_grid.lb_mesh_obj
-    mesh_face_area_list = lb_mesh_obj.mesh_face_area_list
-    efficiency_loss_function = pv_technology_obj.efficiency_function
-    pv_initial_efficiency = pv_technology_obj.initial_efficiency
-    pv_area = pv_technology_obj.panel_area
-    panel_performance_ratio = pv_technology_obj.initial_efficiency.panel_performance_ratio
-    weibull_lifetime = pv_technology_obj.weibull_law_failure_parameters["lifetime"]
+    lb_mesh_obj = sensor_grid.mesh
+    mesh_face_area_list = list(lb_mesh_obj.face_areas)  # face_areas is a tuple
     # Initialize the flags
     area_flag_warning = False
     eroi_flag_warning = False
 
     for face_index, face in enumerate(lb_mesh_obj.faces):
-        # Calculate the eroi of the panel
-        energy_harvested = sum(
-            [efficiency_loss_function(pv_initial_efficiency, i) * annual_panel_irradiance_list[
-                face_index] * pv_area * panel_performance_ratio / 1000 for i in range(weibull_lifetime)])
+        # Calculate the energy harvested by the panel
+        """ We need to differentiate the different cases of efficiency functions, this part is just 
+        an approximation, overestimating th energy harvested by the panel, we cannot compute for panels that 
+        require hourly timestep """
+        if pv_technology_obj.efficiency_function == BipvTechnology.constant_efficiency or \
+                pv_technology_obj.efficiency_function == BipvTechnology.degrading_rate_efficiency_loss:
+            energy_harvested = sum(
+                [pv_technology_obj.get_energy_harvested_by_panel(irradiance=annual_panel_irradiance_list[
+                    face_index], age=year) for year in
+                 range(pv_technology_obj.weibull_law_failure_parameters["lifetime"])])
+        else:
+            """ If the efficiency function is not constant_efficiency of"""
+            energy_harvested = sum(
+                [pv_technology_obj.get_energy_harvested_by_panel(irradiance=annual_panel_irradiance_list[
+                    face_index], age=year, efficiency_function=BipvTechnology.constant_efficiency) for
+                 year in range(pv_technology_obj.weibull_law_failure_parameters["lifetime"])])
+
         primary_energy = \
             pv_technology_obj.primary_energy_manufacturing + pv_technology_obj.primary_energy_recycling + \
             pv_technology_obj.primary_energy_transport
@@ -76,7 +87,8 @@ def init_bipv_on_sensor_grid(sensor_grid, pv_technology_obj, annual_panel_irradi
     return panel_obj_list
 
 
-def bipv_energy_harvesting_simulation_hourly_annual_irradiance(pv_panel_obj_list, path_time_step_illuminance_file,
+def bipv_energy_harvesting_simulation_hourly_annual_irradiance(pv_panel_obj_list,
+                                                               path_time_step_illuminance_file,
                                                                start_year, current_study_duration_in_years,
                                                                uc_start_year,
                                                                uc_end_year, replacement_scenario,
@@ -89,7 +101,8 @@ def bipv_energy_harvesting_simulation_hourly_annual_irradiance(pv_panel_obj_list
     #  (need epw if the efficiency is a fnction of outdorr temperature)
 
 
-def bipv_energy_harvesting_simulation_yearly_annual_irradiance(pv_panel_obj_list, annual_solar_irradiance_value,
+def bipv_energy_harvesting_simulation_yearly_annual_irradiance(pv_panel_obj_list,
+                                                               annual_solar_irradiance_value,
                                                                start_year, current_study_duration_in_years,
                                                                uc_start_year,
                                                                uc_end_year, replacement_scenario,
@@ -159,7 +172,7 @@ def bipv_energy_harvesting_simulation_yearly_annual_irradiance(pv_panel_obj_list
                 pass
 
             # Get the energy harvesting and increment the age of panel by 1 year
-            for panel_obj in enumerate(pv_panel_obj_list):
+            for panel_obj in pv_panel_obj_list:
                 energy_harvested_panel = panel_obj.energy_harvested_in_one_year(
                     irradiance=annual_solar_irradiance_value[panel_obj.index], **kwargs)
                 panel_obj.increment_age_by_one_year()
@@ -183,8 +196,9 @@ def bipv_lca_dmfa_eol_computation(nb_of_panels_installed_yearly_list, pv_tech_ob
 
     """
     # Compute LCA primary energy and carbon footprint each year
-    primary_energy_material_extraction_and_manufacturing_yearly_list = [i * pv_tech_obj.primary_energy_manufacturing for
-                                                                        i in nb_of_panels_installed_yearly_list]
+    primary_energy_material_extraction_and_manufacturing_yearly_list = [
+        i * pv_tech_obj.primary_energy_manufacturing for
+        i in nb_of_panels_installed_yearly_list]
     primary_energy_transportation_yearly_list = [i * pv_tech_obj.primary_energy_transport for i in
                                                  nb_of_panels_installed_yearly_list]
     primary_energy_recycling_yearly_list = [i * pv_tech_obj.primary_energy_recycling for i in

@@ -596,7 +596,7 @@ class UrbanCanopy:
                                                         continue_simulation=continue_simulation):
                 roof_pv_tech_obj = pv_technologies_dictionary[roof_id_pv_tech]
                 facade_pv_tech_obj = pv_technologies_dictionary[facades_id_pv_tech]
-                building_obj.run_bipv_panel_simulation(path_simulation_folder=path_simulation_folder,
+                building_obj.building_run_bipv_panel_simulation(path_simulation_folder=path_simulation_folder,
                                                        roof_pv_tech_obj=roof_pv_tech_obj,
                                                        facades_pv_tech_obj=facade_pv_tech_obj,
                                                        uc_start_year=bipv_scenario_obj.start_year,
@@ -628,16 +628,16 @@ class UrbanCanopy:
         # Building is a BuildingModeled and is a target
         condition_2 = isinstance(building_obj, BuildingModeled) and building_obj.is_target
         # The annual irradiance of the building were computed
-        condition_3 = building_obj.solar_radiation_and_bipv_simulation_obj.roof_annual_panel_irradiance_list is not None or \
-                      building_obj.solar_radiation_and_bipv_simulation_obj.facades_annual_panel_irradiance_list is not None
+        condition_2 = condition_2 and (building_obj.solar_radiation_and_bipv_simulation_obj.roof_annual_panel_irradiance_list is not None or \
+                      building_obj.solar_radiation_and_bipv_simulation_obj.facades_annual_panel_irradiance_list is not None)
         # The simulationm for this building is ongoing
-        condition_4 = building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["roof"][
+        condition_3 = condition_2 and (building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["roof"][
                           "start_year"] is not None or \
                       building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["facades"][
-                          "start_year"] is not None
+                          "start_year"] is not None)
 
-        return (condition_1 and condition_2 and condition_3) or (
-                condition_2 and condition_3 and condition_4 and continue_simulation)
+        return (condition_1 and condition_2) or (
+                condition_2 and condition_3 and continue_simulation)
 
     def post_process_bipv_results_at_urban_scale(self, path_simulation_folder, building_id_list):
         """
