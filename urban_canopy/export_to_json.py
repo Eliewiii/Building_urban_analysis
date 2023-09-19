@@ -7,6 +7,8 @@ import copy
 
 from honeybee.room import Room
 
+from bipv.bipv_technology import BipvTechnology
+
 from building.building_basic import BuildingBasic
 from building.building_modeled import BuildingModeled
 
@@ -93,7 +95,8 @@ class ExportUrbanCanopyToJson:
                 building_obj.make_lb_polyface3d_extruded_footprint()
             building_hb_room_envelope_dict = Room.from_polyface3d(identifier=building_id,
                                                                   polyface=building_obj.lb_polyface3d_extruded_footprint).to_dict()
-            urban_canopy_obj.json_dict["buildings"][building_id]["hb_room_envelope"]= building_hb_room_envelope_dict
+            urban_canopy_obj.json_dict["buildings"][building_id][
+                "hb_room_envelope"] = building_hb_room_envelope_dict
 
             if isinstance(building_obj, BuildingModeled):
                 urban_canopy_obj.json_dict["buildings"][building_id][
@@ -113,7 +116,9 @@ class ExportUrbanCanopyToJson:
                 # Paramters
                 urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
                     "parameters"] = \
-                    building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict
+                    replace_bipv_technology_obj_by_id(
+                        building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict)
+
                 # Mesh/Sensorgrid
                 urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
                     "roof_sensorgrid"] = \
@@ -137,3 +142,22 @@ class ExportUrbanCanopyToJson:
                     building_obj.solar_radiation_and_bipv_simulation_obj.bipv_results_dict["facades"]
                 urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"]["total"] = \
                     building_obj.solar_radiation_and_bipv_simulation_obj.bipv_results_dict["total"]
+
+
+def replace_bipv_technology_obj_by_id(parameter_dict):
+    """
+    Replace the technology object by its id
+    :param parameter_dict: dict of the parameters
+    :return: dict of the parameters
+    """
+    for key, value in parameter_dict.items():
+        if isinstance(value, dict):
+            parameter_dict[key] = replace_bipv_technology_obj_by_id(value)
+        elif isinstance(value, list):
+            for i, v in enumerate(value):
+                if isinstance(v, dict):
+                    value[i] = replace_bipv_technology_obj_by_id(v)
+        elif isinstance(value, BipvTechnology):
+            parameter_dict[key] = value.identifier
+
+    return parameter_dict

@@ -86,8 +86,11 @@ class BipvPanel:
         :param irradiance: float: radiation received by a panel during a year or a timestep  in Wh/m2
         :return energy_harvested: float: energy harvested by the panel during the year, in Wh/panel
         """
-        energy_harvested = self.panel_technology_object.get_energy_harvested_by_panel(irradiance=irradiance,
+        if self.is_panel_working():
+            energy_harvested = self.panel_technology_object.get_energy_harvested_by_panel(irradiance=irradiance,
                                                                                       age=self.age, **kwargs)
+        else:
+            energy_harvested = 0.
         return energy_harvested
 
     def increment_age_by_one_year(self):

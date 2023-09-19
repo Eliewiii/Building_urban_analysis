@@ -34,6 +34,13 @@ SimulationLoadBuildingOrGeometry.add_buildings_from_hbjson_to_urban_canopy(
     path_file_hbjson=path_file_json,
     are_buildings_targets=True)
 
+path_file_json = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\Ministry of Energy Research\IBPSA US conference\hbjson_2\var_optimal\Buil_TA_1.hbjson"
+
+SimulationLoadBuildingOrGeometry.add_buildings_from_hbjson_to_urban_canopy(
+    urban_canopy_object=urban_canopy_object,
+    path_folder_hbjson=path_folder_json,
+    path_file_hbjson=path_file_json,
+    are_buildings_targets=True)
 # Merge facades
 SimulationBuildingManipulationFunctions.make_merged_face_of_buildings_in_urban_canopy(urban_canopy_object=urban_canopy_object)
 

@@ -2,6 +2,8 @@
 
 """
 
+from copy import deepcopy
+
 from building.solar_radiation_and_bipv.solar_rad_and_BIPV import empty_bipv_results_dict, \
     sum_bipv_results_dicts_with_different_years, bipv_results_to_csv
 
@@ -22,7 +24,14 @@ class BipvScenario:
         self.id = identifier
         self.start_year = start_year
         self.end_year = end_year
-        self.bipv_results_dict = empty_bipv_results_dict
+        self.bipv_results_dict=None
+        self.init_bipv_results_dict()
+
+    def init_bipv_results_dict(self):
+        """
+        Initialize the BIPV results
+        """
+        self.bipv_results_dict = deepcopy(empty_bipv_results_dict)
 
     def continue_simulation(self, start_year: int, end_year: int):
         """
@@ -45,6 +54,8 @@ class BipvScenario:
         Sum the results of the BIPV simulations at the urban scale
         :param solar_rad_and_bipv_obj_list: list: list of the SolarRadAndBipvSimulation objects
         """
+        # Initialize the results dictionary
+        self.init_bipv_results_dict()
 
         earliest_year = self.start_year
         latest_year = self.end_year
@@ -82,6 +93,7 @@ class BipvScenario:
         Write the BIPV results to a csv file
         :param path_to_csv: str: path to the csv file
         """
-        bipv_results_to_csv(path_simulation_folder=path_simulation_folder, building_id_or_uc_scenario_name=self.id,
+        bipv_results_to_csv(path_simulation_folder=path_simulation_folder,
+                            building_id_or_uc_scenario_name=self.id,
                             bipv_results_dict=self.bipv_results_dict, start_year=self.start_year,
                             study_duration_in_years=self.end_year - self.start_year)

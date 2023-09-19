@@ -550,7 +550,7 @@ class UrbanCanopy:
             raise ValueError("The start year is higher than the end year, the simulation will not be performed")
 
         # Add a new scenario if it does not exist already
-        if bipv_scenario_identifier not in self.bipv_scenario_dict.keys() or not continue_simulation:
+        if not continue_simulation or bipv_scenario_identifier not in self.bipv_scenario_dict.keys():
             self.bipv_scenario_dict[bipv_scenario_identifier] = BipvScenario(identifier=bipv_scenario_identifier,
                                                                              start_year=start_year,
                                                                              end_year=end_year)
@@ -588,6 +588,12 @@ class UrbanCanopy:
         # todo: check ifg the file exist and put a default value
         pv_technologies_dictionary = BipvTechnology.load_pv_technologies_from_json_to_dictionary(path_json_folder=
                                                                                                  path_folder_pv_tech_dictionary_json)
+
+        # Reinitialize the simulation for the all the buildings if the simulation is not continued
+        if not continue_simulation:
+            for building_obj in self.building_dict.values():
+                if isinstance(building_obj, BuildingModeled) and building_obj.is_target:
+                    building_obj.solar_radiation_and_bipv_simulation_obj.init_bipv_simulation()
 
         # Run the simulation for the buildings
         solar_rad_and_bipv_obj_list = []
