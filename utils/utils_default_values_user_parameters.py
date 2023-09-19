@@ -59,7 +59,7 @@ default_facades_grid_size_y = 1.5
 default_offset_dist = 0.1
 
 # Default values for panel simulation
-default_path_pv_tech_dictionary_folder = os.path.join(path_tool, "Libraries", "Solar_panels")
+default_path_pv_tech_dictionary_folder = os.path.join(path_libraries_tool_folder, "BIPV_technologies")
 default_id_pv_tech_roof = "mitrex_roof c-Si"
 default_id_pv_tech_facades = "mitrex_facades c-Si"
 default_minimum_panel_eroi = 1.2

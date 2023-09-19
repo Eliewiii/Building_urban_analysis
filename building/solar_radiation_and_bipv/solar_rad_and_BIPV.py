@@ -492,7 +492,7 @@ class SolarRadAndBipvSimulation:
             the simulation for this building was already run in a previous iteration for the requested years, 
             the simulation will still run properly"""
 
-            # Post process and run LCA and DMFA results
+            # Post process and run LCA and DMFA results todo: use a dictionary instead of having variables
             primary_energy_material_extraction_and_manufacturing_yearly_list, \
                 primary_energy_transportation_yearly_list, primary_energy_recycling_yearly_list, \
                 carbon_material_extraction_and_manufacturing_yearly_list, \

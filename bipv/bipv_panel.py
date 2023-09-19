@@ -64,22 +64,6 @@ class BipvPanel:
         self.age = None
         self.life_expectancy = None
 
-    # def energy_harvested_in_one_year(self, solar_radiation_year_value, performance_ratio=0.75):
-    #     """
-    #     Return the energy harvested in one year by a functioning panel
-    #     :param solar_radiation_year_value: float: radiation received by a panel during an entire year in Wh/m2/year
-    #     :param performance_ratio: float: performance ratio of the pv, on average equals to 0.75
-    #     :return energy_harvested: float: energy harvested by the panel during the year, in kWh/panel/year
-    #     """
-    #     efficiency_loss_function = get_efficiency_loss_function_from_string(self.panel_technology_object.
-    #                                                                         efficiency_function)
-    #     initial_efficiency = self.panel_technology_object.initial_efficiency
-    #     area = self.panel_technology_object.panel_area
-    #     energy_harvested = efficiency_loss_function(initial_efficiency,
-    #                                                 self.age) * solar_radiation_year_value * area \
-    #                        * performance_ratio / 1000
-    #     return energy_harvested
-
     def energy_harvested_in_one_year(self, irradiance, **kwargs):
         """
         Return the energy harvested in one year by a functioning panel

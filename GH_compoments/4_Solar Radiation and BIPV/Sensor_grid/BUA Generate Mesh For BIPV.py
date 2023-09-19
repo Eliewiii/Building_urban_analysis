@@ -1,7 +1,7 @@
 """Generate mesh on buildings for BIPV simulation
     Inputs:
         path_simulation_folder_: Path to the folder. Default = Appdata\Local\Building_urban_analysis\Simulation_temp
-        building_id_list_: list of ints: list of buildings we want to run the simulation on
+        building_id_list_: list of buildings we want to run the simulation on
         _roof_bipv: bool : True if we want to run the simulation on the roof
         _facades_bipv: bool : True if we want to run the simulation on the facades
         _roof_grid_size_x_: float : Number for the distance to move points from the surfaces of the geometry of the model.
@@ -49,18 +49,6 @@ def read_logs(path_simulation_folder):
         return (log_data)
     else:
         return ("No log file found")
-
-
-def clean_log_for_out(path_log_file):
-    with open(path_log_file, 'r') as log_file:
-        log_data = log_file.read()
-        log_line_list = log_data.split("\n")
-        log_line_list = [line.split("[INFO] ")[-1] for line in log_line_list]
-        log_line_list = [line.split("[WARNING] ")[-1] for line in log_line_list]
-        log_line_list = [line.split("[CRITICAL] ")[-1] for line in log_line_list]
-        log_line_list = [line.split("[ERROR] ")[-1] for line in log_line_list]
-    return (log_line_list)
-
 
 # Get Appdata\local folder
 local_appdata = os.environ['LOCALAPPDATA']
