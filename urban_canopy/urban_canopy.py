@@ -41,9 +41,7 @@ class UrbanCanopy:
         self.json_dict = {}  # dictionary containing relevant attributes of the urban canopy to be exported to json
 
         # BIPV simulation
-        self.bipv_simulation_scenarios = {}  # dictionary of the BIPV scenarios
-        self.bipv_simulation_time_boundary = {"start_year": None, "end_year": None}
-        self.solar_radiation_and_bipv_simulation_obj = SolarRadAndBipvSimulation()
+        self.bipv_scenario_dict = {}  # dictionary of the BIPV scenarios
 
     def __len__(self):
         """ Return the number of buildings in the urban canopy """

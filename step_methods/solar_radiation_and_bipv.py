@@ -112,7 +112,7 @@ class SimFunSolarRadAndBipv:
 
         urban_canopy_object.run_bipv_panel_simulation_on_buildings(path_simulation_folder=path_simulation_folder,
                                                                    bipv_scenario_identifier=bipv_scenario_identifier,
-                                                                   path_pv_tech_dictionary_json=path_folder_pv_tech_dictionary_json,
+                                                                   path_folder_pv_tech_dictionary_json=path_folder_pv_tech_dictionary_json,
                                                                    building_id_list=building_id_list,
                                                                    roof_id_pv_tech=roof_id_pv_tech,
                                                                    facades_id_pv_tech=facades_id_pv_tech,

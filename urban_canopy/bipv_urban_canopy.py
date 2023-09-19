@@ -22,7 +22,7 @@ class BipvScenario:
         self.id = identifier
         self.start_year = start_year
         self.end_year = end_year
-        self.bipv_results_dict = empty_bipv_results_dict()
+        self.bipv_results_dict = empty_bipv_results_dict
 
     def continue_simulation(self, start_year: int, end_year: int):
         """

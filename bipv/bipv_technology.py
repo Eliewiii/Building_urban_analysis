@@ -51,8 +51,7 @@ class BipvTechnology:
         self.primary_energy_recycling = None
         self.carbon_recycling = None
 
-        # Todo: check from the input if teh attributes ar per penel or per square meter, in the enbd everything should
-        #  be per panel in the attributes
+
 
     @classmethod
     def load_pv_technologies_from_json_to_dictionary(cls, path_json_folder):
@@ -82,22 +81,22 @@ class BipvTechnology:
                             "failure_parameters"]["weibull_shape_parameter"]
                         # Load efficiency parameters
                         pv_tech_obj.initial_efficiency = \
-                        pv_dict_data[identifier_key]["efficiency_parameters"][
-                            "initial_efficiency"]
+                            pv_dict_data[identifier_key]["efficiency_parameters"][
+                                "initial_efficiency"]
                         pv_tech_obj.first_year_degrading_rate = \
-                        pv_dict_data[identifier_key]["efficiency_parameters"][
-                            "first_year_degrading_rate"]
+                            pv_dict_data[identifier_key]["efficiency_parameters"][
+                                "first_year_degrading_rate"]
                         pv_tech_obj.degrading_rate = pv_dict_data[identifier_key]["efficiency_parameters"][
                             "degrading_rate"]
                         pv_tech_obj.panel_performance_ratio = \
-                        pv_dict_data[identifier_key]["efficiency_parameters"][
-                            "panel_performance_ratio"]
+                            pv_dict_data[identifier_key]["efficiency_parameters"][
+                                "panel_performance_ratio"]
                         efficiency_function_name = pv_dict_data[identifier_key]["efficiency_function"]
                         pv_tech_obj.efficiency_function = getattr(pv_tech_obj, efficiency_function_name)
                         # Load LCA parameters
                         pv_tech_obj.primary_energy_manufacturing = \
-                        pv_dict_data[identifier_key]["lca_parameters"][
-                            "primary_energy_manufacturing"]
+                            pv_dict_data[identifier_key]["lca_parameters"][
+                                "primary_energy_manufacturing"]
                         pv_tech_obj.carbon_manufacturing = pv_dict_data[identifier_key]["lca_parameters"][
                             "carbon_footprint_manufacturing_in_kgCO2eq_per_panel"]
                         pv_tech_obj.primary_energy_transport = pv_dict_data[identifier_key]["lca_parameters"][
