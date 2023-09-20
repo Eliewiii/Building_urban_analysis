@@ -136,12 +136,14 @@ class ExportUrbanCanopyToJson:
                     "facades_annual_panel_irradiance_list"] = \
                     building_obj.solar_radiation_and_bipv_simulation_obj.facades_annual_panel_irradiance_list
                 # Index of panels kept in the mesh
-                urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
-                    "roof_panel_mesh_index_list"] = [panel.index for panel in
-                                                     building_obj.solar_radiation_and_bipv_simulation_obj.roof_panel_list]
-                urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
-                    "facades_panel_mesh_index_list"] = [panel.index for panel in
-                                                     building_obj.solar_radiation_and_bipv_simulation_obj.facades_panel_list]
+                if building_obj.solar_radiation_and_bipv_simulation_obj.roof_panel_list is not None:
+                    urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
+                        "roof_panel_mesh_index_list"] = [panel.index for panel in
+                                                         building_obj.solar_radiation_and_bipv_simulation_obj.roof_panel_list]
+                if building_obj.solar_radiation_and_bipv_simulation_obj.facades_panel_list is not None:
+                    urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
+                        "facades_panel_mesh_index_list"] = [panel.index for panel in
+                                                         building_obj.solar_radiation_and_bipv_simulation_obj.facades_panel_list]
                 # Results BIPV
                 urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
                     "roof_result_dict"] = \

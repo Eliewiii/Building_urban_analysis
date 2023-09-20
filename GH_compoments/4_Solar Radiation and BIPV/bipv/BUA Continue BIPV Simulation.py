@@ -1,4 +1,4 @@
-"""Run the BIPV simulation for the selected buildings.
+"""Continue the BIPV simulation for the selected buildings.
     Inputs:
         path_simulation_folder_: Path to the simulation folder.
             (Default = user\appdata\Local\Building_urban_analysis\Simulation_temp)
@@ -12,6 +12,8 @@
         _start_year: Year from which the simulation should start. (Default: current year)
         _end_year: Year from which the simulation should end. For instance, if the start year is 2023 and the end year
          2026, the simulation will be run for 3 years: 2023,2024 and 2025 (Default: current year+50)
+         _continue_simulation_: bool: True if the simulation should continue from the last simulation
+         update_panel_technology_: bool: True if the panel technology should be updated to the input one when replaced
         _run: Plug in a button to run the component
     Output:
         report: report
@@ -20,8 +22,8 @@
 __author__ = "Eliewiii"
 __version__ = "2023.08.21"
 
-ghenv.Component.Name = "BUA Run BIPV Simulation"
-ghenv.Component.NickName = 'RunBIPVSimulation'
+ghenv.Component.Name = "BUA Continue BIPV Simulation"
+ghenv.Component.NickName = 'ContinueBIPVSimulation'
 ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '4 :: BIPV And Solar Radiation'
@@ -134,6 +136,10 @@ if _run:
         argument = argument + " --start_year {}".format(_start_year)
     if _end_year is not None:
         argument = argument + " --end_year {}".format(_end_year)
+    if _continue_simulation_ is not None:
+        argument = argument + " --overwrite {}".format(int(not _continue_simulation_))
+    if update_panel_technology_ is not None:
+        argument = argument + " --update_panel_technology {}".format(int(_update_panel_technology_))
 
     # Add the name of the component to the argument
     argument = argument + " -c {}".format(ghenv.Component.NickName)

@@ -1,7 +1,8 @@
 """Run the annual solar irradiance simulation
     Inputs:
         path_simulation_folder_: Path to the folder. Default = Appdata\Local\Building_urban_analysis\Simulation_temp
-        building_id_list_: list of ints: list of buildings we want to run the simulation on
+        building_id_list_: list of ints: list of buildings we want to run the simulation on. If None, all the target
+         buildings will be simulated
         _path_weather_file: Path to the weather file. Default = todo
         _north_: A number between -360 and 360 for the counterclockwise
             difference between the North and the positive Y-axis in degrees.
@@ -38,20 +39,17 @@ def read_logs(path_simulation_folder):
     else:
         return ("No log file found")
 
-def clean_log_for_out(path_log_file):
-    with open(path_log_file, 'r') as log_file:
-        log_data = log_file.read()
-        log_line_list = log_data.split("\n")
-        log_line_list = [line.split("[INFO] ")[-1] for line in log_line_list]
-        log_line_list = [line.split("[WARNING] ")[-1] for line in log_line_list]
-        log_line_list = [line.split("[CRITICAL] ")[-1] for line in log_line_list]
-        log_line_list = [line.split("[ERROR] ")[-1] for line in log_line_list]
-    return (log_line_list)
+
 
 # Get Appdata\local folder
 local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 path_bat_file = os.path.join(path_tool, "Scripts", "mains_tool", "run_BUA.bat")
+
+# Check path_simulation_folder_
+if path_simulation_folder_ is not None and os.path.isdir(path_simulation_folder_) is False:
+    raise ValueError("The simulation folder does not exist, enter a valid path")
+
 
 if _run :
     # Write the command
@@ -69,9 +67,9 @@ if _run :
     if _north_ is not None:
         argument = argument + ' --north_angle "{}"'.format(_north_)
     if _overwrite_ is not None:
-        argument = argument + ' --overwrite "{}"'.format(_overwrite_)
+        argument = argument + ' --overwrite "{}"'.format(int(_overwrite_))
     # Add the name of the component to the argument
-    argument = argument + " -c {}".format(ghenv.Component.NickName)
+    argument = argument + ' -c "{}"'.format(ghenv.Component.NickName)
     # Run the bat file
     output = os.system(command + argument)
 
@@ -79,6 +77,7 @@ if _run :
 if path_simulation_folder_ is None:
     path_simulation_folder_ = os.path.join(path_tool, "Simulation_temp")
 
+# Read the log file
 report = read_logs(path_simulation_folder_)
 
 

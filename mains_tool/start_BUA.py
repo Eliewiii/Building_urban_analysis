@@ -149,46 +149,46 @@ def main():
                                                                      update_panel_technology=arguments_dictionary[
                                                                          "update_panel_technology"])
 
-        # Microclimate weather files
+    # Microclimate weather files
 
-        # Preprocessing Longwave radiation #
+    # Preprocessing Longwave radiation #
 
-        # Building Energy Simulation #
+    # Building Energy Simulation #
 
-        # Postprocessing and plots #
-        if simulation_step_dictionary["run_generate_model_with_building_envelop"]:
-            SimulationPostProcessingAndPlots.add_building_envelops_to_urban_canopy_json(
-                urban_canopy_object=urban_canopy_object)
+    # Postprocessing and plots #
+    if simulation_step_dictionary["run_generate_model_with_building_envelop"]:
+        SimulationPostProcessingAndPlots.add_building_envelops_to_urban_canopy_json(
+            urban_canopy_object=urban_canopy_object)
 
-        # Exports #
-        # Export Urban canopy to pickle
-        if simulation_step_dictionary["run_save_urban_canopy_object_to_pickle"]:
-            SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,
-                                                                       path_simulation_folder=
-                                                                       arguments_dictionary[
-                                                                           "path_simulation_folder"])
-        # Export Urban canopy to json
-        if simulation_step_dictionary["run_save_urban_canopy_object_to_json"]:
-            SimulationCommonMethods.save_urban_canopy_to_json(urban_canopy_object=urban_canopy_object,
-                                                              path_simulation_folder=arguments_dictionary[
-                                                                  "path_simulation_folder"])
+    # Exports #
+    # Export Urban canopy to pickle
+    if simulation_step_dictionary["run_save_urban_canopy_object_to_pickle"]:
+        SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,
+                                                                   path_simulation_folder=
+                                                                   arguments_dictionary[
+                                                                       "path_simulation_folder"])
+    # Export Urban canopy to json
+    if simulation_step_dictionary["run_save_urban_canopy_object_to_json"]:
+        SimulationCommonMethods.save_urban_canopy_to_json(urban_canopy_object=urban_canopy_object,
+                                                          path_simulation_folder=arguments_dictionary[
+                                                              "path_simulation_folder"])
 
-        # Post-processing panels
-        if simulation_step_dictionary["generate_panels_results_in_csv"]:
-            SimulationPostProcessingAndPlots.generate_csv_panels_simulation_results(
-                urban_canopy_object=urban_canopy_object,
-                path_simulation_folder=
-                arguments_dictionary[
-                    "path_simulation_folder"])
+    # Post-processing panels
+    if simulation_step_dictionary["generate_panels_results_in_csv"]:
+        SimulationPostProcessingAndPlots.generate_csv_panels_simulation_results(
+            urban_canopy_object=urban_canopy_object,
+            path_simulation_folder=
+            arguments_dictionary[
+                "path_simulation_folder"])
 
-        if simulation_step_dictionary["plot_graph_results_building_panel_simulation"]:
-            SimulationPostProcessingAndPlots.plot_graphs(urban_canopy_object=urban_canopy_object,
-                                                         path_simulation_folder=arguments_dictionary[
-                                                             "path_simulation_folder"],
-                                                         study_duration_years=arguments_dictionary[
-                                                             "study_duration_years"],
-                                                         country_ghe_cost=arguments_dictionary[
-                                                             "country_ghe_cost"])
+    if simulation_step_dictionary["plot_graph_results_building_panel_simulation"]:
+        SimulationPostProcessingAndPlots.plot_graphs(urban_canopy_object=urban_canopy_object,
+                                                     path_simulation_folder=arguments_dictionary[
+                                                         "path_simulation_folder"],
+                                                     study_duration_years=arguments_dictionary[
+                                                         "study_duration_years"],
+                                                     country_ghe_cost=arguments_dictionary[
+                                                         "country_ghe_cost"])
 
-    if __name__ == "__main__":
-        main()
+if __name__ == "__main__":
+    main()

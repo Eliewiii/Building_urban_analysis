@@ -12,7 +12,7 @@ SimFunSolarRadAndBipv.run_bipv_harvesting_and_lca_simulation(
     minimum_panel_eroi=default_minimum_panel_eroi,
     start_year=2030,
     end_year=2055,
-    continue_simulation=True,
+    continue_simulation=False,
     update_panel_technology=False,
     replacement_frequency_in_years=default_replacement_frequency_in_years)
 

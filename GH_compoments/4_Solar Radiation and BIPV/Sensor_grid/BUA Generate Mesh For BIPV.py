@@ -50,13 +50,24 @@ def read_logs(path_simulation_folder):
     else:
         return ("No log file found")
 
+# Check path_simulation_folder_
+if path_simulation_folder_ is not None and os.path.isdir(path_simulation_folder_) is False:
+    raise ValueError("The simulation folder does not exist, enter a valid path")
+
+# Check _roof_bipv and _facades_bipv
+if _roof_bipv is None or _facades_bipv is None:
+    raise ValueError("Please select if you want to run the simulation on the roof and/or the facades")
+
+# todo: make grid parameter and merge_building_faces_ components
+# todo : check the values of the other parameters
+
+
 # Get Appdata\local folder
 local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 path_bat_file = os.path.join(path_tool, "Scripts", "mains_tool", "run_BUA.bat")
 
 if _run and (_roof_bipv or _facades_bipv):
-
     # Write the command
     command = path_bat_file
     # Steps to execute
@@ -93,5 +104,6 @@ if _run and (_roof_bipv or _facades_bipv):
 if path_simulation_folder_ is None:
     path_simulation_folder_ = os.path.join(path_tool, "Simulation_temp")
 
+# Read the log file
 report = read_logs(path_simulation_folder_)
 

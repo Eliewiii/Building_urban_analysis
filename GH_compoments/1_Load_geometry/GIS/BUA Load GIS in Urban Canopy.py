@@ -1,8 +1,8 @@
-"""Provides a scripting component.
+"""Load GIS in Urban Canopy
     Inputs:
         _path_gis : path to the GIS to load
          _unit_gis_ : unit of the GIS file, meter ("m")  or degree ("deg"). By default set to meter
-         path_folder_simulation : path to the folder you want the simulation to take place
+         path_simulation_folder : path to the folder you want the simulation to take place
          _gis_attribute_key_dict_ : to connect to the component TODO ELIE
          move_to_origin_ : center the scene on the origin of the coordinate system
          _run : press button to run the code
@@ -10,7 +10,7 @@
         a: The a output variable"""
 
 ghenv.Component.Name = "BUA Load GIS in Urban Canopy"
-ghenv.Component.NickName = 'LoadGIS'
+ghenv.Component.NickName = 'BUALoadGIS'
 ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '1 :: Load Buildings'
@@ -67,8 +67,8 @@ if _run:
     # OPtionnal argument of the bat file/Python script
     if _path_gis is not None:
         argument = argument + ' -g "{}"'.format(_path_gis)
-    if path_folder_simulation_ is not None:
-        argument = argument + ' -f "{}"'.format(path_folder_simulation_)
+    if path_simulation_folder_ is not None:
+        argument = argument + ' -f "{}"'.format(path_simulation_folder_)
     if path_gis_attribute_keys_dict is not None:
         argument = argument + ' -d "{}"'.format(path_gis_attribute_keys_dict)
     if _unit_gis_ is not None:
