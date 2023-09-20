@@ -9,8 +9,8 @@
 __author__ = "elie-medioni"
 __version__ = "2023.09.06"
 
-ghenv.Component.Name = "BUA Replacement Scenario Parameter"
-ghenv.Component.NickName = 'ReplacementScenarioParameter'
+ghenv.Component.Name = "BUA BIPV Replacement Scenario Parameter"
+ghenv.Component.NickName = 'BIPVReplacementScenarioParameter'
 ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '4 :: Solar Radiation and BIPV'

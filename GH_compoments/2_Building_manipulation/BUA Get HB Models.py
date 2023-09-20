@@ -9,7 +9,7 @@
 __author__ = "Eliewiii"
 __version__ = "2023.09.20"
 
-ghenv.Component.Name = "BUA Cet HB Models"
+ghenv.Component.Name = "BUA Get HB Models"
 ghenv.Component.NickName = 'GetHBModels'
 ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'

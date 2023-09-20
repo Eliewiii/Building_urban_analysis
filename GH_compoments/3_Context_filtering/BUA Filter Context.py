@@ -1,4 +1,4 @@
-"""Generate mesh on buildings for BIPV simulation
+"""Filter Context
     Inputs:
         path_simulation_folder_: Path to the folder. Default = Appdata\Local\Building_urban_analysis\Simulation_temp
         building_id_list_: list of ints: list of buildings we want to run the simulation on
@@ -21,7 +21,6 @@ ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '3 :: Context filtering'
 ghenv.Component.AdditionalHelpFromDocStrings = "1"
-
 
 def clean_path(path):
     path = path.replace("\\", "/")
