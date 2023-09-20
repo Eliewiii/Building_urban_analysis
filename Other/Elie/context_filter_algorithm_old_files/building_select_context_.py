@@ -316,8 +316,8 @@ class Mixin:
         + Second pass of the selection of the shading surfaces from the context.
         + Use raytracing to identify the obstructions among the context surfaces.
         + The context surfaces to test are generally pre-filtered by the first pass.
-        + Rays are sent from the left, right and middle of each target building facade to the left, right and middle of
-          target building facade.
+        + Rays are sent from the left, right and middle of each target building facades to the left, right and middle of
+          target building facades.
         + The z coordinate of the receiver/context building vertices is the height of the context building.
         + The z coordinate of the sender/target building vertices is the minimum between the height of the target and
           the context building

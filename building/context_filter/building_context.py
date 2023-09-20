@@ -2,16 +2,34 @@
 todo
 """
 
+import logging
+
 from building.context_filter.utils_functions_context_filter import is_vector3d_vertical, \
     majorized_vf_between_2_surfaces
+
+user_logger = logging.getLogger("user")
+dev_logger = logging.getLogger("dev")
+
+# Minimum and maximum value for the minimum view factor criterion
+min_mvfc = 0.00001
+max_mvfc = 1.
 
 
 class BuildingContext:
     """ todo """
 
-    def __init__(self, min_vf_criterion):
-        self.min_vf_criterion = min_vf_criterion
+    def __init__(self):
+        self.min_vf_criterion = None
         self.context_building_id_list = []
+
+    def set_mvfc(self, min_vf_criterion):
+        """ todo """
+        if isinstance(min_vf_criterion, float) and min_mvfc < min_vf_criterion < max_mvfc:
+            self.min_vf_criterion = min_vf_criterion
+        else:
+            self.number_of_rays = 0.01
+            user_logger.warning(f"The minimum view factor criterion inputted was not valid, the minimum view"
+                                f" factor criterion was set to 0.01")
 
     def select_context_building_using_the_mvfc(self, target_lb_polyface3d_extruded_footprint,
                                                context_lb_polyface3d_oriented_bounding_box,

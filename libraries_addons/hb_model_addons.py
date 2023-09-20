@@ -76,10 +76,10 @@ class HbAddons:
     # todo: @Elie : from mow on not
 
     @staticmethod
-    def LB_footprint_to_HB_model(LB_face_footprint, height, elevation, typology_layout=False,core_to_floor_area_ratio=0.15):
+    def LB_footprint_to_HB_model(lb_face_footprint, height, elevation, typology_layout=False,core_to_floor_area_ratio=0.15):
         """
         Create a honeybee model with extruded footprints of the building
-        :param LB_face_footprint:
+        :param lb_face_footprint:
         :param height:
         :param elevation:
         :param typology_layout: if True, it will use the layout of the building typology to build the building
@@ -90,7 +90,7 @@ class HbAddons:
         if typology_layout:
             None
         if not typology_layout:  # Automatic subdivision of the building on cores an apartments
-            HB_model = Room.from_footprint("building", LB_face_footprint, height, elevation)
+            HB_model = Room.from_footprint("building", lb_face_footprint, height, elevation)
         return None
 
     @staticmethod

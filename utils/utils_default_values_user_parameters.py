@@ -3,11 +3,12 @@
 """
 
 import os
+from datetime import datetime
 
 from utils.utils_configuration import path_tool, path_simulation_temp_folder, path_libraries_tool_folder
 
 # Default path to the simulation folder
-default_path_folder_simulation = path_simulation_temp_folder
+default_path_simulation_folder = path_simulation_temp_folder
 
 # ???
 default_move_buildings_to_origin = False
@@ -43,7 +44,6 @@ default_mvfc_context_lwr_selection = 0.001
 default_shading_number_of_rays_context_filter_second_pass = 3
 default_perform_context_filtering_on_building_to_simulate = True
 
-
 # Default values for the simulations - Solar radiation calculation
 default_name_radiation_simulation_folder = 'Radiation Simulation'
 default_grid_size = 1.5  # todo check it !
@@ -51,14 +51,23 @@ default_offset_dist = 0.1
 default_on_roof = True
 default_on_facades = True
 
-# Default values for panel simulation
+# Default value mesh generation
+default_roof_grid_size_x = 1.5
+default_facades_grid_size_x = 1.5
+default_roof_grid_size_y = 1.5
+default_facades_grid_size_y = 1.5
+default_offset_dist = 0.1
 
-default_path_pv_tech_dictionary = os.path.join(path_tool, "Libraries", "Solar_panels", "pv_technologies.json")  # todo @Elie to delete
+# Default values for panel simulation
+default_path_pv_tech_dictionary_folder = os.path.join(path_libraries_tool_folder, "BIPV_technologies")
 default_id_pv_tech_roof = "mitrex_roof c-Si"
-default_id_pv_tech_facades = "metsolar_facades c-Si"
-default_minimum_ratio_energy_harvested_on_primary_energy = 1.2
-default_performance_ratio = 0.75
-default_study_duration_years = 50
-default_replacement_scenario = "yearly"
-default_evey_X_years = 5
+default_id_pv_tech_facades = "mitrex_facades c-Si"
+default_minimum_panel_eroi = 1.2
+default_start_year = datetime.now().year
+default_end_year = default_start_year + 50
+default_efficiency_computation_method = "yearly"
+default_replacement_scenario = "replace_failed_panels_every_X_years"
+default_replacement_frequency_in_years = 20
+default_bipv_scenario_identifier = "new_uc_scenario"
+# Default values for panel simulation - LCA
 default_country_ghe_cost = 0.57874

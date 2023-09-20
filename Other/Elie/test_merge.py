@@ -303,11 +303,11 @@ def make_lb_face_from_shapely_2d_polygon(polygon, rotation_matrix, origin_new_co
 #     # convert the list of points to a list of Ladybug Point3D
 #     point_3d_list_outline = [Point3D(point[0], point[1], 0) for point in point_list_outline]
 #     # Convert the list of points to a Ladybug Face3D
-#     LB_face_footprint = Face3D(boundary=point_3d_list_outline, enforce_right_hand=True)
+#     lb_face_footprint = Face3D(boundary=point_3d_list_outline, enforce_right_hand=True)
 #     # Remove collinear vertices
-#     LB_face_footprint = LB_face_footprint.remove_colinear_vertices(tolerance=tolerance)
+#     lb_face_footprint = lb_face_footprint.remove_colinear_vertices(tolerance=tolerance)
 #
-#     return LB_face_footprint
+#     return lb_face_footprint
 
 
 if __name__ == "__main__":

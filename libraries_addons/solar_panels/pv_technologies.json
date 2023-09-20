@@ -1,30 +1,30 @@
 {
   "mitrex_roof c-Si": {
     "weibull_lifetime": 30,
-    "weibull_shape": 2.49,
+    "weibull_shape": 5.3759,
     "initial_efficiency": 0.1920,
-    "panel_area": 1.46,
+    "panel_area": 2.03,
     "efficiency_function" : "degrading_rate_efficiency_loss",
-    "DMFA" : 23,
-    "primary_energy_manufacturing_in_kWh_per_panel": 1574.975,
-    "gh_gas_emissions_manufacturing_in_kgCO2eq_per_panel" : 303.3296,
+    "weight" : 22,
+    "primary_energy_manufacturing_in_kWh_per_panel": 2189.9,
+    "gh_gas_emissions_manufacturing_in_kgCO2eq_per_panel" : 384.849,
     "primary_energy_transport_in_kWh_per_panel": 0,
     "carbon_transport_in_kgCO2_per_panel": 0,
-    "end_of_life_primary_energy_in_kWh_per_panel": 0,
-    "end_of_life_carbon_in_kgCO2_per_panel": 0
+    "end_of_life_primary_energy_in_kWh_per_panel": 16.99,
+    "end_of_life_carbon_in_kgCO2_per_panel": 8.14
                       },
-  "metsolar_facades c-Si": {
+  "mitrex_facades c-Si": {
     "weibull_lifetime": 30,
-    "weibull_shape": 2.49,
-    "initial_efficiency": 0.19,
-    "panel_area": 1.46,
+    "weibull_shape": 5.3759,
+    "initial_efficiency": 0.131,
+    "panel_area": 2.01,
     "efficiency_function" : "degrading_rate_efficiency_loss",
-    "DMFA" : 23,
-    "primary_energy_manufacturing_in_kWh_per_panel": 1574.975,
-    "gh_gas_emissions_manufacturing_in_kgCO2eq_per_panel" : 303.3296,
+    "weight" : 29,
+    "primary_energy_manufacturing_in_kWh_per_panel": 2168.3,
+    "gh_gas_emissions_manufacturing_in_kgCO2eq_per_panel" : 381.058,
     "primary_energy_transport_in_kWh_per_panel": 0,
     "carbon_transport_in_kgCO2_per_panel": 0,
-    "end_of_life_primary_energy_in_kWh_per_panel": 0,
-    "end_of_life_carbon_in_kgCO2_per_panel": 0
+    "end_of_life_primary_energy_in_kWh_per_panel": 22.39,
+    "end_of_life_carbon_in_kgCO2_per_panel": 10.73
                             }
 }

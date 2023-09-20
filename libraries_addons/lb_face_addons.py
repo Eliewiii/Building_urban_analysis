@@ -22,8 +22,6 @@ from utils.utils_constants import TOLERANCE_LBT
 default_elevation = 0.
 default_height = 9.
 
-# todo : for some rreason, the following import is necessary for _orient_geometry to work
-
 dev_logger = logging.getLogger("dev")
 user_logger = logging.getLogger("user")
 
@@ -42,40 +40,40 @@ def make_LB_face_from_shapely_polygon(polygon, tolerance=TOLERANCE_LBT):
     # convert the list of points to a list of Ladybug Point3D
     point_3d_list_outline = [Point3D(point[0], point[1], 0) for point in point_list_outline]
     # Convert the list of points to a Ladybug Face3D
-    LB_face_footprint = Face3D(boundary=point_3d_list_outline, enforce_right_hand=True)
+    lb_face_footprint = Face3D(boundary=point_3d_list_outline, enforce_right_hand=True)
     # Remove collinear vertices
-    LB_face_footprint = LB_face_footprint.remove_colinear_vertices(tolerance=tolerance)
+    lb_face_footprint = lb_face_footprint.remove_colinear_vertices(tolerance=tolerance)
 
-    return LB_face_footprint
+    return lb_face_footprint
 
 
-def LB_face_footprint_to_lB_polyface3D_extruded_footprint(LB_face_footprint, height=default_height,
+def LB_face_footprint_to_lB_polyface3D_extruded_footprint(lb_face_footprint, height=default_height,
                                                           elevation=default_elevation):
     """
     Extrude a ladybug geometry footprint to obtain the room envelop
-    :param LB_face_footprint: ladybug geometry footprint
+    :param lb_face_footprint: ladybug geometry footprint
     :param height: height of the building in meters
     :return: ladybug geometry extruded footprint
     """
     # extrude the footprint to obtain the room envelop
-    extruded_face = Polyface3D.from_offset_face(LB_face_footprint, height)
+    extruded_face = Polyface3D.from_offset_face(lb_face_footprint, height)
     # move the room to the right elevation
     extruded_face.move(Vector3D(0, 0, elevation))
 
     return extruded_face
 
 
-def make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint(LB_face_footprint, height=default_height,
+def make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint(lb_face_footprint, height=default_height,
                                                                       elevation=default_elevation):
     """ Make Ladybug Polyface3D oriented bounding box from a Ladybug Face3D (mostly from the footprint of buildings)
-    :param LB_face_footprint: Ladybug Face3D
+    :param lb_face_footprint: Ladybug Face3D
     :param height: float : height of the building
     :param elevation: float : elevation of the building compared to the ground
     :return: LB_polyface3D_bounding_box: Ladybug Polyface3D : oriented bounding box
     """
     # Identify the oriented bounding rectangle and the angle of orientation
     LB_face3d_bounding_rectangle, angle = make_LB_Face3D_oriented_bounding_rectangle_from_LB_Face3D_footprint(
-        LB_face_footprint)
+        lb_face_footprint)
     # extrude the rectangle to obtain the oriented bounding box
     LB_polyface3d_bounding_box = Polyface3D.from_offset_face(LB_face3d_bounding_rectangle, height)
     # move the bounding box to the right elevation
@@ -179,12 +177,12 @@ def merge_LB_face_list(LB_face_list):
         raise ValueError("The list of faces to merge is empty")
 
 
-def LB_footprint_to_df_building(LB_face_footprint, core_area_ratio=0.15, tol=0.005):
+def LB_footprint_to_df_building(lb_face_footprint, core_area_ratio=0.15, tol=0.005):
     global nb_rooms_per_stories
     """ generate a Dragonfly building out of the footprint, generating a core in the center """
     # todo @Elie : adapt to the new tool
 
-    footprint_area = LB_face_footprint.area
+    footprint_area = lb_face_footprint.area
     # target area of the core and the acceptable range
     target_core_area = footprint_area * core_area_ratio
     max_core_area = target_core_area * (1 + tol)
@@ -197,7 +195,7 @@ def LB_footprint_to_df_building(LB_face_footprint, core_area_ratio=0.15, tol=0.0
     perimeter_offset_boundary_down = 1
     perimeter_offset = perimeter_offset_boundary_down
     first_try_df_building = dragonfly.building.Building.from_footprint(identifier="Building_" + str(self.id),
-                                                                       footprint=[LB_face_footprint],
+                                                                       footprint=[lb_face_footprint],
                                                                        floor_to_floor_heights=[3.],
                                                                        perimeter_offset=perimeter_offset)
     # number of rooms including the core when subdivided by the Dragonfly algorithm
@@ -211,7 +209,7 @@ def LB_footprint_to_df_building(LB_face_footprint, core_area_ratio=0.15, tol=0.0
         perimeter_offset = (perimeter_offset_boundary_up + perimeter_offset_boundary_down) / 2.
 
         df_building = dragonfly.building.Building.from_footprint(identifier="Building_" + str(self.id),
-                                                                 footprint=[LB_face_footprint],
+                                                                 footprint=[lb_face_footprint],
                                                                  floor_to_floor_heights=[3.],
                                                                  perimeter_offset=perimeter_offset)
         # print("it {}".format(i))
@@ -232,7 +230,7 @@ def LB_footprint_to_df_building(LB_face_footprint, core_area_ratio=0.15, tol=0.0
     if converged:
         # TODO is this error appears only in my laptop? Sharon
         self.DF_building = dragonfly.building.Building.from_footprint(identifier="Building_" + str(self.id),
-                                                                      footprint=[LB_face_footprint],
+                                                                      footprint=[lb_face_footprint],
                                                                       floor_to_floor_heights=floor_to_floor_heights,
                                                                       perimeter_offset=perimeter_offset)
         # Rename the room to know what are the apartments and cores
@@ -249,17 +247,17 @@ def LB_footprint_to_df_building(LB_face_footprint, core_area_ratio=0.15, tol=0.0
         user_logger.warning(f" building_{self.id} : the automatic subdivision in rooms and cores failed")
         dev_logger.warning(f" building_{self.id} : the automatic subdivision in rooms and cores failed")
         self.DF_building = dragonfly.building.Building.from_footprint(identifier="Building_" + str(self.id),
-                                                                      footprint=[LB_face_footprint],
+                                                                      footprint=[lb_face_footprint],
                                                                       floor_to_floor_heights=floor_to_floor_heights)
         # rename only the main room
         for id_story in range(len(self.DF_building.unique_stories)):
             self.DF_building.unique_stories[0].room_2ds[0].identifier = "apartment_" + str(0)
 
 
-def find_perimeter_offset_df_building(LB_face_footprint, core_area_ratio=0.15, tol=0.005):
+def find_perimeter_offset_df_building(lb_face_footprint, core_area_ratio=0.15, tol=0.005):
     """ generate a Dragonfly building out of the footprint, generating a core in the center """
 
-    footprint_area = LB_face_footprint.area
+    footprint_area = lb_face_footprint.area
     # target area of the core and the acceptable range
     target_core_area = footprint_area * core_area_ratio
     max_core_area = target_core_area * (1 + tol)
@@ -275,7 +273,7 @@ def find_perimeter_offset_df_building(LB_face_footprint, core_area_ratio=0.15, t
         perimeter_offset = (perimeter_offset_boundary_up + perimeter_offset_boundary_down) / 2.
 
         df_building = dragonfly.building.Building.from_footprint(identifier="temp",
-                                                                 footprint=[LB_face_footprint],
+                                                                 footprint=[lb_face_footprint],
                                                                  floor_to_floor_heights=[3.],  # Doesn't matter
                                                                  perimeter_offset=perimeter_offset)
         # print("it {}".format(i))
@@ -298,7 +296,7 @@ def find_perimeter_offset_df_building(LB_face_footprint, core_area_ratio=0.15, t
 
     if converged:
         self.DF_building = dragonfly.building.Building.from_footprint(identifier="Building_" + str(self.id),
-                                                                      footprint=[LB_face_footprint],
+                                                                      footprint=[lb_face_footprint],
                                                                       floor_to_floor_heights=floor_to_floor_heights,
                                                                       perimeter_offset=perimeter_offset)
         # Rename the room to know what are the apartments and cores

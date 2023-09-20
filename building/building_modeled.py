@@ -14,69 +14,76 @@ from honeybee_radiance.sensorgrid import SensorGrid
 from building.building_basic import BuildingBasic
 from building.context_filter.building_shading_context import BuildingShadingContext
 # from building.context_filter.building_lwr_context import BuildingLWRContext  # Useful later
+from building.solar_radiation_and_bipv.solar_rad_and_BIPV import SolarRadAndBipvSimulation
+from building.merg_hb_model_faces.merge_hb_model_faces import merge_facades_and_roof_faces_in_hb_model
 
 from libraries_addons.hb_model_addons import HbAddons
-from libraries_addons.solar_radiations.add_sensorgrid_hb_model import get_hb_faces_facades,get_hb_faces_roof,get_lb_mesh,get_lb_mesh_BUA,create_sensor_grid_from_mesh
+from libraries_addons.solar_radiations.add_sensorgrid_hb_model import get_hb_faces_facades, get_hb_faces_roof, \
+    get_lb_mesh, get_lb_mesh_BUA, create_sensor_grid_from_mesh
 from libraries_addons.solar_radiations.hb_recipe_settings import hb_recipe_settings
 from libraries_addons.solar_radiations.annual_irradiance_simulation import hb_ann_irr_sim
 from libraries_addons.solar_radiations.annual_cumulative_value import hb_ann_cum_values
 from libraries_addons.solar_panels.useful_functions_solar_panel import load_panels_on_sensor_grid, \
-    loop_over_the_years_for_solar_panels, beginning_end_of_life_lca_results_in_lists, results_from_lists_to_dict, \
+    loop_over_the_years_for_solar_panels, beginning_end_of_life_lca_results_in_lists, \
+    results_from_lists_to_dict, \
     get_cumul_values, add_elements_of_two_lists, transform_to_linear_function, find_intersection_functions, \
     generate_step_function
-
 
 user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")
 
 
-
 class BuildingModeled(BuildingBasic):
     """BuildingBasic class, representing one building in an urban canopy."""
 
-    # todo :make the LB_face_footprint optional in the BuildingBasic class
-    def __init__(self, identifier, LB_face_footprint=None, urban_canopy=None, building_index_in_GIS=None, **kwargs):
+    # todo :make the lb_face_footprint optional in the BuildingBasic class
+    def __init__(self, identifier, lb_face_footprint=None, urban_canopy=None, building_index_in_gis=None,
+                 **kwargs):
         # Initialize with the inherited attributes from the BuildingBasic parent class
-        super().__init__(identifier, LB_face_footprint, urban_canopy, building_index_in_GIS)
+        super().__init__(identifier, lb_face_footprint, urban_canopy, building_index_in_gis)
         # get the values from the original BuildingBasic object (if there is one) through **kwargs
         for key, value in kwargs.items():
             setattr(self, key, value)
-
-        self.HB_model_obj = None
-        self.HB_model_dict = None
-
+        # Honeybee model
+        self.hb_model_obj = None
+        self.hb_model_dict = None
+        self.merged_faces_hb_model_dict = None  # todo @Elie IMPORTANT, move this obj as well
+        # Status of the building
         self.to_simulate = False
         self.is_target = False
+        # Shading computation
+        self.shading_context_obj = BuildingShadingContext()
 
-        self.shading_context_obj = None
+        self.first_pass_context_building_id_list = []  # todo @Elie delete
 
-        self.first_pass_context_building_id_list = []
+        # Solar and panel radiation
+        self.solar_radiation_and_bipv_simulation_obj = SolarRadAndBipvSimulation()
 
-        self.sensor_grid_dict = {'Roof': None, 'Facades': None}
-        self.panels = {"Roof": None, "Facades": None}
-        self.results_panels = {"Roof": None, "Facades": None, "Total": None}
+        self.sensor_grid_dict = {'roof': None, 'facades': None}
+        self.panels = {"roof": None, "facades": None}
+        self.results_panels = {"roof": None, "facades": None, "Total": None}
 
     def load_HB_attributes(self):
         """
         Load the attributes that cannot be pickled from equivalent attribute dict.
         """
-        # Convert the HB_model_dict to HB_model_obj
-        self.HB_model_obj = Model.from_dict(self.HB_model_dict)  # todo: test if it works
-        self.HB_model_dict = None
+        # Convert the hb_model_dict to hb_model_obj
+        self.hb_model_obj = Model.from_dict(self.hb_model_dict)  # todo: test if it works
+        self.hb_model_dict = None
 
     def pickle_HB_attributes(self):
         """
-        Convert the HB_model_obj to HB_model_dict to be able to pickle it.
+        Convert the hb_model_obj to hb_model_dict to be able to pickle it.
         """
-        # Convert the HB_model_obj to HB_model_dict
-        self.HB_model_dict = self.HB_model_obj.to_dict()  # todo: test if it works
-        self.HB_model_obj = None
+        # Convert the hb_model_obj to hb_model_dict
+        self.hb_model_dict = self.hb_model_obj.to_dict()  # todo: test if it works
+        self.hb_model_obj = None
         # todo : maybe add more properties to modify before pickling to avoid locked class issue
 
     @classmethod
-    def convert_buildingbasic_to_buildingmodeled(cls, building_obj, is_target=False, is_simulated=False,
-                                                 layout_from_typology=False, automatic_floor_subdivision=False,
-                                                 properties_from_typology=True):
+    def from_building_basic(cls, building_obj, is_target=False, is_simulated=False,
+                            layout_from_typology=False, automatic_floor_subdivision=False,
+                            properties_from_typology=True):
         """
         Create a BuildingModeled object from a BuildingBasic object
         :return: building_HB_model : BuildingModeled object
@@ -85,23 +92,23 @@ class BuildingModeled(BuildingBasic):
             return building_obj
         else:
             # Make the HB model from the building object
-            # todo @Sharon : how to try to make the model ? and if it work we go further ? otherwise we return None ?
             HB_model = building_obj.to_HB_model(layout_from_typology=layout_from_typology,
                                                 automatic_subdivision=automatic_floor_subdivision,
                                                 properties_from_typology=properties_from_typology)
             # get the attributes of the building_obj (it extract all attributes, even the ones that are used
             # to create the object), but it doesn't matter, it is just a bit redundant
-            kwargs = {attr: getattr(building_obj, attr) for attr in dir(building_obj) if not attr.startswith('__')}
+            kwargs = {attr: getattr(building_obj, attr) for attr in dir(building_obj) if
+                      not attr.startswith('__')}
             # create the BuildingModeled object from the BuildingBasic object
-            building_HB_model = cls(building_obj.id, building_obj.LB_face_footprint, building_obj.urban_canopy,
-                                    building_obj.index_in_GIS, **kwargs)
-            # todo : @Sharon, check if the code is correct to create object from super class, should it be that way or though a to_buildingHBmodel function in the BuildingBasic class?
+            building_HB_model = cls(building_obj.id, building_obj.lb_face_footprint,
+                                    building_obj.urban_canopy,
+                                    building_obj.index_in_gis, **kwargs)
 
             #
             building_HB_model.to_simulate = is_simulated
             building_HB_model.is_target = is_target
 
-            building_HB_model.HB_model_obj = HB_model
+            building_HB_model.hb_model_obj = HB_model
 
             return building_HB_model
             # todo : change if needed where the dictionary of the urban canopy is pointing, to point to the new object
@@ -128,14 +135,15 @@ class BuildingModeled(BuildingBasic):
             dev_logger.error(err_message, exc_info=True)
             raise AttributeError(err_message)
         # # set the attributes of the BuildingModeled object
-        building_modeled_obj.HB_model_obj = HB_model
+        building_modeled_obj.hb_model_obj = HB_model
         building_modeled_obj.urban_canopy = urban_canopy
         building_modeled_obj.elevation = elevation
         building_modeled_obj.height = height
         building_modeled_obj.is_target = is_target
         try:
-            # todo @Elie : make the LB_face_footprint from the HB_model
-            building_modeled_obj.LB_face_footprint = HbAddons.make_LB_face_footprint_from_HB_model(HB_model=HB_model)
+            # todo @Elie : make the lb_face_footprint from the HB_model
+            building_modeled_obj.lb_face_footprint = HbAddons.make_LB_face_footprint_from_HB_model(
+                HB_model=HB_model)
         except:
             # todo @Elie: Check if this is the correct message.
             err_message = "Cannot make the Ladybug face footprint from the Honeybee model."
@@ -147,19 +155,49 @@ class BuildingModeled(BuildingBasic):
 
         return building_modeled_obj, identifier
 
-    def initialize_shading_context_obj(self, min_VF_criterion, number_of_rays):
+    def move(self, vector):
+        """
+        Move the building
+        :param vector:
+        :return:
+        """
+        # move the LB footprint
+        if self.lb_face_footprint is not None:
+            self.lb_face_footprint = self.lb_face_footprint.move(
+                Vector3D(vector[0], vector[1], 0))  # the footprint is moved only in the x and y directions
+        # adjust the elevation
+        if self.elevation is not None:
+            self.elevation = self.elevation + vector[2]
+        # make it moved
+        moving_vector = Vector3D(vector[0], vector[1], vector[2])
+        self.hb_model_obj.move(moving_vector)  # the model is moved fully
+        self.merged_faces_hb_model_dict = Model.from_dict(self.merged_faces_hb_model_dict).move(
+            moving_vector).to_dict()  # todo check
+        self.moved_to_origin = True
+
+    def make_merged_faces_hb_model(self, orient_roof_mesh_to_according_to_building_orientation=True,
+                                   north_angle=0):
+        """
+        Make a HB model with the faces merged. Useful for mesh generation and to simplify the geometry of the model
+        for context shading computation.
+        :param orient_roof_mesh_to_according_to_building_orientation: bool: default=True, if True, the roof mesh
+            will be oriented according to the orientation of the building
+        :param north_angle: float: default=0, angle of the north in degree
+        """
+        merged_faces_hb_model_obj = merge_facades_and_roof_faces_in_hb_model(hb_model_obj=self.hb_model_obj,
+                                                                             orient_roof_mesh_to_according_to_building_orientation=orient_roof_mesh_to_according_to_building_orientation,
+                                                                             north_angle=north_angle)
+        self.merged_faces_hb_model_dict = merged_faces_hb_model_obj.to_dict()
+
+    def init_shading_context_obj(self, min_vf_criterion, number_of_rays):
         """
         todo @Elie
         todo @Elie
         :return:
         """
-        # Initialize if the building does not have a shading_context already or if the parameters are different
-        if self.shading_context_obj is None or self.shading_context_obj.min_VF_criterion != min_VF_criterion:
-            self.shading_context_obj = BuildingShadingContext(min_VF_criterion, number_of_rays)
-        elif self.shading_context_obj.number_of_rays != number_of_rays:
-            self.shading_context_obj.set_number_of_rays(number_of_rays)
-        else:
-            pass  # do nothing if the BuildingShadingContext already exist or if the parameters are the same
+
+        self.shading_context_obj.set_min_vf_criterion(min_vf_criterion=min_vf_criterion)
+        self.shading_context_obj.set_number_of_rays(number_of_rays=number_of_rays)
 
     def select_shading_context_buildings(self, building_dictionary):
         """
@@ -171,293 +209,145 @@ class BuildingModeled(BuildingBasic):
         for i, (building_id, building_obj) in enumerate(building_dictionary.items()):
             if building_id != self.id:
                 self.shading_context_obj.select_context_building_using_the_mvfc(
-                    target_LB_polyface3d_extruded_footprint=self.LB_polyface3d_extruded_footprint,
-                    context_LB_polyface3d_oriented_bounding_box=building_obj.LB_polyface3d_oriented_bounding_box,
+                    target_LB_polyface3d_extruded_footprint=self.lb_polyface3d_extruded_footprint,
+                    context_LB_polyface3d_oriented_bounding_box=building_obj.lb_polyface3d_oriented_bounding_box,
                     context_building_id=building_id)
 
         return self.shading_context_obj.context_building_list
 
-    def move(self, vector):
+    def generate_sensor_grid(self, bipv_on_roof=True, bipv_on_facades=True,
+                             roof_grid_size_x=1, facades_grid_size_x=1, roof_grid_size_y=1,
+                             facades_grid_size_y=1, offset_dist=0.1,overwrite=False):
         """
-        Move the building
-        :param vector:
-        :return:
+        Generate Honeybee SensorGrid on the roof and/or on the facades for the building.
+        It does not add the SendorgGrid to the HB model.
+        :param bipv_on_roof: Boolean to indicate if the simulation should be done on the roof
+        :param bipv_on_facades: Boolean to indicate if the simulation should be done on the facades
+        :param roof_grid_size_x: Number for the size of the test grid on the roof in the x direction
+        :param facades_grid_size_x: Number for the size of the test grid on the facades in the x direction
+        :param roof_grid_size_y: Number for the size of the test grid on the roof in the y direction
+        :param facades_grid_size_y: Number for the size of the test grid on the facades in the y direction
+        :param offset_dist: Number for the distance to move points from the surfaces of the geometry of the model.
         """
-        # move the LB footprint
-        if self.LB_face_footprint is not None:
-            self.LB_face_footprint = self.LB_face_footprint.move(
-                Vector3D(vector[0], vector[1], 0))  # the footprint is moved only in the x and y directions
-        # adjust the elevation
-        if self.elevation is not None:
-            self.elevation = self.elevation + vector[2]
-        # make it moved
-        self.HB_model_obj.move(Vector3D(vector[0], vector[1], vector[2]))  # the model is moved fully
-        self.moved_to_origin = True
+        # Do not generate the SensorGrid if the building is not a target
+        if not self.is_target:
+            dev_logger.info(f"The building {self.id} is not target, no SensorGrid will be generated."
+                            f"Please set the building as target if you want to generate the mesh and perform "
+                            f"BIPV simulation ")
+            return
 
-    def add_sensor_grid_to_hb_model(self, name=None, grid_size=1, offset_dist=0.1, on_roof=True, on_facades=True):
-        """Create a HoneyBee SensorGrid from a HoneyBe model for the roof, the facades or both and add it to the
-        model
-        :param name : Name
-        :param grid_size : Number for the size of the test grid
-        :param offset_dist : Number for the distance to move points from the surfaces of the geometry of the model. Typically, this
-        :param on_roof: bool: default=True
-        :param on_facades: bool: default=True"""
-
-        assert isinstance(self.HB_model_obj, Model), \
-            'Expected Honeybee Model. Got {}.'.format(type(self.HB_model_obj))
-
-        if on_roof and on_facades:
-            faces_roof = get_hb_faces_roof(self.HB_model_obj)
-            mesh_roof = get_lb_mesh(faces_roof, grid_size, offset_dist)
-            sensor_grid_roof = create_sensor_grid_from_mesh(mesh_roof, name)
-            self.sensor_grid_dict['Roof'] = sensor_grid_roof.to_dict()
-
-            faces_facades = get_hb_faces_facades(self.HB_model_obj)
-            mesh_facades = get_lb_mesh_BUA(faces_facades, grid_size, offset_dist)
-            sensor_grid_facades = create_sensor_grid_from_mesh(mesh_facades, name)
-            self.sensor_grid_dict['Facades'] = sensor_grid_facades.to_dict()
-
-        elif on_roof and not on_facades:
-            faces_roof = get_hb_faces_roof(self.HB_model_obj)
-            mesh_roof = get_lb_mesh(faces_roof, grid_size, offset_dist)
-            sensor_grid_roof = create_sensor_grid_from_mesh(mesh_roof, name)
-            self.sensor_grid_dict['Roof'] = sensor_grid_roof.to_dict()
-
-        elif on_facades and not on_roof:
-            faces_facades = get_hb_faces_facades(self.HB_model_obj)
-            mesh_facades = get_lb_mesh_BUA(faces_facades, grid_size, offset_dist)
-            sensor_grid_facades = create_sensor_grid_from_mesh(mesh_facades, name)
-            self.sensor_grid_dict['Facades'] = sensor_grid_facades.to_dict()
-
+        # Use the merged faces HB model if it exists, otherwise use the original HB model
+        if self.merged_faces_hb_model_dict is not None:
+            hb_model_obj = Model.from_dict(self.merged_faces_hb_model_dict)
         else:
-            user_logger.warning(f"You did not precise whether you want to run the simulation on the roof, "
-                            f"the facades or both")
-            dev_logger.warning(f"You did not precise whether you want to run the simulation on the roof, "
-                            f"the facades or both")
+            hb_model_obj = self.hb_model_obj
+        # generate the sensor grid
+        self.solar_radiation_and_bipv_simulation_obj.generate_sensor_grid(hb_model_obj=hb_model_obj,
+                                                                          bipv_on_roof=bipv_on_roof,
+                                                                          bipv_on_facades=bipv_on_facades,
+                                                                          roof_grid_size_x=roof_grid_size_x,
+                                                                          facades_grid_size_x=facades_grid_size_x,
+                                                                          roof_grid_size_y=roof_grid_size_y,
+                                                                          facades_grid_size_y=facades_grid_size_y,
+                                                                          offset_dist=offset_dist,
+                                                                          overwrite=overwrite)
 
-    def solar_radiations(self, name, path_folder_simulation, path_weather_file, grid_size=1, offset_dist=0.1,
-                         on_roof=True, on_facades=True):
-        """Create and add a sensor grid to the HB model of the building then run the annual irradiance simulation on
-        it"""
-
-        # Add the sensor grids to the building modeled
-        self.add_sensor_grid_to_hb_model(name, grid_size, offset_dist, on_roof, on_facades)
-
-        if on_roof and not on_facades:
-            # generate the sensor grid from the dict
-            sensor_grid_roof = SensorGrid.from_dict(self.sensor_grid_dict['Roof'])
-            # duplicate the model so that no changes will be made on the original model
-            model_sensor_grid_roof = self.HB_model_obj.duplicate()
-            if len(sensor_grid_roof) != 0:
-                # add the sensor grid to the hb model duplicate
-                model_sensor_grid_roof.properties.radiance.add_sensor_grid(sensor_grid_roof)
-                # run the solar radiation simulation on the roof
-                path_folder_simulation_roof = os.path.join(path_folder_simulation, "Roof")
-                settings = hb_recipe_settings(path_folder_simulation_roof)
-                project_folder = hb_ann_irr_sim(model_sensor_grid_roof, path_weather_file, settings)
-            # todo @Hilany, do something if we don't have any sensor grid, the return will not work
-            return hb_ann_cum_values([os.path.join(project_folder, "annual_irradiance", "results", "total")])
-
-        elif on_facades and not on_roof:
-            # generate the sensor grid from the dict
-            sensor_grid_facades = SensorGrid.from_dict(self.sensor_grid_dict['Facades'])
-            # duplicate the model so that no changes will be made on the original model
-            model_sensor_grid_facades = self.HB_model_obj.duplicate()
-            if len(sensor_grid_facades) != 0:
-                # add the sensor grid to the hb model duplicate
-                model_sensor_grid_facades.properties.radiance.add_sensor_grid(sensor_grid_facades)
-                # run the solar radiation simulation on the roof
-                path_folder_simulation_facades = os.path.join(path_folder_simulation, "Facades")
-                settings = hb_recipe_settings(path_folder_simulation_facades)
-                project_folder = hb_ann_irr_sim(model_sensor_grid_facades, path_weather_file, settings)
-                # todo @Hilany, same as above
-            return hb_ann_cum_values([os.path.join(project_folder, "annual_irradiance", "results", "total")])
-
-    def load_panels_roof(self, pv_tech_roof, list_irradiation_values_roof,
-                         minimum_ratio_energy_harvested_on_primary_energy,
-                         performance_ratio):
+    def run_annual_solar_irradiance_simulation(self, path_simulation_folder, path_weather_file, overwrite=False,
+                                               north_angle=0, silent=False):
         """
-        Load the panels to the mesh of the roof.
-        :param pv_tech_roof: PVPanelTechnology object
-        :param list_irradiation_values_roof: list of int: list of the radiation values calculated by the solar
-        radiation simulation
-        :param minimum_ratio_energy_harvested_on_primary_energy: int: production minimal during the first year for a panel to be installed at
-        this position, Default=1.2
-        :param performance_ratio: float: performance ratio of the PV, Default=0.75
+        Run the annual solar radiation simulation for the building on the roof and/or on the facades if a Honeybee SensorGrid
+        was generated on them.
+        :param path_simulation_folder: Path to the simulation folder
+        :param path_weather_file: Path to the epw file
+        :param overwrite: bool: default=False, if True, overwrite the simulation files if they already exist
+        :param north_angle: float : north angle of the building in degrees
+        :param silent: bool: default=False
         """
-        # we only add the panels if the sensor grid already exists
-        if self.sensor_grid_dict["Roof"] is not None:
-            # get the sensor grid then load the panels
-            sensor_grid_roof = SensorGrid.from_dict(self.sensor_grid_dict["Roof"])
-            panels_roof = load_panels_on_sensor_grid(sensor_grid_roof, pv_tech_roof, list_irradiation_values_roof,
-                                                     minimum_ratio_energy_harvested_on_primary_energy,
-                                                     performance_ratio)
-            self.panels["Roof"] = panels_roof
-        else:
-            pass
+        #         # check if the solar radiation and BIPV simulation object was initialized
+        if self.solar_radiation_and_bipv_simulation_obj.roof_sensorgrid_dict is None and self.solar_radiation_and_bipv_simulation_obj.facades_sensorgrid_dict is None:
+            dev_logger.info(
+                f"The SenssorGrid of building {self.id} was not generated, it will be ignored")
+            user_logger.info(
+                f"No mesh was generated on the building {self.id}, please generate one. In the meantime it will be ignored")
+            return
+        # check if the epw file exists (should be check in the components in Grasshopper as well)
+        if not os.path.isfile(path_weather_file):
+            dev_logger.info(f"The epw file {path_weather_file} does not exist, the simulation will be ignored")
+            user_logger.info(
+                f"The building {self.id} was not simulated for the annual solar radiation simulation no mesh for the PVs was generated")
+            return
+        # check if the building has context
+        if self.shading_context_obj is None or self.shading_context_obj.context_shading_hb_shade_list == []:
+            dev_logger.info(
+                f"The building {self.id} does not have shades. consider running the shading simulation first or add your shades manually")
+            user_logger.info(
+                f"The building {self.id} does not have shades. consider running the shading simulation first or add your shades manually")
 
-    def load_panels_facades(self, pv_tech_facades, list_irradiation_values_facades,
-                            minimum_ratio_energy_harvested_on_primary_energy, performance_ratio):
-        """
-        Load the panels to the mesh of the facades.
-        :param pv_tech_facades: PVPanelTechnology object
-        :param list_irradiation_values_facades: list of int: list of the radiation values calculated by the solar
-        radiation simulation
-        :param minimum_ratio_energy_harvested_on_primary_energy: int: production minimal during the first year for a panel to be
-        installed at this position, Default=1.2
-        :param performance_ratio: float: performance ratio of the PV, Default=0.75
-        """
-        # we only add the panels if the sensor grid already exist
-        if self.sensor_grid_dict["Facades"] is not None:
-            # get the sensor grid then the mesh from the dictionary
-            sensor_grid_facades = SensorGrid.from_dict(self.sensor_grid_dict["Facades"])
-            panels_facades = load_panels_on_sensor_grid(sensor_grid_facades, pv_tech_facades,
-                                                        list_irradiation_values_facades,
-                                                        minimum_ratio_energy_harvested_on_primary_energy,
-                                                        performance_ratio)
-            self.panels["Facades"] = panels_facades
-        else:
-            pass
+        # run the annual solar radiation simulation
+        self.solar_radiation_and_bipv_simulation_obj.run_annual_solar_irradiance_simulation(
+            path_simulation_folder=path_simulation_folder, building_id=self.id, hb_model_obj=self.hb_model_obj,
+            context_shading_hb_shade_list=self.shading_context_obj.context_shading_hb_shade_list,
+            path_weather_file=path_weather_file, overwrite=overwrite,
+            north_angle=north_angle, silent=silent)
 
-    def panels_simulation_roof(self, path_folder_simulation_building, pv_tech,
-                               minimum_ratio_energy_harvested_on_primary_energy=1.2,
-                               performance_ratio=0.75, study_duration_in_years=50,
-                               replacement_scenario="yearly", **kwargs):
-        """
-        Run the panel simulation on the roof
-        :param path_folder_simulation_building: path to the folder corresponding to the building
-        :param pv_tech: PVPanelTechnology object
-        :param minimum_ratio_energy_harvested_on_primary_energy: int: production minimal during the first year for a panel to be installed at
-        this position, Default=1.2
-        :param performance_ratio: float: performance ratio of the PV, Default=0.75
-        :param study_duration_in_years: int: duration of the study, default = 50 years
-        :param replacement_scenario: string: name of a replacement scenario, default = 'yearly'
-        """
-        if self.sensor_grid_dict["Roof"] is not None:
-            path_folder_roof_values_path = os.path.join(path_folder_simulation_building, "Roof",
-                                                        "annual_radiation_values.txt")
-            with open(path_folder_roof_values_path, "r") as f:
-                data_values = f.read()
-                data_values_in_string = data_values.split(",")
-                radiation_values_in_list = list(map(float, data_values_in_string))
-
-            self.load_panels_roof(pv_tech, radiation_values_in_list, minimum_ratio_energy_harvested_on_primary_energy,
-                                  performance_ratio)
-
-            if self.panels["Roof"] is not None:
-                energy_production_per_year_list, nb_of_panels_installed_list, nb_of_failed_panels_list = \
-                    loop_over_the_years_for_solar_panels(self.panels["Roof"], radiation_values_in_list,
-                                                         performance_ratio, study_duration_in_years,
-                                                         replacement_scenario, **kwargs)
-            return energy_production_per_year_list, nb_of_panels_installed_list, nb_of_failed_panels_list
-        else:
-            return [], [], []
-
-    def panels_simulation_facades(self, path_folder_simulation_building, pv_tech,
-                                  minimum_ratio_energy_harvested_on_primary_energy,
-                                  performance_ratio, study_duration_in_years=50,
-                                  replacement_scenario="yearly", **kwargs):
-        """
-        Run the panel simulation on the facades
-        :param path_folder_simulation_building: path to the folder corresponding to the building
-        :param pv_tech: PVPanelTechnology object
-        :param minimum_ratio_energy_harvested_on_primary_energy: int: production minimal during the first year for a panel to be installed at
-        this position, Default=1.2
-        :param performance_ratio: float: performance ratio of the PV, Default=0.75
-        :param study_duration_in_years: int: duration of the study, default = 50 years
-        :param replacement_scenario: string: name of a replacement scenario, default = 'yearly'
+    def building_run_bipv_panel_simulation(self, path_simulation_folder, roof_pv_tech_obj, facades_pv_tech_obj, uc_start_year,
+                                  uc_current_year, uc_end_year, efficiency_computation_method="yearly",
+                                  minimum_panel_eroi=1.2, replacement_scenario="replace_failed_panels_every_X_years",
+                                  continue_simulation=False, **kwargs):
         """
 
-        if self.sensor_grid_dict["Facades"] is not None:
-            path_folder_facades_values_path = os.path.join(path_folder_simulation_building, "Facades",
-                                                           "annual_radiation_values.txt")
-            with open(path_folder_facades_values_path, "r") as f:
-                data_values = f.read()
-                data_values_in_string = data_values.split(",")
-                radiation_values_in_list = list(map(float, data_values_in_string))
-
-            self.load_panels_facades(pv_tech, radiation_values_in_list,
-                                     minimum_ratio_energy_harvested_on_primary_energy,
-                                     performance_ratio)
-            if self.panels["Facades"] is not None:
-                energy_production_per_year_list, nb_of_panels_installed_list, nb_of_failed_panels_list = \
-                    loop_over_the_years_for_solar_panels(self.panels["Facades"], radiation_values_in_list,
-                                                         performance_ratio, study_duration_in_years,
-                                                         replacement_scenario, **kwargs)
-            return energy_production_per_year_list, nb_of_panels_installed_list, nb_of_failed_panels_list
-        else:
-            return [], [], []
-
-    def panel_simulation_building(self, path_folder_simulation_building, pv_technologies_dictionary, id_pv_tech_roof,
-                                  id_pv_tech_facades, minimum_ratio_energy_harvested_on_primary_energy=1.2,
-                                  performance_ratio=0.75,
-                                  study_duration_in_years=50, replacement_scenario="yearly", **kwargs):
-        """
-        Run the panel simulation on the facades
-        :param path_folder_simulation_building: path to the folder corresponding to the building
-        :param pv_technologies_dictionary: dictionary containing the technologies data
-        :param id_pv_tech_roof: string: name of the pv tech used on the roof
-        :param id_pv_tech_facades: string: name of the pv tech used on the facades
-        :param minimum_ratio_energy_harvested_on_primary_energy: int: production minimal during the first year for a panel to be
-        installed at this position, Default=1.2
-        :param performance_ratio: float: performance ratio of the PV, Default=0.75
-        :param study_duration_in_years: int: duration of the study, default = 50 years
-        :param replacement_scenario: string: name of a replacement scenario, default = 'yearly'
         """
 
-        pv_tech_roof = pv_technologies_dictionary[id_pv_tech_roof]
-        pv_tech_facades = pv_technologies_dictionary[id_pv_tech_facades]
+        # Run the simulation
+        self.solar_radiation_and_bipv_simulation_obj.run_bipv_panel_simulation(
+            path_simulation_folder=path_simulation_folder, building_id=self.id, roof_pv_tech_obj=roof_pv_tech_obj,
+            facades_pv_tech_obj=facades_pv_tech_obj, uc_end_year=uc_end_year, uc_start_year=uc_start_year,
+            uc_current_year=uc_current_year, efficiency_computation_method=efficiency_computation_method,
+            minimum_panel_eroi=minimum_panel_eroi, replacement_scenario=replacement_scenario,
+            continue_simulation=continue_simulation, **kwargs)
+        # Write the results in a csv file
+        self.solar_radiation_and_bipv_simulation_obj.write_bipv_results_to_csv(
+            path_simulation_folder=path_simulation_folder,
+            building_id=self.id)
 
-        roof_results = self.panels_simulation_roof(path_folder_simulation_building, pv_tech_roof,
-                                                   minimum_ratio_energy_harvested_on_primary_energy, performance_ratio,
-                                                   study_duration_in_years, replacement_scenario,
-                                                   **kwargs)
-        roof_results_lists = beginning_end_of_life_lca_results_in_lists(roof_results[0], roof_results[1],
-                                                                        roof_results[2], pv_tech_roof)
-        facades_results = self.panels_simulation_facades(path_folder_simulation_building, pv_tech_facades,
-                                                         minimum_ratio_energy_harvested_on_primary_energy,
-                                                         performance_ratio,
-                                                         study_duration_in_years, replacement_scenario, **kwargs)
-        facades_results_lists = beginning_end_of_life_lca_results_in_lists(facades_results[0], facades_results[1],
-                                                                           facades_results[2], pv_tech_facades)
-
-        total_results_0 = [sum(i) for i in zip(roof_results_lists[0], facades_results_lists[0])]
-        total_results_1 = [sum(i) for i in zip(roof_results_lists[1], facades_results_lists[1])]
-        total_results_2 = [sum(i) for i in zip(roof_results_lists[2], facades_results_lists[2])]
-        total_results_3 = [sum(i) for i in zip(roof_results_lists[3], facades_results_lists[3])]
-        total_results_4 = [sum(i) for i in zip(roof_results_lists[4], facades_results_lists[4])]
-        total_results_5 = [sum(i) for i in zip(roof_results_lists[5], facades_results_lists[5])]
-
-        self.results_panels["Roof"] = results_from_lists_to_dict(roof_results_lists[0], roof_results_lists[1],
-                                                                 roof_results_lists[2], roof_results_lists[3],
-                                                                 roof_results_lists[4], roof_results_lists[5])
-
-        self.results_panels["Facades"] = results_from_lists_to_dict(facades_results_lists[0], facades_results_lists[1],
-                                                                    facades_results_lists[2], facades_results_lists[3],
-                                                                    facades_results_lists[4], facades_results_lists[5])
-        self.results_panels["Total"] = results_from_lists_to_dict(total_results_0, total_results_1, total_results_2,
-                                                                  total_results_3, total_results_4, total_results_5)
-
-    def plot_panels_energy_results(self, path_folder_simulation_building, study_duration_years):
+    def plot_panels_energy_results(self, path_simulation_folder_building, study_duration_years):
 
         # plot energy
-        cum_energy_harvested_roof = get_cumul_values(self.results_panels["Roof"]["energy_harvested"]["list"])
+        cum_energy_harvested_roof = get_cumul_values(self.results_panels["roof"]["energy_harvested"]["list"])
+        cum_energy_harvested_roof = [i / 1000 for i in cum_energy_harvested_roof]
+
         cum_primary_energy_roof = add_elements_of_two_lists(
-            get_cumul_values(self.results_panels["Roof"]["lca_craddle_to_installation_primary_energy"]["list"]),
-            get_cumul_values(self.results_panels["Roof"]["lca_recycling_primary_energy"]["list"]))
-        cum_energy_harvested_facades = get_cumul_values(self.results_panels["Facades"]["energy_harvested"]["list"])
+            get_cumul_values(
+                self.results_panels["roof"]["lca_cradle_to_installation_primary_energy"]["list"]),
+            get_cumul_values(self.results_panels["roof"]["lca_recycling_primary_energy"]["list"]))
+        cum_primary_energy_roof = [i / 1000 for i in cum_primary_energy_roof]
+
+        cum_energy_harvested_facades = get_cumul_values(
+            self.results_panels["facades"]["energy_harvested"]["list"])
+        cum_energy_harvested_facades = [i / 1000 for i in cum_energy_harvested_facades]
+
         cum_primary_energy_facades = add_elements_of_two_lists(
-            get_cumul_values(self.results_panels["Facades"]["lca_craddle_to_installation_primary_energy"]["list"]),
-            get_cumul_values(self.results_panels["Facades"]["lca_recycling_primary_energy"]["list"]))
-        cum_energy_harvested_total = get_cumul_values(self.results_panels["Total"]["energy_harvested"]["list"])
+            get_cumul_values(
+                self.results_panels["facades"]["lca_cradle_to_installation_primary_energy"]["list"]),
+            get_cumul_values(self.results_panels["facades"]["lca_recycling_primary_energy"]["list"]))
+        cum_primary_energy_facades = [i / 1000 for i in cum_primary_energy_facades]
+
+        cum_energy_harvested_total = get_cumul_values(
+            self.results_panels["Total"]["energy_harvested"]["list"])
+        cum_energy_harvested_total = [i / 1000 for i in cum_energy_harvested_total]
+
         cum_primary_energy_total = add_elements_of_two_lists(
-            get_cumul_values(self.results_panels["Total"]["lca_craddle_to_installation_primary_energy"]["list"]),
+            get_cumul_values(
+                self.results_panels["Total"]["lca_cradle_to_installation_primary_energy"]["list"]),
             get_cumul_values(self.results_panels["Total"]["lca_recycling_primary_energy"]["list"]))
+        cum_primary_energy_total = [i / 1000 for i in cum_primary_energy_total]
 
         years = list(range(study_duration_years))
         fig = plt.figure()
-        plt.plot(years, cum_energy_harvested_roof, 'gd', markersize=4, label="Cumulative energy harvested on the roof")
-        plt.plot(years, cum_energy_harvested_facades, 'g.', label="Cumulative energy harvested on the facades")
+        plt.plot(years, cum_energy_harvested_roof, 'gd', markersize=4,
+                 label="Cumulative energy harvested on the roof")
+        plt.plot(years, cum_energy_harvested_facades, 'g.',
+                 label="Cumulative energy harvested on the facades")
         plt.plot(years, cum_energy_harvested_total, 'g', label="Total cumulative energy harvested")
         plt.plot(years, cum_primary_energy_roof, 'rd', markersize=4, label="Cumulative primary energy, roof")
         plt.plot(years, cum_primary_energy_facades, 'r.', label="Cumulative primary energy, facades")
@@ -471,7 +361,9 @@ class BuildingModeled(BuildingBasic):
 
         cum_primary_energy_total_fun = generate_step_function(years, cum_primary_energy_total)
 
-        intersection = find_intersection_functions(cum_energy_harvested_eq, cum_primary_energy_total_fun, years[0], years[-1])
+        intersection = find_intersection_functions(cum_energy_harvested_eq, cum_primary_energy_total_fun,
+                                                   years[0],
+                                                   years[-1])
         plt.axhline(round(intersection[1]), color='k')
         plt.axvline(intersection[0], color='k')
         plt.text(-2, round(intersection[1]), f'y={round(intersection[1])}', va='bottom', ha='left')
@@ -485,39 +377,55 @@ class BuildingModeled(BuildingBasic):
 
         interp_point = find_intersection_functions(cum_energy_harvested_eq, asymptote_eq, years[0], years[-1])
         plt.axvline(x=round(interp_point[0], 1), color='k')
-        plt.text(round(interp_point[0], 1) - 3, -80000, f'x={round(interp_point[0], 1)}', va='bottom', ha='left')
+        plt.text(round(interp_point[0], 1) - 3, -80000, f'x={round(interp_point[0], 1)}', va='bottom',
+                 ha='left')
         plt.axhline(asymptote_value, color='k')
         plt.text(round(interp_point[0]), asymptote_value, f'y={asymptote_value}', va='bottom', ha='left')
 
         plt.xlabel('Time (years)')
-        plt.ylabel('Energy (kWh)')
+        plt.ylabel('Energy (MWh)')
         plt.title('Cumulative harvested energy and primary energy used during the study')
         plt.grid(True)
         plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=2)
         file_name = 'cumulative_energy_harvested_and_primary_energy.pdf'
-        fig.savefig(f'{path_folder_simulation_building}/{file_name}', bbox_inches='tight')
+        fig.savefig(f'{path_simulation_folder_building}/{file_name}', bbox_inches='tight')
         plt.show()
 
-    def plot_panels_ghg_results(self, path_folder_simulation_building, study_duration_years, country_ghe_cost):
+    def plot_panels_ghg_results(self, path_simulation_folder_building, study_duration_years,
+                                country_ghe_cost):
 
         # get the data we need to plot the graphs
         cum_carbon_emissions_roof = add_elements_of_two_lists(
-            get_cumul_values(self.results_panels["Roof"]["lca_craddle_to_installation_carbon"]["list"]),
-            get_cumul_values(self.results_panels["Roof"]["lca_recycling_carbon"]["list"]))
-        avoided_carbon_emissions_list_roof = [i * country_ghe_cost for i in self.results_panels["Roof"][
+            get_cumul_values(self.results_panels["roof"]["lca_cradle_to_installation_carbon"]["list"]),
+            get_cumul_values(self.results_panels["roof"]["lca_recycling_carbon"]["list"]))
+        cum_carbon_emissions_roof = [i / 1000 for i in cum_carbon_emissions_roof]
+
+        avoided_carbon_emissions_list_roof = [i * country_ghe_cost for i in self.results_panels["roof"][
             "energy_harvested"]["list"]]
+        avoided_carbon_emissions_list_roof = [i / 1000 for i in avoided_carbon_emissions_list_roof]
+
         cum_avoided_carbon_emissions_roof = get_cumul_values(avoided_carbon_emissions_list_roof)
+
         cum_carbon_emissions_facades = add_elements_of_two_lists(
-            get_cumul_values(self.results_panels["Facades"]["lca_craddle_to_installation_carbon"]["list"]),
-            get_cumul_values(self.results_panels["Facades"]["lca_recycling_carbon"]["list"]))
-        avoided_carbon_emissions_list_facades = [i * country_ghe_cost for i in self.results_panels["Facades"][
+            get_cumul_values(self.results_panels["facades"]["lca_cradle_to_installation_carbon"]["list"]),
+            get_cumul_values(self.results_panels["facades"]["lca_recycling_carbon"]["list"]))
+        cum_carbon_emissions_facades = [i / 1000 for i in cum_carbon_emissions_facades]
+
+        avoided_carbon_emissions_list_facades = [i * country_ghe_cost for i in self.results_panels["facades"][
             "energy_harvested"]["list"]]
+        avoided_carbon_emissions_list_facades = [i / 1000 for i in avoided_carbon_emissions_list_facades]
+
         cum_avoided_carbon_emissions_facades = get_cumul_values(avoided_carbon_emissions_list_facades)
+
         cum_carbon_emissions_total = add_elements_of_two_lists(
-            get_cumul_values(self.results_panels["Total"]["lca_craddle_to_installation_carbon"]["list"]),
+            get_cumul_values(self.results_panels["Total"]["lca_cradle_to_installation_carbon"]["list"]),
             get_cumul_values(self.results_panels["Total"]["lca_recycling_carbon"]["list"]))
+        cum_carbon_emissions_total = [i / 1000 for i in cum_carbon_emissions_total]
+
         avoided_carbon_emissions_list_total = [i * country_ghe_cost for i in self.results_panels["Total"][
             "energy_harvested"]["list"]]
+        avoided_carbon_emissions_list_total = [i / 1000 for i in avoided_carbon_emissions_list_total]
+
         cum_avoided_carbon_emissions_total = get_cumul_values(avoided_carbon_emissions_list_total)
 
         # plot the data
@@ -547,28 +455,31 @@ class BuildingModeled(BuildingBasic):
         def asymptote_eq(x):
             return asymptote_value
 
-        interp_point = find_intersection_functions(cum_avoided_carbon_emissions_eq, asymptote_eq, years[0], years[-1])
+        interp_point = find_intersection_functions(cum_avoided_carbon_emissions_eq, asymptote_eq, years[0],
+                                                   years[-1])
         plt.axvline(x=round(interp_point[0], 1), color='k')
-        plt.text(round(interp_point[0], 1)-2, -60000, f'x={round(interp_point[0], 1)}', va='bottom', ha='left')
+        plt.text(round(interp_point[0], 1) - 2, -60000, f'x={round(interp_point[0], 1)}', va='bottom',
+                 ha='left')
         plt.axhline(asymptote_value, color='k')
-        plt.text(round(interp_point[0])-6, asymptote_value, f'y={asymptote_value}', va='bottom', ha='left')
+        plt.text(round(interp_point[0]) - 6, asymptote_value, f'y={asymptote_value}', va='bottom', ha='left')
 
         plt.xlabel('Time (years)')
-        plt.ylabel('GHE emissions (kgCO2eq)')
+        plt.ylabel('GHE emissions (tCO2eq)')
         plt.title('Cumulative GHG emissions during the study ')
         plt.grid(True)
         plt.subplots_adjust(bottom=0.5)
         plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=2)
         file_name = 'cumulative_ghg_emissions.pdf'
-        fig.savefig(f'{path_folder_simulation_building}/{file_name}', bbox_inches='tight')
+        fig.savefig(f'{path_simulation_folder_building}/{file_name}', bbox_inches='tight')
         plt.show()
 
-    def plot_panels_results_ghe_per_kwh(self, path_folder_simulation_building, study_duration_years):
+    def plot_panels_results_ghe_per_kwh(self, path_simulation_folder_building, study_duration_years):
         # plot price in GHG emissions by kWh harvested
 
-        cum_energy_harvested_total = get_cumul_values(self.results_panels["Total"]["energy_harvested"]["list"])
+        cum_energy_harvested_total = get_cumul_values(
+            self.results_panels["Total"]["energy_harvested"]["list"])
         cum_carbon_emissions_total = add_elements_of_two_lists(
-            get_cumul_values(self.results_panels["Total"]["lca_craddle_to_installation_carbon"]["list"]),
+            get_cumul_values(self.results_panels["Total"]["lca_cradle_to_installation_carbon"]["list"]),
             get_cumul_values(self.results_panels["Total"]["lca_recycling_carbon"]["list"]))
 
         ghg_per_kWh = [(x / y) * 1000 for x, y in zip(cum_carbon_emissions_total, cum_energy_harvested_total)]
@@ -581,14 +492,16 @@ class BuildingModeled(BuildingBasic):
         plt.title("Evolution of the cost in GHG emissions for each kWh harvested during the study")
         plt.grid(True)
         file_name = 'ghg_per_kWh_plot.pdf'
-        fig.savefig(f'{path_folder_simulation_building}/{file_name}', bbox_inches='tight')
+        fig.savefig(f'{path_simulation_folder_building}/{file_name}', bbox_inches='tight')
 
-    def plot_panels_results_eroi(self, path_folder_simulation_building, study_duration_years):
+    def plot_panels_results_eroi(self, path_simulation_folder_building, study_duration_years):
         # plot EROI
         cum_primary_energy_total = add_elements_of_two_lists(
-            get_cumul_values(self.results_panels["Total"]["lca_craddle_to_installation_primary_energy"]["list"]),
+            get_cumul_values(
+                self.results_panels["Total"]["lca_cradle_to_installation_primary_energy"]["list"]),
             get_cumul_values(self.results_panels["Total"]["lca_recycling_primary_energy"]["list"]))
-        cum_energy_harvested_total = get_cumul_values(self.results_panels["Total"]["energy_harvested"]["list"])
+        cum_energy_harvested_total = get_cumul_values(
+            self.results_panels["Total"]["energy_harvested"]["list"])
         eroi = [x / y for x, y in zip(cum_energy_harvested_total, cum_primary_energy_total)]
 
         years = list(range(study_duration_years))
@@ -599,4 +512,4 @@ class BuildingModeled(BuildingBasic):
         plt.title("Evolution of the EROI during the study")
         plt.grid(True)
         file_name = 'eroi.pdf'
-        fig.savefig(f'{path_folder_simulation_building}/{file_name}', bbox_inches='tight')
+        fig.savefig(f'{path_simulation_folder_building}/{file_name}', bbox_inches='tight')

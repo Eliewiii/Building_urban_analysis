@@ -1,25 +1,25 @@
-#from typology_identifier.generate_ML_data.sample_and_test_data import generate_data_base_from_sample
-from multiprocessing import pool
+import random
+
 from PIL import Image, ImageEnhance
+
+import os
 import random
 import matplotlib.pyplot as plt
 import geopandas as gpd
-import shapely
 from shapely.geometry.point import Point
+import shapely
 from shapely.ops import transform
 from shapely.geometry.polygon import Polygon
 from shapely.affinity import rotate, translate,scale
 import shutil
 from math import  sqrt
-import os
+
+from multiprocessing import Pool
 from time import time
-import logging
 
 
 
-
-
-def generate_data_base_from_sample(path_file_shp,index,output_building_type_path,nb_sample_noise,nb_angles,is_deg):
+def generate_data_base_from_sample(path_file_shp,index,output_building_type_path,nb_sample_noise,nb_angles,max_shift,is_deg):
     """
 
 
@@ -52,7 +52,7 @@ def generate_data_base_from_sample(path_file_shp,index,output_building_type_path
     ## images with moise
     for i in range(nb_sample_noise) :
         # rotate the shape
-        noisy_shape = add_noise_to_shape(shape)
+        noisy_shape = add_noise_to_shape(shape,max_shift)
         # generate the image
         image_output_path = os.path.join(output_building_type_path, "sample_{}.png".format(index))
         Polygon_to_png_BnW(noisy_shape,image_output_path)
@@ -66,7 +66,7 @@ def generate_data_base_from_sample(path_file_shp,index,output_building_type_path
 
 
 
-def generate_data_base_from_sample_parallel(path_file_shp,index,output_building_type_path,nb_sample_noise = 10,nb_angles = 10,is_deg=False):
+def generate_data_base_from_sample_parallel(path_file_shp,index,output_building_type_path,nb_sample_noise = 10,nb_angles = 10,max_shift=0.5,is_deg=False):
     """
 
 
@@ -86,7 +86,7 @@ def generate_data_base_from_sample_parallel(path_file_shp,index,output_building_
     ## rotated original image
     step_angle =360/nb_angles
     dt = time()
-    pool = pool(int(10))
+    pool = Pool(10)
     result = pool.starmap(generate_angle,[(shape,step_angle*i,output_building_type_path,index+i) for i in range(1,nb_angles)],chunksize=3)
     pool.close()
     pool.join()
@@ -99,7 +99,7 @@ def generate_data_base_from_sample_parallel(path_file_shp,index,output_building_
 
     for i in range(nb_sample_noise) :
         # rotate the shape
-        noisy_shape = add_noise_to_shape(shape)
+        noisy_shape = add_noise_to_shape(shape,max_shift)
         # generate the image
         image_output_path = os.path.join(output_building_type_path, "sample_{}.png".format(index))
         Polygon_to_png_BnW(noisy_shape,image_output_path)
@@ -153,7 +153,7 @@ def convert_shape_to_meter(shape):
 
 
 def convert_vertex_to_meter(vertex):
-    max_shift = 111139  #scaling factor
+    factor = 111139  #scaling factor
     [x, y] = [vertex[0], vertex[1]]
     return((x + random.uniform(-max_shift,max_shift), y + random.uniform(-max_shift,max_shift)))
 
@@ -164,8 +164,9 @@ def extract_shape_shp(path_file_shp):
     shape = data['geometry'][0]
     return(shape)
 
+
 def Polygon_to_png_BnW(shape, path):
-    """ 
+    """
     """
     ## Generate RGB image
     x, y = shape.exterior.xy
@@ -181,6 +182,7 @@ def Polygon_to_png_BnW(shape, path):
     img = img.convert("L")
     img.save(path)
 
+
 def rotate_shape(shape,angle):
     """
     Rotate the shape according to the given angle
@@ -192,7 +194,9 @@ def rotate_shape(shape,angle):
     """
     return(rotate(shape, angle, origin='centroid'))
 
-def add_noise_to_shape(polygon):
+
+
+def add_noise_to_shape(polygon,max_shift):
     """
 
     """
@@ -206,17 +210,19 @@ def add_noise_to_shape(polygon):
     new_interiors = []
 
     for vertex in exterior[:-1] :
-        new_exterior.append(add_noise_to_point(vertex))
+        new_exterior.append(add_noise_to_point(vertex,max_shift))
     for interior in interiors:
         new_hole = []
         for vertex in interior[:-1]:
-            new_hole.append(add_noise_to_point(vertex))
+            new_hole.append(add_noise_to_point(vertex,max_shift))
         new_interiors.append(new_hole)
     return(Polygon(shell=new_exterior,holes=new_interiors))
 
 ### ADD MIRROR EFFECT EVENTUALLY
-def add_noise_to_point(vertex):
-    max_shift = 0.5  # max
+
+
+def add_noise_to_point(vertex,max_shift=0.5):
+
     [x, y] = [vertex[0], vertex[1]]
     return((x + random.uniform(-max_shift,max_shift), y + random.uniform(-max_shift,max_shift)))
 
@@ -296,6 +302,11 @@ def distance_line(pt_line, pt_c):
         return d
 
 
+
+
+
+
+
 def clean_directory(path):
     """
 
@@ -314,7 +325,6 @@ def degree_to_meter(x,y,z=None) :
 
 
 
-'''
 
 # building_type_folder_path = "D://Elie//PhD//Programming//GIS//Building_type//North_Tel_Aviv//double_z//sample_1//double_z.shp"
 #
@@ -330,7 +340,7 @@ def degree_to_meter(x,y,z=None) :
 # [x, y] = [centroid.x, centroid.y]
 # renew = translate(new, -x, -y)
 # print(renew.exterior)
-'''
+
 
 
 
