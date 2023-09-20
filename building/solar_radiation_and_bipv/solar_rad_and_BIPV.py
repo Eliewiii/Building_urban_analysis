@@ -443,7 +443,7 @@ class SolarRadAndBipvSimulation:
                 # Keep all the other parameters
                 efficiency_computation_method = \
                     self.parameter_dict[roof_or_facades]["efficiency_computation_method"][
-                        "id"]  # add the parameters if the efficiency computation method id needed
+                        "id"]  # todo add the parameters if the efficiency computation method id needed
                 replacement_scenario = self.parameter_dict[roof_or_facades]["replacement_scenario"]["id"]
                 # todo with the kwarg as well and put it ion a function eventually
                 if self.parameter_dict[roof_or_facades]["replacement_scenario"][

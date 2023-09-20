@@ -39,7 +39,7 @@ class BipvTechnology:
         self.efficiency_function = None
         self.initial_efficiency = None
         self.panel_performance_ratio = None
-        self.first_year_degrading_rate = None  # todo : add the parameters to the dictionnary
+        self.first_year_degrading_rate = None
         self.degrading_rate = None
         # Failure
         self.weibull_law_failure_parameters = {"lifetime": None, "shape": None}

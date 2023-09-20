@@ -1,4 +1,4 @@
-"""Provides a scripting component.
+"""Parameters for the BIPV panels.
     Inputs:
         _roof_pv_tech_id: Identifier of the PV technology to use for the roof
         _facade_pv_tech_id: Identifier of the PV technology to use for the facades
@@ -34,17 +34,16 @@ path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 path_data_libraries = os.path.join(path_tool, "Libraries")
 path_pv_technology_folder = os.path.join(path_data_libraries, "PV_technology")
 
-bipv_panel_parameter_dict = None
+# Initilize the bipv panel parameter dictionary
 
-if _run:
-
-    # Initilize the bipv panel parameter dictionary
-    bipv_panel_parameter_dict = {
+bipv_panel_parameter_dict = {
         "roof_pv_tech_id": None,
         "facade_pv_tech_id": None,
         "minimum_panel_eroi": None,
         "efficiency_computation_method": None
     }
+
+if _run:
     # Read the pv technologies dictionary to check if the parameters are valid
     pv_technologies_dict = {}
     for json_file in os.listdir(path_pv_technology_folder):  # for every json file in the folder
@@ -61,18 +60,18 @@ if _run:
         raise ValueError(
             "The minimum panel eroi must be greater than 1, otherwsie the panel is not profitable")
     else:
-        bipv_panel_parameter_dict["minimum_panel_eroi"] = minimum_panel_eroi
+        bipv_panel_parameter_dict["minimum_panel_eroi"] = _minimum_panel_eroi_
 
     # Roof BIPV technology
-    if _roof_pv_tech_id_ is not None:
-        if _roof_pv_tech_id_ in pv_technologies_dict:
-            bipv_panel_parameter_dict["roof_pv_tech_id"] = _roof_pv_tech_id_
+    if _roof_pv_tech_id is not None:
+        if _roof_pv_tech_id in pv_technologies_dict:
+            bipv_panel_parameter_dict["roof_pv_tech_id"] = _roof_pv_tech_id
         else:
             raise ValueError("The roof pv technology id is not valid")
     # Facade BIPV technology
-    if _facade_pv_tech_id_ is not None:
-        if _facade_pv_tech_id_ in pv_technologies_dict:
-            bipv_panel_parameter_dict["facade_pv_tech_id"] = _facade_pv_tech_id_
+    if _facade_pv_tech_id is not None:
+        if _facade_pv_tech_id in pv_technologies_dict:
+            bipv_panel_parameter_dict["facade_pv_tech_id"] = _facade_pv_tech_id
         else:
             raise ValueError("The facade pv technology id is not valid")
 
@@ -82,7 +81,8 @@ if _run:
     elif _efficiency_computation_method_ == "hourly":
         ValueError("Not implemented yet")
         # todo: implement it and check if the pv_tech has the coefficient for the hourly computation
+        # todo add eventually a path to epw file
     elif _efficiency_computation_method_ == "yearly":
-        bipv_panel_parameter_dict["efficiency_computation_method"] = efficiency_computation_method
+        bipv_panel_parameter_dict["efficiency_computation_method"] = _efficiency_computation_method_
     else:
         raise ValueError("The efficiency computation method is not valid, choose between yearly and hourly")

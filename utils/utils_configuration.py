@@ -21,10 +21,6 @@ name_gh_components_logs_folder = "gh_components_logs"
 name_temporary_files_folder = "temporary_files"
 name_radiation_simulation_folder = 'Irradiance and BIPV Simulation'
 
-# todo @Elie delete these one, they should be in the json file now
-name_urban_canopy_envelop_hbjson = "urban_canopy_envelop.hbjson"
-name_bounding_box_file_hbjson = "bounding_boxes.hbjson"
-
 # Urban Canopy name and exports
 name_urban_canopy_export_file = "urban_canopy"
 name_urban_canopy_export_file_pkl = name_urban_canopy_export_file + ".pkl"
