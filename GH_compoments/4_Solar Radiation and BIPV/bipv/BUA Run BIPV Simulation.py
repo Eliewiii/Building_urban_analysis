@@ -108,7 +108,7 @@ if _run:
     command = path_bat_file
     # Steps to execute
     argument = " "
-    argument = argument + "--make_simulation_folder 1 " + "--create_or_load_urban_canopy_object 1 " + "--run_bipv_harvesting_and_lca_simulation 1 " + "--save_urban_canopy_object_to_pickle 1 " + "--save_urban_canopy_object_to_json 1 "
+    argument = argument + "--make_simulation_folder 1 " + "--create_or_load_urban_canopy_object 1 " + "--run_bipv_harvesting_and_lca_simulation 1 " + " --overwrite 1 " + "--save_urban_canopy_object_to_pickle 1 " + "--save_urban_canopy_object_to_json 1 "
     # OPtionnal argument of the bat file/Python script
     if path_simulation_folder_ is not None:
         argument = argument + ' -f "{}"'.format(path_simulation_folder_)
@@ -125,7 +125,7 @@ if _run:
     if efficiency_computation_method is not None:
         argument = argument + " --efficiency_computation_method {}".format(efficiency_computation_method)
     if replacement_scenario_id is not None:
-        argument = argument + ' --replacement_scenario_id "{}"'.format(replacement_scenario_id)
+        argument = argument + ' --replacement_scenario "{}"'.format(replacement_scenario_id)
     if replacement_frequency is not None:
         argument = argument + " --replacement_frequency {}".format(replacement_frequency)
     if minimal_panel_age is not None:

@@ -5,7 +5,8 @@
         path_folder_simulation_: Path to the simulation folder. By default, the code will be run in Appdata\Roaming\Building_urban_analysis\Simulation_temp
         _run: Plug in a button to run the component
     Output:
-        path_folder_simulation: path to the simulation folder to pass down to the next components"""
+        report: logs
+        path_folder_simulation_: path to the simulation folder to pass down to the next components"""
 
 ghenv.Component.Name = "BUA Load HB Model in Urban Canopy"
 ghenv.Component.NickName = 'LoadHBM'

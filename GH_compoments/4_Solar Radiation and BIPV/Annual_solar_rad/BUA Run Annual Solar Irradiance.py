@@ -3,7 +3,7 @@
         path_simulation_folder_: Path to the folder. Default = Appdata\Local\Building_urban_analysis\Simulation_temp
         building_id_list_: list of ints: list of buildings we want to run the simulation on. If None, all the target
          buildings will be simulated
-        _path_weather_file: Path to the weather file. Default = todo
+        _path_epw_weather_file: Path to the weather file. Default = todo
         _north_: A number between -360 and 360 for the counterclockwise
             difference between the North and the positive Y-axis in degrees.
             90 is West and 270 is East. (Default: 0)
@@ -62,7 +62,7 @@ if _run :
         argument = argument + ' -f "{}"'.format(path_simulation_folder_)
     if building_id_list_ is not None and building_id_list_ != []:
         argument = argument + ' --building_id_list "{}"'.format(building_id_list_)
-    if _path_weather_file is not None and os.path.isfile(_path_weather_file):
+    if _path_epw_weather_file is not None and os.path.isfile(_path_weather_file):
         argument = argument + ' -w "{}"'.format(_path_weather_file)
     if _north_ is not None:
         argument = argument + ' --north_angle "{}"'.format(_north_)

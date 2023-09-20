@@ -217,7 +217,7 @@ class BuildingModeled(BuildingBasic):
 
     def generate_sensor_grid(self, bipv_on_roof=True, bipv_on_facades=True,
                              roof_grid_size_x=1, facades_grid_size_x=1, roof_grid_size_y=1,
-                             facades_grid_size_y=1, offset_dist=0.1):
+                             facades_grid_size_y=1, offset_dist=0.1,overwrite=False):
         """
         Generate Honeybee SensorGrid on the roof and/or on the facades for the building.
         It does not add the SendorgGrid to the HB model.
@@ -249,29 +249,30 @@ class BuildingModeled(BuildingBasic):
                                                                           facades_grid_size_x=facades_grid_size_x,
                                                                           roof_grid_size_y=roof_grid_size_y,
                                                                           facades_grid_size_y=facades_grid_size_y,
-                                                                          offset_dist=offset_dist)
+                                                                          offset_dist=offset_dist,
+                                                                          overwrite=overwrite)
 
-    def run_annual_solar_irradiance_simulation(self, path_simulation_folder, path_epw_file, overwrite=False,
+    def run_annual_solar_irradiance_simulation(self, path_simulation_folder, path_weather_file, overwrite=False,
                                                north_angle=0, silent=False):
         """
         Run the annual solar radiation simulation for the building on the roof and/or on the facades if a Honeybee SensorGrid
         was generated on them.
         :param path_simulation_folder: Path to the simulation folder
-        :param path_epw_file: Path to the epw file
+        :param path_weather_file: Path to the epw file
         :param overwrite: bool: default=False, if True, overwrite the simulation files if they already exist
         :param north_angle: float : north angle of the building in degrees
         :param silent: bool: default=False
         """
         #         # check if the solar radiation and BIPV simulation object was initialized
-        if self.solar_radiation_and_bipv_simulation_obj.roof_sensorgrid_dict is None or self.solar_radiation_and_bipv_simulation_obj.facades_sensorgrid_dict is None:
+        if self.solar_radiation_and_bipv_simulation_obj.roof_sensorgrid_dict is None and self.solar_radiation_and_bipv_simulation_obj.facades_sensorgrid_dict is None:
             dev_logger.info(
                 f"The SenssorGrid of building {self.id} was not generated, it will be ignored")
             user_logger.info(
-                f"No mesh was generated on the building {self.id}, please generate one. On the meantime it will be ignored")
+                f"No mesh was generated on the building {self.id}, please generate one. In the meantime it will be ignored")
             return
         # check if the epw file exists (should be check in the components in Grasshopper as well)
-        if not os.path.isfile(path_epw_file):
-            dev_logger.info(f"The epw file {path_epw_file} does not exist, the simulation will be ignored")
+        if not os.path.isfile(path_weather_file):
+            dev_logger.info(f"The epw file {path_weather_file} does not exist, the simulation will be ignored")
             user_logger.info(
                 f"The building {self.id} was not simulated for the annual solar radiation simulation no mesh for the PVs was generated")
             return
@@ -286,7 +287,7 @@ class BuildingModeled(BuildingBasic):
         self.solar_radiation_and_bipv_simulation_obj.run_annual_solar_irradiance_simulation(
             path_simulation_folder=path_simulation_folder, building_id=self.id, hb_model_obj=self.hb_model_obj,
             context_shading_hb_shade_list=self.shading_context_obj.context_shading_hb_shade_list,
-            path_epw_file=path_epw_file, overwrite=overwrite,
+            path_weather_file=path_weather_file, overwrite=overwrite,
             north_angle=north_angle, silent=silent)
 
     def building_run_bipv_panel_simulation(self, path_simulation_folder, roof_pv_tech_obj, facades_pv_tech_obj, uc_start_year,

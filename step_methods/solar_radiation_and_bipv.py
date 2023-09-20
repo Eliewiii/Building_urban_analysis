@@ -28,7 +28,8 @@ class SimFunSolarRadAndBipv:
                              facades_grid_size_x=default_facades_grid_size_x,
                              roof_grid_size_y=default_roof_grid_size_y,
                              facades_grid_size_y=default_facades_grid_size_y,
-                             offset_dist=default_offset_dist):
+                             offset_dist=default_offset_dist,
+                             overwrite=False):
         """
         Make oriented bounding boxes of buildings in the urban canopy
         :param urban_canopy_object: urban canopy object
@@ -49,7 +50,8 @@ class SimFunSolarRadAndBipv:
                                                               facades_grid_size_x=facades_grid_size_x,
                                                               roof_grid_size_y=roof_grid_size_y,
                                                               facades_grid_size_y=facades_grid_size_y,
-                                                              offset_dist=offset_dist)
+                                                              offset_dist=offset_dist,
+                                                              overwrite=overwrite)
         user_logger.info("Honeybee SensorGrids on the buildings have been generated successfully")
         dev_logger.info("Honeybee SensorGrids on the buildings have been generated successfully")
 
@@ -57,14 +59,14 @@ class SimFunSolarRadAndBipv:
     def run_annual_solar_irradiance_simulation(urban_canopy_object,
                                                path_simulation_folder=default_path_simulation_folder,
                                                building_id_list=None,
-                                               path_epw_file=default_path_weather_file,
+                                               path_weather_file=default_path_weather_file,
                                                overwrite=False, north_angle=0, silent=False):
         """
         Make oriented bounding boxes of buildings in the urban canopy
         :param urban_canopy_object: urban canopy object
         :param path_simulation_folder: path to the folder where the simulation will be run
         :param building_id_list: list of building id to be considered
-        :param path_epw_file: path to the weather file
+        :param path_weather_file: path to the weather file
         :param overwrite: bool: default=False: if True, overwrite the existing simulation
         :param north_angle: number: default=0: number of degrees to rotate the roof mesh
         :param silent: bool: default=False: if True, run the simulation silently
@@ -73,7 +75,7 @@ class SimFunSolarRadAndBipv:
         urban_canopy_object.run_annual_solar_irradiance_simulation_on_buildings(
             path_simulation_folder=path_simulation_folder,
             building_id_list=building_id_list,
-            path_epw_file=path_epw_file,
+            path_weather_file=path_weather_file,
             overwrite=overwrite, north_angle=north_angle,
             silent=silent)
         user_logger.info("The annual solar irradiance simulation have been performed successfully")

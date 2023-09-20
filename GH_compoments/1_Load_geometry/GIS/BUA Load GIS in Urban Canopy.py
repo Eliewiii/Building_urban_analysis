@@ -1,4 +1,4 @@
-"""Load GIS in Urban Canopy
+"""Load buildings from GIS in the Urban Canopy
     Inputs:
         _path_gis : path to the GIS to load
          _unit_gis_ : unit of the GIS file, meter ("m")  or degree ("deg"). By default set to meter
@@ -7,10 +7,11 @@
          move_to_origin_ : center the scene on the origin of the coordinate system
          _run : press button to run the code
     Output:
-        a: The a output variable"""
+        report: logs
+        path_folder_simulation_: path to the simulation folder to pass down to the next components"""
 
 ghenv.Component.Name = "BUA Load GIS in Urban Canopy"
-ghenv.Component.NickName = 'BUALoadGIS'
+ghenv.Component.NickName = 'LoadGIS'
 ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '1 :: Load Buildings'
@@ -63,7 +64,7 @@ if _run:
     command = path_bat_file
     argument = " "  # Initialize the argument
     # Steps to execute
-    argument = argument + "--make_simulation_folder 1 " + "--create_or_load_urban_canopy_object 1 " + "--extract_gis 1 " + "--save_urban_canopy_object_to_pickle 1 " + " --save_urban_canopy_object_to_json 1"
+    argument = argument + "--make_simulation_folder 1 " + "--create_or_load_urban_canopy_object 1 " + "--extract_gis 1 " + "--save_urban_canopy_object_to_pickle 1 " + " --save_urban_canopy_object_to_json 1 "
     # OPtionnal argument of the bat file/Python script
     if _path_gis is not None:
         argument = argument + ' -g "{}"'.format(_path_gis)

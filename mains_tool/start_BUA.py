@@ -105,7 +105,8 @@ def main():
                                                    roof_grid_size_y=arguments_dictionary["roof_grid_size_y"],
                                                    facades_grid_size_y=arguments_dictionary[
                                                        "facades_grid_size_y"],
-                                                   offset_dist=arguments_dictionary["offset_dist"])
+                                                   offset_dist=arguments_dictionary["offset_dist"],
+                                                   overwrite=arguments_dictionary["overwrite"])
     # Run solar radiation
     if simulation_step_dictionary["run_annual_solar_irradiance_simulation"]:
         SimFunSolarRadAndBipv.run_annual_solar_irradiance_simulation(
@@ -124,9 +125,6 @@ def main():
                                                                          "path_simulation_folder"],
                                                                      bipv_scenario_identifier=arguments_dictionary[
                                                                          "bipv_scenario_identifier"],
-                                                                     path_folder_pv_tech_dictionary_json=
-                                                                     arguments_dictionary[
-                                                                         "path_folder_pv_tech_dictionary_json"],
                                                                      building_id_list=arguments_dictionary[
                                                                          "building_id_list"],
                                                                      roof_id_pv_tech=arguments_dictionary[

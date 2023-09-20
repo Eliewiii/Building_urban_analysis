@@ -1,7 +1,7 @@
 """Parameters for the BIPV panels.
     Inputs:
         _roof_pv_tech_id: Identifier of the PV technology to use for the roof
-        _facade_pv_tech_id: Identifier of the PV technology to use for the facades
+        _facades_pv_tech_id: Identifier of the PV technology to use for the facades
         _minimum_panel_eroi_: Minimum EROI of the PV panels to be installed (Default: 1.2)
         _efficiency_computation_method_: Method to compute the efficiency of the panels, either "yearly" or "hourly"
             for now only "yearly" is implemented (Default: "yearly")
@@ -27,7 +27,7 @@ import json
 local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 path_data_libraries = os.path.join(path_tool, "Libraries")
-path_pv_technology_folder = os.path.join(path_data_libraries, "PV_technology")
+path_pv_technology_folder = os.path.join(path_data_libraries, "BIPV_technologies")
 
 # Initilize the bipv panel parameters dictionary
 
@@ -64,9 +64,9 @@ if _run:
         else:
             raise ValueError("The roof pv technology id is not valid")
     # Facade BIPV technology
-    if _facade_pv_tech_id is not None:
-        if _facade_pv_tech_id in pv_technologies_dict:
-            bipv_panel_parameters_dict["facade_pv_tech_id"] = _facade_pv_tech_id
+    if _facades_pv_tech_id is not None:
+        if _facades_pv_tech_id in pv_technologies_dict:
+            bipv_panel_parameters_dict["facade_pv_tech_id"] = _facades_pv_tech_id
         else:
             raise ValueError("The facade pv technology id is not valid")
 

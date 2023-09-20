@@ -260,8 +260,8 @@ class LoadArguments:
             # BIPV
             "bipv_scenario_identifier": args.bipv_scenario_identifier,
             "path_pv_tech_dictionary": args.path_pv_tech_dictionary_folder,
-            "id_pv_tech_roof": args.id_pv_tech_roof,
-            "id_pv_tech_facades": args.id_pv_tech_facades,
+            "roof_id_pv_tech": args.id_pv_tech_roof,
+            "facades_id_pv_tech": args.id_pv_tech_facades,
             "start_year": int(args.start_year),
             "end_year": int(args.end_year),
             "minimum_panel_eroi": float(args.minimum_panel_eroi),

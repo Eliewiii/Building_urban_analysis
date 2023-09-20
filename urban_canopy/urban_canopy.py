@@ -439,7 +439,7 @@ class UrbanCanopy:
     def generate_sensor_grid_on_buildings(self, building_id_list=None, bipv_on_roof=True,
                                           bipv_on_facades=True, roof_grid_size_x=1,
                                           facades_grid_size_x=1,
-                                          roof_grid_size_y=1, facades_grid_size_y=1, offset_dist=0.1):
+                                          roof_grid_size_y=1, facades_grid_size_y=1, offset_dist=0.1, overwrite=False):
         """
         Generate the sensor grid for the buildings in the urban canopy.
         :param bipv_on_roof: Boolean to indicate if the simulation should be done on the roof
@@ -476,17 +476,18 @@ class UrbanCanopy:
                                                   facades_grid_size_x=facades_grid_size_x,
                                                   roof_grid_size_y=roof_grid_size_y,
                                                   facades_grid_size_y=facades_grid_size_y,
-                                                  offset_dist=offset_dist)
+                                                  offset_dist=offset_dist,
+                                                  overwrite=overwrite)
 
     def run_annual_solar_irradiance_simulation_on_buildings(self, path_simulation_folder,
                                                             building_id_list=None,
-                                                            path_epw_file=default_path_weather_file,
+                                                            path_weather_file=default_path_weather_file,
                                                             overwrite=False, north_angle=0, silent=False):
         """
         Run the solar radiation simulation for the buildings in the urban canopy.
         :param building_id_list: list of the building id to run the simulation, if None or empty list, all the target
         :param path_simulation_folder: string, path to the folder where the simulation will be performed.
-        :param path_epw_file: string, path to the weather file.
+        :param path_weather_file: string, path to the weather file.
         :param overwrite: boolean, if True, the simulation will be run again and the results will overwrite the
             existing ones.
         :param north_angle: float, angle of the north in degrees.
@@ -515,7 +516,7 @@ class UrbanCanopy:
                     and isinstance(building_obj, BuildingModeled) and building_obj.is_target:
                 building_obj.run_annual_solar_irradiance_simulation(
                     path_simulation_folder=path_simulation_folder,
-                    path_epw_file=path_epw_file,
+                    path_weather_file=path_weather_file,
                     overwrite=overwrite,
                     north_angle=north_angle, silent=silent)
 
@@ -603,15 +604,15 @@ class UrbanCanopy:
                 roof_pv_tech_obj = pv_technologies_dictionary[roof_id_pv_tech]
                 facade_pv_tech_obj = pv_technologies_dictionary[facades_id_pv_tech]
                 building_obj.building_run_bipv_panel_simulation(path_simulation_folder=path_simulation_folder,
-                                                       roof_pv_tech_obj=roof_pv_tech_obj,
-                                                       facades_pv_tech_obj=facade_pv_tech_obj,
-                                                       uc_start_year=bipv_scenario_obj.start_year,
-                                                       uc_current_year=start_year,
-                                                       uc_end_year=bipv_scenario_obj.end_year,
-                                                       efficiency_computation_method=efficiency_computation_method,
-                                                       minimum_panel_eroi=minimum_panel_eroi,
-                                                       replacement_scenario=replacement_scenario,
-                                                       continue_simulation=continue_simulation, **kwargs)
+                                                                roof_pv_tech_obj=roof_pv_tech_obj,
+                                                                facades_pv_tech_obj=facade_pv_tech_obj,
+                                                                uc_start_year=bipv_scenario_obj.start_year,
+                                                                uc_current_year=start_year,
+                                                                uc_end_year=bipv_scenario_obj.end_year,
+                                                                efficiency_computation_method=efficiency_computation_method,
+                                                                minimum_panel_eroi=minimum_panel_eroi,
+                                                                replacement_scenario=replacement_scenario,
+                                                                continue_simulation=continue_simulation, **kwargs)
                 solar_rad_and_bipv_obj_list.append(building_obj.solar_radiation_and_bipv_simulation_obj)
 
         # Compute the results at urban scale
@@ -634,13 +635,14 @@ class UrbanCanopy:
         # Building is a BuildingModeled and is a target
         condition_2 = isinstance(building_obj, BuildingModeled) and building_obj.is_target
         # The annual irradiance of the building were computed
-        condition_2 = condition_2 and (building_obj.solar_radiation_and_bipv_simulation_obj.roof_annual_panel_irradiance_list is not None or \
-                      building_obj.solar_radiation_and_bipv_simulation_obj.facades_annual_panel_irradiance_list is not None)
+        condition_2 = condition_2 and (
+                    building_obj.solar_radiation_and_bipv_simulation_obj.roof_annual_panel_irradiance_list is not None or \
+                    building_obj.solar_radiation_and_bipv_simulation_obj.facades_annual_panel_irradiance_list is not None)
         # The simulationm for this building is ongoing
         condition_3 = condition_2 and (building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["roof"][
-                          "start_year"] is not None or \
-                      building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["facades"][
-                          "start_year"] is not None)
+                                           "start_year"] is not None or \
+                                       building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["facades"][
+                                           "start_year"] is not None)
 
         return (condition_1 and condition_2) or (
                 condition_2 and condition_3 and continue_simulation)

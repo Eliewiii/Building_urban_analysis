@@ -18,9 +18,10 @@
         merge_building_faces_: bool: True if the mesh should be generated on a geometry with merged faces,
                     especially to ignore the subdivisions of floors and apartment.
                     Default = False
+        overwrite_: bool: True if the new mesh should overwrite the previous one if it exists.
         _run: Plug in a button to run the component
     Output:
-        report: report
+        report: logs
         path_simulation_folder_: Path to the folder."""
 
 __author__ = "Eliewiii"
@@ -92,8 +93,10 @@ if _run and (_roof_bipv or _facades_bipv):
         argument = argument + " --facades_grid_size_y {}".format(_facades_grid_size_y_)
     if _offset_dist_ is not None:
         argument = argument + " --offset_dist {}".format(_offset_dist_)
-    if merge_building_faces_:
-        argument = argument + " --make_merged_faces_hb_model 1"
+    if merge_building_faces_ is not None:
+        argument = argument + " --make_merged_faces_hb_model {}".format(int(merge_building_faces_))
+    if overwrite_ is not None:
+        argument = argument + " --overwrite {}".format(int(overwrite_))
 
     # Add the name of the component to the argument
     argument = argument + " -c {}".format(ghenv.Component.NickName)

@@ -197,8 +197,15 @@ class SolarRadAndBipvSimulation:
 
         of the model.
         """
+        # if overwrite, delete the existing sensor grid and the solar irradiance results
+        if not bipv_on_roof and overwrite:
+            self.roof_sensorgrid_dict = None
+            self.roof_annual_panel_irradiance_list = None
+        if not bipv_on_facades and overwrite:
+            self.facades_sensorgrid_dict = None
+            self.facades_annual_panel_irradiance_list = None
 
-        if not bipv_on_roof and not bipv_on_facades:
+        if not bipv_on_roof and not bipv_on_facades and not overwrite:
             user_logger.warning(f"You did not precise whether you want to run the simulation on the roof, "
                                 f"the facades or both")
             dev_logger.warning(f"You did not precise whether you want to run the simulation on the roof, "
@@ -224,7 +231,7 @@ class SolarRadAndBipvSimulation:
                                      offset_dist=offset_dist)
 
     def run_annual_solar_irradiance_simulation(self, path_simulation_folder, building_id, hb_model_obj,
-                                               context_shading_hb_shade_list, path_epw_file, overwrite=False,
+                                               context_shading_hb_shade_list, path_weather_file, overwrite=False,
                                                north_angle=0, silent=False):
         """
         Run the annual solar radiation simulation for the roof and/or the facades
@@ -232,7 +239,7 @@ class SolarRadAndBipvSimulation:
         :param building_id: int : the id of the building
         :param hb_model_obj: Honeybee Model object
         :param context_shading_hb_shade_list: list of Honeybee Aperture objects for the context shading
-        :param path_epw_file: str : the path to the epw file
+        :param path_weather_file: str : the path to the epw file
         :param overwrite: bool : whether to overwrite the existing results
         :param north_angle: float : the north angle of the building
         :param silent: bool : whether to print the logs or not
@@ -256,7 +263,7 @@ class SolarRadAndBipvSimulation:
                 self.roof_annual_panel_irradiance_list = run_hb_model_annual_irradiance_simulation(
                     hb_model_obj=hb_model_copy_roof,
                     path_folder_run=path_folder_run_radiation_temp_roof,
-                    path_weather_file=path_epw_file,
+                    path_weather_file=path_weather_file,
                     timestep=1,
                     visible=False, north=north_angle,
                     radiance_parameters='-ab 2 -ad 5000 -lw 2e-05',
@@ -292,7 +299,7 @@ class SolarRadAndBipvSimulation:
                 self.facades_annual_panel_irradiance_list = run_hb_model_annual_irradiance_simulation(
                     hb_model_obj=hb_model_copy_facades,
                     path_folder_run=path_folder_run_radiation_temp_facades,
-                    path_weather_file=path_epw_file,
+                    path_weather_file=path_weather_file,
                     timestep=1,
                     visible=False, north=north_angle,
                     radiance_parameters='-ab 2 -ad 5000 -lw 2e-05',
@@ -316,6 +323,8 @@ class SolarRadAndBipvSimulation:
         # delete all the temporary files if they exist
         if os.path.isdir(path_folder_run_radiation_temp):
             shutil.rmtree(path_folder_run_radiation_temp)
+
+
 
     def run_bipv_panel_simulation(self, path_simulation_folder, building_id, roof_pv_tech_obj,
                                   facades_pv_tech_obj,
