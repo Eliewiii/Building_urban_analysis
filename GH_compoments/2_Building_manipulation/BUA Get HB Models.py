@@ -16,11 +16,13 @@ ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '6 :: General'
 ghenv.Component.AdditionalHelpFromDocStrings = "1"
 
+import ghpythonlib.treehelpers as th
 
 import json
 import os
 
 from honeybee.model import Model
+from honeybee.shade import Shade
 
 # Get Appdata\local folder
 local_appdata = os.environ['LOCALAPPDATA']
@@ -45,14 +47,15 @@ if _run and os.path.isfile(path_json):
                 _building_id_list.append(id)
 
     hb_model_list = []
-    values_roof_list = []
-    mesh_roof_list = []
-    values_facade_list = []
-    mesh_facade_list = []
+    hb_shades_tree = []
 
     for building_id in _building_id_list:
         if urban_canopy_dict["buildings"][building_id]["hb_model"] is not None:
             hb_model_list.append(Model.from_dict(urban_canopy_dict["buildings"][building_id]["hb_model"]))
+        if urban_canopy_dict["buildings"][building_id]["context_surfaces"]["hb_shades_list"] is not None:
+            hb_shades_tree.append([Shade.from_dict(shade) for shade in urban_canopy_dict["buildings"][building_id]["context_surfaces"]["hb_shades_list"]])
+    # Convert to tree
+    hb_shades_tree = th.list_to_tree(hb_shades_tree)
 
 if not os.path.isfile(path_json):
     print("the json file of the urban canopy does not exist")

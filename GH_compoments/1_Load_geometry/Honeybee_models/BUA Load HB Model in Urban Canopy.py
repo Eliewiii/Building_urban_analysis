@@ -1,8 +1,9 @@
 """Add a list of HB Models of buildings to the urban canopy building collecting.
     Inputs:
+        path_simulation_folder: Path to the simulation folder. By default, the code will be run in Appdata\Roaming\Building_urban_analysis\Simulation_temp
         _hb_model_list: List of Honeybee Models of buildings
-        _are_targets_ : Boolean, True if the buildings to add are target buildings that we want to simulate
-        path_folder_simulation_: Path to the simulation folder. By default, the code will be run in Appdata\Roaming\Building_urban_analysis\Simulation_temp
+        _are_targets_ : True if the buildings to add are target buildings that we want to simulate
+        keep_context_: True if you want to keep the context of the HB Model of the hbjsons. (Default: False)
         _run: Plug in a button to run the component
     Output:
         report: logs
@@ -80,6 +81,8 @@ if _run and _hb_model_list is not None and _hb_model_list != []:
         argument = argument + ' -f "{}"'.format(path_simulation_folder_)
     if _are_targets_ is not None:
         argument = argument + ' -t "{}"'.format(int(_are_targets_))
+    if type(keep_context_) is bool:
+        argument = argument + ' --keep_context "{}"'.format(int(keep_context_))
     # Add the name of the component to the argument
     argument = argument + " -c {}".format(ghenv.Component.NickName)
     # Run the bat file

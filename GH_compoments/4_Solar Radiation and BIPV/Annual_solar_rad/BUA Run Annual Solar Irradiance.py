@@ -56,14 +56,14 @@ if _run :
     command = path_bat_file
     # Steps to execute
     argument = " "
-    argument = argument + "--make_simulation_folder 1 " + "--create_or_load_urban_canopy_object 1 " +  "--save_urban_canopy_object_to_pickle 1 " + "--save_urban_canopy_object_to_json 1 " + "run_annual_solar_irradiance_simulation 1 "
+    argument = argument + "--make_simulation_folder 1 " + "--create_or_load_urban_canopy_object 1 " +  "--save_urban_canopy_object_to_pickle 1 " + "--save_urban_canopy_object_to_json 1 " + "--run_annual_solar_irradiance_simulation 1 "
     # OPtionnal argument of the bat file/Python script
     if path_simulation_folder_ is not None:
         argument = argument + ' -f "{}"'.format(path_simulation_folder_)
     if building_id_list_ is not None and building_id_list_ != []:
         argument = argument + ' --building_id_list "{}"'.format(building_id_list_)
-    if _path_epw_weather_file is not None and os.path.isfile(_path_weather_file):
-        argument = argument + ' -w "{}"'.format(_path_weather_file)
+    if _path_epw_weather_file is not None and os.path.isfile(_path_epw_weather_file):
+        argument = argument + ' -w "{}"'.format(_path_epw_weather_file)
     if _north_ is not None:
         argument = argument + ' --north_angle "{}"'.format(_north_)
     if _overwrite_ is not None:
