@@ -87,11 +87,23 @@ def main():
         SimulationBuildingManipulationFunctions.move_buildings_to_origin(
             urban_canopy_object=urban_canopy_object)
 
+
+    # Merge faces of buildings
+    if simulation_step_dictionary["run_make_merged_faces_hb_model"]:
+        SimulationBuildingManipulationFunctions.make_merged_face_of_buildings_in_urban_canopy(
+            urban_canopy_object=urban_canopy_object,
+            building_id_list=arguments_dictionary["building_id_list"],
+            orient_roof_mesh_to_according_to_building_orientation=arguments_dictionary[
+                "orient_roof_according_to_building_orientation"],
+            north_angle=arguments_dictionary["north_angle"])
+
     # Context filtering #
     # Generate bounding boxes
     # todo @Elie
     # Perform context filtering
     # todo @Elie
+
+
 
     # Solar radiations and BIPV simulations
     # Generate sensor grids
