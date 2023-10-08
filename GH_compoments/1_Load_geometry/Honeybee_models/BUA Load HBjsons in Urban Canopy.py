@@ -1,9 +1,10 @@
 """Add HB Models from hbjson to the urban canopy building collection
     Inputs:
+        path_simulation_folder_: Path to the simulation folder. By default, the code will be run in Appdata\Roaming\Building_urban_analysis\Simulation_temp
         _path_hbjson_file_: Path to a hbjson file containing a HB Model to load in the Urban canopy
         _path_folder_with_hbjson_: Path to a directory containing hbjson files, containing HB Models to load in the Urban canopy
-        _are_targets_ : Boolean, True if the buildings to add are target buildings that we want to simulate
-        path_simulation_folder_: Path to the simulation folder. By default, the code will be run in Appdata\Roaming\Building_urban_analysis\Simulation_temp
+        _are_targets_ : True if the buildings to add are target buildings that we want to simulate
+        keep_context_: True if you want to keep the context of the HB Model of the hbjsons. (Default: False)
         _run: Plug in a button to run the component
     Output:
         report: logs
@@ -58,6 +59,8 @@ if _run and ((_path_hbjson_file_ is not None and os.path.isfile(_path_hbjson_fil
         argument = argument + ' -f "{}"'.format(path_simulation_folder_)
     if type(_are_targets_) is bool:
         argument = argument + ' -t "{}"'.format(int(_are_targets_))
+    if type(keep_context_) is bool:
+        argument = argument + ' --keep_context "{}"'.format(int(keep_context_))
     if _path_hbjson_file_ is not None and os.path.isfile(clean_path(_path_hbjson_file_)):
         argument = argument + ' --path_file "{}"'.format(clean_path(_path_hbjson_file_))
     if _path_folder_with_hbjson_ is not None and os.path.isdir(clean_path(_path_folder_with_hbjson_)):

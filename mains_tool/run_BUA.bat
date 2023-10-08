@@ -11,7 +11,7 @@ echo Run the main script
 python "%path_python_scripts%\mains_tool\start_BUA.py" %*
 
 rem Deactivate the virtual environment
- pause
+rem pause
 
 deactivate
 pause

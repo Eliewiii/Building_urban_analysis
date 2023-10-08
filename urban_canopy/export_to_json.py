@@ -34,7 +34,8 @@ tree_structure_per_building_urban_canopy_json_dict = {
     "merged_faces_hb_model": None,
     "context_surfaces": {
         "First_pass_filter": {},
-        "Second_pass_filter": {}
+        "Second_pass_filter": {},
+        "hb_shades_list": None
     },
     "solar_radiation_and_bipv": {
         "parameters": None,
@@ -66,6 +67,8 @@ class ExportUrbanCanopyToJson:
         cls.init_buildings_in_json_dict(urban_canopy_obj)
         # Add the attributes of the building to the json dictionary
         cls.add_building_attributes_to_json_dict(urban_canopy_obj)
+        # Add the building shades to the json dictionary
+        cls.add_building_shades_to_json_dict(urban_canopy_obj)
         # Add the solar radiation and BIPV data to the json dictionary
         cls.add_solar_radiation_and_bipv_to_json_dict(urban_canopy_obj)
         # todo @Elie, add the other data when ready
@@ -108,6 +111,15 @@ class ExportUrbanCanopyToJson:
                 urban_canopy_obj.json_dict["buildings"][building_id]["hb_model"] = building_obj.hb_model_dict
                 urban_canopy_obj.json_dict["buildings"][building_id][
                     "merged_faces_hb_model"] = building_obj.merged_faces_hb_model_dict
+
+    @staticmethod
+    def add_building_shades_to_json_dict(urban_canopy_obj):
+        """ Add the attributes of the building to the json dictionary of the urban canopy object. """
+        for building_id, building_obj in urban_canopy_obj.building_dict.items():
+            if isinstance(building_obj, BuildingModeled) \
+                    and building_obj.shading_context_obj.context_shading_hb_shade_list != []:
+                urban_canopy_obj.json_dict["buildings"][building_id]["context_surfaces"]["hb_shades_list"] = \
+                    [shade.to_dict() for shade in building_obj.shading_context_obj.context_shading_hb_shade_list]
 
     @staticmethod
     def add_solar_radiation_and_bipv_to_json_dict(urban_canopy_obj):
