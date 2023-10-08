@@ -31,6 +31,13 @@ class BuildingShadingContext(BuildingContext):
             self.number_of_rays = 3
             user_logger.warning(f"The number of ray inputted was not valid, the number of ray was set to 3")
 
+    def get_hb_shades_from_hb_model(self, hb_model):
+        """
+        Extract the shades from the Honeybee Model and add them to context_shading_hb_shade_list attribute
+        :param hb_model: Honeybee Model
+        """
+        self.context_shading_hb_shade_list.extend(hb_model.shades)
+
     def select_non_obstructed_context_faces_with_ray_tracing(self, target_lb_polyface3d_extruded_footprint,
                                                              context_hb_model_list_to_test,
                                                              full_urban_canopy_pyvista_mesh):

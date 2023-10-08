@@ -53,7 +53,7 @@ class SimulationLoadBuildingOrGeometry:
 
     @staticmethod
     def add_buildings_from_hbjson_to_urban_canopy(urban_canopy_object, path_folder_hbjson, path_file_hbjson,
-                                                  are_buildings_targets):
+                                                  are_buildings_targets=False,keep_context_from_hbjson=False):
         """
         Add buildings from a folder of hbjson files to the urban canopy
         :param urban_canopy_object:
@@ -61,6 +61,7 @@ class SimulationLoadBuildingOrGeometry:
         """
         urban_canopy_object.add_buildings_from_hbjson_to_dict(path_directory_hbjson=path_folder_hbjson,
                                                               path_file_hbjson=path_file_hbjson,
-                                                              are_buildings_targets=are_buildings_targets)
+                                                              are_buildings_targets=are_buildings_targets
+                                                              ,keep_context_from_hbjson=keep_context_from_hbjson)
         user_logger.info("Building(s) from hbjson added to the urban canopy successfully")
         dev_logger.info("Building(s) from hbjson added to the urban canopy successfully")

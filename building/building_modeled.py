@@ -114,36 +114,42 @@ class BuildingModeled(BuildingBasic):
             # todo : change if needed where the dictionary of the urban canopy is pointing, to point to the new object
 
     @classmethod
-    def make_buildingmodeled_from_hbjson(cls, path_hbjson, is_target=False, urban_canopy=None):
+    def make_buildingmodeled_from_hbjson(cls, path_hbjson, is_target=False, keep_context=False, urban_canopy=None):
         """
         Create a BuildingModeled object from a HBJSON file
-        :return: building_HB_model : BuildingModeled object
+        :return: building_hb_model : BuildingModeled object
         """
         # Load the HB model from the hbjson file
-        HB_model = Model.from_hbjson(path_hbjson)
+        hb_model = Model.from_hbjson(path_hbjson)
         # get the identifier the
-        identifier = HB_model.identifier
+        identifier = hb_model.identifier
         # create the BuildingModeled object from the HB model
         building_modeled_obj = cls(identifier)
         try:
-            # Try to extract certain characteristics of the model from the HB_model
-            elevation, height = HbAddons.elevation_and_height_from_HB_model(HB_model)
+            # Try to extract certain characteristics of the model from the hb_model
+            elevation, height = HbAddons.elevation_and_height_from_HB_model(hb_model)
         except:
             # todo @Elie: Check if this is the correct message.
-            err_message = "Cannot extract eleveation and height from the Honeybee model."
+            err_message = "Cannot extract elevation and height from the Honeybee model."
             user_logger.error(err_message)
             dev_logger.error(err_message, exc_info=True)
             raise AttributeError(err_message)
-        # # set the attributes of the BuildingModeled object
-        building_modeled_obj.hb_model_obj = HB_model
+        # Keep the context of the building
+        if keep_context and (hb_model.shades != [] and hb_model.shades is not None):
+            building_modeled_obj.shading_context_obj.get_hb_shades_from_hb_model(hb_model)
+        hb_model.remove_all_shades()
+        # Set the attributes of the BuildingModeled object
+        building_modeled_obj.hb_model_obj = hb_model
         building_modeled_obj.urban_canopy = urban_canopy
         building_modeled_obj.elevation = elevation
         building_modeled_obj.height = height
         building_modeled_obj.is_target = is_target
+
+
         try:
-            # todo @Elie : make the lb_face_footprint from the HB_model
+            # todo @Elie : make the lb_face_footprint from the hb_model
             building_modeled_obj.lb_face_footprint = HbAddons.make_LB_face_footprint_from_HB_model(
-                HB_model=HB_model)
+                HB_model=hb_model)
         except:
             # todo @Elie: Check if this is the correct message.
             err_message = "Cannot make the Ladybug face footprint from the Honeybee model."

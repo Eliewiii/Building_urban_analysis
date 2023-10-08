@@ -51,6 +51,9 @@ class LoadArguments:
                             help="path to the additional key dictionary of the attributes in the GIS file",
                             nargs='?', default=None)
         # Building model generation parameters
+        parser.add_argument("--keep_context",
+                            help="boolean (here '0' or '1') telling if the context should be kept",
+                            nargs='?', default=False)
         parser.add_argument("--run_on_building_to_simulate",
                             help="boolean (here '0' or '1') telling if it should be run on all buildings to simulate",
                             nargs='?', default=False)
@@ -242,6 +245,8 @@ class LoadArguments:
             "path_gis": args.path_gis_folder,
             "unit_gis": args.gis_unit,
             "path_additional_gis_attribute_key_dict": args.path_dic_additional_gis_attribute_keys,
+            # Building model generation parameters
+            "keep_context": bool(int(args.keep_context)),
             # Mesh faces parameters
             "orient_roof_according_to_building_orientation": bool(
                 int(args.orient_roof_according_to_building_orientation)),
