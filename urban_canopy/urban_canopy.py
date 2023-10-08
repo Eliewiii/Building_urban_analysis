@@ -204,7 +204,7 @@ class UrbanCanopy:
 
     # todo : New, to test
     def add_buildings_from_hbjson_to_dict(self, path_directory_hbjson=None, path_file_hbjson=None,
-                                          are_buildings_targets=False):
+                                          are_buildings_targets=False,keep_context_from_hbjson=False):
         """ Add the buildings from the hb models in the folder
         :param path_directory_hbjson: path to the directory containing the hbjson files
         :param path_file_hbjson: path to the hbjson file
@@ -227,7 +227,7 @@ class UrbanCanopy:
             if os.path.getsize(hbjson_file_path) > 0:  # hbjson_file should be the fullpath of json
                 # Create the building object
                 building_HB_model_obj, identifier = BuildingModeled.make_buildingmodeled_from_hbjson(
-                    path_hbjson=hbjson_file_path, is_target=are_buildings_targets)
+                    path_hbjson=hbjson_file_path, is_target=are_buildings_targets,keep_context=keep_context_from_hbjson)
                 # Add the building to the urban canopy
                 self.add_building_to_dict(identifier, building_HB_model_obj)
             else:

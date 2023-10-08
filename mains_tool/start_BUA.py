@@ -65,7 +65,8 @@ def main():
         SimulationLoadBuildingOrGeometry.add_buildings_from_hbjson_to_urban_canopy(
             urban_canopy_object=urban_canopy_object, path_folder_hbjson=arguments_dictionary["path_folder"],
             path_file_hbjson=arguments_dictionary["path_file"],
-            are_buildings_targets=arguments_dictionary["are_buildings_target"])
+            are_buildings_targets=arguments_dictionary["are_buildings_target"],
+            keep_context_from_hbjson=arguments_dictionary["keep_context"])
 
     # Building manipulation #
     # Convert BuildingBasic obj tp BuildingModeled
