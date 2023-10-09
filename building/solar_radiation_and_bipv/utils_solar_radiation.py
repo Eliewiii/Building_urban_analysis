@@ -64,12 +64,15 @@ def run_hb_model_annual_irradiance_simulation(hb_model_obj, path_folder_run, pat
     recipe.input_value_by_name('grid-filter', grid_filter)
     recipe.input_value_by_name('radiance-parameters', radiance_parameters)
     # run the recipe
-    project_folder = recipe.run(run_settings, radiance_check=True, silent=silent)
+    """ After an update of Pollination, we had to use the option queenbee_path="queenbee" to run the recipe, 
+    otherwise it will lead to an error, using the queenbee.exe of the LBT and will have some issues creating folders and
+     will make the simulation fail """
+    project_folder = recipe.run(run_settings, radiance_check=True, silent=silent, queenbee_path="queenbee")
     # Compute the cumulative annual irradiance
     path_result = os.path.join(project_folder, "annual_irradiance", "results", "total")
     annual_cum_values = hb_ann_cum_values(path_results=[path_result])[0]  # it's a list of one item
 
-    return [value/1000. for value in annual_cum_values]
+    return [value / 1000. for value in annual_cum_values]
 
 
 def move_annual_irr_hb_radiance_results(path_temp_ill_result_file, path_temp_sun_hours_file,
