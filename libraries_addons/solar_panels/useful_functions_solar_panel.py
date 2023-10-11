@@ -5,7 +5,7 @@ import logging
 
 import numpy as np
 
-from solar_panel.pv_panel import PvPanel
+from bipv.bipv_panel import BipvPanel
 
 import csv
 from libraries_addons.solar_panels.pv_efficiency_functions import get_efficiency_loss_function_from_string
@@ -13,12 +13,13 @@ from libraries_addons.solar_panels.pv_efficiency_functions import get_efficiency
 user_logger = logging.getLogger("user")  
 dev_logger = logging.getLogger("dev")  
 
+
 def load_panels_on_sensor_grid(sensor_grid, pv_technology_object, yearly_solar_radiation_values,
                                minimum_ratio_energy_harvested_on_primary_energy, performance_ratio):
     """
     Take a sensor grid and create a list of panels that correspond to each face of the mesh of the sensor grid
     The panels are initialized as switched on
-    :param sensor_grid: sensor_grid of the face, roof, facade... we want to load the panels on
+    :param sensor_grid: sensor_grid of the face, roof, facades... we want to load the panels on
     :param pv_technology_object: PVPanelTechnology object
     :param yearly_solar_radiation_values: list of floats: list of the yearly cumulative solar radiation got by the solar
     radiation simulation in Wh/panel/year
@@ -45,14 +46,14 @@ def load_panels_on_sensor_grid(sensor_grid, pv_technology_object, yearly_solar_r
 
         if face_areas[mesh.faces.index(face)] < pv_technology_object.panel_area:
             user_logger.warning("The area of the mesh's faces is not big enough to contain the PV panels. "
-                            "Make a mesh with bigger faces")
+                                "Make a mesh with bigger faces")
             dev_logger.warning("The area of the mesh's faces is not big enough to contain the PV panels. "
-                            "Make a mesh with bigger faces")
+                               "Make a mesh with bigger faces")
         elif (energy_harvested / primary_energy) <= minimum_ratio_energy_harvested_on_primary_energy:
             user_logger.warning("If a panel is put here, it won't produce enough energy to be profitable")
             dev_logger.warning("If a panel is put here, it won't produce enough energy to be profitable")
         else:
-            panel_of_face = PvPanel(mesh.faces.index(face), pv_technology_object)
+            panel_of_face = BipvPanel(mesh.faces.index(face), pv_technology_object)
             panel_of_face.initialize_or_replace_panel()
             panels.append(panel_of_face)
     return panels
@@ -141,62 +142,62 @@ def beginning_end_of_life_lca_results_in_lists(energy_production_per_year_list, 
     :param nb_of_failed_panels_list: list of integers: describes how many panels fail each year
     :param pv_tech: PVPanelTechnology object
     :return energy_production_per_year_list: list of floats
-    :return lca_craddle_to_installation_primary_energy_list: list of floats: describes how much energy was used to manufacture the panels installed for
+    :return lca_cradle_to_installation_primary_energy_list: list of floats: describes how much energy was used to manufacture the panels installed for
     each year
-    :return lca_craddle_to_installation_carbon_list: list of floats: describes how much carbon was released to manufacture the panels installed,
+    :return lca_cradle_to_installation_carbon_list: list of floats: describes how much carbon was released to manufacture the panels installed,
     for each year
-    :return dmfa_list: list of floats: describes the dmfa caused by the failed panels, for each year
+    :return dmfa_waste_list: list of floats: describes the dmfa waste caused by the failed panels, for each year
     :return lca_recycling_primary_energy_list: list of float: describes how much energy was used to recycle the panels having failed
     """
     # todo: add comments
-    panel_energy_craddle_to_installation = pv_tech.primary_energy_manufacturing + pv_tech.primary_energy_transport
-    panel_carbon_craddle_to_installation = pv_tech.carbon_manufacturing + pv_tech.carbon_transport
-    panel_dmfa = pv_tech.DMFA
+    panel_energy_cradle_to_installation = pv_tech.primary_energy_manufacturing + pv_tech.primary_energy_transport
+    panel_carbon_cradle_to_installation = pv_tech.carbon_manufacturing + pv_tech.carbon_transport
+    panel_waste = pv_tech.weight
     panel_primary_energy_recycling = pv_tech.primary_energy_recycling
     panel_carbon_recycling = pv_tech.carbon_recycling
 
-    craddle_to_installation_primary_energy_list = [i * panel_energy_craddle_to_installation for i in
+    cradle_to_installation_primary_energy_list = [i * panel_energy_cradle_to_installation for i in
                                                    nb_of_panels_installed_list]
-    craddle_to_installation_carbon_list = [i * panel_carbon_craddle_to_installation for i in
+    cradle_to_installation_carbon_list = [i * panel_carbon_cradle_to_installation for i in
                                            nb_of_panels_installed_list]
-    dmfa_list = [i * panel_dmfa for i in nb_of_failed_panels_list]
+    dmfa_waste_list = [i * panel_waste for i in nb_of_failed_panels_list]
     lca_recycling_primary_energy_list = [i * panel_primary_energy_recycling for i in nb_of_panels_installed_list]
     lca_recycling_carbon_list = [i * panel_carbon_recycling for i in nb_of_panels_installed_list]
 
-    return energy_production_per_year_list, craddle_to_installation_primary_energy_list, craddle_to_installation_carbon_list, \
-        dmfa_list, lca_recycling_primary_energy_list, lca_recycling_carbon_list
+    return energy_production_per_year_list, cradle_to_installation_primary_energy_list, cradle_to_installation_carbon_list, \
+        dmfa_waste_list, lca_recycling_primary_energy_list, lca_recycling_carbon_list
 
 
-def results_from_lists_to_dict(energy_production_per_year_list, craddle_to_installation_primary_energy_list,
-                               craddle_to_installation_carbon_list, dmfa_list, lca_recycling_primary_energy_list,
+def results_from_lists_to_dict(energy_production_per_year_list, cradle_to_installation_primary_energy_list,
+                               cradle_to_installation_carbon_list, dmfa_waste_list, lca_recycling_primary_energy_list,
                                lca_recycling_carbon_list):
     """
     Transform those results into a dictionary
     :param energy_production_per_year_list: list of floats describes the energy production each year
-    :param craddle_to_installation_primary_energy_list: list of floats: describes how much energy was used to manufacture the panels
+    :param cradle_to_installation_primary_energy_list: list of floats: describes how much energy was used to manufacture the panels
     installed for each year
-    :param craddle_to_installation_carbon_list: list of floats: describes how much carbon was released to manufacture the panels
+    :param cradle_to_installation_carbon_list: list of floats: describes how much carbon was released to manufacture the panels
     installed for each year
-    :param dmfa_list: list of floats: describes the dmfa caused by the failed panels, for each year
+    :param dmfa_waste_list: list of floats: describes the dmfa waste caused by the failed panels, for each year
     :param lca_recycling_primary_energy_list: list of floats: describes how much energy is used to recycle the panels
     :return results_dict: dictionary containing all the data
     """
     # todo: add comments
     results_dict = {}
     energy_harvested_dict = {"list": energy_production_per_year_list, "total": sum(energy_production_per_year_list)}
-    lca_craddle_to_installation_primary_energy_dict = {"list": craddle_to_installation_primary_energy_list,
-                                                       "total": sum(craddle_to_installation_primary_energy_list)}
-    lca_craddle_to_installation_carbon_dict = {"list": craddle_to_installation_carbon_list,
-                                               "total": sum(craddle_to_installation_carbon_list)}
-    dmfa_dict = {"list": dmfa_list, "total": sum(dmfa_list)}
+    lca_cradle_to_installation_primary_energy_dict = {"list": cradle_to_installation_primary_energy_list,
+                                                       "total": sum(cradle_to_installation_primary_energy_list)}
+    lca_cradle_to_installation_carbon_dict = {"list": cradle_to_installation_carbon_list,
+                                               "total": sum(cradle_to_installation_carbon_list)}
+    dmfa_waste_dict = {"list": dmfa_waste_list, "total": sum(dmfa_waste_list)}
     lca_recycling_primary_energy_dict = {"list": lca_recycling_primary_energy_list,
                                          "total": sum(lca_recycling_primary_energy_list)}
     lca_recycling_carbon_dict = {"list": lca_recycling_carbon_list, "total": sum(lca_recycling_carbon_list)}
 
     results_dict["energy_harvested"] = energy_harvested_dict
-    results_dict["lca_craddle_to_installation_primary_energy"] = lca_craddle_to_installation_primary_energy_dict
-    results_dict["lca_craddle_to_installation_carbon"] = lca_craddle_to_installation_carbon_dict
-    results_dict["dmfa"] = dmfa_dict
+    results_dict["lca_cradle_to_installation_primary_energy"] = lca_cradle_to_installation_primary_energy_dict
+    results_dict["lca_cradle_to_installation_carbon"] = lca_cradle_to_installation_carbon_dict
+    results_dict["dmfa_waste"] = dmfa_waste_dict
     results_dict["lca_recycling_primary_energy"] = lca_recycling_primary_energy_dict
     results_dict["lca_recycling_carbon"] = lca_recycling_carbon_dict
 
@@ -295,5 +296,5 @@ def find_intersection_functions(func1, func2, x_start, x_end, tol=1e-3, max_iter
             x_left = x_mid
 
     # If no intersection is found within the maximum iterations
-    raise RuntimeError("Intersection not found within the specified range and maximum iterations.")
-
+    dev_logger.warning("Intersection not found within the specified range and maximum iterations.")
+    return None

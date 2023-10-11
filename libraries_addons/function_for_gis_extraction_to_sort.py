@@ -18,7 +18,7 @@ def polygon_to_LB_footprint(polygon_obj, unit, tolerance=TOLERANCE_LBT):
             polygon_obj: A Polygon object.
             unit: Unit of the shp file.
         Returns:
-            LB_face_footprint:A Ladybug footprint.
+            lb_face_footprint:A Ladybug footprint.
     """
     # todo @Elie: move to LBT methods
 
@@ -67,11 +67,11 @@ def polygon_to_LB_footprint(polygon_obj, unit, tolerance=TOLERANCE_LBT):
             interior_holes_pt_3d_list.append([Point3D(point[0], point[1], 0) for point in hole])
 
     # Convert the list of points to a Ladybug footprint
-    LB_face_footprint = Face3D(boundary=point_3d_list_outline, holes=interior_holes_pt_3d_list, enforce_right_hand=True)
+    lb_face_footprint = Face3D(boundary=point_3d_list_outline, holes=interior_holes_pt_3d_list, enforce_right_hand=True)
     # Remove collinear vertices
-    LB_face_footprint = LB_face_footprint.remove_colinear_vertices(tolerance=tolerance)
+    lb_face_footprint = lb_face_footprint.remove_colinear_vertices(tolerance=tolerance)
 
-    return LB_face_footprint
+    return lb_face_footprint
 def scale_point_list_according_to_unit(point_list, unit):
     """
     Scale the point list according to the unit of the shp file.

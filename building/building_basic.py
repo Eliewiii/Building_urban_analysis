@@ -32,13 +32,13 @@ default_gis_attribute_key_dict = {
 class BuildingBasic:
     """BuildingBasic class, representing one building in an urban canopy."""
 
-    def __init__(self, identifier, LB_face_footprint, urban_canopy=None, building_index_in_GIS=None):
+    def __init__(self, identifier, lb_face_footprint, urban_canopy=None, building_index_in_gis=None):
         """Initialize a building obj"""
         # urban canopy and key to access to the object from building_dict
         self.urban_canopy = urban_canopy
-        self.id = identifier  # id of the building in the urban canopy building_dict
+        self.id = str(identifier)  # id of the building in the urban canopy building_dict
         # GIS specific
-        self.index_in_GIS = building_index_in_GIS  # id in the shp file
+        self.index_in_gis = building_index_in_gis  # id in the shp file
         # Properties
         self.name = None  # name of the building (if available in the GIS)
         self.group = None  # group/neighbourhood of the building (if available in the GIS)
@@ -49,10 +49,10 @@ class BuildingBasic:
         self.elevation = 0  # elevation of the building in meter
         self.floor_height = None  # height of the floors in meter
         # Geometry
-        self.LB_face_footprint = LB_face_footprint  # footprint of the building, including the holes in the LB geometry face format
+        self.lb_face_footprint = lb_face_footprint  # footprint of the building, including the holes in the LB geometry face format
         # Context filter algorithm
-        self.LB_polyface3d_oriented_bounding_box = None  # oriented bounding box of the building
-        self.LB_polyface3d_extruded_footprint = None  # extruded footprint of the building
+        self.lb_polyface3d_oriented_bounding_box = None  # oriented bounding box of the building
+        self.lb_polyface3d_extruded_footprint = None  # extruded footprint of the building
         # Position
         self.moved_to_origin = False  # boolean to know if the building has been moved
 
@@ -67,30 +67,30 @@ class BuildingBasic:
         None
 
     @classmethod
-    def make_buildingbasic_from_LB_footprint(cls, LB_face_footprint, identifier, urban_canopy=None,
-                                             building_index_in_GIS=None):
+    def make_buildingbasic_from_LB_footprint(cls, lb_face_footprint, identifier, urban_canopy=None,
+                                             building_index_in_gis=None):
         """Generate a BuildingBasic from a Ladybug footprint."""
-        return cls(identifier, LB_face_footprint, urban_canopy, building_index_in_GIS)
+        return cls(identifier, lb_face_footprint, urban_canopy, building_index_in_gis)
 
     @classmethod
     def make_buildingbasic_from_shapely_polygon(cls, polygon, identifier, unit, urban_canopy=None,
-                                                building_index_in_GIS=None):
+                                                building_index_in_gis=None):
         """Generate a BuildingBasic from a shapely polygon."""
-        LB_face_footprint = polygon_to_LB_footprint(polygon, unit)
-        if LB_face_footprint is not None:
-            return cls(identifier, LB_face_footprint, urban_canopy, building_index_in_GIS)
+        lb_face_footprint = polygon_to_LB_footprint(polygon, unit)
+        if lb_face_footprint is not None:
+            return cls(identifier, lb_face_footprint, urban_canopy, building_index_in_gis)
         else:
             return None
 
     @classmethod
-    def make_buildingbasic_from_GIS(cls, urban_canopy, GIS_file, building_index_in_GIS, building_id_key_gis, unit):
+    def make_buildingbasic_from_GIS(cls, urban_canopy, GIS_file, building_index_in_gis, building_id_key_gis, unit):
         """
             Generate a building from a shp file.
             Can Eventually return multiple buildings if the footprint is a multipolygon.
 
             :param urban_canopy:
             :param GIS_file: GIS file
-            :param building_index_in_GIS: id of the building in the shp file
+            :param building_index_in_gis: id of the building in the shp file
             :param building_id_key_gis: key of the building id in the shp file
             :param unit: unit of the shp file
             :return: list of building ids and list of building objects
@@ -101,11 +101,11 @@ class BuildingBasic:
         if building_id_key_gis is None:
             # if the building identifier is not specified in the shp file, use the index of the building in the shp file
             # todo: maybe convert into a string, the results are weird in GH, but not problematic
-            building_id = building_index_in_GIS
+            building_id = str(building_index_in_gis)  # Have th id as a string
         else:
-            building_id = GIS_file[building_id_key_gis][building_index_in_GIS]
+            building_id = str(GIS_file[building_id_key_gis][building_index_in_gis])
         # get the footprint of the building
-        footprint = GIS_file['geometry'][building_index_in_GIS]
+        footprint = GIS_file['geometry'][building_index_in_gis]
 
         # if the building footprint is a multipolygon
         if isinstance(footprint, shapely.geometry.polygon.Polygon):
@@ -121,7 +121,7 @@ class BuildingBasic:
                 building_obj = cls.make_buildingbasic_from_shapely_polygon(polygon=footprint, identifier=building_id,
                                                                            unit=unit,
                                                                            urban_canopy=urban_canopy,
-                                                                           building_index_in_GIS=building_index_in_GIS)
+                                                                           building_index_in_gis=building_index_in_gis)
                 if building_obj is not None:
                     building_id_list.append(building_id)
                     building_obj_list.append(building_obj)
@@ -144,7 +144,7 @@ class BuildingBasic:
                     building_obj = cls.make_buildingbasic_from_shapely_polygon(polygon=footprint,
                                                                                identifier=sub_building_id,
                                                                                urban_canopy=urban_canopy,
-                                                                               building_index_in_GIS=building_index_in_GIS)
+                                                                               building_index_in_gis=building_index_in_gis)
                     if building_obj is not None:
                         building_id_list.append(sub_building_id)
                         building_obj_list.append(building_obj)
@@ -163,71 +163,71 @@ class BuildingBasic:
         ## age ##
         for attribute_key in gis_attribute_key_dict["age"]:  # loop on all the possible name
             try:  # check if the property name exist
-                int(GIS_file[attribute_key][self.index_in_GIS])
+                int(GIS_file[attribute_key][self.index_in_gis])
             except:  # if it doesn't, don't do anything
                 None
             else:  # if it does, assign the information to the building_zon then break = get out of the loop
-                if not isnan(int(GIS_file[attribute_key][self.index_in_GIS])):
-                    self.age = int(GIS_file[attribute_key][self.index_in_GIS])
+                if not isnan(int(GIS_file[attribute_key][self.index_in_gis])):
+                    self.age = int(GIS_file[attribute_key][self.index_in_gis])
                     break
         ## name ##
         for attribute_key in gis_attribute_key_dict["name"]:
             try:
-                str(GIS_file[attribute_key][self.index_in_GIS])
+                str(GIS_file[attribute_key][self.index_in_gis])
             except:
                 None
             else:
-                self.name = str(GIS_file[attribute_key][self.index_in_GIS])
+                self.name = str(GIS_file[attribute_key][self.index_in_gis])
                 break
         ## group ##
         for attribute_key in gis_attribute_key_dict["group"]:
             try:
-                str(GIS_file[attribute_key][self.index_in_GIS])
+                str(GIS_file[attribute_key][self.index_in_gis])
             except:
                 None
             else:
-                self.group = str(GIS_file[attribute_key][self.index_in_GIS])
+                self.group = str(GIS_file[attribute_key][self.index_in_gis])
                 break
         ## height ##
         for attribute_key in gis_attribute_key_dict["height"]:
             try:
-                float(GIS_file[attribute_key][self.index_in_GIS])
+                float(GIS_file[attribute_key][self.index_in_gis])
             except:
                 None
             else:
-                if not isnan(float(GIS_file[attribute_key][self.index_in_GIS])):
-                    self.height = float(GIS_file[attribute_key][self.index_in_GIS])
+                if not isnan(float(GIS_file[attribute_key][self.index_in_gis])):
+                    self.height = float(GIS_file[attribute_key][self.index_in_gis])
                     break
         ## elevation ##
         for attribute_key in gis_attribute_key_dict["elevation"]:
             try:
-                float(GIS_file[attribute_key][self.index_in_GIS])
+                float(GIS_file[attribute_key][self.index_in_gis])
             except:
                 None
             else:
-                if not isnan(float(GIS_file[attribute_key][self.index_in_GIS])):
-                    self.elevation = float(GIS_file[attribute_key][self.index_in_GIS])
+                if not isnan(float(GIS_file[attribute_key][self.index_in_gis])):
+                    self.elevation = float(GIS_file[attribute_key][self.index_in_gis])
 
                     break
         ## number of floor ##
         for attribute_key in gis_attribute_key_dict["number of floor"]:
             try:
-                int(GIS_file[attribute_key][self.index_in_GIS])
+                int(GIS_file[attribute_key][self.index_in_gis])
             except:
                 None
             else:
-                if not isnan(int(GIS_file[attribute_key][self.index_in_GIS])):
-                    self.num_floor = int(GIS_file[attribute_key][self.index_in_GIS])
+                if not isnan(int(GIS_file[attribute_key][self.index_in_gis])):
+                    self.num_floor = int(GIS_file[attribute_key][self.index_in_gis])
                     break
 
         ## typology ##
         for attribute_key in gis_attribute_key_dict["typology"]:
             try:
-                str(GIS_file[attribute_key][self.index_in_GIS])
+                str(GIS_file[attribute_key][self.index_in_gis])
             except:
                 None
             else:
-                self.typology = str(GIS_file[attribute_key][self.index_in_GIS])
+                self.typology = str(GIS_file[attribute_key][self.index_in_gis])
                 break
 
         # check the property of the building, correct and assign default value if needed
@@ -265,23 +265,23 @@ class BuildingBasic:
             self.num_floor = 3
             self.floor_height = 3.
 
-    def make_LB_polyface3d_extruded_footprint(self, overwrite=False):
+    def make_lb_polyface3d_extruded_footprint(self, overwrite=False):
         """ make the oriented bounding box of the building
         :param overwrite: if True, overwrite the existing LB_polyface3d_oriented_bounding_box
         :return: LB_polyface3d_oriented_bounding_box, a LB Polyface3D object
         """
-        if overwrite or self.LB_polyface3d_extruded_footprint is None:
-            self.LB_polyface3d_extruded_footprint = LB_face_footprint_to_lB_polyface3D_extruded_footprint(
-                LB_face_footprint=self.LB_face_footprint, height=self.height, elevation=self.elevation)
+        if overwrite or self.lb_polyface3d_extruded_footprint is None:
+            self.lb_polyface3d_extruded_footprint = LB_face_footprint_to_lB_polyface3D_extruded_footprint(
+                lb_face_footprint=self.lb_face_footprint, height=self.height, elevation=self.elevation)
 
     def make_LB_polyface3d_oriented_bounding_box(self, overwrite=False):
         """ make the oriented bounding box of the building
         :param overwrite: if True, overwrite the existing LB_polyface3d_oriented_bounding_box
         :return: LB_polyface3d_oriented_bounding_box, a LB Polyface3D object
         """
-        if overwrite or self.LB_polyface3d_oriented_bounding_box is None:
-            self.LB_polyface3d_oriented_bounding_box = make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint(
-                LB_face_footprint=self.LB_face_footprint, height=self.height, elevation=self.elevation)
+        if overwrite or self.lb_polyface3d_oriented_bounding_box is None:
+            self.lb_polyface3d_oriented_bounding_box = make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint(
+                lb_face_footprint=self.lb_face_footprint, height=self.height, elevation=self.elevation)
 
     def move(self, vector):
         """
@@ -289,11 +289,15 @@ class BuildingBasic:
         :param vector: [x,y,z]
         """
         # move the LB footprint
-        self.LB_face_footprint = self.LB_face_footprint.move(Vector3D(vector[0], vector[1], 0))
+        self.lb_face_footprint = self.lb_face_footprint.move(Vector3D(vector[0], vector[1], 0))
         # move the oriented bounding box if it exists
-        if self.LB_polyface3d_oriented_bounding_box:
-            self.LB_polyface3d_oriented_bounding_box = self.LB_polyface3d_oriented_bounding_box.move(
-                Vector3D(vector[0], vector[1], 0))
+        if self.lb_polyface3d_oriented_bounding_box:
+            self.lb_polyface3d_oriented_bounding_box = self.lb_polyface3d_oriented_bounding_box.move(
+                Vector3D(vector[0], vector[1], vector[2]))
+        # move the extruded_lb_footprint if it exists
+        if self.lb_polyface3d_extruded_footprint:
+            self.lb_polyface3d_extruded_footprint = self.lb_polyface3d_extruded_footprint.move(
+                Vector3D(vector[0], vector[1], vector[2]))
         # adjust the elevation
         self.elevation = self.elevation + vector[2]
         # make it moved
@@ -306,7 +310,7 @@ class BuildingBasic:
         :return: HB Room envelop
         """
         # convert the envelop of the building to a HB Room
-        HB_room_envelop = RoomsAddons.LB_face_footprint_to_elevated_HB_room_envelop(LB_face_footprint=self.LB_face_footprint,
+        HB_room_envelop = RoomsAddons.LB_face_footprint_to_elevated_HB_room_envelop(lb_face_footprint=self.lb_face_footprint,
                                                                                     building_id=self.id,
                                                                                     height=self.height,
                                                                                     elevation=self.elevation)
@@ -342,7 +346,7 @@ class BuildingBasic:
 
             if automatic_subdivision:  # then divide the footprint into apartments and cores with Dragonfly
                 None  # todo @Elie, not top priority
-            else:  # then just create one room per floor with the actual LB_face_footprint
+            else:  # then just create one room per floor with the actual lb_face_footprint
                 None  # todo @Elie
 
         if properties_from_typology:  # Apply all the properties from the self.typology to the HB model
