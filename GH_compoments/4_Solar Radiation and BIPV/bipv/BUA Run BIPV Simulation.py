@@ -100,7 +100,7 @@ if _start_year is None and _end_year is None:
     pass
 elif _start_year is None:
     raise ValueError("The start year and the end year must be defined")
-elif _start_year is not None and _end_year is not None and start_year >= end_year:
+elif _start_year is not None and _end_year is not None and _start_year >= end_year:
     raise ValueError("The start year must be lower than the end year")
 
 
