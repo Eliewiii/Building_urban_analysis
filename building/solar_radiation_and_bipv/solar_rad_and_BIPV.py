@@ -424,7 +424,8 @@ class SolarRadAndBipvSimulation:
                 panel_list = init_bipv_on_sensor_grid(sensor_grid=SensorGrid.from_dict(sensorgrid_dict),
                                                       pv_technology_obj=pv_tech_obj,
                                                       annual_panel_irradiance_list=annual_panel_irradiance_list,
-                                                      minimum_panel_eroi=minimum_panel_eroi)
+                                                      minimum_panel_eroi=minimum_panel_eroi,
+                                                      electricity_primary_energy_gird_factor=kwargs["electricity_primary_energy_gird_factor"])
 
             # If the simulation continue we keep the existing panels and the parameters
             else:

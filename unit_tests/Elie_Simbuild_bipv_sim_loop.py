@@ -8,11 +8,11 @@ scenario_list = ["Efficiency", "Balanced", "Production"]
 
 scenario_param_dict = {
     "Efficiency": {"replacement_scenario": "replace_all_panels_every_X_years", "replacement frequency": 25,
-                   "minimal_panel_eroi": 3.5},
+                   "minimal_panel_eroi": 5},
     "Balanced": {"replacement_scenario": "replace_all_panels_every_X_years", "replacement frequency": 25,
-                 "minimal_panel_eroi": 2},
+                 "minimal_panel_eroi": 3},
     "Production": {"replacement_scenario": "replace_failed_panels_every_X_years", "replacement frequency": 5,
-                   "minimal_panel_eroi": 1.2}
+                   "minimal_panel_eroi": 1.5}
     }
 
 roof_id_pv_tech = "mitrex_roof c-Si M395-B1F china"
@@ -39,11 +39,12 @@ for path_simulation_folder in simulation_folders:
             facades_id_pv_tech=facades_id_pv_tech,
             efficiency_computation_method=default_efficiency_computation_method,
             minimum_panel_eroi=scenario_param_dict[scenario]["minimal_panel_eroi"],
-            replacement_scenario=scenario_param_dict[scenario]["replacement_scenario"],)
+            replacement_scenario=scenario_param_dict[scenario]["replacement_scenario"],
+            electricity_primary_energy_gird_factor=2.84)
 
-# Export urban_canopy to pickle
-SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,
-                                                           path_simulation_folder=default_path_simulation_folder)
-# Export urban_canopy to json
-SimulationCommonMethods.save_urban_canopy_to_json(urban_canopy_object=urban_canopy_object,
-                                                  path_simulation_folder=default_path_simulation_folder)
+# # Export urban_canopy to pickle
+# SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,
+#                                                            path_simulation_folder=default_path_simulation_folder)
+# # Export urban_canopy to json
+# SimulationCommonMethods.save_urban_canopy_to_json(urban_canopy_object=urban_canopy_object,
+#                                                   path_simulation_folder=default_path_simulation_folder)

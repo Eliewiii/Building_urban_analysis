@@ -14,7 +14,7 @@ dev_logger = logging.getLogger("dev")
 
 
 def init_bipv_on_sensor_grid(sensor_grid: SensorGrid, pv_technology_obj, annual_panel_irradiance_list,
-                             minimum_panel_eroi):
+                             minimum_panel_eroi, electricity_primary_energy_gird_factor=1.):
     """
     Initialize the bipvs on the sensor_grid and return a list of the bipvs.
     The function will check if the area of the faces of the sensor_grid is big enough to contain the bipvs
@@ -24,7 +24,9 @@ def init_bipv_on_sensor_grid(sensor_grid: SensorGrid, pv_technology_obj, annual_
     :param pv_technology_obj: PVPanelTechnology object
     :param annual_panel_irradiance_list: list of floats: annual irradiance on each face of the sensor_grid
     :param minimum_panel_eroi: float: minimum energy return on investment of the PV, (Default=1.2)
-    :param panel_performance_ratio: float: performance ratio of the PV, Default=0.80  todo: should it be an attribute of pv_tech ? 
+    :param electricity_primary_energy_gird_factor: float: factor of the primary energy needed to produce 1 kWh of
+    electricity for the grid (Default=1.)
+
     :return panel_obj_list
     """
     # initialize the list of the panel objects
@@ -57,7 +59,7 @@ def init_bipv_on_sensor_grid(sensor_grid: SensorGrid, pv_technology_obj, annual_
         primary_energy = \
             pv_technology_obj.primary_energy_manufacturing + pv_technology_obj.primary_energy_recycling + \
             pv_technology_obj.primary_energy_transport
-        panel_eroi = energy_harvested / primary_energy
+        panel_eroi = energy_harvested / primary_energy * electricity_primary_energy_gird_factor
         """
         Note that it is not exactly the reql eroi thqt is computed here, we assume that the panel will last for 
         the average lifetime of the weibull law.
@@ -141,14 +143,14 @@ def bipv_energy_harvesting_simulation_yearly_annual_irradiance(pv_panel_obj_list
             # Panel replacement according to replacement scenario
             elif replacement_scenario == "replace_failed_panels_every_X_years":
                 replacement_frequency_in_years = kwargs["replacement_frequency_in_years"]
-                if (year-start_year) % replacement_frequency_in_years == 0:
+                if (year - start_year) % replacement_frequency_in_years == 0:
                     for panel_obj in pv_panel_obj_list:
                         if not panel_obj.is_panel_working():
                             panel_obj.initialize_or_replace_panel(pv_tech_obj=pv_tech_obj)
                             nb_of_new_panels += 1
             elif replacement_scenario == "replace_all_panels_every_X_years":
                 replacement_frequency_in_years = kwargs["replacement_frequency_in_years"]
-                if (year-start_year) % replacement_frequency_in_years == 0:
+                if (year - start_year) % replacement_frequency_in_years == 0:
                     for panel_obj in pv_panel_obj_list:
                         panel_obj.initialize_or_replace_panel(pv_tech_obj=pv_tech_obj)
                         nb_of_new_panels += 1
@@ -213,8 +215,7 @@ def bipv_lca_dmfa_eol_computation(nb_of_panels_installed_yearly_list, pv_tech_ob
     dmfa_waste_yearly_list = [i * pv_tech_obj.weight for i in
                               nb_of_panels_installed_yearly_list]
 
-
     return primary_energy_material_extraction_and_manufacturing_yearly_list, primary_energy_transportation_yearly_list, \
-        primary_energy_recycling_yearly_list,  \
+        primary_energy_recycling_yearly_list, \
         carbon_material_extraction_and_manufacturing_yearly_list, carbon_transportation_yearly_list, \
-        carbon_recycling_yearly_list,  dmfa_waste_yearly_list
+        carbon_recycling_yearly_list, dmfa_waste_yearly_list
