@@ -8,11 +8,11 @@ scenario_list = ["Efficiency", "Balanced", "Production"]
 
 scenario_param_dict = {
     "Efficiency": {"replacement_scenario": "replace_all_panels_every_X_years", "replacement frequency": 25,
-                   "minimal_panel_eroi": 5},
+                   "minimal_panel_eroi": 3},
     "Balanced": {"replacement_scenario": "replace_all_panels_every_X_years", "replacement frequency": 25,
-                 "minimal_panel_eroi": 3},
+                 "minimal_panel_eroi": 2},
     "Production": {"replacement_scenario": "replace_failed_panels_every_X_years", "replacement frequency": 5,
-                   "minimal_panel_eroi": 1.5}
+                   "minimal_panel_eroi": 1.2}
     }
 
 roof_id_pv_tech = "mitrex_roof c-Si M395-B1F china"
