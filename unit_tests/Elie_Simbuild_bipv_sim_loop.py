@@ -39,8 +39,7 @@ for path_simulation_folder in simulation_folders:
             facades_id_pv_tech=facades_id_pv_tech,
             efficiency_computation_method=default_efficiency_computation_method,
             minimum_panel_eroi=scenario_param_dict[scenario]["minimal_panel_eroi"],
-            replacement_scenario=scenario_param_dict[scenario]["replacement_scenario"],
-            electricity_primary_energy_gird_factor=2.84)
+            replacement_scenario=scenario_param_dict[scenario]["replacement_scenario"])
 
 # # Export urban_canopy to pickle
 # SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,

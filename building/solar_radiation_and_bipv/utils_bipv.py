@@ -14,7 +14,7 @@ dev_logger = logging.getLogger("dev")
 
 
 def init_bipv_on_sensor_grid(sensor_grid: SensorGrid, pv_technology_obj, annual_panel_irradiance_list,
-                             minimum_panel_eroi, electricity_primary_energy_gird_factor=1.):
+                             minimum_panel_eroi):
     """
     Initialize the bipvs on the sensor_grid and return a list of the bipvs.
     The function will check if the area of the faces of the sensor_grid is big enough to contain the bipvs
@@ -59,7 +59,7 @@ def init_bipv_on_sensor_grid(sensor_grid: SensorGrid, pv_technology_obj, annual_
         primary_energy = \
             pv_technology_obj.primary_energy_manufacturing + pv_technology_obj.primary_energy_recycling + \
             pv_technology_obj.primary_energy_transport
-        panel_eroi = energy_harvested / primary_energy * electricity_primary_energy_gird_factor
+        panel_eroi = energy_harvested / primary_energy
         """
         Note that it is not exactly the reql eroi thqt is computed here, we assume that the panel will last for 
         the average lifetime of the weibull law.
