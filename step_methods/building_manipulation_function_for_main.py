@@ -34,6 +34,33 @@ class SimulationBuildingManipulationFunctions:
         dev_logger.info("Building(s) removed from the urban canopy successfully")
 
     @staticmethod
+    def transform_buildingbasic_into_buildingmodeled_in_urban_canopy(urban_canopy_object, building_id_list=None,
+                                                                    use_typology=True, typology_identification=False,
+                                                                    **kwargs):
+        """
+        Transform a BuildingBasic objects into a BuildingModel object.
+        If
+        :param urban_canopy_object: urban canopy object
+        :param building_id_list: list of building id to be considered
+        :param use_typology: bool: default=True: if True, the typology will be used to define the properties of the BuildingModel object
+        :param typology_identification: bool: default=False: if True, the typology identifier will be used to identify
+            the typology of the BuildingModel object, the properties of the BuildingModel object will be defined
+            according to the typology. (default=False)
+        :param kwargs: dict: additional parameters to be passed to the building model object
+            autozoner: bool: default=False: if True, the thermal zones will be automatically generated
+            use_layout_from_typology: bool: default=False: if True, the layout will be defined according to the typology
+            use_properties_from_typology: bool: default=True: if True, the new building model will be generated according
+            to the properties of the typology, especially the construction material and the window to wall ratio
+        :return:
+        """
+        urban_canopy_object.transform_buildingbasic_into_building_model(building_id_list=building_id_list,
+                                                                        use_typology=use_typology,
+                                                                        typology_identification=typology_identification,
+                                                                        **kwargs)
+        # user_logger.info("Oriented bounding boxes of buildings in the urban canopy have been made successfully")
+        # dev_logger.info("Oriented bounding boxes of buildings in the urban canopy have been made successfully")
+
+    @staticmethod
     def make_oriented_bounding_boxes_of_buildings_in_urban_canopy(urban_canopy_object, overwrite=False):
         """
         Make oriented bounding boxes of buildings in the urban canopy

@@ -23,15 +23,6 @@ class SimulationPostProcessingAndPlots:
         user_logger.info("HB model for the building envelop created successfully")
         dev_logger.info("HB model for the building envelop created successfully")
 
-    @staticmethod
-    def add_building_envelops_to_urban_canopy_json(urban_canopy_object):
-        """
-
-        :param urban_canopy_object:
-        """
-        urban_canopy_object.add_hb_model_envelop_to_json_dict()
-        user_logger.info(" ")  # todo
-        dev_logger.info(" ")  # todo
 
     @staticmethod
     def generate_csv_panels_simulation_results(urban_canopy_object, path_simulation_folder):

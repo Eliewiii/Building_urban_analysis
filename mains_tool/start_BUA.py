@@ -166,11 +166,6 @@ def main():
 
     # Building Energy Simulation #
 
-    # Postprocessing and plots #
-    if simulation_step_dictionary["run_generate_model_with_building_envelop"]:
-        SimulationPostProcessingAndPlots.add_building_envelops_to_urban_canopy_json(
-            urban_canopy_object=urban_canopy_object)
-
     # Exports #
     # Export Urban canopy to pickle
     if simulation_step_dictionary["run_save_urban_canopy_object_to_pickle"]:

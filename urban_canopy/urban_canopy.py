@@ -76,15 +76,6 @@ class UrbanCanopy:
         with open(os.path.join(path_simulation_folder, name_urban_canopy_export_file_json), 'w') as json_file:
             json.dump(self.json_dict, json_file)
 
-    # todo @Elie : to be removed
-    # def to_json(self, path_simulation_folder):
-    #     """ Save the urban canopy to a pickle json """
-    #     # Transform the data from the urban canopy in the json dictionary
-    #     self.write_json_dictionary(path_simulation_folder=path_simulation_folder)
-    #     # Write json file
-    #     with open(os.path.join(path_simulation_folder, name_urban_canopy_export_file_json), 'w') as json_file:
-    #         json.dump(self.json_dict, json_file)
-
     def reinitialize_json_dict(self):
         """
         Reinitialize the json dict
@@ -204,7 +195,7 @@ class UrbanCanopy:
 
     # todo : New, to test
     def add_buildings_from_hbjson_to_dict(self, path_directory_hbjson=None, path_file_hbjson=None,
-                                          are_buildings_targets=False,keep_context_from_hbjson=False):
+                                          are_buildings_targets=False, keep_context_from_hbjson=False):
         """ Add the buildings from the hb models in the folder
         :param path_directory_hbjson: path to the directory containing the hbjson files
         :param path_file_hbjson: path to the hbjson file
@@ -227,24 +218,15 @@ class UrbanCanopy:
             if os.path.getsize(hbjson_file_path) > 0:  # hbjson_file should be the fullpath of json
                 # Create the building object
                 building_HB_model_obj, identifier = BuildingModeled.make_buildingmodeled_from_hbjson(
-                    path_hbjson=hbjson_file_path, is_target=are_buildings_targets,keep_context=keep_context_from_hbjson)
+                    path_hbjson=hbjson_file_path, is_target=are_buildings_targets,
+                    keep_context=keep_context_from_hbjson)
                 # Add the building to the urban canopy
                 self.add_building_to_dict(identifier, building_HB_model_obj)
             else:
                 logging.info("The file {} is empty".format(hbjson_file_path))
 
-    def add_hb_model_envelop_to_json_dict(self):
-        """
-
-        :return:
-        """
-        UrbanCanopyAdditionalFunction.add_hb_model_of_urban_canopy_envelop_to_json_dict(
-            json_dict=self.json_dict,
-            building_dict=self.building_dict)
-
-    # todo : to delete, it is useless
-
     def make_HB_model_envelops_from_buildings(self, path_folder=None):
+        # todo @Elie: to be removed
         """ Make the hb model for the building envelop and save it to hbjson file if the path is provided """
         # List of the hb rooms representing the building envelops
         # HB_room_envelop_list = [building.export_building_to_elevated_HB_room_envelop() for building in self.building_dict.values()] todo:to delete if it works
@@ -274,43 +256,8 @@ class UrbanCanopy:
         for building in self.building_dict.values():
             building.make_LB_polyface3d_oriented_bounding_box(overwrite=overwrite)
 
-    def initialize_shading_context_obj_of_buildings_to_simulate(self, min_VF_criterion, number_of_rays):
-        """
-        Initialize the shading context object of the buildings to simulate
-        :param min_VF_criterion: float, the minimum view factor criterion
-        :param number_of_rays: int, the number of rays to be used for raytracing to the shading context
-        """
-        for building_obj in self.building_dict.values():
-            if building_obj.to_simulate:
-                building_obj.initialize_shading_context_obj()
-
-    def perform_first_pass_context_filtering_on_buildings(self, building_id_list=None,
-                                                          on_building_to_simulate=True):
-        """
-        Perform the first pass context filtering on the BuildingModeled objects in the urban canopy that need to be simulated.
-        :param building_id_list: list of str, the list of building id to perform the first pass context filtering on.
-        :param on_building_to_simulate: bool, if True, perform the first pass context filtering on the buildings to simulate.
-        :return:
-        """
-        context_building_id_list = []  # Initialize the list
-        # todo @Elie, make bounding boxes of all buildings if not done yet
-        self.make_oriented_bounding_boxes_of_buildings()
-        # if we specify the building no need to do it on all the simulated buildings
-        if building_id_list is not None and building_id_list != []:
-            on_building_to_simulate = False
-        # Loop over the buildings
-        for i, (building_id, building_obj) in enumerate(self.building_dict.items()):
-            if (on_building_to_simulate and building_obj.to_simulate) or building_id in building_id_list:
-                context_building_id_list += building_obj.perform_first_pass_context_filtering(
-                    building_dictionary=self.building_dict)
-
-        return context_building_id_list
-
-    def convert_list_of_buildings_to_BuildingModeled(self, building_id_list_to_convert_to_BuildingModeled,
-                                                     automatic_floor_subdivision=False,
-                                                     layout_from_typology=False,
-                                                     properties_from_typology=False,
-                                                     are_target=False, are_simulated=False):
+    def transform_buildingbasic_into_building_model(self, building_id_list=None, use_typology=True,
+                                                    typology_identification=False, **kwargs):
         """
         Convert the buildings to BuildingModeled
         :param building_id_list_to_convert_to_BuildingModeled: list of str, the list of building id to convert to BuildingModeled
@@ -329,46 +276,6 @@ class UrbanCanopy:
                 layout_from_typology=layout_from_typology,
                 automatic_floor_subdivision=automatic_floor_subdivision,
                 properties_from_typology=properties_from_typology)
-
-    def perform_context_filtering_for_shading_on_buildingmodeled_to_simulate(self, minimum_vf_criterion):
-        """
-        Perform the context filtering on the BuildingModeled objects in the urban canopy that need to be simulated.
-
-        """
-        # todo @Elie: to adapt from old code
-
-        # todo @ Sharon and @Elie: speed up this part LATER by preparing making some preprocessing (centroid of faces, height etc...)
-
-        # Make bounding boxes and extruded footprint if they don't exist already
-        # todo @Elie: can be put in a separate function
-        for building_obj in self.building_dict.values():
-            # by default the functions don't overwrite the existing attribute if it exist already
-            building_obj.make_lb_polyface3d_extruded_footprint()
-            building_obj.make_LB_polyface3d_oriented_bounding_box()
-
-        # Make a Pyvista mesh containing all the surfaces of all the buildings in the urban canopy
-        # todo @Elie : make the mesh, only once for all the buildings
-
-        # Loop through the buildings in the urban canopy
-        for building_obj in self.building_dict.values():
-            if isinstance(building_obj, BuildingModeled) and building_obj.to_simulate:
-                list_of_all_buildings = list(self.building_dict.values())
-                building_obj.select_context_surfaces_for_shading_computation(
-                    context_building_list=list_of_all_buildings, minimum_vf_criterion=minimum_vf_criterion)
-
-    def make_Pyvista_Polydata_mesh_of_all_buildings(self):
-        """
-
-        :return:
-        """
-        # todo @Elie: test the function
-        # Make list of all the LB_Polyface3D_extruded_footprint of the buildings in the urban canopy
-        list_of_building_LB_Polyface3D_extruded_footprint = [building.lb_polyface3d_extruded_footprint for
-                                                             building in
-                                                             self.building_dict.values()]
-        # Convert to Pyvista Polydata
-        # todo @Elie: add the mport and finish the function
-        # Pyvista_Polydata_mesh = make_Pyvista_Polydata_from_LB_Polyface3D_list(list_of_building_LB_Polyface3D_extruded_footprint)
 
     def compute_moving_vector_to_origin(self):
         """ Make the moving vector to move the urban canopy to the origin """
@@ -403,6 +310,78 @@ class UrbanCanopy:
             if building.moved_to_origin:
                 # Move by the opposite vector
                 building.move([-coordinate for coordinate in self.moving_vector_to_origin])
+
+    def initialize_shading_context_obj_of_buildings_to_simulate(self, min_VF_criterion, number_of_rays):
+        """
+        Initialize the shading context object of the buildings to simulate
+        :param min_VF_criterion: float, the minimum view factor criterion
+        :param number_of_rays: int, the number of rays to be used for raytracing to the shading context
+        """
+        for building_obj in self.building_dict.values():
+            if building_obj.to_simulate:
+                building_obj.initialize_shading_context_obj()
+
+    def make_Pyvista_Polydata_mesh_of_all_buildings(self):
+        """
+
+        :return:
+        """
+        # todo @Elie: test the function
+        # Make list of all the LB_Polyface3D_extruded_footprint of the buildings in the urban canopy
+        list_of_building_LB_Polyface3D_extruded_footprint = [building.lb_polyface3d_extruded_footprint for
+                                                             building in
+                                                             self.building_dict.values()]
+        # Convert to Pyvista Polydata
+        # todo @Elie: add the mport and finish the function
+        # Pyvista_Polydata_mesh = make_Pyvista_Polydata_from_LB_Polyface3D_list(list_of_building_LB_Polyface3D_extruded_footprint)
+
+    def perform_first_pass_context_filtering_on_buildings(self, building_id_list=None,
+                                                          on_building_to_simulate=True):
+        """
+        Perform the first pass context filtering on the BuildingModeled objects in the urban canopy that need to be simulated.
+        :param building_id_list: list of str, the list of building id to perform the first pass context filtering on.
+        :param on_building_to_simulate: bool, if True, perform the first pass context filtering on the buildings to simulate.
+        :return:
+        """
+        context_building_id_list = []  # Initialize the list
+        # todo @Elie, make bounding boxes of all buildings if not done yet
+        self.make_oriented_bounding_boxes_of_buildings()
+        # if we specify the building no need to do it on all the simulated buildings
+        if building_id_list is not None and building_id_list != []:
+            on_building_to_simulate = False
+        # Loop over the buildings
+        for i, (building_id, building_obj) in enumerate(self.building_dict.items()):
+            if (on_building_to_simulate and building_obj.to_simulate) or building_id in building_id_list:
+                context_building_id_list += building_obj.perform_first_pass_context_filtering(
+                    building_dictionary=self.building_dict)
+
+        return context_building_id_list
+
+    def perform_context_filtering_for_shading_on_buildingmodeled_to_simulate(self, minimum_vf_criterion):
+        """
+        Perform the context filtering on the BuildingModeled objects in the urban canopy that need to be simulated.
+
+        """
+        # todo @Elie: to adapt from old code
+
+        # todo @ Sharon and @Elie: speed up this part LATER by preparing making some preprocessing (centroid of faces, height etc...)
+
+        # Make bounding boxes and extruded footprint if they don't exist already
+        # todo @Elie: can be put in a separate function
+        for building_obj in self.building_dict.values():
+            # by default the functions don't overwrite the existing attribute if it exist already
+            building_obj.make_lb_polyface3d_extruded_footprint()
+            building_obj.make_LB_polyface3d_oriented_bounding_box()
+
+        # Make a Pyvista mesh containing all the surfaces of all the buildings in the urban canopy
+        # todo @Elie : make the mesh, only once for all the buildings
+
+        # Loop through the buildings in the urban canopy
+        for building_obj in self.building_dict.values():
+            if isinstance(building_obj, BuildingModeled) and building_obj.to_simulate:
+                list_of_all_buildings = list(self.building_dict.values())
+                building_obj.select_context_surfaces_for_shading_computation(
+                    context_building_list=list_of_all_buildings, minimum_vf_criterion=minimum_vf_criterion)
 
     def make_merged_faces_hb_model_of_buildings(self, building_id_list=None,
                                                 orient_roof_mesh_to_according_to_building_orientation=True,
@@ -636,8 +615,8 @@ class UrbanCanopy:
         condition_2 = isinstance(building_obj, BuildingModeled) and building_obj.is_target
         # The annual irradiance of the building were computed
         condition_2 = condition_2 and (
-                    building_obj.solar_radiation_and_bipv_simulation_obj.roof_annual_panel_irradiance_list is not None or \
-                    building_obj.solar_radiation_and_bipv_simulation_obj.facades_annual_panel_irradiance_list is not None)
+                building_obj.solar_radiation_and_bipv_simulation_obj.roof_annual_panel_irradiance_list is not None or \
+                building_obj.solar_radiation_and_bipv_simulation_obj.facades_annual_panel_irradiance_list is not None)
         # The simulationm for this building is ongoing
         condition_3 = condition_2 and (building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["roof"][
                                            "start_year"] is not None or \

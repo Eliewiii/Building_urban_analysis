@@ -44,13 +44,17 @@ class SimulationContextFiltering:
         building_id_list_to_convert_to_BuildingModeled = cls.perform_first_pass_of_context_filtering_on_buildings(
             urban_canopy_object, min_VF_criterion=min_VF_criterion,
             number_of_rays=number_of_rays, building_id_list=building_id_list, on_building_to_simulate=on_building_to_simulate)
-        # Convert the context buildings in BuildingModeled objects
-        urban_canopy_object.convert_list_of_buildings_to_BuildingModeled(
-            building_id_list_to_convert_to_BuildingModeled,
-            automatic_floor_subdivision=automatic_floor_subdivision_for_new_BuildingModeled,
-            layout_from_typology=use_layout_from_typology_for_new_BuildingModeled,
-            properties_from_typology=use_properties_from_typology_for_new_BuildingModeled,
-            are_simulated=make_new_BuildingModeled_simulated)
+
+        # todo : new version
+
+        # # Convert the context buildings in BuildingModeled objects
+        # urban_canopy_object.convert_list_of_buildings_to_BuildingModeled(
+        #     building_id_list_to_convert_to_BuildingModeled,
+        #     automatic_floor_subdivision=automatic_floor_subdivision_for_new_BuildingModeled,
+        #     layout_from_typology=use_layout_from_typology_for_new_BuildingModeled,
+        #     properties_from_typology=use_properties_from_typology_for_new_BuildingModeled,
+        #     are_simulated=make_new_BuildingModeled_simulated)
+
         # Perform the second pass of context filtering
         cls.perform_second_pass_of_context_filtering_on_buildings(urban_canopy_object)
 
