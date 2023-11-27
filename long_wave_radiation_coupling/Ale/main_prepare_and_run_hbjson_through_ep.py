@@ -253,6 +253,7 @@ for count, (idf_path, fmu_path, path_hbjson_file) in enumerate(zip(idf_folders, 
     # run_cmdline(cmd)
     # print(f'Moved current directory to FMU path: {fmu_path}')
 
+    # todo @Elie : add cd to the path of a temp folder, then move the fmu to their final destination
     cmd = f'''python {path_fmu_conversion} -i {path_idd} -w {path_epw_file} -a {fmi_version} {path_idf}'''
     run_cmdline(cmd)
 
