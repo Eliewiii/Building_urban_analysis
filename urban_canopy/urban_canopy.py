@@ -257,25 +257,58 @@ class UrbanCanopy:
             building.make_LB_polyface3d_oriented_bounding_box(overwrite=overwrite)
 
     def transform_buildingbasic_into_building_model(self, building_id_list=None, use_typology=True,
-                                                    typology_identification=False, **kwargs):
+                                                    typology_identification=False, are_simulated=False,
+                                                    are_target=False, **kwargs):
         """
         Convert the buildings to BuildingModeled
-        :param building_id_list_to_convert_to_BuildingModeled: list of str, the list of building id to convert to BuildingModeled
-        :param automatic_floor_subdivision: bool, if True, perform the automatic floor subdivision
-        :param layout_from_typology: bool, if True, use the layout from the typology
-        :param properties_from_typology: bool, if True, use the properties from the typology
-        :param are_target: bool, if True, the buildings are target
-        :param are_simulated: bool, if True, the buildings are simulated
+        :param building_id_list: list of building id to be considered
+        :param use_typology: bool: default=True: if True, the typology will be used to define the properties of the BuildingModel object
+        :param typology_identification: bool: default=False: if True, the typology identifier will be used to identify
+            the typology of the BuildingModel object, the properties of the BuildingModel object will be defined
+            according to the typology. (default=False)
+            :param are_simulated: bool: default=False: if True, the BuildingModel object will be simulated
+        :param are_target: bool: default=False: if True, the BuildingModel object will be a target
+        :param kwargs: dict: additional parameters to be passed to the building model object
+            autozoner: bool: default=False: if True, the thermal zones will be automatically generated
+            use_layout_from_typology: bool: default=False: if True, the layout will be defined according to the typology
+            use_properties_from_typology: bool: default=True: if True, the new building model will be generated according
+            to the properties of the typology, especially the construction material and the window to wall ratio
+            typology_identifier_model_id: str: default=None: id of the machine learning model to be used to identify the typology
         :return:
         """
+
+        # Load the Typology identifier ML model if needed
+        if typology_identification:
+            None
+            # Typology.load_typology_identifier_model(path_ml_model_folder=path_ml_model_folder,typology_identifier_model_id=typology_identifier_model_id)
+        else:
+            typology_identifier_model = None
+
         # Convert the buildings to BuildingModeled
-        for building_id in building_id_list_to_convert_to_BuildingModeled:
+        for building_id in building_id_list:
+            # Check if the building_id is in the urban canopy
+            if building_id not in self.building_dict.keys():
+                user_logger.info("The building id {building_id} is not in the urban canopy, it will not be converted "
+                                 "to BuildingModeled".format(building_id=building_id))
+                dev_logger.info("{building_id} is not in the urban canopy, it will not be converted "
+                                "to BuildingModeled".format(building_id=building_id))
+                continue
             building_obj = self.building_dict[building_id]
-            self.building_dict[building_id] = BuildingModeled.convert_building_to_BuildingModeled(
-                building_obj=building_obj, is_target=are_target, is_simulated=are_simulated,
-                layout_from_typology=layout_from_typology,
-                automatic_floor_subdivision=automatic_floor_subdivision,
-                properties_from_typology=properties_from_typology)
+            # If the building is already BuildingModeled do nothing and move on to the next building
+            if isinstance(building_obj, BuildingModeled):
+                continue
+            try:
+                # todo @Elie: add the typology identifier model if needed
+                new_building_obj = building_obj.convert_building_to_BuildingModeled(
+                    is_target=are_target, is_simulated=are_simulated, use_typology=use_typology,
+                    typology_identification=typology_identification,
+                    typology_identifier_model=typology_identifier_model, **kwargs)
+                self.building_dict[building_id] = new_building_obj
+            except:
+                user_logger.info("The conversion of the building {building_id} to BuildingModeled failed, it "
+                                 "will not be converted".format(building_id=building_id))
+                dev_logger.info("The conversion of the building {building_id} to BuildingModeled failed".format(
+                    building_id=building_id))
 
     def compute_moving_vector_to_origin(self):
         """ Make the moving vector to move the urban canopy to the origin """

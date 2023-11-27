@@ -35,8 +35,8 @@ class SimulationBuildingManipulationFunctions:
 
     @staticmethod
     def transform_buildingbasic_into_buildingmodeled_in_urban_canopy(urban_canopy_object, building_id_list=None,
-                                                                    use_typology=True, typology_identification=False,
-                                                                    **kwargs):
+                                                                     use_typology=True, typology_identification=False,
+                                                                     are_simulated=False, are_target=False, **kwargs):
         """
         Transform a BuildingBasic objects into a BuildingModel object.
         If
@@ -46,7 +46,9 @@ class SimulationBuildingManipulationFunctions:
         :param typology_identification: bool: default=False: if True, the typology identifier will be used to identify
             the typology of the BuildingModel object, the properties of the BuildingModel object will be defined
             according to the typology. (default=False)
-        :param kwargs: dict: additional parameters to be passed to the building model object
+        :param are_simulated: bool: default=False: if True, the BuildingModel object will be simulated
+        :param are_target: bool: default=False: if True, the BuildingModel object will be a target
+        :param kwargs: dict: additional parameters for the generation of the BuildingModel object
             autozoner: bool: default=False: if True, the thermal zones will be automatically generated
             use_layout_from_typology: bool: default=False: if True, the layout will be defined according to the typology
             use_properties_from_typology: bool: default=True: if True, the new building model will be generated according
@@ -56,7 +58,9 @@ class SimulationBuildingManipulationFunctions:
         urban_canopy_object.transform_buildingbasic_into_building_model(building_id_list=building_id_list,
                                                                         use_typology=use_typology,
                                                                         typology_identification=typology_identification,
-                                                                        **kwargs)
+                                                                        are_simulated=are_simulated,
+                                                                        are_target=are_target, **kwargs)
+        # todo @Elie: add the logs
         # user_logger.info("Oriented bounding boxes of buildings in the urban canopy have been made successfully")
         # dev_logger.info("Oriented bounding boxes of buildings in the urban canopy have been made successfully")
 
