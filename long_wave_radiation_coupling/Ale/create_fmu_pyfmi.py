@@ -1,4 +1,4 @@
-from pyfmi import load_fmu, compile_fmu
+from pyfmi import load_fmu  #, compile_fmu
 import numpy as np
 
 # Define your custom Python model using PyFMI Model class
@@ -33,11 +33,11 @@ model = MyModel()
 model_name = 'MyModel'
 start_time = 0.0
 
-# Compile the FMU using PyFMI
-fmu = compile_fmu(model, model_name, start_time=start_time)
-
-# Save the FMU to a file
-fmu_path = 'MyModel.fmu'
-fmu.save(fmu_path)
+# # Compile the FMU using PyFMI
+# fmu = compile_fmu(model, model_name, start_time=start_time)
+#
+# # Save the FMU to a file
+# fmu_path = 'MyModel.fmu'
+# fmu.save(fmu_path)
 
 

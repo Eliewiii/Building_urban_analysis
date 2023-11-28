@@ -183,6 +183,8 @@ def get_name_of_outdoor_bc_faces_list(paths_to_hbjson_param):
 
 
 def edit_idf_surfaces(file_path, content, type_of_edit='a'):
+    # todo @Ale : I don't understand what it does, can you explain?
+    #  especially because it is called later with the "w" option, that literally erases the file
     try:
         with open(file_path, type_of_edit) as file:
             file.write('_____'.join(content))
@@ -192,6 +194,10 @@ def edit_idf_surfaces(file_path, content, type_of_edit='a'):
 
 
 def edit_idf(file_path, content, type_of_edit='a'):
+    """
+    Add a string to a file
+    todo @Elie : change the name of the function to add string to file
+    """
     try:
         with open(file_path, type_of_edit) as file:
             file.write(content)
@@ -219,8 +225,11 @@ name_of_faces_to_output_many = get_name_of_outdoor_bc_faces_list(paths_to_hbjson
 # dir_to_write_idf_in = "C:\\Users\\alejandro.s\\Documents\\sim_ep"  # TODO @Ale, add the path to the directory where you want to write the idf file
 
 path_idf_list = []
-# Create the IDFs for each building
+
+
+# generate an FMU for each building
 for count, (idf_path, fmu_path, path_hbjson_file) in enumerate(zip(idf_folders, fmu_folders, paths_to_hbjson)):
+    # Create the IDFs for each building
     # Output is a E+ readable file
     (path_osm, path_idf) = from_hbjson_to_idf(idf_path, path_hbjson_file, path_epw_file, path_simulation_parameter)
     path_idf_list.append(path_idf)
@@ -229,11 +238,15 @@ for count, (idf_path, fmu_path, path_hbjson_file) in enumerate(zip(idf_folders, 
     print('-'*300)
 
     # Get the name of the surface with outdoor boundary condition
+    # todo @Elie : verify that it takes the punched geometry (with wholes in the windows instead of the windows)
     name_of_faces_to_output = get_name_of_outdoor_bc_faces(path_hbjson_file)
-    #Same for windows, to do later
 
+    # todo @Elie : Same for windows, to do later
+
+    # creates a file with the name of the surfaces to output, todo @Elie : change the name of the function and maybe no need to write a file for that
     edit_idf_surfaces(os.path.join(idf_path, 'face_names.txt'), name_of_faces_to_output, type_of_edit='w')
 
+    # Get the path to all the other FMU to point to them properly
     input_fmu_paths = [f for f in fmu_folders if f != fmu_path]
 
     # fmu_path, current_fmu_filename, connected_fmu_paths
@@ -254,6 +267,7 @@ for count, (idf_path, fmu_path, path_hbjson_file) in enumerate(zip(idf_folders, 
     # print(f'Moved current directory to FMU path: {fmu_path}')
 
     # todo @Elie : add cd to the path of a temp folder, then move the fmu to their final destination
+    #  can transfor this command in a bat file
     cmd = f'''python {path_fmu_conversion} -i {path_idd} -w {path_epw_file} -a {fmi_version} {path_idf}'''
     run_cmdline(cmd)
 

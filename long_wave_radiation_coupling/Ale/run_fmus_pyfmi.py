@@ -56,7 +56,7 @@ for m in models:
     print(m.get_input_list(), len(m.get_input_list()))
     print('*'*300)
     # m.instantiate() # ncp=final_time / (10 * 60)
-    m.setup_experiment(start_time=start_time, stop_time=end_time)
+    m.setup_experiment(start_time=start_time, stop_time=end_time)  # todo : @Ale what is the difference between the 2 ?
     m.initialize(start_time, end_time)
 
 
