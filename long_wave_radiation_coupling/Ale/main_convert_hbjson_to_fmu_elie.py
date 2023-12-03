@@ -14,7 +14,7 @@ path.append(path_to_script_folder)
 from util_functions.prepare_hb_model_for_ep_simulation import from_hbjson_to_idf
 from paths_to_files import path_ep, path_simulation_parameter, \
     path_hbjson_file_twobuildingsfirst, path_hbjson_file_twobuildingssecond, path_hbjson_file_onebuildingonly, \
-    path_epw_file, path_fmu_conversion_dot_py, path_idd, fmi_version, path_to_fmus
+    path_epw_file, path_fmu_conversion_dot_py, path_idd, fmi_version, path_to_fmus,path_temp_dir
 from util_functions.simulaton_ep import run_idf_windows_modified
 from subprocess import run as run_cmdline
 import os
@@ -222,6 +222,7 @@ def clean_directory(path):
 paths_to_hbjson = [path_hbjson_file_twobuildingsfirst, path_hbjson_file_twobuildingssecond]
 
 # Craete folders
+# todo @Elie : delete
 idf_folders, fmu_folders = create_folders(paths_to_hbjson, path_to_fmus)
 
 # Get the name of the surface with outdoor boundary condition
@@ -259,7 +260,7 @@ for count, (idf_dir, fmu_dir, path_hbjson_file) in enumerate(zip(idf_folders, fm
     content = create_extra_idf_fmu_statements(
         fmu_path=fmu_dir,
         # input_fmu_paths=input_fmu_paths,
-        current_fmu_filename=os.path.splitext(os.path.basename(paths_hbjson_file))[0],
+        current_fmu_filename=os.path.splitext(os.path.basename(path_hbjson_file))[0],
         connected_fmu_paths=[pth for pth in fmu_folders if pth != fmu_dir],
         output_faces=name_of_faces_to_output,
         input_faces=[vv for k, v in name_of_faces_to_output_many.items() for vv in v if k != path_hbjson_file]
@@ -273,23 +274,24 @@ for count, (idf_dir, fmu_dir, path_hbjson_file) in enumerate(zip(idf_folders, fm
     # print(f'Moved current directory to FMU path: {fmu_path}')
 
     # Define path where to run the fmu generation
-    path_temp_dir = r"C:\Users\eliem\Documents\Technion\Temp\trash"
+    path_temp_trash_dir = os.path.join(path_temp_dir,"trash")
 
     # Delete the content of the directory if it exist or create it
-    clean_directory(path_temp_dir)
+    clean_directory(path_temp_trash_dir)
 
     # Write the command
-    cmd = f"cd {path_temp_dir}"
-    cmd += f" && "
+    os.chdir(path_temp_trash_dir)  # change dir loc to generate the files at the proper place
     cmd = f"python {path_fmu_conversion_dot_py} -i {path_idd} -w {path_epw_file} -a {fmi_version} {path_idf}"
     run_cmdline(cmd)
 
     # Move the FMU to the right folder
-    path_fmu_file = os.path.join(path_temp_dir, 'in.fmu')
+    path_fmu_file = os.path.join(path_temp_trash_dir, 'in.fmu')
     shutil.move(path_fmu_file, fmu_dir)
 
+    os.chdir(path_temp_dir)  # Remove dir to delete the trash folder todo @Elie, do it better
+
     # Remove all the files in the temp directory
-    clean_directory(path_temp_dir)
+    clean_directory(path_temp_trash_dir)
 
     print('&' * 300)
 

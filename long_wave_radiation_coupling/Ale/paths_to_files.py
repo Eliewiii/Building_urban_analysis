@@ -21,9 +21,9 @@ path_fmu_conversion_dot_py = r"C:\Users\eliem\Documents\Technion\EnergyPlusToFMU
 path_idd = r"C:\EnergyPlusV23-2-0\Energy+.idd"
 fmi_version = 2
 
-path_temp = r"C:\Users\eliem\Documents\Technion\Temp"
+path_temp_dir = r"C:\Users\eliem\Documents\Technion\Temp"
 
-path_to_fmus = os.path.join(path_temp, 'fmus')
+path_to_fmus = os.path.join(path_temp_dir, 'fmus')
 
 # # Ale
 
