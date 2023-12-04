@@ -8,8 +8,8 @@ from utils.utils_default_values_user_parameters import default_path_weather_file
 # EnergyPlus
 
 # Elie
-
-path_ep = r"C:\EnergyPlusV23-2-0\energyplus.exe"  # TODO @Ale, add the path to your version of EnergyPlus
+path_ep_folder = r"C:\EnergyPlusV23-2-0"
+path_ep = os.path.join(path_ep_folder,"energyplus.exe")  # TODO @Ale, add the path to your version of EnergyPlus
 path_simulation_parameter = r"C:\Users\eliem\AppData\Local\Building_urban_analysis\Scripts\long_wave_radiation_coupling\Ale\data\simulation_parameters.json"
 
 path_hbjson_file_onebuildingonly = "C:\\Users\\alejandro.s\\AppData\\Local\\Building_urban_analysis\\Scripts\\long_wave_radiation_coupling\\Ale\\data\\model_no_shade_win_not_el.hbjson"

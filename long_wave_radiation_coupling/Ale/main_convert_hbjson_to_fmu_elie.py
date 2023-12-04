@@ -13,7 +13,7 @@ path.append(path_to_script_folder)
 
 from util_functions.prepare_hb_model_for_ep_simulation import from_hbjson_to_idf
 from paths_to_files import path_ep, path_simulation_parameter, \
-    path_hbjson_file_twobuildingsfirst, path_hbjson_file_twobuildingssecond, path_hbjson_file_onebuildingonly, \
+    path_hbjson_file_twobuildingsfirst, path_hbjson_file_twobuildingssecond, path_hbjson_file_twobuildingsthird, \
     path_epw_file, path_fmu_conversion_dot_py, path_idd, fmi_version, path_to_fmus,path_temp_dir
 from util_functions.simulaton_ep import run_idf_windows_modified
 from subprocess import run as run_cmdline
@@ -219,7 +219,7 @@ def clean_directory(path):
 """Steps are to create the IDF from the Honeybee JSON objects. Then """
 
 # PARAMETER TO SET
-paths_to_hbjson = [path_hbjson_file_twobuildingsfirst, path_hbjson_file_twobuildingssecond]
+paths_to_hbjson = [path_hbjson_file_twobuildingsfirst, path_hbjson_file_twobuildingssecond, path_hbjson_file_twobuildingsthird]
 
 # clean FMU directory
 clean_directory(path_to_fmus)
