@@ -30,7 +30,9 @@ def get_name_of_outdoor_bc_faces(path_hbjson_file):
     return face_name_list
 
 
+# Final time of the simulatio, needs to be in seconds (and a multiple of EP possible time step a priori but not sure)
 final_time = int(86400 * 5)
+
 model1_path = 'C:\\Users\\alejandro.s\\Documents\\two_building_eplus_fmus\\model_1\\fmu_creation\\in.fmu'
 model2_path = 'C:\\Users\\alejandro.s\\Documents\\two_building_eplus_fmus\\model_2\\fmu_creation\\in.fmu'
 
@@ -62,6 +64,8 @@ for m in models:
 
 time_values = []
 output_values = {}  # Dictionary to store output variables
+
+# todo @Ale : what is this part doing? compare to the other one below ?
 
 # model1.instantiate()
 c = start_time

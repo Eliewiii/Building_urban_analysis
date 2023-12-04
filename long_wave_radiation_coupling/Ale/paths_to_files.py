@@ -24,6 +24,7 @@ fmi_version = 2
 path_temp_dir = r"C:\Users\eliem\Documents\Technion\Temp"
 
 path_to_fmus = os.path.join(path_temp_dir, 'fmus')
+path_to_run_temp_fmus = os.path.join(path_temp_dir, 'run_fmu')
 
 # # Ale
 

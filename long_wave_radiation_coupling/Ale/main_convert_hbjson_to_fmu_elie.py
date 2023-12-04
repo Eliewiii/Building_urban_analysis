@@ -221,6 +221,9 @@ def clean_directory(path):
 # PARAMETER TO SET
 paths_to_hbjson = [path_hbjson_file_twobuildingsfirst, path_hbjson_file_twobuildingssecond]
 
+# clean FMU directory
+clean_directory(path_to_fmus)
+
 # Craete folders
 # todo @Elie : delete
 idf_folders, fmu_folders = create_folders(paths_to_hbjson, path_to_fmus)
