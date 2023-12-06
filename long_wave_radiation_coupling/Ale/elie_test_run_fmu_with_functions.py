@@ -15,7 +15,6 @@ from long_wave_radiation_coupling.utils_run_co_sim import initialize_models
 
 from utils.utils_file_folder_functions import clean_directory
 
-
 # Create a folder to run the FMUs in, if it already exists, delete it and create a new one
 clean_directory(path_to_run_temp_fmus)
 # Change the working directory to the temporary directory
@@ -33,7 +32,7 @@ model1 = load_fmu(model1_path)
 model2 = load_fmu(model2_path)
 model3 = load_fmu(model3_path)
 
-models = [model1, model2, model3]
+model_list = [model1, model2, model3]
 
 # Final time of the simulatio, needs to be in seconds (and a multiple of EP possible time step a priori but not sure)
 final_time = int(60 * 60 * 24 * 15)  # 5 days
@@ -55,31 +54,19 @@ existing_energyplus_dirs = [dir_path for dir_path in original_path.split(os.path
                             'energyplus' in dir_path.lower()]
 for existing_dir in existing_energyplus_dirs:
     original_path_copy = original_path_copy.replace(existing_dir + os.pathsep, '')  # Remove directory and separator
+
 try:
     # Append the EnergyPlus directory to the PATH using os.pathsep
     os.environ['PATH'] = f'{original_path}{os.pathsep}{path_ep_folder}'
 
+    path_to_run_temp_fmu_list = [os.path.join(path_to_run_temp_fmus, f"run_fmu_{i}") for i, model in
+                                 enumerate(model_list)]
+
     """ Code that needs using EnergyPlus """
-    # Print Inputs and Outputs an initialize the models
-    for i, m in enumerate(models):
-        # Create a temporary directory to run the FMU in the directory of the FMU
-        path_to_run_temp_fmu = os.path.join(path_to_run_temp_fmus, f"fmu_{i}")
-        clean_directory(path_to_run_temp_fmu)
-        # Change the working directory to the temporary directory
-        """ The change of directory is necessary because otherwise it will write the resulst file in the current
-         directory, it is not possible to simulate 2 FMUs in the same directory at the same time as the results files
-          have the same name and it will generate an error."""
-        os.chdir(path_to_run_temp_fmu)
+    # Initialize models
 
-        # Collect the inputs and outputs of the FMU, todo: @Elie, just to check.
-        outputs = m.get_output_list()
-        inputs = m.get_input_list()
-        print('*' * 300)
-        m.instantiate(visible=True)  # ncp=final_time / (10 * 60)
-        m.setup_experiment(start_time=start_time,
-                           stop_time=end_time)
-
-        m.initialize()
+    initialize_models(model_list=model_list, path_to_run_temp_fmu_list=path_to_run_temp_fmu_list, start_time=start_time,
+                      end_time=end_time)
 
     """ Seems like the programs stops after initialization if there is nothing that comes after, it creates an error """
     os.chdir(path_to_run_temp_fmus)
@@ -87,13 +74,10 @@ try:
     # Run the simulation
     for step_index in range(0, nb_step):
         time = step_index * step_size
-        for i, m in enumerate(models):
+        for i, m in enumerate(model_list):
             m.do_step(current_t=time, step_size=step_size)
 
-    for i, m in enumerate(models):
-        path_to_run_temp_fmu = os.path.join(path_to_run_temp_fmus, f"fmu_{i}")
-        # os.chdir(path_to_run_temp_fmu)
-
+    for count, model in enumerate(model_list):
         m.terminate()
 
     os.chdir(path_to_run_temp_fmus)
