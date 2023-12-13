@@ -145,7 +145,6 @@ class BuildingModeled(BuildingBasic):
         building_modeled_obj.height = height
         building_modeled_obj.is_target = is_target
 
-
         try:
             # todo @Elie : make the lb_face_footprint from the hb_model
             building_modeled_obj.lb_face_footprint = HbAddons.make_LB_face_footprint_from_HB_model(
@@ -195,9 +194,39 @@ class BuildingModeled(BuildingBasic):
                                                                              north_angle=north_angle)
         self.merged_faces_hb_model_dict = merged_faces_hb_model_obj.to_dict()
 
+    def perform_first_pass_context_filtering(self, uc_building_id_list, uc_building_bounding_box_list,
+                                             min_vf_criterion=0.01, overwrite=False):
+        """
+        Perform the first pass of the context filtering algorithm on the building.
+        :param uc_building_id_list: list of str: list of the building IDs in the urban canopy
+        :param uc_building_bounding_box_list: list of Ladybug Polyface3D: list of the bounding boxes of the buildings
+            in the urban canopy
+        :param min_VF_criterion: float: default=0.01, minimum view factor criterion for the first pass of the
+            context filtering algorithm
+        :param overwrite: bool: default=False, if True, overwrite the context building list of the building
+        if it already exists
+        :return context_building_id_list: list of str: list of the IDs of the buildings that are context for the
+            current building
+        """
+        # overwrite context filtering obejct if needed
+        if overwrite:
+            self.shading_context_obj.overwrite_filtering(overwrite_first_pass=True)
+        # check if the first pass was already done and run it (if it was overwritten, it will be run again)
+        if not self.shading_context_obj.first_pass_done:
+            # Set the min VF criterion
+            self.shading_context_obj.set_min_vf_criterion(min_vf_criterion=min_vf_criterion)
+            # Perform the first pass of the context filtering algorithm
+            self.shading_context_obj.perform_first_pass_context_filtering(
+                target_lb_polyface3d_extruded_footprint=self.lb_polyface3d_extruded_footprint,
+                target_building_id=self.id,
+                uc_building_id_list=uc_building_id_list,
+                uc_building_bounding_box_list=uc_building_bounding_box_list)
+        # Return the list of context buildings
+        return self.shading_context_obj.selected_context_building_id_list
+
     def init_shading_context_obj(self, min_vf_criterion, number_of_rays):
         """
-        todo @Elie
+        todo @Elie  DELETE
         todo @Elie
         :return:
         """
@@ -223,7 +252,7 @@ class BuildingModeled(BuildingBasic):
 
     def generate_sensor_grid(self, bipv_on_roof=True, bipv_on_facades=True,
                              roof_grid_size_x=1, facades_grid_size_x=1, roof_grid_size_y=1,
-                             facades_grid_size_y=1, offset_dist=0.1,overwrite=False):
+                             facades_grid_size_y=1, offset_dist=0.1, overwrite=False):
         """
         Generate Honeybee SensorGrid on the roof and/or on the facades for the building.
         It does not add the SendorgGrid to the HB model.
@@ -296,10 +325,12 @@ class BuildingModeled(BuildingBasic):
             path_weather_file=path_weather_file, overwrite=overwrite,
             north_angle=north_angle, silent=silent)
 
-    def building_run_bipv_panel_simulation(self, path_simulation_folder, roof_pv_tech_obj, facades_pv_tech_obj, uc_start_year,
-                                  uc_current_year, uc_end_year, efficiency_computation_method="yearly",
-                                  minimum_panel_eroi=1.2, replacement_scenario="replace_failed_panels_every_X_years",
-                                  continue_simulation=False, **kwargs):
+    def building_run_bipv_panel_simulation(self, path_simulation_folder, roof_pv_tech_obj, facades_pv_tech_obj,
+                                           uc_start_year,
+                                           uc_current_year, uc_end_year, efficiency_computation_method="yearly",
+                                           minimum_panel_eroi=1.2,
+                                           replacement_scenario="replace_failed_panels_every_X_years",
+                                           continue_simulation=False, **kwargs):
         """
 
         """

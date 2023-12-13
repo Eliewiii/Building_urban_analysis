@@ -3,6 +3,8 @@ Functions for the context filtering step.
 For both shading and LWR.
 """
 
+from time import time
+
 from utils.utils_default_values_user_parameters import default_mvfc_context_shading_selection, \
     default_shading_number_of_rays_context_filter_second_pass, \
     default_automatic_floor_subdivision_for_new_BuildingModeled, \
@@ -43,7 +45,8 @@ class SimulationContextFiltering:
         # Perform the first pass of context filtering
         building_id_list_to_convert_to_BuildingModeled = cls.perform_first_pass_of_context_filtering_on_buildings(
             urban_canopy_object, min_VF_criterion=min_VF_criterion,
-            number_of_rays=number_of_rays, building_id_list=building_id_list, on_building_to_simulate=on_building_to_simulate)
+            number_of_rays=number_of_rays, building_id_list=building_id_list,
+            on_building_to_simulate=on_building_to_simulate)
 
         # todo : new version
 
@@ -60,28 +63,32 @@ class SimulationContextFiltering:
 
     @staticmethod
     def perform_first_pass_of_context_filtering_on_buildings(urban_canopy_object,
-                                                             min_VF_criterion=default_mvfc_context_shading_selection,
-                                                             number_of_rays=default_shading_number_of_rays_context_filter_second_pass,
                                                              building_id_list=None,
-                                                             on_building_to_simulate=True,
-                                                             automatic_floor_subdivision_for_new_BuildingModeled=default_automatic_floor_subdivision_for_new_BuildingModeled,
-                                                             use_layout_from_typology_for_new_BuildingModeled=default_use_layout_from_typology_for_new_BuildingModeled,
-                                                             use_properties_from_typology_for_new_BuildingModeled=default_use_properties_from_typology_for_new_BuildingModeled,
-                                                             make_new_BuildingModeled_simulated=default_make_new_BuildingModeled_simulated):
+                                                             on_building_to_simulate=False,
+                                                             min_vf_criterion=default_mvfc_context_shading_selection ,
+                                                             overwrite=False):
         """
         Perform first pass of context filtering on buildings
         :param urban_canopy_object: UrbanCanopy object, the urban canopy
-        :param min_VF_criterion: float, minimum view factor criterion
-        :param number_of_rays: int, number of rays to use for the view factor calculation
-        :param building_id_list: list of str, list of building IDs to perform the context filtering on (optionnal)
-        :param on_building_to_simulate: bool, if True, perform the context filtering on all the building to simulate
+        :param building_id_list: list of str, the list of building id to perform the first pass context filtering on.
+        :param on_building_to_simulate: bool, if True, perform the first pass context filtering on the buildings to simulate.
+        :param min_vf_criterion: float, the minimum view factor criterion.
+        :param overwrite: bool, if True, the existing context selection will be overwritten.
         :return:
         """
 
+        duration = time()
+
         # Perform first pass of context filtering on buildings
-        return urban_canopy_object.perform_first_pass_context_filtering_on_buildings(
+        context_building_id_list = urban_canopy_object.perform_first_pass_context_filtering_on_buildings(
             building_id_list=building_id_list,
-            on_building_to_simulate=on_building_to_simulate)
+            on_building_to_simulate=on_building_to_simulate,
+            min_vf_criterion=min_vf_criterion,
+            overwrite=overwrite)
+
+        duration = time() - duration
+
+        return context_building_id_list, duration
 
     @staticmethod
     def perform_second_pass_of_context_filtering_on_buildings(urban_canopy_object):

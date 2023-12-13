@@ -3,6 +3,8 @@ BuildingShadingContext class, used to perform and store the result of the contex
 """
 import logging
 
+from honeybee.boundarycondition import Outdoors
+
 from building.context_filter.building_context import BuildingContext
 
 from building.context_filter.utils_functions_context_filter import is_vector3d_vertical, \
@@ -20,8 +22,36 @@ class BuildingShadingContext(BuildingContext):
     def __init__(self):
         """ todo """
         super().__init__()  # inherit from all the attributes of the super class
+        # Paramters
         self.number_of_rays = None
-        self.context_shading_hb_shade_list = []
+        self.consider_windows = None
+
+        # Results
+        self.shades_from_hb_model_list = []
+        self.context_shading_hb_shade_tuple_list = []
+        """
+        Tuples are use to keep the track of the originated building id, it is critical for the lwr computation in order 
+        to index properly the surfaces, using the following format (context_hb_shade, context_building_id)
+        """
+
+        # Simualtion tracking
+        self.second_pass_done = False
+
+    def overwrite_filtering(self, overwrite_first_pass=False, overwrite_second_pass=False):
+        """
+        Overwrite the filtering of the BuildingShadingContext object
+        :param overwrite_first_pass: boolean to overwrite the first pass of the context filtering. If the first pass is
+        overwritten, it automatically overwrites the second pass
+        :param overwrite_second_pass: boolean to overwrite the second pass of the context filtering
+        """
+        if overwrite_first_pass:
+            self.context_building_id_list = []
+            self.context_shading_hb_shade_list = []
+            self.first_pass_done = False
+            self.second_pass_done = False
+        if overwrite_second_pass:
+            self.context_shading_hb_shade_list = []
+            self.second_pass_done = False
 
     def set_number_of_rays(self, number_of_rays):
         """ todo """
@@ -31,12 +61,21 @@ class BuildingShadingContext(BuildingContext):
             self.number_of_rays = 3
             user_logger.warning(f"The number of ray inputted was not valid, the number of ray was set to 3")
 
+    def set_consider_windows(self, consider_windows):
+        """ todo """
+        if isinstance(consider_windows, bool):
+            self.consider_windows = consider_windows
+        else:
+            self.consider_windows = False
+            user_logger.warning(f"The consider windows inputted was not valid, the consider windows was set to False")
+
     def get_hb_shades_from_hb_model(self, hb_model):
         """
         Extract the shades from the Honeybee Model and add them to context_shading_hb_shade_list attribute
         :param hb_model: Honeybee Model
         """
-        self.context_shading_hb_shade_list.extend(hb_model.shades)
+        self.shades_from_hb_model_list.extend(hb_model.shades)
+        self.context_shading_hb_shade_list.extend(self.shades_from_hb_model_list)
 
     def select_non_obstructed_context_faces_with_ray_tracing(self, target_lb_polyface3d_extruded_footprint,
                                                              context_hb_model_list_to_test,
@@ -50,8 +89,7 @@ class BuildingShadingContext(BuildingContext):
     def select_non_obstructed_surfaces_of_context_hb_model_for_target_lb_polyface3d(self,
                                                                                     target_lb_polyface3d_extruded_footprint,
                                                                                     context_hb_model_list_to_test,
-                                                                                    full_urban_canopy_pyvista_mesh,
-                                                                                    number_of_rays):
+                                                                                    full_urban_canopy_pyvista_mesh):
         """
         Select the context surfaces that will be used for the shading simulation of the current target building.
         :param target_lb_polyface3d_extruded_footprint: Ladybug Polyface3D of the target building
@@ -69,13 +107,27 @@ class BuildingShadingContext(BuildingContext):
                 # Loop through the faces of the context Honeybee model
                 # todo !! don't use the face, use punched geometry of the faces ad the aperture
                 for hb_face_surface_to_test in hb_Room.faces:
-                    if not self.is_hb_face_context_surface_obstructed_for_target_lb_polyface3d(
-                            target_lb_polyface3d_extruded_footprint=target_lb_polyface3d_extruded_footprint,
-                            context_hb_face_surface_to_test=hb_face_surface_to_test,
-                            full_urban_canopy_pyvista_mesh=full_urban_canopy_pyvista_mesh,
-                            number_of_rays=number_of_rays):
-                        # If the context surface is not obstructed, add it to the list of non-obstructed surfaces
-                        non_obstructed_hb_face_list.append(hb_face_surface_to_test)
+                    if isinstance(hb_face_surface_to_test.boundary_condition, Outdoors):
+                        if not self.is_hb_face_context_surface_obstructed_for_target_lb_polyface3d(
+                                target_lb_polyface3d_extruded_footprint=target_lb_polyface3d_extruded_footprint,
+                                context_hb_face_surface_to_test=hb_face_surface_to_test,
+                                full_urban_canopy_pyvista_mesh=full_urban_canopy_pyvista_mesh,
+                                number_of_rays=self.number_of_rays):
+                            # If the context surface is not obstructed, add it to the list of non-obstructed surfaces
+                            non_obstructed_hb_face_list.append(hb_face_surface_to_test)
+                        # Consider the windows
+                        for hb_aperture in hb_face_surface_to_test.apertures:
+                            # Make a copy of the window geometry
+                            lb_face_window_geo = hb_aperture.geometry
+                            # Move the windows in the direction of its normal by 1 cm
+                            lb_face_window_geo= lb_face_window_geo.move(lb_face_window_geo.normal, 0.01)  # todo : check if it is the right direction
+                            if not self.is_hb_face_context_surface_obstructed_for_target_lb_polyface3d(
+                                    target_lb_polyface3d_extruded_footprint=target_lb_polyface3d_extruded_footprint,
+                                    context_hb_face_surface_to_test=lb_face_window_geo,   #todo change the name, works with lb face as well
+                                    full_urban_canopy_pyvista_mesh=full_urban_canopy_pyvista_mesh,
+                                    number_of_rays=self.number_of_rays):
+                                # If the context surface is not obstructed, add it to the list of non-obstructed surfaces
+                                non_obstructed_hb_face_list.append(hb_aperture)  # todo : change the name, it could be apperture as well
 
         return non_obstructed_hb_face_list
 

@@ -251,8 +251,10 @@ class UrbanCanopy:
         return HB_dict, HB_model
 
     def make_oriented_bounding_boxes_of_buildings(self, overwrite=False):
-        """ Make the oriented bounding boxes of the buildings in the urban canopy
-        and save it to hbjson file if the path is provided """
+        """
+        Make the oriented bounding boxes of the buildings in the urban canopy.
+        param overwrite: bool, if True, the oriented bounding boxes will be made even if they already exist
+        """
         for building in self.building_dict.values():
             building.make_LB_polyface3d_oriented_bounding_box(overwrite=overwrite)
 
@@ -369,24 +371,56 @@ class UrbanCanopy:
         # Pyvista_Polydata_mesh = make_Pyvista_Polydata_from_LB_Polyface3D_list(list_of_building_LB_Polyface3D_extruded_footprint)
 
     def perform_first_pass_context_filtering_on_buildings(self, building_id_list=None,
-                                                          on_building_to_simulate=True):
+                                                          on_building_to_simulate=False,
+                                                          min_vf_criterion=0.01,
+                                                          overwrite=False):
         """
-        Perform the first pass context filtering on the BuildingModeled objects in the urban canopy that need to be simulated.
+        Perform the first pass context filtering on the BuildingModeled objects in the urban canopy that need
+        to be simulated.
+        By default, the first pass context filtering is performed on all the target buildings.
+
         :param building_id_list: list of str, the list of building id to perform the first pass context filtering on.
         :param on_building_to_simulate: bool, if True, perform the first pass context filtering on the buildings to simulate.
+        :param min_vf_criterion: float, the minimum view factor criterion.
+        :param overwrite: bool, if True, the existing context selection will be overwritten.
         :return:
         """
-        context_building_id_list = []  # Initialize the list
-        # todo @Elie, make bounding boxes of all buildings if not done yet
+        # Make oriented bounding boxes of the buildings in the urban canopy if they don't exist already
         self.make_oriented_bounding_boxes_of_buildings()
         # if we specify the building no need to do it on all the simulated buildings
         if building_id_list is not None and building_id_list != []:
             on_building_to_simulate = False
+        # Checks of the building_id_list parameter to give feedback to the user if there is an issue with an id
+        if not (building_id_list is None or building_id_list is []):
+            for building_id in building_id_list:
+                if building_id not in self.building_dict.keys():
+                    user_logger.warning(f"The building id {building_id} is not in the urban canopy")
+                    dev_logger.info(
+                        f"The building id {building_id} is not in the urban canopy, make sure you indicated "
+                        f"the proper identifier in the input")
+                elif not isinstance(self.building_dict[building_id], BuildingModeled):
+                    user_logger.warning(
+                        f"The building id {building_id} is not a BuildingModeled type, it does not have Honeybee Model "
+                        f"attribute, context filtering cannot be performed. "
+                        f"You can use the adequate functions or components to convert the building{building_id} "
+                        f"into BuildingModeled.")
+        # Initialize the list of buildings that are in the context of the buildings to simulate
+        context_building_id_list = []  # Initialize the list
+        # Put the building ids and the bounding boxes in lists to pass down to the building context filtering method
+        uc_building_id_list = list(self.building_dict.keys())
+        uc_building_bounding_box_list = [building_obj.LB_polyface3d_oriented_bounding_box for
+                                         building_obj in self.building_dict.items()]
         # Loop over the buildings
         for i, (building_id, building_obj) in enumerate(self.building_dict.items()):
-            if (on_building_to_simulate and building_obj.to_simulate) or building_id in building_id_list:
+            if ((building_id in building_id_list and isinstance(building_obj, BuildingModeled))
+                    or (on_building_to_simulate and building_obj.to_simulate)
+                    or (building_obj.is_target and isinstance(building_obj, BuildingModeled))):
                 context_building_id_list += building_obj.perform_first_pass_context_filtering(
-                    building_dictionary=self.building_dict)
+                    uc_building_id_list=uc_building_id_list,
+                    uc_building_bounding_box_list=uc_building_bounding_box_list,
+                    min_vf_criterion=min_vf_criterion, overwrite=overwrite)
+        # Remove duplicates
+        context_building_id_list = list(set(context_building_id_list))
 
         return context_building_id_list
 

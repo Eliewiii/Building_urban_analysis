@@ -19,8 +19,12 @@ class BuildingContext:
     """ todo """
 
     def __init__(self):
+        # Parameter
         self.min_vf_criterion = None
-        self.context_building_id_list = []
+        # Result
+        self.selected_context_building_id_list = []
+        # Simulation tracking
+        self.first_pass_done = False
 
     def set_mvfc(self, min_vf_criterion):
         """ todo """
@@ -31,17 +35,21 @@ class BuildingContext:
             user_logger.warning(f"The minimum view factor criterion inputted was not valid, the minimum view"
                                 f" factor criterion was set to 0.01")
 
-    def select_context_building_using_the_mvfc(self, target_lb_polyface3d_extruded_footprint,
-                                               context_lb_polyface3d_oriented_bounding_box,
-                                               context_building_id):
+    def select_context_building_using_the_mvfc(self, target_lb_polyface3d_extruded_footprint, targer_building_id,
+                                               uc_building_id_list, uc_building_bounding_box_list):
         """ todo"""
-        # Check if the bounding box of the tested context building verifies the mvf criterion and is not already
-        if context_building_id not in self.context_building_id_list and self.is_bounding_box_context_using_mvfc_criterion(
-                target_lb_polyface3d_extruded_footprint,
-                context_lb_polyface3d_oriented_bounding_box,
-                min_vf_criterion=self.min_vf_criterion):
-            # if it verifies the criterion we add it to the context building
-            self.context_building_id_list.append(context_building_id)
+        for context_building_id, context_lb_polyface3d_oriented_bounding_box in zip(uc_building_id_list,
+                                                                                    uc_building_bounding_box_list):
+            # Check if the bounding box of the tested context building verifies the mvf criterion and is not already
+            if (context_building_id != targer_building_id
+                    and context_building_id not in self.selected_context_building_id_list
+                    and self.is_bounding_box_context_using_mvfc_criterion(target_lb_polyface3d_extruded_footprint,
+                                                                          context_lb_polyface3d_oriented_bounding_box,
+                                                                          min_vf_criterion=self.min_vf_criterion)):
+                # if it verifies the criterion we add it to the context building
+                self.selected_context_building_id_list.append(context_building_id)
+        # Set the first pass as done
+        self.first_pass_done = True
 
     @staticmethod
     def is_bounding_box_context_using_mvfc_criterion(target_lb_polyface3d_extruded_footprint,
@@ -58,10 +66,8 @@ class BuildingContext:
         """
         # todo @Elie check the description of the function and test it
         # Loop over all the couples of surfaces between the target building and the context building
-        for context_lb_face3d in list(
-                context_lb_polyface3d_oriented_bounding_box.faces):  # polyface3d.faces is a tuple
-            if not is_vector3d_vertical(
-                    context_lb_face3d.normal):  # exclude the horizontal/roof/ground surfaces
+        for context_lb_face3d in list(context_lb_polyface3d_oriented_bounding_box.faces):  # polyface3d.faces is a tuple
+            if not is_vector3d_vertical(context_lb_face3d.normal):  # exclude the horizontal/roof/ground surfaces
                 for target_lb_face3d in list(target_lb_polyface3d_extruded_footprint.faces):
                     # Get the view factor between the context building and the current building
                     majorized_view_factor = majorized_vf_between_2_surfaces(
