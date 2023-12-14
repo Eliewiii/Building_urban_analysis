@@ -128,6 +128,11 @@ def merge_facades_and_roof_faces_in_hb_model(hb_model_obj, orient_roof_mesh_to_a
     # add apertures to the Model
     add_apertures_to_merged_faces_hb_model(hb_model_obj=hb_model_obj,
                                            merged_faces_hb_model_obj=merged_faces_hb_model_obj)
+    # Apply the construction set (of conditioned zone) to the model
+    """ The properties of the materials are used for the shading computation. The program doesn't really matter here,
+     it's not meant for energy simulation) """
+    # todo @Elie, need to find the construction set of a conditioned zone that have at least one window and one wall
+    #  with outdoor boundary condition
 
     return merged_faces_hb_model_obj
 

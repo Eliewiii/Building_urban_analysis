@@ -93,7 +93,7 @@ class BuildingShadingContext(BuildingContext):
         """
         Select the context surfaces that will be used for the shading simulation of the current target building.
         :param target_lb_polyface3d_extruded_footprint: Ladybug Polyface3D of the target building
-        :param context_hb_model_list_to_test: list of Honeybee Model of the context building to test
+        :param context_hb_model_list_to_test: list of Honeybee Model of the context building to test. It will be more efficient (for the algorithm efficiency as well as the shadiong computation in EnergyPlus) to use HB models with merged facades.
         :param full_urban_canopy_pyvista_mesh: Pyvista Mesh containing the envelopes of all the in the urban canopy
         :param number_of_rays: number of rays to be used for the ray tracing to check if the context surfaces are obstructed
         :return hb_face_list_kept :
@@ -105,8 +105,9 @@ class BuildingShadingContext(BuildingContext):
             # Loop through the rooms of the context Honeybee model
             for hb_Room in context_hb_model_to_test.rooms:
                 # Loop through the faces of the context Honeybee model
-                # todo !! don't use the face, use punched geometry of the faces ad the aperture
                 for hb_face_surface_to_test in hb_Room.faces:
+                    """ Here the horizontal context surfaces are not discarded as they can reflect the sun light, 
+                    even if they do not shade """
                     if isinstance(hb_face_surface_to_test.boundary_condition, Outdoors):
                         if not self.is_hb_face_context_surface_obstructed_for_target_lb_polyface3d(
                                 target_lb_polyface3d_extruded_footprint=target_lb_polyface3d_extruded_footprint,
