@@ -52,9 +52,8 @@ class BuildingModeled(BuildingBasic):
         self.to_simulate = False
         self.is_target = False
         # Shading computation
+        self.lb_polyface3d_bounding_box = None
         self.shading_context_obj = BuildingShadingContext()
-
-        self.first_pass_context_building_id_list = []  # todo @Elie delete
 
         # Solar and panel radiation
         self.solar_radiation_and_bipv_simulation_obj = SolarRadAndBipvSimulation()
@@ -195,34 +194,37 @@ class BuildingModeled(BuildingBasic):
         self.merged_faces_hb_model_dict = merged_faces_hb_model_obj.to_dict()
 
     def perform_first_pass_context_filtering(self, uc_building_id_list, uc_building_bounding_box_list,
-                                             min_vf_criterion=0.01, overwrite=False):
+                                             min_vf_criterion=0.01, overwrite=True):
         """
         Perform the first pass of the context filtering algorithm on the building.
         :param uc_building_id_list: list of str: list of the building IDs in the urban canopy
         :param uc_building_bounding_box_list: list of Ladybug Polyface3D: list of the bounding boxes of the buildings
             in the urban canopy
-        :param min_VF_criterion: float: default=0.01, minimum view factor criterion for the first pass of the
+        :param min_vf_criterion: float: default=0.01, minimum view factor criterion for the first pass of the
             context filtering algorithm
         :param overwrite: bool: default=False, if True, overwrite the context building list of the building
         if it already exists
         :return context_building_id_list: list of str: list of the IDs of the buildings that are context for the
             current building
+        :return duration: float: duration of the simulation in seconds
         """
-        # overwrite context filtering obejct if needed
+        # overwrite context filtering object if needed
         if overwrite:
             self.shading_context_obj.overwrite_filtering(overwrite_first_pass=True)
         # check if the first pass was already done and run it (if it was overwritten, it will be run again)
         if not self.shading_context_obj.first_pass_done:
             # Set the min VF criterion
             self.shading_context_obj.set_min_vf_criterion(min_vf_criterion=min_vf_criterion)
+            # Set timer
             # Perform the first pass of the context filtering algorithm
             self.shading_context_obj.perform_first_pass_context_filtering(
                 target_lb_polyface3d_extruded_footprint=self.lb_polyface3d_extruded_footprint,
                 target_building_id=self.id,
                 uc_building_id_list=uc_building_id_list,
                 uc_building_bounding_box_list=uc_building_bounding_box_list)
+
         # Return the list of context buildings
-        return self.shading_context_obj.selected_context_building_id_list
+        return self.shading_context_obj.selected_context_building_id_list, self.shading_context_obj.duration
 
     def init_shading_context_obj(self, min_vf_criterion, number_of_rays):
         """
@@ -348,7 +350,9 @@ class BuildingModeled(BuildingBasic):
             building_id=self.id)
 
     def plot_panels_energy_results(self, path_simulation_folder_building, study_duration_years):
-
+        """
+        Todo @Elie, delete this function after making a new version....
+        """
         # plot energy
         cum_energy_harvested_roof = get_cumul_values(self.results_panels["roof"]["energy_harvested"]["list"])
         cum_energy_harvested_roof = [i / 1000 for i in cum_energy_harvested_roof]

@@ -32,9 +32,10 @@ tree_structure_per_building_urban_canopy_json_dict = {
     "is_building_to_simulate": False,
     "hb_model": None,
     "merged_faces_hb_model": None,
+    "lb_polyface3d_bounding_box": None,
     "context_surfaces": {
-        "First_pass_filter": {},
-        "Second_pass_filter": {},
+        "first_pass_selected_building_id_list": {},
+        "second_pass_": {},
         "hb_shades_list": None
     },
     "solar_radiation_and_bipv": {
@@ -111,6 +112,9 @@ class ExportUrbanCanopyToJson:
                 urban_canopy_obj.json_dict["buildings"][building_id]["hb_model"] = building_obj.hb_model_dict
                 urban_canopy_obj.json_dict["buildings"][building_id][
                     "merged_faces_hb_model"] = building_obj.merged_faces_hb_model_dict
+            if building_obj.lb_polyface3d_bounding_box is not None:
+                urban_canopy_obj.json_dict["buildings"][building_id][
+                    "lb_polyface3d_bounding_box"] = building_obj.lb_polyface3d_bounding_box.to_dict()
 
     @staticmethod
     def add_building_shades_to_json_dict(urban_canopy_obj):

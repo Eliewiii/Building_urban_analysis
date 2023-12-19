@@ -4,8 +4,10 @@ todo
 
 import logging
 
-from building.context_filter.utils_functions_context_filter import is_vector3d_vertical, \
-    majorized_vf_between_2_surfaces
+from time import time
+
+from building.context_filter.utils_functions_mvfc import majorized_vf_between_2_surfaces
+from building.context_filter.utils_functions_context_filter import is_vector3d_vertical
 
 user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")
@@ -23,6 +25,7 @@ class BuildingContext:
         self.min_vf_criterion = None
         # Result
         self.selected_context_building_id_list = []
+        self.duration = None
         # Simulation tracking
         self.first_pass_done = False
 
@@ -38,6 +41,10 @@ class BuildingContext:
     def select_context_building_using_the_mvfc(self, target_lb_polyface3d_extruded_footprint, targer_building_id,
                                                uc_building_id_list, uc_building_bounding_box_list):
         """ todo"""
+
+        # Timer to tack the duration of the simulation
+        timer = time()
+        # Loop over all the context buildings
         for context_building_id, context_lb_polyface3d_oriented_bounding_box in zip(uc_building_id_list,
                                                                                     uc_building_bounding_box_list):
             # Check if the bounding box of the tested context building verifies the mvf criterion and is not already
@@ -50,6 +57,7 @@ class BuildingContext:
                 self.selected_context_building_id_list.append(context_building_id)
         # Set the first pass as done
         self.first_pass_done = True
+        self.duration = time.time() - timer
 
     @staticmethod
     def is_bounding_box_context_using_mvfc_criterion(target_lb_polyface3d_extruded_footprint,
