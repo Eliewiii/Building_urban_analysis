@@ -65,10 +65,25 @@ class SimulationBuildingManipulationFunctions:
         # dev_logger.info("Oriented bounding boxes of buildings in the urban canopy have been made successfully")
 
     @staticmethod
+    def make_lb_polyface3d_extruded_footprint_of_buildings_in_urban_canopy(urban_canopy_object, overwrite=False):
+        """
+        Make extruded footprints of buildings in the urban canopy in the Ladybug Polyface3D format
+        :param urban_canopy_object: urban canopy object
+        :param overwrite: bool: default=False: if True, the existing extruded footprints will be overwritten
+        """
+
+        urban_canopy_object.make_lb_polyface3d_extruded_footprint_of_buildings(overwrite=overwrite)
+
+        user_logger.info("Extruded footprints of buildings in the urban canopy have been made successfully")
+        dev_logger.info("Extruded footprints of buildings in the urban canopy have been made successfully")
+
+
+    @staticmethod
     def make_oriented_bounding_boxes_of_buildings_in_urban_canopy(urban_canopy_object, overwrite=False):
         """
         Make oriented bounding boxes of buildings in the urban canopy
         :param urban_canopy_object:
+        :param overwrite: bool: default=False: if True, the existing oriented bounding boxes will be overwritten
         :return:
         """
         urban_canopy_object.make_oriented_bounding_boxes_of_buildings(overwrite=overwrite)

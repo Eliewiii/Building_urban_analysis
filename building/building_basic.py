@@ -283,6 +283,8 @@ class BuildingBasic:
             self.lb_polyface3d_oriented_bounding_box = make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint(
                 lb_face_footprint=self.lb_face_footprint, height=self.height, elevation=self.elevation)
 
+
+
     def move(self, vector):
         """
         Move the building to a new location

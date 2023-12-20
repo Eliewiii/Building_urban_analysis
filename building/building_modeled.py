@@ -12,10 +12,10 @@ from honeybee.model import Model
 from honeybee_radiance.sensorgrid import SensorGrid
 
 from building.building_basic import BuildingBasic
-from building.context_filter.building_shading_context import BuildingShadingContext
+from building.context_filter.building_shading_context import BuildingShadingContextFilter
 # from building.context_filter.building_lwr_context import BuildingLWRContext  # Useful later
 from building.solar_radiation_and_bipv.solar_rad_and_BIPV import SolarRadAndBipvSimulation
-from building.merg_hb_model_faces.merge_hb_model_faces import merge_facades_and_roof_faces_in_hb_model
+from building.merge_hb_model_faces.merge_hb_model_faces import merge_facades_and_roof_faces_in_hb_model
 
 from libraries_addons.hb_model_addons import HbAddons
 from libraries_addons.solar_radiations.add_sensorgrid_hb_model import get_hb_faces_facades, get_hb_faces_roof, \
@@ -53,7 +53,7 @@ class BuildingModeled(BuildingBasic):
         self.is_target = False
         # Shading computation
         self.lb_polyface3d_bounding_box = None
-        self.shading_context_obj = BuildingShadingContext()
+        self.shading_context_obj = BuildingShadingContextFilter()
 
         # Solar and panel radiation
         self.solar_radiation_and_bipv_simulation_obj = SolarRadAndBipvSimulation()
@@ -215,42 +215,19 @@ class BuildingModeled(BuildingBasic):
         if not self.shading_context_obj.first_pass_done:
             # Set the min VF criterion
             self.shading_context_obj.set_min_vf_criterion(min_vf_criterion=min_vf_criterion)
-            # Set timer
+            # Convert HB model to LB Polyface3D, keeping only the faces with outdoor boundary condition
+            target_lb_polyface3d_of_outdoor_faces = self.shading_context_obj. \
+                get_lb_polyface3d_of_outdoor_faces_from_hb_model(hb_model=self.hb_model_obj)
+
             # Perform the first pass of the context filtering algorithm
             self.shading_context_obj.perform_first_pass_context_filtering(
-                target_lb_polyface3d_extruded_footprint=self.lb_polyface3d_extruded_footprint,
+                target_lb_polyface3d_of_outdoor_faces=target_lb_polyface3d_of_outdoor_faces,
                 target_building_id=self.id,
                 uc_building_id_list=uc_building_id_list,
                 uc_building_bounding_box_list=uc_building_bounding_box_list)
 
         # Return the list of context buildings
-        return self.shading_context_obj.selected_context_building_id_list, self.shading_context_obj.duration
-
-    def init_shading_context_obj(self, min_vf_criterion, number_of_rays):
-        """
-        todo @Elie  DELETE
-        todo @Elie
-        :return:
-        """
-
-        self.shading_context_obj.set_min_vf_criterion(min_vf_criterion=min_vf_criterion)
-        self.shading_context_obj.set_number_of_rays(number_of_rays=number_of_rays)
-
-    def select_shading_context_buildings(self, building_dictionary):
-        """
-        todo @Elie
-        :param building_dictionary: todo @Elie
-        :return:
-        """
-
-        for i, (building_id, building_obj) in enumerate(building_dictionary.items()):
-            if building_id != self.id:
-                self.shading_context_obj.select_context_building_using_the_mvfc(
-                    target_LB_polyface3d_extruded_footprint=self.lb_polyface3d_extruded_footprint,
-                    context_LB_polyface3d_oriented_bounding_box=building_obj.lb_polyface3d_oriented_bounding_box,
-                    context_building_id=building_id)
-
-        return self.shading_context_obj.context_building_list
+        return self.shading_context_obj.selected_context_building_id_list, self.shading_context_obj.first_pass_duration
 
     def generate_sensor_grid(self, bipv_on_roof=True, bipv_on_facades=True,
                              roof_grid_size_x=1, facades_grid_size_x=1, roof_grid_size_y=1,
@@ -320,10 +297,14 @@ class BuildingModeled(BuildingBasic):
             user_logger.info(
                 f"The building {self.id} does not have shades. consider running the shading simulation first or add your shades manually")
 
+        # Create list of shading surfaces
+
+        hb_shades_list = self.shading_context_obj.context_shading_hb_shade_list + self.shading_context_obj.forced_hb_shades_from_user_list
+
         # run the annual solar radiation simulation
         self.solar_radiation_and_bipv_simulation_obj.run_annual_solar_irradiance_simulation(
             path_simulation_folder=path_simulation_folder, building_id=self.id, hb_model_obj=self.hb_model_obj,
-            context_shading_hb_shade_list=self.shading_context_obj.context_shading_hb_shade_list,
+            context_shading_hb_shade_list=hb_shades_list,
             path_weather_file=path_weather_file, overwrite=overwrite,
             north_angle=north_angle, silent=silent)
 

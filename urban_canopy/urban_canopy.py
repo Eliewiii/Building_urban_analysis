@@ -250,6 +250,15 @@ class UrbanCanopy:
             HB_model.to_hbjson(name="buildings_envelops", folder=path_folder)
         return HB_dict, HB_model
 
+    def make_lb_polyface3d_extruded_footprint_of_buildings(self, overwrite=False):
+        """
+        Make the Ladybug polyface3d extruded footprints of the buildings in the urban canopy.
+        :param overwrite: bool, if True, the polyface3d extruded footprints will be made even if they already exist
+        """
+        for building in self.building_dict.values():
+            building.make_LB_polyface3d_extruded_footprint(overwrite=overwrite)
+
+
     def make_oriented_bounding_boxes_of_buildings(self, overwrite=False):
         """
         Make the oriented bounding boxes of the buildings in the urban canopy.
@@ -257,6 +266,8 @@ class UrbanCanopy:
         """
         for building in self.building_dict.values():
             building.make_LB_polyface3d_oriented_bounding_box(overwrite=overwrite)
+
+
 
     def transform_buildingbasic_into_building_model(self, building_id_list=None, use_typology=True,
                                                     typology_identification=False, are_simulated=False,
@@ -419,7 +430,7 @@ class UrbanCanopy:
                         f"You can use the adequate functions or components to convert the building{building_id} "
                         f"into BuildingModeled.")
         # Initialize the list of buildings that are in the context of the buildings to simulate
-        context_building_id_list = []  # Initialize the list
+        selected_context_building_id_list = []  # Initialize the list
         # Put the building ids and the bounding boxes in lists to pass down to the building context filtering method
         uc_building_id_list = list(self.building_dict.keys())
         uc_building_bounding_box_list = [building_obj.LB_polyface3d_oriented_bounding_box for
@@ -432,16 +443,16 @@ class UrbanCanopy:
                     or (on_building_to_simulate and building_obj.to_simulate)
                     or (building_obj.is_target and isinstance(building_obj, BuildingModeled))):
                 # Perform the first pass context filtering
-                current_building_context_building_id_list, duration = building_obj.perform_first_pass_context_filtering(
+                current_building_selected_context_building_id_list, duration = building_obj.perform_first_pass_context_filtering(
                     uc_building_id_list=uc_building_id_list,
                     uc_building_bounding_box_list=uc_building_bounding_box_list,
                     min_vf_criterion=min_vf_criterion, overwrite=overwrite)
-                context_building_id_list += current_building_context_building_id_list
+                selected_context_building_id_list += current_building_selected_context_building_id_list
                 sim_duration_dict[building_id] = duration
         # Remove duplicates
-        context_building_id_list = list(set(context_building_id_list))
+        selected_context_building_id_list = list(set(selected_context_building_id_list))
 
-        return context_building_id_list, sim_duration_dict
+        return selected_context_building_id_list, sim_duration_dict
 
     def make_Pyvista_Polydata_mesh_of_all_buildings(self):
         """

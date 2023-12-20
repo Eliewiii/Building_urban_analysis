@@ -2,10 +2,11 @@
 BuildingShadingContext class, used to perform and store the result of the context filtering for shading computation using the 2 pass filtering method
 """
 import logging
+from time import time
 
 from honeybee.boundarycondition import Outdoors
 
-from building.context_filter.building_context import BuildingContext
+from building.context_filter.building_context import BuildingContextFilter
 
 from building.context_filter.utils_functions_context_filter import is_vector3d_vertical, \
     are_hb_face_or_lb_face3d_facing, ray_list_from_emitter_to_receiver
@@ -16,19 +17,20 @@ dev_logger = logging.getLogger("dev")
 possible_numbers_of_rays_list = [1, 3, 6, 9]
 
 
-class BuildingShadingContext(BuildingContext):
+class BuildingShadingContextFilter(BuildingContextFilter):
     """ todo """
 
     def __init__(self):
         """ todo """
         super().__init__()  # inherit from all the attributes of the super class
-        # Paramters
+        # Parameters
         self.number_of_rays = None
         self.consider_windows = None
 
         # Results
-        self.shades_from_hb_model_list = []  # todo : change the name to shade_list_from_hb_model
-        self.context_shading_hb_shade_dict = {}
+        self.second_pass_duration = None
+        self.forced_hb_shades_from_user_list = []  # todo : change the name to forced shades from user
+        self.context_shading_hb_shade_list = []
         """
         We use a dictionary to store the shades of the context buildings. The keys are the building ids and the values 
         are a list of shades of the context buildings.
@@ -74,14 +76,18 @@ class BuildingShadingContext(BuildingContext):
         Extract the shades from the Honeybee Model and add them to context_shading_hb_shade_list attribute
         :param hb_model: Honeybee Model
         """
-        self.shades_from_hb_model_list.extend(hb_model.shades)
-        self.context_shading_hb_shade_list.extend(self.shades_from_hb_model_list)
+        self.forced_hb_shades_from_user_list.extend(hb_model.shades)
 
     def select_non_obstructed_context_faces_with_ray_tracing(self, target_lb_polyface3d_extruded_footprint,
                                                              context_hb_model_list_to_test,
                                                              full_urban_canopy_pyvista_mesh, consider_windows=False,
                                                              keep_shades_from_hb_model=False):
-        """"""
+        """
+        todo @Elie : to finish
+        """
+        # Start the timer
+        timer = time()
+
         hb_face_context_list = self.select_non_obstructed_surfaces_of_context_hb_model_for_target_lb_polyface3d(
             target_lb_polyface3d_extruded_footprint=target_lb_polyface3d_extruded_footprint,
             context_hb_model_list_to_test=context_hb_model_list_to_test,
@@ -90,8 +96,16 @@ class BuildingShadingContext(BuildingContext):
 
         self.context_shading_hb_shade_list = None  # todo : Transform the faces into shades
 
+        # Stop the timer
+        self.second_pass_duration = time() - timer
+
         if not keep_shades_from_hb_model:
-            self.shades_from_hb_model_list = []
+            self.forced_hb_shades_from_user_list = []
+
+        # results to return
+        nb_context_faces = None  #todo
+
+        return nb_context_faces, self.second_pass_duration
 
     def select_non_obstructed_surfaces_of_context_hb_model_for_target_lb_polyface3d(self,
                                                                                     target_lb_polyface3d_extruded_footprint,
@@ -108,7 +122,7 @@ class BuildingShadingContext(BuildingContext):
         :return hb_face_list_kept :
         """
         # Initialization
-        context_shading_hb_shade_dict= {}
+        context_shading_hb_shade_list= {}
         # Loop through the context hb model
         for context_hb_model,context_building_id in zip(context_building_hb_model_list,context_building_id_list):
             non_obstructed_hb_face_or_aperture_list = []
@@ -144,9 +158,9 @@ class BuildingShadingContext(BuildingContext):
                                     non_obstructed_hb_face_or_aperture_list.append(
                                         hb_aperture)  # todo : change the name, it could be apperture as well
             if len(non_obstructed_hb_face_or_aperture_list) > 0:
-                context_shading_hb_shade_dict[context_building_id] = non_obstructed_hb_face_or_aperture_list
+                context_shading_hb_shade_list[context_building_id] = non_obstructed_hb_face_or_aperture_list
 
-        return context_shading_hb_shade_dict
+        return context_shading_hb_shade_list
 
     def is_hb_face_context_surface_obstructed_for_target_lb_polyface3d(self, target_lb_polyface3d_extruded_footprint,
                                                                        context_hb_face_surface_to_test,

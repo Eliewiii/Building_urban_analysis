@@ -3,10 +3,10 @@ We'll see, we need same first pass context filtering, with a different mvfc valu
 will be much different
 todo @Elie
 """
-from building.context_filter.building_context import BuildingContext
+from building.context_filter.building_context import BuildingContextFilter
 
 
-class BuildingLWRContext(BuildingContext):
+class BuildingLWRContextFilter(BuildingContextFilter):
     """ todo """
 
     def __init__(self):

@@ -238,7 +238,7 @@ class SolarRadAndBipvSimulation:
         :param path_simulation_folder: str : the path to the simulation folder
         :param building_id: int : the id of the building
         :param hb_model_obj: Honeybee Model object
-        :param context_shading_hb_shade_list: list of Honeybee Aperture objects for the context shading
+        :param context_shading_hb_shade_list: list of Honeybee Shades objects for the context shading
         :param path_weather_file: str : the path to the epw file
         :param overwrite: bool : whether to overwrite the existing results
         :param north_angle: float : the north angle of the building

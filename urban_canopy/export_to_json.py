@@ -34,9 +34,14 @@ tree_structure_per_building_urban_canopy_json_dict = {
     "merged_faces_hb_model": None,
     "lb_polyface3d_bounding_box": None,
     "context_surfaces": {
-        "first_pass_selected_building_id_list": {},
-        "second_pass_": {},
-        "hb_shades_list": None
+        "parameters": {
+            "min_vf_criterion": None,
+            "number_of_rays": None,
+            "consider_windows": None
+        },
+        "first_pass_selected_building_id_list": None,
+        "second_pass_selected_hb_shade_list": None,
+        "forced_shades_from_user": None
     },
     "solar_radiation_and_bipv": {
         "parameters": None,
@@ -110,20 +115,45 @@ class ExportUrbanCanopyToJson:
                 urban_canopy_obj.json_dict["buildings"][building_id][
                     "is_building_to_simulate"] = building_obj.to_simulate
                 urban_canopy_obj.json_dict["buildings"][building_id]["hb_model"] = building_obj.hb_model_dict
+                # HB model with merged faces of the building (used for the context filtering and the solar radiation)
                 urban_canopy_obj.json_dict["buildings"][building_id][
                     "merged_faces_hb_model"] = building_obj.merged_faces_hb_model_dict
-            if building_obj.lb_polyface3d_bounding_box is not None:
-                urban_canopy_obj.json_dict["buildings"][building_id][
-                    "lb_polyface3d_bounding_box"] = building_obj.lb_polyface3d_bounding_box.to_dict()
+                # Bounding box of the building, used for the context filtering
+                if building_obj.lb_polyface3d_bounding_box is not None:
+                    urban_canopy_obj.json_dict["buildings"][building_id][
+                        "lb_polyface3d_bounding_box"] = building_obj.lb_polyface3d_bounding_box.to_dict()
 
     @staticmethod
     def add_building_shades_to_json_dict(urban_canopy_obj):
-        """ Add the attributes of the building to the json dictionary of the urban canopy object. """
+        """ Add the context filtering results of the building to the json dictionary of the urban canopy object. """
         for building_id, building_obj in urban_canopy_obj.building_dict.items():
-            if isinstance(building_obj, BuildingModeled) \
-                    and building_obj.shading_context_obj.context_shading_hb_shade_list != []:
-                urban_canopy_obj.json_dict["buildings"][building_id]["context_surfaces"]["hb_shades_list"] = \
-                    [shade.to_dict() for shade in building_obj.shading_context_obj.context_shading_hb_shade_list]
+            if isinstance(building_obj, BuildingModeled) :
+                # List of the forced shades from the user
+                urban_canopy_obj.json_dict["buildings"][building_id][
+                    "context_surfaces"]["forced_shades_from_user"] = \
+                    [shade.to_dict() for shade in building_obj.shading_context_obj.forced_hb_shades_from_user_list]
+                if building_obj.shading_context_obj.first_pass_done:
+                    # Ids of the selected context buildings from the first pass
+                    urban_canopy_obj.json_dict["buildings"][building_id][
+                        "context_surfaces"]["first_pass_selected_building_id_list"] = \
+                        building_obj.shading_context_obj.selected_context_building_id_list
+                    # parameters of the first pass
+                    urban_canopy_obj.json_dict["buildings"][building_id][
+                        "context_surfaces"]["parameters"]["min_vf_criterion"] = \
+                        building_obj.shading_context_obj.min_vf_criterion
+                if building_obj.shading_context_obj.second_pass_done:
+                    # List of the selected context shades from the second pass
+                    urban_canopy_obj.json_dict["buildings"][building_id][
+                        "context_surfaces"]["second_pass_selected_hb_shade_list"] = \
+                        [shade.to_dict() for shade in building_obj.shading_context_obj.context_shading_hb_shade_list]
+                    # parameters of the second pass
+                    urban_canopy_obj.json_dict["buildings"][building_id][
+                        "context_surfaces"]["parameters"]["number_of_rays"] = \
+                        building_obj.shading_context_obj.number_of_rays
+                    urban_canopy_obj.json_dict["buildings"][building_id][
+                        "context_surfaces"]["parameters"]["consider_windows"] = \
+                        building_obj.shading_context_obj.consider_windows
+
 
     @staticmethod
     def add_solar_radiation_and_bipv_to_json_dict(urban_canopy_obj):
@@ -159,7 +189,7 @@ class ExportUrbanCanopyToJson:
                 if building_obj.solar_radiation_and_bipv_simulation_obj.facades_panel_list is not None:
                     urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
                         "facades_panel_mesh_index_list"] = [panel.index for panel in
-                                                         building_obj.solar_radiation_and_bipv_simulation_obj.facades_panel_list]
+                                                            building_obj.solar_radiation_and_bipv_simulation_obj.facades_panel_list]
                 # Results BIPV
                 urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
                     "roof_result_dict"] = \
