@@ -274,7 +274,7 @@ class BuildingBasic:
             self.lb_polyface3d_extruded_footprint = LB_face_footprint_to_lB_polyface3D_extruded_footprint(
                 lb_face_footprint=self.lb_face_footprint, height=self.height, elevation=self.elevation)
 
-    def make_LB_polyface3d_oriented_bounding_box(self, overwrite=False):
+    def make_lb_polyface3d_oriented_bounding_box(self, overwrite=False):
         """ make the oriented bounding box of the building
         :param overwrite: if True, overwrite the existing LB_polyface3d_oriented_bounding_box
         :return: LB_polyface3d_oriented_bounding_box, a LB Polyface3D object

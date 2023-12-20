@@ -47,7 +47,7 @@ class BuildingShadingContextFilter(BuildingContextFilter):
         :param overwrite_second_pass: boolean to overwrite the second pass of the context filtering
         """
         if overwrite_first_pass:
-            self.context_building_id_list = []
+            self.selected_context_building_id_list = []
             self.context_shading_hb_shade_list = []
             self.first_pass_done = False
             self.second_pass_done = False

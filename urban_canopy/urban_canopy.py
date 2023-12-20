@@ -256,7 +256,7 @@ class UrbanCanopy:
         :param overwrite: bool, if True, the polyface3d extruded footprints will be made even if they already exist
         """
         for building in self.building_dict.values():
-            building.make_LB_polyface3d_extruded_footprint(overwrite=overwrite)
+            building.make_lb_polyface3d_extruded_footprint(overwrite=overwrite)
 
 
     def make_oriented_bounding_boxes_of_buildings(self, overwrite=False):
@@ -265,7 +265,7 @@ class UrbanCanopy:
         param overwrite: bool, if True, the oriented bounding boxes will be made even if they already exist
         """
         for building in self.building_dict.values():
-            building.make_LB_polyface3d_oriented_bounding_box(overwrite=overwrite)
+            building.make_lb_polyface3d_oriented_bounding_box(overwrite=overwrite)
 
 
 
@@ -433,15 +433,15 @@ class UrbanCanopy:
         selected_context_building_id_list = []  # Initialize the list
         # Put the building ids and the bounding boxes in lists to pass down to the building context filtering method
         uc_building_id_list = list(self.building_dict.keys())
-        uc_building_bounding_box_list = [building_obj.LB_polyface3d_oriented_bounding_box for
-                                         building_obj in self.building_dict.items()]
+        uc_building_bounding_box_list = [building_obj.lb_polyface3d_oriented_bounding_box for
+                                         building_obj in self.building_dict.values()]
         # Dictionary of the simulation duration, to get the duration of the simulation for each building
         sim_duration_dict = {}
         # Loop over the buildings
         for i, (building_id, building_obj) in enumerate(self.building_dict.items()):
-            if ((building_id in building_id_list and isinstance(building_obj, BuildingModeled))
-                    or (on_building_to_simulate and building_obj.to_simulate)
-                    or (building_obj.is_target and isinstance(building_obj, BuildingModeled))):
+            if ((building_id_list is not None and building_id in building_id_list and isinstance(building_obj, BuildingModeled))
+                    or (on_building_to_simulate and isinstance(building_obj, BuildingModeled) and building_obj.to_simulate)
+                    or (isinstance(building_obj, BuildingModeled) and building_obj.is_target)):
                 # Perform the first pass context filtering
                 current_building_selected_context_building_id_list, duration = building_obj.perform_first_pass_context_filtering(
                     uc_building_id_list=uc_building_id_list,
@@ -453,6 +453,59 @@ class UrbanCanopy:
         selected_context_building_id_list = list(set(selected_context_building_id_list))
 
         return selected_context_building_id_list, sim_duration_dict
+
+    def perform_second_pass_context_filtering_on_buildings(self, building_id_list=None,
+                                                          on_building_to_simulate=False,
+                                                          min_vf_criterion=0.01,
+                                                          overwrite=False):
+        """
+        todo @Elie:
+        """
+        # Make extruded footprints of the buildings in the LB polyface3d format if they don't exist already
+        self.make_lb_polyface3d_extruded_footprint_of_buildings()
+
+
+        # # if we specify the building no need to do it on all the simulated buildings
+        # if building_id_list is not None and building_id_list != []:
+        #     on_building_to_simulate = False
+        # # Checks of the building_id_list parameter to give feedback to the user if there is an issue with an id
+        # if not (building_id_list is None or building_id_list is []):
+        #     for building_id in building_id_list:
+        #         if building_id not in self.building_dict.keys():
+        #             user_logger.warning(f"The building id {building_id} is not in the urban canopy")
+        #             dev_logger.info(
+        #                 f"The building id {building_id} is not in the urban canopy, make sure you indicated "
+        #                 f"the proper identifier in the input")
+        #         elif not isinstance(self.building_dict[building_id], BuildingModeled):
+        #             user_logger.warning(
+        #                 f"The building id {building_id} is not a BuildingModeled type, it does not have Honeybee Model "
+        #                 f"attribute, context filtering cannot be performed. "
+        #                 f"You can use the adequate functions or components to convert the building{building_id} "
+        #                 f"into BuildingModeled.")
+        # # Initialize the list of buildings that are in the context of the buildings to simulate
+        # selected_context_building_id_list = []  # Initialize the list
+        # # Put the building ids and the bounding boxes in lists to pass down to the building context filtering method
+        # uc_building_id_list = list(self.building_dict.keys())
+        # uc_building_bounding_box_list = [building_obj.LB_polyface3d_oriented_bounding_box for
+        #                                  building_obj in self.building_dict.items()]
+        # # Dictionary of the simulation duration, to get the duration of the simulation for each building
+        # sim_duration_dict = {}
+        # # Loop over the buildings
+        # for i, (building_id, building_obj) in enumerate(self.building_dict.items()):
+        #     if ((building_id in building_id_list and isinstance(building_obj, BuildingModeled))
+        #             or (on_building_to_simulate and building_obj.to_simulate)
+        #             or (building_obj.is_target and isinstance(building_obj, BuildingModeled))):
+        #         # Perform the first pass context filtering
+        #         current_building_selected_context_building_id_list, duration = building_obj.perform_first_pass_context_filtering(
+        #             uc_building_id_list=uc_building_id_list,
+        #             uc_building_bounding_box_list=uc_building_bounding_box_list,
+        #             min_vf_criterion=min_vf_criterion, overwrite=overwrite)
+        #         selected_context_building_id_list += current_building_selected_context_building_id_list
+        #         sim_duration_dict[building_id] = duration
+        # # Remove duplicates
+        # selected_context_building_id_list = list(set(selected_context_building_id_list))
+        #
+        # return selected_context_building_id_list, sim_duration_dict
 
     def make_Pyvista_Polydata_mesh_of_all_buildings(self):
         """

@@ -214,13 +214,13 @@ class BuildingModeled(BuildingBasic):
         # check if the first pass was already done and run it (if it was overwritten, it will be run again)
         if not self.shading_context_obj.first_pass_done:
             # Set the min VF criterion
-            self.shading_context_obj.set_min_vf_criterion(min_vf_criterion=min_vf_criterion)
+            self.shading_context_obj.set_mvfc(min_vf_criterion=min_vf_criterion)
             # Convert HB model to LB Polyface3D, keeping only the faces with outdoor boundary condition
             target_lb_polyface3d_of_outdoor_faces = self.shading_context_obj. \
                 get_lb_polyface3d_of_outdoor_faces_from_hb_model(hb_model=self.hb_model_obj)
 
             # Perform the first pass of the context filtering algorithm
-            self.shading_context_obj.perform_first_pass_context_filtering(
+            self.shading_context_obj.select_context_building_using_the_mvfc(
                 target_lb_polyface3d_of_outdoor_faces=target_lb_polyface3d_of_outdoor_faces,
                 target_building_id=self.id,
                 uc_building_id_list=uc_building_id_list,
