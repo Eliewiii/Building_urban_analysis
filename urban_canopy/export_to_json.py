@@ -35,6 +35,8 @@ tree_structure_per_building_urban_canopy_json_dict = {
     "lb_polyface3d_bounding_box": None,
     "context_surfaces": {
         "parameters": {
+            "first_pass_done": False,
+            "second_pass_done": False,
             "min_vf_criterion": None,
             "number_of_rays": None,
             "consider_windows": None
@@ -139,6 +141,9 @@ class ExportUrbanCanopyToJson:
                         building_obj.shading_context_obj.selected_context_building_id_list
                     # parameters of the first pass
                     urban_canopy_obj.json_dict["buildings"][building_id][
+                        "context_surfaces"]["parameters"]["first_pass_done"] = \
+                        building_obj.shading_context_obj.first_pass_done
+                    urban_canopy_obj.json_dict["buildings"][building_id][
                         "context_surfaces"]["parameters"]["min_vf_criterion"] = \
                         building_obj.shading_context_obj.min_vf_criterion
                 if building_obj.shading_context_obj.second_pass_done:
@@ -147,6 +152,9 @@ class ExportUrbanCanopyToJson:
                         "context_surfaces"]["second_pass_selected_hb_shade_list"] = \
                         [shade.to_dict() for shade in building_obj.shading_context_obj.context_shading_hb_shade_list]
                     # parameters of the second pass
+                    urban_canopy_obj.json_dict["buildings"][building_id][
+                        "context_surfaces"]["parameters"]["second_pass_done"] = \
+                        building_obj.shading_context_obj.second_pass_done
                     urban_canopy_obj.json_dict["buildings"][building_id][
                         "context_surfaces"]["parameters"]["number_of_rays"] = \
                         building_obj.shading_context_obj.number_of_rays
