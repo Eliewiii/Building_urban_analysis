@@ -4,6 +4,10 @@ BuildingShadingContext class, used to perform and store the result of the contex
 import logging
 from time import time
 
+from ladybug_geometry.geometry3d.polyface import Polyface3D
+from ladybug_geometry.geometry3d.face import Face3D
+from honeybee.model import Model
+from honeybee.face import Face
 from honeybee.boundarycondition import Outdoors
 
 from building.context_filter.building_context import BuildingContextFilter
@@ -82,7 +86,7 @@ class BuildingShadingContextFilter(BuildingContextFilter):
 
     def select_non_obstructed_context_faces_with_ray_tracing(self, uc_shade_manager,
                                                              target_lb_polyface3d_extruded_footprint,
-                                                             context_hb_model_list_to_test,
+                                                             context_hb_model_or_lb_polyface3d_list_to_test,
                                                              full_urban_canopy_pyvista_mesh,
                                                              keep_shades_from_user=False, no_ray_tracing=False):
         """
@@ -90,7 +94,7 @@ class BuildingShadingContextFilter(BuildingContextFilter):
         for the shading computation using the ray tracing method.
         :param uc_shade_manager: ShadeManager object
         :param target_lb_polyface3d_extruded_footprint: Ladybug Polyface3D of the target building
-        :param context_hb_model_list_to_test: list of Honeybee Model of the context building to test. It will
+        :param context_hb_model_or_lb_polyface3d_list_to_test: list of Honeybee Model of the context building to test. It will
         be more efficient (for the algorithm efficiency as well as the shading computation in EnergyPlus)
         to use HB models with merged facades.
         :param full_urban_canopy_pyvista_mesh: Pyvista Mesh containing the envelopes of all the in the urban canopy
@@ -102,20 +106,20 @@ class BuildingShadingContextFilter(BuildingContextFilter):
         timer = time()
 
         if no_ray_tracing:
-            hb_face_or_aperture_context_list = self.get_all_the_surfaces(
-                context_hb_model_list_to_test=context_hb_model_list_to_test,
+            selected_hb_face_lb_face3d_or_hb_aperture_list = self.get_all_the_surfaces(
+                context_hb_model_or_lb_polyface3d_list_to_test=context_hb_model_or_lb_polyface3d_list_to_test,
                 consider_windows=self.consider_windows)
         else:
-            hb_face_or_aperture_context_list = self.select_non_obstructed_surfaces_of_context_hb_model_for_target_lb_polyface3d(
+            selected_hb_face_lb_face3d_or_hb_aperture_list = self.select_non_obstructed_surfaces_of_context_hb_model_for_target_lb_polyface3d(
                 target_lb_polyface3d_extruded_footprint=target_lb_polyface3d_extruded_footprint,
-                context_hb_model_list_to_test=context_hb_model_list_to_test,
+                context_hb_model_or_lb_polyface3d_list_to_test=context_hb_model_or_lb_polyface3d_list_to_test,
                 full_urban_canopy_pyvista_mesh=full_urban_canopy_pyvista_mesh,
                 number_of_rays=self.number_of_rays, consider_windows=self.consider_windows)
 
         # Convert the Honeybee faces and apertures to Honeybee shades managing properly the construction
         self.context_shading_hb_shade_list = self.convert_hb_faces_and_apertures_to_shade(
             uc_shade_manager=uc_shade_manager,
-            hb_face_or_aperture_context_list=hb_face_or_aperture_context_list)
+            hb_face_or_aperture_context_list=selected_hb_face_lb_face3d_or_hb_aperture_list)
 
         # Stop the timer
         self.second_pass_duration = time() - timer
@@ -130,79 +134,95 @@ class BuildingShadingContextFilter(BuildingContextFilter):
 
     def select_non_obstructed_surfaces_of_context_hb_model_for_target_lb_polyface3d(self,
                                                                                     target_lb_polyface3d_extruded_footprint,
-                                                                                    context_hb_model_list_to_test,
+                                                                                    context_hb_model_or_lb_polyface3d_list_to_test,
                                                                                     full_urban_canopy_pyvista_mesh,
                                                                                     consider_windows=False):
         """
         Select the context surfaces that will be used for the shading simulation of the current target building.
         :param target_lb_polyface3d_extruded_footprint: Ladybug Polyface3D of the target building
-        :param context_hb_model_list_to_test: list of Honeybee Model of the context building to test. It will be more
+        :param context_hb_model_or_lb_polyface3d_list_to_test: list of Honeybee Model of the context building to test. It will be more
         efficient (for the algorithm efficiency as well as the shadiong computation in EnergyPlus) to use HB models
         with merged facades.
         :param full_urban_canopy_pyvista_mesh: Pyvista Mesh containing the envelopes of all the in the urban canopy
         :return hb_face_list_kept :
         """
         # Initialization
-        selected_hb_faces_and_apertures_list = []
+        selected_hb_face_lb_face3d_or_hb_aperture_list = []
         # Loop through the context hb model
-        for context_hb_model in context_hb_model_list_to_test:
+        for context_hb_model_or_lb_polyface_3d in context_hb_model_or_lb_polyface3d_list_to_test:
+            if isinstance(context_hb_model_or_lb_polyface_3d, Model):
+                hb_face_or_lb_face3d_to_test_list = [hb_face for hb_face in hb_room.faces for hb_room in
+                                                     context_hb_model_or_lb_polyface_3d.rooms if
+                                                     isinstance(face.boundary_condition, Outdoors)]
+            elif isinstance(context_hb_model_or_lb_polyface_3d, Polyface3D):
+                hb_face_or_lb_face3d_to_test_list = list(context_hb_model_or_lb_polyface_3d.faces)
+            else:
+                raise ValueError(
+                    "The context_hb_model_or_lb_polyface_3d is not a Honeybee Model or a Ladybug Polyface3D")
             # Loop through the rooms of the context Honeybee model
-            for hb_room in context_hb_model.rooms:
-                # Loop through the faces of the context Honeybee model
-                for hb_face_surface_to_test in hb_room.faces:
-                    """ Here the horizontal context surfaces are not discarded as they can reflect the sun light, 
-                    even if they do not shade """
-                    if isinstance(hb_face_surface_to_test.boundary_condition, Outdoors):
+            for face in hb_face_or_lb_face3d_to_test_list:
+                """ Here the horizontal context surfaces are not discarded as they can reflect the sun light, 
+                even if they do not shade """
+                if not self.is_hb_face_context_surface_obstructed_for_target_lb_polyface3d(
+                        target_lb_polyface3d_extruded_footprint=target_lb_polyface3d_extruded_footprint,
+                        context_hb_face_or_lb_face3d_to_test=face,
+                        full_urban_canopy_pyvista_mesh=full_urban_canopy_pyvista_mesh,
+                        number_of_rays=self.number_of_rays):
+                    # If the context surface is not obstructed, add it to the list of non-obstructed surfaces
+                    selected_hb_face_lb_face3d_or_hb_aperture_list.append(face)
+                # Consider the windows (only if it is a Honeybee Face)
+                if isinstance(face, Face) and consider_windows:
+                    for hb_aperture in face.apertures:
+                        # Make a copy of the window geometry
+                        window_lb_face3d = hb_aperture.geometry
+                        # todo @Elie : should not be necessary to move the geometry here as it's already done
+                        #  while generating the rays. But it should be done when generating the shade in the
+                        #  ShadeManager object
+                        # # Move the windows in the direction of its normal by 1 cm todo : to delete eventually
+                        # window_lb_face3d = window_lb_face3d.move(window_lb_face3d.normal, 0.1)
                         if not self.is_hb_face_context_surface_obstructed_for_target_lb_polyface3d(
                                 target_lb_polyface3d_extruded_footprint=target_lb_polyface3d_extruded_footprint,
-                                context_hb_face_or_lb_face3d_to_test=hb_face_surface_to_test,
+                                context_hb_face_or_lb_face3d_to_test=window_lb_face3d,
                                 full_urban_canopy_pyvista_mesh=full_urban_canopy_pyvista_mesh,
                                 number_of_rays=self.number_of_rays):
                             # If the context surface is not obstructed, add it to the list of non-obstructed surfaces
-                            selected_hb_faces_and_apertures_list.append(hb_face_surface_to_test)
-                        # Consider the windows
-                        if consider_windows:
-                            for hb_aperture in hb_face_surface_to_test.apertures:
-                                # Make a copy of the window geometry
-                                window_lb_face3d = hb_aperture.geometry
-                                # Move the windows in the direction of its normal by 1 cm todo : check if it is the right direction
-                                window_lb_face3d_moved = window_lb_face3d.move(window_lb_face3d.normal, 0.1)
-                                if not self.is_hb_face_context_surface_obstructed_for_target_lb_polyface3d(
-                                        target_lb_polyface3d_extruded_footprint=target_lb_polyface3d_extruded_footprint,
-                                        context_hb_face_or_lb_face3d_to_test=window_lb_face3d_moved,
-                                        full_urban_canopy_pyvista_mesh=full_urban_canopy_pyvista_mesh,
-                                        number_of_rays=self.number_of_rays):
-                                    # If the context surface is not obstructed, add it to the list of non-obstructed surfaces
-                                    selected_hb_faces_and_apertures_list.append(hb_aperture)
+                            selected_hb_face_lb_face3d_or_hb_aperture_list.append(hb_aperture)
 
-        return selected_hb_faces_and_apertures_list
+        return selected_hb_face_lb_face3d_or_hb_aperture_list
 
     @staticmethod
-    def get_all_the_surfaces(context_hb_model_list_to_test, consider_windows=False):
+    def get_all_the_surfaces(context_hb_model_or_lb_polyface3d_list_to_test, consider_windows=False):
         """
         Select all the context surfaces of the context hb model. This option is used when we do not want to perform the
         ray tracing, especially for validation purposes.
-        :param context_hb_model_list_to_test: list of Honeybee Model of the context building to test. It will
+        :param context_hb_model_or_lb_polyface3d_list_to_test: list of Honeybee Model of the context building to test. It will
         be more efficient (for the algorithm efficiency as well as the shading computation in EnergyPlus)
         to use HB models with merged facades.
-        :consider_windows: boolean to consider the windows as well
+        :param consider_windows: boolean to consider the windows as well
         :return hb_face_or_aperture_to_keep_list :
         """
         # Initialization
-        hb_face_or_aperture_to_keep_list = []
+        selected_hb_face_lb_face3d_or_hb_aperture_list = []
         # Loop through the context hb model
-        for context_hb_model in context_hb_model_list_to_test:
+        for context_hb_model_or_lb_polyface_3d in context_hb_model_or_lb_polyface3d_list_to_test:
+            if isinstance(context_hb_model_or_lb_polyface_3d, Model):
+                hb_face_or_lb_face3d_to_test_list = [hb_face for hb_face in hb_room.faces for hb_room in
+                                                     context_hb_model_or_lb_polyface_3d.rooms if
+                                                     isinstance(face.boundary_condition, Outdoors)]
+            elif isinstance(context_hb_model_or_lb_polyface_3d, Polyface3D):
+                hb_face_or_lb_face3d_to_test_list = list(context_hb_model_or_lb_polyface_3d.faces)
+            else:
+                raise ValueError(
+                    "The context_hb_model_or_lb_polyface_3d is not a Honeybee Model or a Ladybug Polyface3D")
             # Loop through the rooms of the context Honeybee model
-            for hb_room in context_hb_model.rooms:
-                # Loop through the faces of the context Honeybee model
-                for hb_face_surface_to_test in hb_room.faces:
-                    hb_face_or_aperture_to_keep_list.append(hb_face_surface_to_test)
-                    # Consider the windows if needed
-                    if consider_windows:
-                        for hb_aperture in hb_face_surface_to_test.apertures:
-                            hb_face_or_aperture_to_keep_list.append(hb_aperture)
+            for face in hb_face_or_lb_face3d_to_test_list:
+                selected_hb_face_lb_face3d_or_hb_aperture_list.append(face)
+                # Consider the windows if needed
+                if isinstance(face, Face) and consider_windows:
+                    for hb_aperture in face.apertures:
+                        selected_hb_face_lb_face3d_or_hb_aperture_list.append(hb_aperture)
 
-        return hb_face_or_aperture_to_keep_list
+        return selected_hb_face_lb_face3d_or_hb_aperture_list
 
     @staticmethod
     def convert_hb_faces_and_apertures_to_shade(uc_shade_manager, hb_face_or_aperture_context_list):
@@ -212,7 +232,7 @@ class BuildingShadingContextFilter(BuildingContextFilter):
         :param uc_shade_manager: ShadeManager object
         :param hb_face_or_aperture_context_list: list of Honeybee faces or Honeybee apertures
         """
-        hb_shade_list = [uc_shade_manager.from_hb_face_or_aperture_to_shade(hb_object=hb_face_or_aperture) for
+        hb_shade_list = [uc_shade_manager.from_hb_face_or_aperture_to_shade(hb_or_lb_object=hb_face_or_aperture) for
                          hb_face_or_aperture in hb_face_or_aperture_context_list]
 
         return hb_shade_list

@@ -13,6 +13,7 @@ from honeybee.model import Model
 from urban_canopy.urban_canopy_additional_functions import UrbanCanopyAdditionalFunction
 from urban_canopy.export_to_json import ExportUrbanCanopyToJson
 from urban_canopy.bipv_urban_canopy import BipvScenario
+from urban_canopy.uc_context_filter.shade_manager import ShadeManager
 
 from building.building_basic import BuildingBasic
 from building.building_modeled import BuildingModeled
@@ -39,6 +40,10 @@ class UrbanCanopy:
         self.typology_dict = {}  # dictionary of the typologies loaded the urban canopy
         self.moving_vector_to_origin = None  # moving vector of the urban canopy that moved the urban canopy to the origin
         self.json_dict = {}  # dictionary containing relevant attributes of the urban canopy to be exported to json
+
+        # Context filtering
+        self.full_context_pyvista_mesh = None  # pyvista mesh of all the buildings within the urban canopy
+        self.shade_manager = ShadeManager()  # Shade manager object
 
         # BIPV simulation
         self.bipv_scenario_dict = {}  # dictionary of the BIPV scenarios
@@ -258,7 +263,6 @@ class UrbanCanopy:
         for building in self.building_dict.values():
             building.make_lb_polyface3d_extruded_footprint(overwrite=overwrite)
 
-
     def make_oriented_bounding_boxes_of_buildings(self, overwrite=False):
         """
         Make the oriented bounding boxes of the buildings in the urban canopy.
@@ -266,8 +270,6 @@ class UrbanCanopy:
         """
         for building in self.building_dict.values():
             building.make_lb_polyface3d_oriented_bounding_box(overwrite=overwrite)
-
-
 
     def transform_buildingbasic_into_building_model(self, building_id_list=None, use_typology=True,
                                                     typology_identification=False, are_simulated=False,
@@ -389,9 +391,6 @@ class UrbanCanopy:
                     orient_roof_mesh_to_according_to_building_orientation=orient_roof_mesh_to_according_to_building_orientation,
                     north_angle=north_angle)
 
-
-
-
     def perform_first_pass_context_filtering_on_buildings(self, building_id_list=None,
                                                           on_building_to_simulate=False,
                                                           min_vf_criterion=0.01,
@@ -439,11 +438,13 @@ class UrbanCanopy:
         sim_duration_dict = {}
         # Loop over the buildings
         for i, (building_id, building_obj) in enumerate(self.building_dict.items()):
-            if ((building_id_list is not None and building_id in building_id_list and isinstance(building_obj, BuildingModeled))
-                    or (on_building_to_simulate and isinstance(building_obj, BuildingModeled) and building_obj.to_simulate)
-                    or (isinstance(building_obj, BuildingModeled) and building_obj.is_target)):
+            if (isinstance(building_obj, BuildingModeled)
+                    and ((building_id in building_id_list)
+                         or (on_building_to_simulate and building_obj.to_simulate)
+                         or building_obj.is_target)):
                 # Perform the first pass context filtering
-                current_building_selected_context_building_id_list, duration = building_obj.perform_first_pass_context_filtering(
+                current_building_selected_context_building_id_list, duration = building_obj. \
+                    perform_first_pass_context_filtering(
                     uc_building_id_list=uc_building_id_list,
                     uc_building_bounding_box_list=uc_building_bounding_box_list,
                     min_vf_criterion=min_vf_criterion, overwrite=overwrite)
@@ -454,58 +455,68 @@ class UrbanCanopy:
 
         return selected_context_building_id_list, sim_duration_dict
 
-    def perform_second_pass_context_filtering_on_buildings(self, building_id_list=None,
-                                                          on_building_to_simulate=False,
-                                                          min_vf_criterion=0.01,
-                                                          overwrite=False):
+    def perform_second_pass_context_filtering_on_buildings(self, building_id_list=None, number_of_rays=3,
+                                                           on_building_to_simulate=False, consider_windows=False,
+                                                           keep_shades_from_user=False, no_ray_tracing=False,
+                                                           overwrite=False):
         """
-        todo @Elie:
+        Perform the second pass context filtering on BuildingModeled objects in the urban canopy.
+        It uses ray-tracing to select the relevant context surfaces for shading computation.
+        By default, the second pass context filtering is performed on all the simulated (and thus target buildings).
+        If the no_ray_tracing parameter is set to True, the second pass context filtering will be performed
+        without ray-tracing and will just consider all the surfaces in the context of the buildings to simulate.
+        :param building_id_list: list of str, the list of building id to perform the second pass context filtering on.
+        :param on_building_to_simulate: bool, if True, perform the second pass context filtering on the buildings
+            to simulate.
+        :param consider_windows: bool, if True, the windows will be considered in the context filtering.
+        :param keep_shades_from_user: bool, if True, the shades from the user will be kept in the context filtering.
+        :param no_ray_tracing: bool, if True, the second pass context filtering will be performed without ray-tracing.
+        :param overwrite: bool, if True, the existing context selection will be overwritten.
         """
         # Make extruded footprints of the buildings in the LB polyface3d format if they don't exist already
         self.make_lb_polyface3d_extruded_footprint_of_buildings()
+        # Generate the Pyvista mesh including all the buildings in the urban canopy
+        self.make_Pyvista_Polydata_mesh_of_all_buildings()  # todo @Elie: to be implemented and remove capital letters
+        # if we specify the building no need to do it on all the simulated buildings
+        if building_id_list is not None and building_id_list != []:
+            on_building_to_simulate = False
+        # Checks of the building_id_list parameter to give feedback to the user if there is an issue with an id
+        if not (building_id_list is None or building_id_list is []):
+            for building_id in building_id_list:
+                if building_id not in self.building_dict.keys():
+                    user_logger.warning(f"The building id {building_id} is not in the urban canopy")
+                    dev_logger.info(
+                        f"The building id {building_id} is not in the urban canopy, make sure you indicated "
+                        f"the proper identifier in the input")
+                elif not isinstance(self.building_dict[building_id], BuildingModeled):
+                    user_logger.warning(
+                        f"The building id {building_id} is not a BuildingModeled type, it does not have Honeybee Model "
+                        f"attribute, context filtering cannot be performed. "
+                        f"You can use the adequate functions or components to convert the building{building_id} "
+                        f"into BuildingModeled.")
+        # Put the building ids and the bounding boxes in lists to pass down to the building context filtering method
+        uc_building_id_list = list(self.building_dict.keys())
+        uc_building_bounding_box_list = [building_obj.LB_polyface3d_oriented_bounding_box for
+                                         building_obj in self.building_dict.items()]
+        # Dictionary of the simulation duration, to get the duration of the simulation for each building
+        sim_duration_dict = {}
+        flag_use_envelop = False  # To return a message if at least one context building does not have a HB model
+        # Loop over the buildings
+        for i, (building_id, building_obj) in enumerate(self.building_dict.items()):
+            if (isinstance(building_obj, BuildingModeled)
+                    and ((building_id in building_id_list)
+                         or (on_building_to_simulate and building_obj.to_simulate)
+                         or building_obj.is_target)):
+                # Perform the first pass context filtering
+                current_building_selected_context_building_id_list, duration, flag_use_envelop = building_obj. \
+                    perform_first_pass_context_filtering(
+                    uc_shade_manager=self.uc_shade_manager, uc_building_dictionary=self.building_dict,
+                    full_urban_canopy_pyvista_mesh=self.full_context_pyvista_mesh, number_of_rays=number_of_rays,
+                    consider_windows=consider_windows, keep_shades_from_user=keep_shades_from_user,
+                    no_ray_tracing=no_ray_tracing, overwrite=overwrite, flag_use_envelop=flag_use_envelop)
+                sim_duration_dict[building_id] = duration
 
-
-        # # if we specify the building no need to do it on all the simulated buildings
-        # if building_id_list is not None and building_id_list != []:
-        #     on_building_to_simulate = False
-        # # Checks of the building_id_list parameter to give feedback to the user if there is an issue with an id
-        # if not (building_id_list is None or building_id_list is []):
-        #     for building_id in building_id_list:
-        #         if building_id not in self.building_dict.keys():
-        #             user_logger.warning(f"The building id {building_id} is not in the urban canopy")
-        #             dev_logger.info(
-        #                 f"The building id {building_id} is not in the urban canopy, make sure you indicated "
-        #                 f"the proper identifier in the input")
-        #         elif not isinstance(self.building_dict[building_id], BuildingModeled):
-        #             user_logger.warning(
-        #                 f"The building id {building_id} is not a BuildingModeled type, it does not have Honeybee Model "
-        #                 f"attribute, context filtering cannot be performed. "
-        #                 f"You can use the adequate functions or components to convert the building{building_id} "
-        #                 f"into BuildingModeled.")
-        # # Initialize the list of buildings that are in the context of the buildings to simulate
-        # selected_context_building_id_list = []  # Initialize the list
-        # # Put the building ids and the bounding boxes in lists to pass down to the building context filtering method
-        # uc_building_id_list = list(self.building_dict.keys())
-        # uc_building_bounding_box_list = [building_obj.LB_polyface3d_oriented_bounding_box for
-        #                                  building_obj in self.building_dict.items()]
-        # # Dictionary of the simulation duration, to get the duration of the simulation for each building
-        # sim_duration_dict = {}
-        # # Loop over the buildings
-        # for i, (building_id, building_obj) in enumerate(self.building_dict.items()):
-        #     if ((building_id in building_id_list and isinstance(building_obj, BuildingModeled))
-        #             or (on_building_to_simulate and building_obj.to_simulate)
-        #             or (building_obj.is_target and isinstance(building_obj, BuildingModeled))):
-        #         # Perform the first pass context filtering
-        #         current_building_selected_context_building_id_list, duration = building_obj.perform_first_pass_context_filtering(
-        #             uc_building_id_list=uc_building_id_list,
-        #             uc_building_bounding_box_list=uc_building_bounding_box_list,
-        #             min_vf_criterion=min_vf_criterion, overwrite=overwrite)
-        #         selected_context_building_id_list += current_building_selected_context_building_id_list
-        #         sim_duration_dict[building_id] = duration
-        # # Remove duplicates
-        # selected_context_building_id_list = list(set(selected_context_building_id_list))
-        #
-        # return selected_context_building_id_list, sim_duration_dict
+        return sim_duration_dict
 
     def make_Pyvista_Polydata_mesh_of_all_buildings(self):
         """
@@ -513,6 +524,10 @@ class UrbanCanopy:
         :return:
         """
         # todo @Elie: test the function
+
+        # Make it from the merged faces HB model of the buildings when possible, otherwise the LB Polyface3d extruded
+        # footprint
+
         # Make list of all the LB_Polyface3D_extruded_footprint of the buildings in the urban canopy
         list_of_building_LB_Polyface3D_extruded_footprint = [building.lb_polyface3d_extruded_footprint for
                                                              building in
@@ -520,36 +535,6 @@ class UrbanCanopy:
         # Convert to Pyvista Polydata
         # todo @Elie: add the mport and finish the function
         # Pyvista_Polydata_mesh = make_Pyvista_Polydata_from_LB_Polyface3D_list(list_of_building_LB_Polyface3D_extruded_footprint)
-
-
-
-    def perform_context_filtering_for_shading_on_buildingmodeled_to_simulate(self, minimum_vf_criterion):
-        """
-        Perform the context filtering on the BuildingModeled objects in the urban canopy that need to be simulated.
-
-        """
-        # todo @Elie: to adapt from old code
-
-        # todo @ Sharon and @Elie: speed up this part LATER by preparing making some preprocessing (centroid of faces, height etc...)
-
-        # Make bounding boxes and extruded footprint if they don't exist already
-        # todo @Elie: can be put in a separate function
-        for building_obj in self.building_dict.values():
-            # by default the functions don't overwrite the existing attribute if it exist already
-            building_obj.make_lb_polyface3d_extruded_footprint()
-            building_obj.make_LB_polyface3d_oriented_bounding_box()
-
-        # Make a Pyvista mesh containing all the surfaces of all the buildings in the urban canopy
-        # todo @Elie : make the mesh, only once for all the buildings
-
-        # Loop through the buildings in the urban canopy
-        for building_obj in self.building_dict.values():
-            if isinstance(building_obj, BuildingModeled) and building_obj.to_simulate:
-                list_of_all_buildings = list(self.building_dict.values())
-                building_obj.select_context_surfaces_for_shading_computation(
-                    context_building_list=list_of_all_buildings, minimum_vf_criterion=minimum_vf_criterion)
-
-
 
     def generate_sensor_grid_on_buildings(self, building_id_list=None, bipv_on_roof=True,
                                           bipv_on_facades=True, roof_grid_size_x=1,
@@ -702,8 +687,8 @@ class UrbanCanopy:
                                         f"{building_id}, the BIPV simulation will not be run for this building.")
 
         # todo: check ifg the file exist and put a default value
-        pv_technologies_dictionary = BipvTechnology.load_pv_technologies_from_json_to_dictionary(path_json_folder=
-                                                                                                 path_folder_pv_tech_dictionary_json)
+        pv_technologies_dictionary = BipvTechnology.load_pv_technologies_from_json_to_dictionary(
+            path_json_folder=path_folder_pv_tech_dictionary_json)
 
         # Reinitialize the simulation for the all the buildings if the simulation is not continued
         if not continue_simulation:
@@ -734,7 +719,7 @@ class UrbanCanopy:
         bipv_scenario_obj.sum_bipv_results_at_urban_scale(solar_rad_and_bipv_obj_list=solar_rad_and_bipv_obj_list)
         # Write urban scale results to CSV file (overwrite existing file if it exists)
         bipv_scenario_obj.write_bipv_results_to_csv(path_simulation_folder=path_simulation_folder)
-        # todo: another function to plot the graphs
+        # todo: add another function to plot the graphs
 
     @staticmethod
     def does_building_fits_bipv_requirement(building_obj, building_id_list, continue_simulation):

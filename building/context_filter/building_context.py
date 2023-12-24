@@ -71,6 +71,8 @@ class BuildingContextFilter:
         self.first_pass_done = True
         self.first_pass_duration = time() - timer
 
+        return self.selected_context_building_id_list, self.first_pass_duration
+
     @staticmethod
     def is_bounding_box_context_using_mvfc_criterion(target_lb_polyface3d,
                                                      context_lb_polyface3d_oriented_bounding_box,

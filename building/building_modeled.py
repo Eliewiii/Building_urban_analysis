@@ -219,46 +219,74 @@ class BuildingModeled(BuildingBasic):
                 get_lb_polyface3d_of_outdoor_faces_from_hb_model(hb_model=self.hb_model_obj)
 
             # Perform the first pass of the context filtering algorithm
-            self.shading_context_obj.select_context_building_using_the_mvfc(
+            selected_context_building_id_list, duration = self.shading_context_obj. \
+                select_context_building_using_the_mvfc(
                 target_lb_polyface3d_of_outdoor_faces=target_lb_polyface3d_of_outdoor_faces,
                 target_building_id=self.id,
                 uc_building_id_list=uc_building_id_list,
                 uc_building_bounding_box_list=uc_building_bounding_box_list)
 
         # Return the list of context buildings
-        return self.shading_context_obj.selected_context_building_id_list, self.shading_context_obj.first_pass_duration
+        return selected_context_building_id_list, duration
 
     def perform_second_pass_context_filtering(self, uc_shade_manager, uc_building_dictionary,
-                                              full_urban_canopy_pyvista_mesh, number_of_ray=3, consider_windows=False,
-                                              keep_shades_from_user=False, no_ray_tracing=False, overwrite=True):
+                                              full_urban_canopy_pyvista_mesh, number_of_rays=3, consider_windows=False,
+                                              keep_shades_from_user=False, no_ray_tracing=False, overwrite=True,
+                                              flag_use_envelop=False):
         """
         Perform the second pass of the context filtering for the shading computation. It selects the context surfaces
         for the shading computation using the ray tracing method.
 
         """
-        # overwrite context filtering object if needed
+        # Check if the first pass was done, if not second pass cannot be performed
+        if not self.shading_context_obj.first_pass_done:
+            dev_logger.info(
+                f"The first pass of the context filtering was not done for the building {self.id}, it will be ignored")
+            user_logger.info(
+                f"The first pass of the context filtering was not done for the building {self.id}, it will be ignored")
+            return
+            # overwrite context filtering object if needed
+
+        # Check if the context building selected with the first pass have are BuildingModeled, if not send a warning
+        if not flag_use_envelop:
+            for context_building_id in self.shading_context_obj.selected_context_building_id_list:
+                if not isinstance(uc_building_dictionary[context_building_id], BuildingModeled):
+                    user_logger.warning(
+                        f"At least one context building is not a BuildingModeled, and thus doesn't have a "
+                        f"Honeybee Model. Thus, their envelops will be used instead for the context shading computation with"
+                        f" default reflective properties, ignoring the windows as the nevelop does not have any")
+                    flag_use_envelop = True
+                    break
+
         if overwrite:
             self.shading_context_obj.overwrite_filtering(overwrite_second_pass=True)
         # check if the first pass was already done and run it (if it was overwritten, it will be run again)
         if not self.shading_context_obj.second_pass_done:
             # Set the min VF criterion
-            self.shading_context_obj.set_number_of_rays(number_of_rays=number_of_ray, no_ray_tracing=no_ray_tracing)
+            self.shading_context_obj.set_number_of_rays(number_of_rays=number_of_rays, no_ray_tracing=no_ray_tracing)
             self.shading_context_obj.set_consider_windows(consider_windows=consider_windows)
-            # Get the list of the HB models of the context buildings
-            context_hb_model_list_to_test = [uc_building_dictionary[context_building_id].hb_model_obj for
-                                             context_building_id in
-                                             self.shading_context_obj.selected_context_building_id_list]
+            # Get the list of the HB models or LB Polyface3d of the context buildings
+            context_hb_model_or_lb_polyface3d_list_to_test = []
+            for building_obj in uc_building_dictionary.values():
+                if isinstance(building_obj, BuildingModeled):
+                    context_hb_model_or_lb_polyface3d_list_to_test.append(building_obj.hb_model_obj)
+                elif isinstance(building_obj, BuildingBasic):
+                    context_hb_model_or_lb_polyface3d_list_to_test.append(building_obj.lb_polyface3d_extruded_footprint)
+                else:
+                    raise ValueError(
+                        f"The building {building_obj.id} is not a BuildingModeled or a BuildingBasic, it cannot be "
+                        f"handled by the context filter")
 
             # Perform the first pass of the context filtering algorithm
-            self.shading_context_obj.select_non_obstructed_context_faces_with_ray_tracing(
+            nb_context_faces, duration = self.shading_context_obj.select_non_obstructed_context_faces_with_ray_tracing(
                 uc_shade_manager=uc_shade_manager,
                 target_lb_polyface3d_extruded_footprint=self.lb_polyface3d_extruded_footprint,
-                context_hb_model_list_to_test=context_hb_model_list_to_test,
+                context_hb_model_or_lb_polyface3d_list_to_test=context_hb_model_or_lb_polyface3d_list_to_test,
                 full_urban_canopy_pyvista_mesh=full_urban_canopy_pyvista_mesh,
                 keep_shades_from_user=keep_shades_from_user, no_ray_tracing=no_ray_tracing)
 
         # Return the list of context buildings
-        return self.shading_context_obj.selected_context_building_id_list, self.shading_context_obj.first_pass_duration
+        return nb_context_faces, duration, flag_use_envelop
 
     def generate_sensor_grid(self, bipv_on_roof=True, bipv_on_facades=True,
                              roof_grid_size_x=1, facades_grid_size_x=1, roof_grid_size_y=1,
@@ -273,6 +301,7 @@ class BuildingModeled(BuildingBasic):
         :param roof_grid_size_y: Number for the size of the test grid on the roof in the y direction
         :param facades_grid_size_y: Number for the size of the test grid on the facades in the y direction
         :param offset_dist: Number for the distance to move points from the surfaces of the geometry of the model.
+        :param overwrite: Boolean to indicate if the existing SensorGrid should be overwritten
         """
         # Do not generate the SensorGrid if the building is not a target
         if not self.is_target:
@@ -329,7 +358,6 @@ class BuildingModeled(BuildingBasic):
                 f"The building {self.id} does not have shades. consider running the shading simulation first or add your shades manually")
 
         # Create list of shading surfaces
-
         hb_shades_list = self.shading_context_obj.context_shading_hb_shade_list + self.shading_context_obj.forced_hb_shades_from_user_list
 
         # run the annual solar radiation simulation
@@ -346,7 +374,20 @@ class BuildingModeled(BuildingBasic):
                                            replacement_scenario="replace_failed_panels_every_X_years",
                                            continue_simulation=False, **kwargs):
         """
-
+        Run the BIPV simulation for the building on the roof and/or on the facades of the buildings.
+        :param path_simulation_folder: Path to the simulation folder
+        :param roof_pv_tech_obj: PVTechnology object: PV technology for the roof
+        :param facades_pv_tech_obj: PVTechnology object: PV technology for the facades
+        :param uc_start_year: int: start year of the use phase
+        :param uc_current_year: int: current year of the use phase
+        :param uc_end_year: int: end year of the use phase
+        :param efficiency_computation_method: str: default="yearly", method to compute the efficiency of the panels
+            during the use phase. Can be "yearly" or "cumulative"
+        :param minimum_panel_eroi: float: default=1.2, minimum EROI of the panels to be considered as efficient
+        :param replacement_scenario: str: default="replace_failed_panels_every_X_years", scenario for the replacement
+            of the panels. Can be "replace_failed_panels_every_X_years" or "replace_all_panels_every_X_years"
+        :param continue_simulation: bool: default=False, if True, continue the simulation from the last year
+        :param kwargs: dict: other arguments for the simulation
         """
 
         # Run the simulation
