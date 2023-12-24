@@ -52,7 +52,6 @@ class BuildingModeled(BuildingBasic):
         self.to_simulate = False
         self.is_target = False
         # Shading computation
-        self.lb_polyface3d_bounding_box = None
         self.shading_context_obj = BuildingShadingContextFilter()
 
         # Solar and panel radiation
@@ -225,6 +224,38 @@ class BuildingModeled(BuildingBasic):
                 target_building_id=self.id,
                 uc_building_id_list=uc_building_id_list,
                 uc_building_bounding_box_list=uc_building_bounding_box_list)
+
+        # Return the list of context buildings
+        return self.shading_context_obj.selected_context_building_id_list, self.shading_context_obj.first_pass_duration
+
+    def perform_second_pass_context_filtering(self, uc_shade_manager, uc_building_dictionary,
+                                              full_urban_canopy_pyvista_mesh, number_of_ray=3, consider_windows=False,
+                                              keep_shades_from_user=False, no_ray_tracing=False, overwrite=True):
+        """
+        Perform the second pass of the context filtering for the shading computation. It selects the context surfaces
+        for the shading computation using the ray tracing method.
+
+        """
+        # overwrite context filtering object if needed
+        if overwrite:
+            self.shading_context_obj.overwrite_filtering(overwrite_second_pass=True)
+        # check if the first pass was already done and run it (if it was overwritten, it will be run again)
+        if not self.shading_context_obj.second_pass_done:
+            # Set the min VF criterion
+            self.shading_context_obj.set_number_of_rays(number_of_rays=number_of_ray, no_ray_tracing=no_ray_tracing)
+            self.shading_context_obj.set_consider_windows(consider_windows=consider_windows)
+            # Get the list of the HB models of the context buildings
+            context_hb_model_list_to_test = [uc_building_dictionary[context_building_id].hb_model_obj for
+                                             context_building_id in
+                                             self.shading_context_obj.selected_context_building_id_list]
+
+            # Perform the first pass of the context filtering algorithm
+            self.shading_context_obj.select_non_obstructed_context_faces_with_ray_tracing(
+                uc_shade_manager=uc_shade_manager,
+                target_lb_polyface3d_extruded_footprint=self.lb_polyface3d_extruded_footprint,
+                context_hb_model_list_to_test=context_hb_model_list_to_test,
+                full_urban_canopy_pyvista_mesh=full_urban_canopy_pyvista_mesh,
+                keep_shades_from_user=keep_shades_from_user, no_ray_tracing=no_ray_tracing)
 
         # Return the list of context buildings
         return self.shading_context_obj.selected_context_building_id_list, self.shading_context_obj.first_pass_duration
