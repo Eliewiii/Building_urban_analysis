@@ -32,7 +32,7 @@ tree_structure_per_building_urban_canopy_json_dict = {
     "is_building_to_simulate": False,
     "hb_model": None,
     "merged_faces_hb_model": None,
-    "lb_polyface3d_bounding_box": None,
+    "lb_polyface3d_oriented_bounding_box": None,
     "context_surfaces": {
         "parameters": {
             "first_pass_done": False,
@@ -111,6 +111,11 @@ class ExportUrbanCanopyToJson:
             urban_canopy_obj.json_dict["buildings"][building_id][
                 "hb_room_envelope"] = building_hb_room_envelope_dict
 
+            # Bounding box of the building, used for the context filtering
+            if building_obj.lb_polyface3d_oriented_bounding_box is not None:
+                urban_canopy_obj.json_dict["buildings"][building_id][
+                    "lb_polyface3d_oriented_bounding_box"] = building_obj.lb_polyface3d_oriented_bounding_box.to_dict()
+
             if isinstance(building_obj, BuildingModeled):
                 urban_canopy_obj.json_dict["buildings"][building_id][
                     "is_target_building"] = building_obj.is_target
@@ -120,10 +125,7 @@ class ExportUrbanCanopyToJson:
                 # HB model with merged faces of the building (used for the context filtering and the solar radiation)
                 urban_canopy_obj.json_dict["buildings"][building_id][
                     "merged_faces_hb_model"] = building_obj.merged_faces_hb_model_dict
-                # Bounding box of the building, used for the context filtering
-                if building_obj.lb_polyface3d_bounding_box is not None:
-                    urban_canopy_obj.json_dict["buildings"][building_id][
-                        "lb_polyface3d_bounding_box"] = building_obj.lb_polyface3d_bounding_box.to_dict()
+
 
     @staticmethod
     def add_building_shades_to_json_dict(urban_canopy_obj):

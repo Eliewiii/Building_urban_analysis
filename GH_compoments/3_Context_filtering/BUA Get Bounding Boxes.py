@@ -57,19 +57,19 @@ if _run and os.path.isfile(path_json):
             try :
                 urban_canopy_dict["buildings"][building_id]
             except KeyError:
-                raise KeyError(f"Building with ID '{building_id}' not found in the dictionary.")
+                raise KeyError("Building with ID '{}' not found in the dictionary.".format(building_id))
 
     # Init
     bounding_box_list = []
 
     for building_id in _building_id_list:
         # Check if the building has a bounding box
-        if urban_canopy_dict["buildings"][_building_id_list]["lb_polyface3d_bounding_box"] is not None:
+        if urban_canopy_dict["buildings"][building_id]["lb_polyface3d_oriented_bounding_box"] is not None:
             # Convert the dictionnary to a polyface3d then to a brep
             bounding_box_list.append(from_polyface3d(
-                Polyface3D.from_dict(urban_canopy_dict["buildings"][_building_id_list]["lb_polyface3d_bounding_box"])))
+                Polyface3D.from_dict(urban_canopy_dict["buildings"][building_id]["lb_polyface3d_oriented_bounding_box"])))
     if len(bounding_box_list) == 0:
-        print("No bounding box was found. The bounding boxes were ont generated. "
+        print("No bounding box was found. The bounding boxes were not generated. "
               "Generate them with the dedicated component or run context filtering if needed, "
               "it generates the bounding boxes automatically.")
 
@@ -77,4 +77,4 @@ if _run and os.path.isfile(path_json):
     building_id_list = _building_id_list
 
 if not os.path.isfile(path_json):
-    print("the json file of the urban canopy does not exist")
+    print("The json file of the urban canopy does not exist")

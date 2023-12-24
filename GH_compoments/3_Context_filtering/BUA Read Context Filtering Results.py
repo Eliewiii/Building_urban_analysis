@@ -70,7 +70,7 @@ if _run and os.path.isfile(path_json):
             try:
                 urban_canopy_dict["buildings"][building_id]
             except KeyError:
-                raise KeyError(f"Building with ID '{building_id}' not found in the dictionary.")
+                raise KeyError("Building with ID '{}' not found in the dictionary.".format(building_id))
             else:
                 if not urban_canopy_dict["buildings"][building_id]["is_target_building"] and not \
                         urban_canopy_dict["buildings"][building_id]["is_building_to_simulate"]:
@@ -91,7 +91,7 @@ if _run and os.path.isfile(path_json):
         else:
             forced_shade_from_user_tree.append([])
         # Check if the building first pass of the context filtering was done and add the selected building ids
-        if urban_canopy_dict["buildings"][building_id]["context_surfaces"]["first_pass_done"]:
+        if urban_canopy_dict["buildings"][building_id]["context_surfaces"]["parameters"]["first_pass_done"]:
             first_pass_selected_building_id_tree.append(
                 urban_canopy_dict["buildings"][building_id]["context_surfaces"]["first_pass_selected_building_id_list"])
         else:
@@ -99,7 +99,7 @@ if _run and os.path.isfile(path_json):
             print(
                 "The first pass of the context filtering was not done for the building with id {}".format(building_id))
         # Check if the building second pass of the context filtering was done and add the selected HB shades
-        if urban_canopy_dict["buildings"][building_id]["context_surfaces"]["second_pass_done"]:
+        if urban_canopy_dict["buildings"][building_id]["context_surfaces"]["parameters"]["second_pass_done"]:
             second_pass_selected_hb_shade_tree.append([Shade.from_dict(shade) for shade in
                                                        urban_canopy_dict["buildings"][building_id]["context_surfaces"][
                                                            "second_pass_selected_hb_shade_list"]])

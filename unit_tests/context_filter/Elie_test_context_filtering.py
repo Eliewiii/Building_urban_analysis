@@ -32,7 +32,7 @@ urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object
 #     path_file_hbjson=path_hbjson_file,
 #     are_buildings_targets=True)
 
-mvfc_list = [0.1,0.01,0.001,0.0001,0.00001]
+mvfc_list = [0.00001]
 
 for mvfc in mvfc_list:
     context_building_id_list, tot_duration, sim_duration_dict = SimulationContextFiltering.perform_first_pass_of_context_filtering_on_buildings(urban_canopy_object,
@@ -43,10 +43,10 @@ for mvfc in mvfc_list:
 
     print(f"mvfc: {mvfc}, nb_build :{len(context_building_id_list)}, dur: {sim_duration_dict}")
 
-# # Export urban_canopy to pickle
-# SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,
-#                                                            path_simulation_folder=default_path_simulation_folder)
-# # Export urban_canopy to json
-# SimulationCommonMethods.save_urban_canopy_to_json(urban_canopy_object=urban_canopy_object,
-#                                                   path_simulation_folder=default_path_simulation_folder)
+# Export urban_canopy to pickle
+SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,
+                                                           path_simulation_folder=default_path_simulation_folder)
+# Export urban_canopy to json
+SimulationCommonMethods.save_urban_canopy_to_json(urban_canopy_object=urban_canopy_object,
+                                                  path_simulation_folder=default_path_simulation_folder)
 
