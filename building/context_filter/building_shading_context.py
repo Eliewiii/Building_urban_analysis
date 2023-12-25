@@ -169,7 +169,7 @@ class BuildingShadingContextFilter(BuildingContextFilter):
                         if isinstance(hb_face.boundary_condition, Outdoors):
                             hb_face_or_lb_face3d_to_test_list.append(hb_face)
             elif isinstance(context_hb_model_or_lb_polyface_3d, Polyface3D):
-                hb_face_or_lb_face3d_to_test_list = list(context_hb_model_or_lb_polyface_3d.faces)
+                hb_face_or_lb_face3d_to_test_list.extend(list(context_hb_model_or_lb_polyface_3d.faces))
             else:
                 raise ValueError(
                     "The context_hb_model_or_lb_polyface_3d is not a Honeybee Model or a Ladybug Polyface3D")
@@ -273,7 +273,7 @@ class BuildingShadingContextFilter(BuildingContextFilter):
             # Check if the faces are facing each other
             if are_hb_face_or_lb_face3d_facing(target_lb_face3d, context_hb_face_or_lb_face3d_to_test):
                 # Check if the context surface is obstructed for the target building
-                if self.is_hb_face_context_surface_obstructed_for_target_lb_face3d(
+                if not self.is_hb_face_context_surface_obstructed_for_target_lb_face3d(
                         target_lb_face3d=target_lb_face3d,
                         context_hb_face_or_lb_face3d_to_test=context_hb_face_or_lb_face3d_to_test,
                         full_urban_canopy_pyvista_mesh=full_urban_canopy_pyvista_mesh,
@@ -305,7 +305,13 @@ class BuildingShadingContextFilter(BuildingContextFilter):
             # Check if the ray is obstructed
             points, ind = full_urban_canopy_pyvista_mesh.ray_trace(origin=ray[0], end_point=ray[1], first_point=False,
                                                                    plot=False)
+
             if ind.size == 0:  # no obstruction
+                # TEST
+                # from building.context_filter.utils_functions_context_filter import plot_ray_and_surface
+                # plot_ray_and_surface(ray=ray, face_emitter=target_lb_face3d, context=full_urban_canopy_pyvista_mesh,
+                #                      ind=ind)
+
                 return False
 
         return True

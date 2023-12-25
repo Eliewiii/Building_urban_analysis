@@ -75,9 +75,6 @@ class UrbanCanopy:
         self.prepare_attributes_for_pkl()
         self.pickle_building_HB_attributes()
 
-        # todo :test to reome
-        self.full_context_pyvista_mesh = None
-
         # Write pkl file
         with open(os.path.join(path_simulation_folder, name_urban_canopy_export_file_pkl), 'wb') as pkl_file:
             pickle.dump(self, pkl_file)
@@ -99,6 +96,7 @@ class UrbanCanopy:
 
     def prepare_attributes_for_pkl(self):
         """ Prepare the object for pickling """
+        self.full_context_pyvista_mesh = None
         self.shade_manager.prepare_for_pkl()
 
     def load_attributes_from_pkl(self):

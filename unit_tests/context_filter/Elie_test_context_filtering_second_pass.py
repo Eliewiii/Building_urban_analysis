@@ -18,9 +18,9 @@ tot_duration, sim_duration_dict = SimulationContextFiltering.perform_second_pass
 
 print(f"tot_dur :{tot_duration}, dur: {sim_duration_dict}")
 
-# Export urban_canopy to pickle
-SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,
-                                                           path_simulation_folder=default_path_simulation_folder)
-# Export urban_canopy to json
-SimulationCommonMethods.save_urban_canopy_to_json(urban_canopy_object=urban_canopy_object,
-                                                  path_simulation_folder=default_path_simulation_folder)
+# # Export urban_canopy to pickle
+# SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,
+#                                                            path_simulation_folder=default_path_simulation_folder)
+# # Export urban_canopy to json
+# SimulationCommonMethods.save_urban_canopy_to_json(urban_canopy_object=urban_canopy_object,
+#                                                   path_simulation_folder=default_path_simulation_folder)

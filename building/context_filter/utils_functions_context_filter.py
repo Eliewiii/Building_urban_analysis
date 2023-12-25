@@ -10,11 +10,43 @@ from ladybug_geometry.geometry3d.face import Face3D
 from ladybug_geometry.geometry3d.polyface import Polyface3D
 from honeybee.face import Face
 from honeybee.model import Model
-from honeybee.boundarycondition import Outdoors
+from honeybee.boundarycondition import Outdoors, Ground
 
 
 def is_vector3d_vertical(vector3d):
     if vector3d.x == 0 and vector3d.y == 0:
+        return True
+    else:
+        return False
+
+
+def is_roof_lower_than_face_emitter(face_emitter, roof_face):
+    """
+    Check if the roof is higher than the face emitter, in that case the roof cannot shade the face emitter
+    :param roof_face: Honeybee Face or Ladybug Face3D
+    :param face_emitter: Honeybee Face or Ladybug Face3D
+    """
+
+    # Check the type of the input, could be either a Ladybug Face3D or a Honeybee Face for more flexibility
+    if isinstance(face_emitter, Face3D):
+        emitter_face3d = face_emitter
+    elif isinstance(face_emitter, Face):
+        emitter_face3d = face_emitter.geometry
+    else:
+        raise TypeError("face_emitter should be a Ladybug Face3D or a Honeybee Face object")
+
+    if isinstance(roof_face, Face3D):
+        receiver_face3d = roof_face
+    elif isinstance(roof_face, Face):
+        receiver_face3d = roof_face.geometry
+    else:
+        raise TypeError("face_receiver should be a Ladybug Face3D or a Honeybee Face object")
+
+    # z coordinate of the start and end of the rays
+    z_receiver = receiver_face3d.max.z  # maximum z coordinate of the max (Point3D) of the Face receiver
+    z_emitter = emitter_face3d.max.z
+
+    if z_receiver < z_emitter:
         return True
     else:
         return False
@@ -84,9 +116,9 @@ def make_pyvista_polydata_from_list_of_hb_model_and_lb_polyface3d(hb_model_and_l
             list_of_faces_objects.extend(list(lbt_obj.faces))
         elif isinstance(lbt_obj, Model):
             hb_model_face_list = list(lbt_obj.faces)
-            # Select only faces with outdoor boundary condition that do not have vertical normal
+            # Select only faces with outdoor boundary condition
             for hb_face in hb_model_face_list:
-                if isinstance(hb_face.boundary_condition, Outdoors) and not is_vector3d_vertical(hb_face.normal):
+                if isinstance(hb_face.boundary_condition, Outdoors) or isinstance(hb_face.boundary_condition, Ground):
                     list_of_faces_objects.append(hb_face)
         else:
             raise TypeError("The object {} is not a Honeybee Model or a Ladybug Polyface3D, it cannot be handled "
@@ -153,7 +185,7 @@ def ray_list_from_emitter_to_receiver(face_emitter, face_receiver, exclude_surfa
     end_point_r = convert_point3d_to_numpy_array(receiver_face3d.lower_right_corner)
     end_point_c = (end_point_l + end_point_r) / 2.
     end_point_l[2], end_point_l[2], end_point_c[
-        2] = z_receiver, z_receiver, z_emitter  # correct the z coordinate
+        2] = z_receiver, z_receiver, z_receiver  # correct the z coordinate
 
     # ray list
     ray_list = [
@@ -167,30 +199,40 @@ def ray_list_from_emitter_to_receiver(face_emitter, face_receiver, exclude_surfa
         (start_point_l, end_point_r),
         (start_point_r, end_point_l),
     ]
-    if exclude_surface_from_ray:
-        for i in range(number_of_rays):
-            ray_list[i] = excluding_surfaces_from_ray(start_point=ray_list[i][0], end_point=ray_list[i][1])
-    if lower_ray_z_axis:  # todo @Elie: DO SOMETHING ABOUT THIS
-        for i in range(number_of_rays):
-            ray_list[i] = (ray_list[i][0] - np.array([0, 0, 0.5]), ray_list[i][1] - np.array([0, 0, 0.5]))
+
+    correct_rays(ray_list=ray_list, face_receiver=face_receiver, exclude_surface_from_ray=exclude_surface_from_ray,
+                 lower_ray_z_axis=lower_ray_z_axis)
+
+    # if exclude_surface_from_ray:
+    #     for i in range(number_of_rays):
+    #         ray_list[i] = excluding_surfaces_from_ray(start_point=ray_list[i][0], end_point=ray_list[i][1])
+    # if lower_ray_z_axis:  # todo @Elie: DO SOMETHING ABOUT THIS
+    #     for i in range(number_of_rays):
+    #         ray_list[i] = (ray_list[i][0] - np.array([0, 0, 0.1]), ray_list[i][1] - np.array([0, 0, 0.1]))
 
     return ray_list[:number_of_rays]
 
 
-def are_hb_face_or_lb_face3d_facing(face_1, face_2):
+def are_hb_face_or_lb_face3d_facing(face_emitter, face_receiver):
     """ Check with the normals if the surfaces are facing each other (and thus they can shade on each other)
-    :param face_1: Honeybee Face or Ladybug Face3D
-    :param face_2: Honeybee Face or Ladybug Face3D
+    :param face_emitter: Honeybee Face or Ladybug Face3D
+    :param face_receiver: Honeybee Face or Ladybug Face3D
     :return: True if the surfaces are facing each other, False otherwise
     Credit: highly inspired from the PyviewFactor code
     """
-    # todo @Elie: update
+    # Special treatment for roofs as we use the center of the facade to check, and it cannot work if the roof is higher
+    # than the centroid of the facade. If there is an obstruction it will be discarded by the ray tracing
+    if is_vector3d_vertical(face_receiver.normal) and face_receiver.normal.z > 0:
+        if is_roof_lower_than_face_emitter(face_emitter=face_emitter,roof_face=face_receiver):
+            return True
+        else:
+            return False
     # centroids
-    centroid_1 = get_centroid_of_hb_face_and_lb_face3d(face_1)
-    centroid_2 = get_centroid_of_hb_face_and_lb_face3d(face_2)
+    centroid_1 = get_centroid_of_hb_face_and_lb_face3d(face_emitter)
+    centroid_2 = get_centroid_of_hb_face_and_lb_face3d(face_receiver)
     # normal vectors
-    normal_1 = face_1.normal
-    normal_2 = face_2.normal
+    normal_1 = face_emitter.normal
+    normal_2 = face_receiver.normal
     # vectors from centroid_2 to centroid_1
     vector_21 = centroid_1 - centroid_2  # operation possible with Ladybug Point3D
     # dot product
@@ -203,6 +245,31 @@ def are_hb_face_or_lb_face3d_facing(face_1, face_2):
         return False
 
 
+def correct_rays(ray_list, face_receiver, exclude_surface_from_ray=True, lower_ray_z_axis=True):
+    """ Correct the rays to avoid considering the sender and receiver in the raytracing obstruction detection
+        :param ray_list: list of rays
+        :param face_receiver: Honeybee Face or Ladybug Face3D
+        :param exclude_surface_from_ray: bool, True if the surfaces should be excluded from the ray
+        :param lower_ray_z_axis: bool, True if the z axis of the ray should be lowered
+        :return: corrected ray list
+        """
+    number_of_rays = len(ray_list)
+
+    if exclude_surface_from_ray:
+        for i in range(number_of_rays):
+            new_start_point, new_end_point = excluding_surfaces_from_ray(start_point=ray_list[i][0],
+                                                                         end_point=ray_list[i][1])
+            new_start_point[2], new_end_point[2] = ray_list[i][0][2], ray_list[i][1][
+                2]  # correct the z coordinate. it does not influence here
+            ray_list[i] = (new_start_point, new_end_point)
+            if is_vector3d_vertical(face_receiver.normal):
+                ray_list[i] = (ray_list[i][0] + np.array([0, 0, 0.1]), ray_list[i][1] + np.array([0, 0, 0.1]))
+    if lower_ray_z_axis:  # todo @Elie: DO SOMETHING ABOUT THIS
+        for i in range(number_of_rays):
+            if not is_vector3d_vertical(face_receiver.normal):
+                ray_list[i] = (ray_list[i][0], ray_list[i][1] - np.array([0, 0, 0.1]))
+
+
 def get_centroid_of_hb_face_and_lb_face3d(face):
     """
 
@@ -213,3 +280,19 @@ def get_centroid_of_hb_face_and_lb_face3d(face):
         return face.geometry.centroid
     else:
         raise TypeError("face should be a Ladybug Face3D or a Honeybee Face object")
+
+
+def plot_ray_and_surface(ray, face_emitter, context, ind):
+    """
+    from building.context_filter.utils_functions_context_filter import plot_ray_and_surface
+    plot_ray_and_surface(ray=ray, face_emitter=target_lb_face3d, context=full_urban_canopy_pyvista_mesh, ind=ind)
+    """
+
+    ray_3D = pv.PolyData(
+        np.array([ray[0], ray[1], [ray[1][0], ray[1][1], ray[1][2] + 1.], [ray[0][0], ray[0][1], ray[0][2] + 1.]]),
+        [4, 0, 1, 2, 3])
+    pv_emitter = make_pyvista_polydata_from_hb_face_or_lb_face3d(face_emitter)
+    context_2 = context.copy()
+    context_2 = context_2 + ray_3D + pv_emitter
+    print(ind)
+    context_2.plot(show_edges=True)
