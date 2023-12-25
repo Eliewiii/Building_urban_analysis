@@ -265,6 +265,26 @@ class BuildingBasic:
             self.num_floor = 3
             self.floor_height = 3.
 
+    def move(self, vector):
+        """
+        Move the building to a new location
+        :param vector: [x,y,z]
+        """
+        # move the LB footprint
+        self.lb_face_footprint = self.lb_face_footprint.move(Vector3D(vector[0], vector[1], 0))
+        # move the oriented bounding box if it exists
+        if self.lb_polyface3d_oriented_bounding_box:
+            self.lb_polyface3d_oriented_bounding_box = self.lb_polyface3d_oriented_bounding_box.move(
+                Vector3D(vector[0], vector[1], vector[2]))
+        # move the extruded_lb_footprint if it exists
+        if self.lb_polyface3d_extruded_footprint:
+            self.lb_polyface3d_extruded_footprint = self.lb_polyface3d_extruded_footprint.move(
+                Vector3D(vector[0], vector[1], vector[2]))
+        # adjust the elevation
+        self.elevation = self.elevation + vector[2]
+        # make it moved
+        self.moved_to_origin = True
+
     def make_lb_polyface3d_extruded_footprint(self, overwrite=False):
         """ make the oriented bounding box of the building
         :param overwrite: if True, overwrite the existing LB_polyface3d_oriented_bounding_box
@@ -285,25 +305,7 @@ class BuildingBasic:
 
 
 
-    def move(self, vector):
-        """
-        Move the building to a new location
-        :param vector: [x,y,z]
-        """
-        # move the LB footprint
-        self.lb_face_footprint = self.lb_face_footprint.move(Vector3D(vector[0], vector[1], 0))
-        # move the oriented bounding box if it exists
-        if self.lb_polyface3d_oriented_bounding_box:
-            self.lb_polyface3d_oriented_bounding_box = self.lb_polyface3d_oriented_bounding_box.move(
-                Vector3D(vector[0], vector[1], vector[2]))
-        # move the extruded_lb_footprint if it exists
-        if self.lb_polyface3d_extruded_footprint:
-            self.lb_polyface3d_extruded_footprint = self.lb_polyface3d_extruded_footprint.move(
-                Vector3D(vector[0], vector[1], vector[2]))
-        # adjust the elevation
-        self.elevation = self.elevation + vector[2]
-        # make it moved
-        self.moved_to_origin = True
+
 
     def export_building_to_elevated_HB_room_envelop(self):
         """

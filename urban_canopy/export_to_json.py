@@ -133,9 +133,10 @@ class ExportUrbanCanopyToJson:
         for building_id, building_obj in urban_canopy_obj.building_dict.items():
             if isinstance(building_obj, BuildingModeled) :
                 # List of the forced shades from the user
+                # No need to convert the shades to dict, they are already in dict format after pickling
                 urban_canopy_obj.json_dict["buildings"][building_id][
                     "context_surfaces"]["forced_shades_from_user"] = \
-                    [shade.to_dict() for shade in building_obj.shading_context_obj.forced_hb_shades_from_user_list]
+                    building_obj.shading_context_obj.forced_hb_shades_from_user_list
                 if building_obj.shading_context_obj.first_pass_done:
                     # Ids of the selected context buildings from the first pass
                     urban_canopy_obj.json_dict["buildings"][building_id][
@@ -150,9 +151,10 @@ class ExportUrbanCanopyToJson:
                         building_obj.shading_context_obj.min_vf_criterion
                 if building_obj.shading_context_obj.second_pass_done:
                     # List of the selected context shades from the second pass
+                    # No need to convert the shades to dict, they are already in dict format after pickling
                     urban_canopy_obj.json_dict["buildings"][building_id][
                         "context_surfaces"]["second_pass_selected_hb_shade_list"] = \
-                        [shade.to_dict() for shade in building_obj.shading_context_obj.context_shading_hb_shade_list]
+                        building_obj.shading_context_obj.context_shading_hb_shade_list
                     # parameters of the second pass
                     urban_canopy_obj.json_dict["buildings"][building_id][
                         "context_surfaces"]["parameters"]["second_pass_done"] = \

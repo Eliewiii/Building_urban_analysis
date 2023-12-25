@@ -59,7 +59,9 @@ class UrbanCanopy:
         """ Load the urban canopy from a pickle file """
         with open(path_pkl, 'rb') as pkl_file:
             # Load pickle file
-            urban_canopy_object = pickle.load(pkl_file)  # TODO can we define urban_canopy as table?
+            urban_canopy_object = pickle.load(pkl_file)
+            # Load attributes from pickling
+            urban_canopy_object.load_attributes_from_pkl()
             # Load the buildings objects that might have some properties stored into dict (ex HB_models)
             urban_canopy_object.load_building_HB_attributes()
             # Reinitialize the json dictionary
@@ -70,7 +72,12 @@ class UrbanCanopy:
     def to_pkl(self, path_simulation_folder):
         """ Save the urban canopy to a pickle file """
         # Turn certain attribute HB objects into dictionary to enable pickling (see the function)
+        self.prepare_attributes_for_pkl()
         self.pickle_building_HB_attributes()
+
+        # todo :test to reome
+        self.full_context_pyvista_mesh = None
+
         # Write pkl file
         with open(os.path.join(path_simulation_folder, name_urban_canopy_export_file_pkl), 'wb') as pkl_file:
             pickle.dump(self, pkl_file)
@@ -89,6 +96,14 @@ class UrbanCanopy:
         Not 100% necessary as te dictionary is written after the urban canopy is pickled, but some of
         """
         self.json_dict = {}
+
+    def prepare_attributes_for_pkl(self):
+        """ Prepare the object for pickling """
+        self.shade_manager.prepare_for_pkl()
+
+    def load_attributes_from_pkl(self):
+        """ Load the object from pickling """
+        self.shade_manager.load_from_pkl()
 
     def load_typologies(self, typology_folder_path):
         """ Load the typologies from the folder

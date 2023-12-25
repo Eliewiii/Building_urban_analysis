@@ -19,12 +19,13 @@ simulations, but they can hinder some operations and displays and are thus not a
 __author__ = "Elie"
 __version__ = "2023.08.21"
 
-ghenv.Component.Name = "BUA Load Building Envelopes"
-ghenv.Component.NickName = 'LoadBuildingEnvelopes'
+ghenv.Component.Name = "BUA Read Context Filtering Results"
+ghenv.Component.NickName = 'ReadContextFilteringResults'
 ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
-ghenv.Component.SubCategory = '2 :: Building Manipulation'
+ghenv.Component.SubCategory = '3 :: Context filtering'
 ghenv.Component.AdditionalHelpFromDocStrings = "1"
+
 
 import json
 import os

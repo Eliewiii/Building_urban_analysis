@@ -68,6 +68,8 @@ class BuildingModeled(BuildingBasic):
         # Convert the hb_model_dict to hb_model_obj
         self.hb_model_obj = Model.from_dict(self.hb_model_dict)  # todo: test if it works
         self.hb_model_dict = None
+        # Load attributes in the context filter object after pickling
+        self.shading_context_obj.load_from_pkl()
 
     def pickle_HB_attributes(self):
         """
@@ -76,6 +78,9 @@ class BuildingModeled(BuildingBasic):
         # Convert the hb_model_obj to hb_model_dict
         self.hb_model_dict = self.hb_model_obj.to_dict()  # todo: test if it works
         self.hb_model_obj = None
+        # Prepare attributes in the context filter objects
+        self.shading_context_obj.prepare_for_pkl()
+
         # todo : maybe add more properties to modify before pickling to avoid locked class issue
 
     @classmethod
@@ -231,7 +236,8 @@ class BuildingModeled(BuildingBasic):
 
     def perform_second_pass_context_filtering(self, uc_shade_manager, uc_building_dictionary,
                                               full_urban_canopy_pyvista_mesh, number_of_rays=3, consider_windows=False,
-                                              keep_shades_from_user=False, no_ray_tracing=False, overwrite=True,
+                                              keep_shades_from_user=False, no_ray_tracing=False,
+                                              use_merged_face_hb_model=True, overwrite=True,
                                               flag_use_envelop=False):
         """
         Perform the second pass of the context filtering for the shading computation. It selects the context surfaces
@@ -267,11 +273,18 @@ class BuildingModeled(BuildingBasic):
             self.shading_context_obj.set_consider_windows(consider_windows=consider_windows)
             # Get the list of the HB models or LB Polyface3d of the context buildings
             context_hb_model_or_lb_polyface3d_list_to_test = []
-            for building_obj in uc_building_dictionary.values():
+            for building_id in self.shading_context_obj.selected_context_building_id_list:
+                building_obj = uc_building_dictionary[building_id]
                 if isinstance(building_obj, BuildingModeled):
-                    context_hb_model_or_lb_polyface3d_list_to_test.append(building_obj.hb_model_obj)
+                    # use the merged faces HB model if it exists, otherwise use the original HB model
+                    if building_obj.merged_faces_hb_model_dict is not None and use_merged_face_hb_model:
+                        context_hb_model_or_lb_polyface3d_list_to_test.append(
+                            Model.from_dict(building_obj.merged_faces_hb_model_dict))
+                    else:
+                        context_hb_model_or_lb_polyface3d_list_to_test.append(building_obj.hb_model_obj)
                 elif isinstance(building_obj, BuildingBasic):
-                    context_hb_model_or_lb_polyface3d_list_to_test.append(building_obj.lb_polyface3d_extruded_footprint)
+                    context_hb_model_or_lb_polyface3d_list_to_test.append(
+                        building_obj.lb_polyface3d_extruded_footprint)
                 else:
                     raise ValueError(
                         f"The building {building_obj.id} is not a BuildingModeled or a BuildingBasic, it cannot be "

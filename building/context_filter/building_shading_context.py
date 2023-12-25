@@ -9,6 +9,7 @@ from ladybug_geometry.geometry3d.face import Face3D
 from honeybee.model import Model
 from honeybee.face import Face
 from honeybee.boundarycondition import Outdoors
+from honeybee.shade import Shade
 
 from building.context_filter.building_context import BuildingContextFilter
 
@@ -39,9 +40,20 @@ class BuildingShadingContextFilter(BuildingContextFilter):
         We use a dictionary to store the shades of the context buildings. The keys are the building ids and the values 
         are a list of shades of the context buildings.
         """
-
         # Simulation tracking
         self.second_pass_done = False
+
+    def prepare_for_pkl(self):
+        """ Prepare the object for pickling """
+        self.forced_hb_shades_from_user_list = [hb_shade.to_dict() for hb_shade in self.forced_hb_shades_from_user_list]
+        self.context_shading_hb_shade_list = [hb_shade.to_dict() for hb_shade in self.context_shading_hb_shade_list]
+
+    def load_from_pkl(self):
+        """ Load the object from pickling """
+        self.forced_hb_shades_from_user_list = [Shade.from_dict(hb_shade) for hb_shade in
+                                                self.forced_hb_shades_from_user_list]
+        self.context_shading_hb_shade_list = [Shade.from_dict(hb_shade) for hb_shade in
+                                              self.context_shading_hb_shade_list]
 
     def overwrite_filtering(self, overwrite_first_pass=False, overwrite_second_pass=False):
         """
@@ -98,7 +110,6 @@ class BuildingShadingContextFilter(BuildingContextFilter):
         be more efficient (for the algorithm efficiency as well as the shading computation in EnergyPlus)
         to use HB models with merged facades.
         :param full_urban_canopy_pyvista_mesh: Pyvista Mesh containing the envelopes of all the in the urban canopy
-        :param consider_windows: boolean to consider the windows as well
         :param keep_shades_from_user: boolean to keep the shades forced by the user
         :param no_ray_tracing: boolean to not perform the ray tracing (for validation purposes)
         """
@@ -129,6 +140,8 @@ class BuildingShadingContextFilter(BuildingContextFilter):
         # Get the number of surfaces selected
         nb_context_faces = len(self.context_shading_hb_shade_list)
 
+        self.second_pass_done = True
+
         return nb_context_faces, self.second_pass_duration
 
     def select_non_obstructed_surfaces_of_context_hb_model_for_target_lb_polyface3d(self,
@@ -147,10 +160,10 @@ class BuildingShadingContextFilter(BuildingContextFilter):
         """
         # Initialization
         selected_hb_face_lb_face3d_or_hb_aperture_list = []
+        hb_face_or_lb_face3d_to_test_list = []
         # Loop through the context hb model
         for context_hb_model_or_lb_polyface_3d in context_hb_model_or_lb_polyface3d_list_to_test:
             if isinstance(context_hb_model_or_lb_polyface_3d, Model):
-                hb_face_or_lb_face3d_to_test_list= []
                 for hb_room in context_hb_model_or_lb_polyface_3d.rooms:
                     for hb_face in list(hb_room.faces):
                         if isinstance(hb_face.boundary_condition, Outdoors):
@@ -160,34 +173,34 @@ class BuildingShadingContextFilter(BuildingContextFilter):
             else:
                 raise ValueError(
                     "The context_hb_model_or_lb_polyface_3d is not a Honeybee Model or a Ladybug Polyface3D")
-            # Loop through the rooms of the context Honeybee model
-            for face in hb_face_or_lb_face3d_to_test_list:
-                """ Here the horizontal context surfaces are not discarded as they can reflect the sun light, 
-                even if they do not shade """
-                if not self.is_hb_face_context_surface_obstructed_for_target_lb_polyface3d(
-                        target_lb_polyface3d_extruded_footprint=target_lb_polyface3d_extruded_footprint,
-                        context_hb_face_or_lb_face3d_to_test=face,
-                        full_urban_canopy_pyvista_mesh=full_urban_canopy_pyvista_mesh,
-                        number_of_rays=self.number_of_rays):
-                    # If the context surface is not obstructed, add it to the list of non-obstructed surfaces
-                    selected_hb_face_lb_face3d_or_hb_aperture_list.append(face)
-                # Consider the windows (only if it is a Honeybee Face)
-                if isinstance(face, Face) and consider_windows:
-                    for hb_aperture in face.apertures:
-                        # Make a copy of the window geometry
-                        window_lb_face3d = hb_aperture.geometry
-                        # todo @Elie : should not be necessary to move the geometry here as it's already done
-                        #  while generating the rays. But it should be done when generating the shade in the
-                        #  ShadeManager object
-                        # # Move the windows in the direction of its normal by 1 cm todo : to delete eventually
-                        # window_lb_face3d = window_lb_face3d.move(window_lb_face3d.normal, 0.1)
-                        if not self.is_hb_face_context_surface_obstructed_for_target_lb_polyface3d(
-                                target_lb_polyface3d_extruded_footprint=target_lb_polyface3d_extruded_footprint,
-                                context_hb_face_or_lb_face3d_to_test=window_lb_face3d,
-                                full_urban_canopy_pyvista_mesh=full_urban_canopy_pyvista_mesh,
-                                number_of_rays=self.number_of_rays):
-                            # If the context surface is not obstructed, add it to the list of non-obstructed surfaces
-                            selected_hb_face_lb_face3d_or_hb_aperture_list.append(hb_aperture)
+        # Loop through the rooms of the context Honeybee model
+        for face in hb_face_or_lb_face3d_to_test_list:
+            """ Here the horizontal context surfaces are not discarded as they can reflect the sun light, 
+            even if they do not shade """
+            if not self.is_hb_face_context_surface_obstructed_for_target_lb_polyface3d(
+                    target_lb_polyface3d_extruded_footprint=target_lb_polyface3d_extruded_footprint,
+                    context_hb_face_or_lb_face3d_to_test=face,
+                    full_urban_canopy_pyvista_mesh=full_urban_canopy_pyvista_mesh,
+                    number_of_rays=self.number_of_rays):
+                # If the context surface is not obstructed, add it to the list of non-obstructed surfaces
+                selected_hb_face_lb_face3d_or_hb_aperture_list.append(face)
+            # Consider the windows (only if it is a Honeybee Face)
+            if isinstance(face, Face) and consider_windows:
+                for hb_aperture in face.apertures:
+                    # Make a copy of the window geometry
+                    window_lb_face3d = hb_aperture.geometry
+                    # todo @Elie : should not be necessary to move the geometry here as it's already done
+                    #  while generating the rays. But it should be done when generating the shade in the
+                    #  ShadeManager object
+                    # # Move the windows in the direction of its normal by 1 cm todo : to delete eventually
+                    # window_lb_face3d = window_lb_face3d.move(window_lb_face3d.normal, 0.1)
+                    if not self.is_hb_face_context_surface_obstructed_for_target_lb_polyface3d(
+                            target_lb_polyface3d_extruded_footprint=target_lb_polyface3d_extruded_footprint,
+                            context_hb_face_or_lb_face3d_to_test=window_lb_face3d,
+                            full_urban_canopy_pyvista_mesh=full_urban_canopy_pyvista_mesh,
+                            number_of_rays=self.number_of_rays):
+                        # If the context surface is not obstructed, add it to the list of non-obstructed surfaces
+                        selected_hb_face_lb_face3d_or_hb_aperture_list.append(hb_aperture)
 
         return selected_hb_face_lb_face3d_or_hb_aperture_list
 
@@ -233,8 +246,12 @@ class BuildingShadingContextFilter(BuildingContextFilter):
         :param uc_shade_manager: ShadeManager object
         :param hb_face_or_aperture_context_list: list of Honeybee faces or Honeybee apertures
         """
-        hb_shade_list = [uc_shade_manager.from_hb_face_or_aperture_to_shade(hb_or_lb_object=hb_face_or_aperture) for
-                         hb_face_or_aperture in hb_face_or_aperture_context_list]
+        shade_index = 0
+        hb_shade_list = []
+        for hb_face_or_aperture in hb_face_or_aperture_context_list:
+            hb_shade_list.append(uc_shade_manager.from_hb_face_or_aperture_to_shade(hb_or_lb_object=hb_face_or_aperture,
+                                                                                    shade_index=shade_index))
+            shade_index += 1
 
         return hb_shade_list
 

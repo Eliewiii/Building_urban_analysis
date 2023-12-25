@@ -24,6 +24,8 @@ for mvfc in mvfc_list:
 
     print(f"mvfc: {mvfc}, nb_build :{len(context_building_id_list)}, dur: {sim_duration_dict}")
 
+
+
 # Export urban_canopy to pickle
 SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,
                                                            path_simulation_folder=default_path_simulation_folder)

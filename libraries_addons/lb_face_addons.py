@@ -58,7 +58,7 @@ def LB_face_footprint_to_lB_polyface3D_extruded_footprint(lb_face_footprint, hei
     # extrude the footprint to obtain the room envelop
     extruded_face = Polyface3D.from_offset_face(lb_face_footprint, height)
     # move the room to the right elevation
-    extruded_face.move(Vector3D(0, 0, elevation))
+    extruded_face = extruded_face.move(Vector3D(0, 0, elevation))
 
     return extruded_face
 
@@ -69,17 +69,17 @@ def make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint(lb_face_fo
     :param lb_face_footprint: Ladybug Face3D
     :param height: float : height of the building
     :param elevation: float : elevation of the building compared to the ground
-    :return: LB_polyface3D_bounding_box: Ladybug Polyface3D : oriented bounding box
+    :return: moved_lb_polyface3D_bounding_box: Ladybug Polyface3D : oriented bounding box
     """
     # Identify the oriented bounding rectangle and the angle of orientation
-    LB_face3d_bounding_rectangle, angle = make_LB_Face3D_oriented_bounding_rectangle_from_LB_Face3D_footprint(
+    lb_face3d_bounding_rectangle, angle = make_LB_Face3D_oriented_bounding_rectangle_from_LB_Face3D_footprint(
         lb_face_footprint)
     # extrude the rectangle to obtain the oriented bounding box
-    LB_polyface3d_bounding_box = Polyface3D.from_offset_face(LB_face3d_bounding_rectangle, height)
+    lb_polyface3d_bounding_box = Polyface3D.from_offset_face(lb_face3d_bounding_rectangle, height)
     # move the bounding box to the right elevation
-    LB_polyface3d_bounding_box.move(Vector3D(0, 0, elevation))
+    moved_lb_polyface3d_bounding_box = lb_polyface3d_bounding_box.move(Vector3D(0, 0, elevation))
 
-    return LB_polyface3d_bounding_box.move(Vector3D(0, 0, elevation))
+    return moved_lb_polyface3d_bounding_box
 
 
 def make_LB_Face3D_oriented_bounding_rectangle_from_LB_Face3D_footprint(LB_Face3D_footprint, n_step=360):

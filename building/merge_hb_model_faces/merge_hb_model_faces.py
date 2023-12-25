@@ -50,7 +50,7 @@ def merge_facades_and_roof_faces_in_hb_model(hb_model_obj, orient_roof_mesh_to_a
         if face.normal.z > 0:
             # To orient it according to the orientation of the building
             if orient_roof_mesh_to_according_to_building_orientation:
-                angle = get_orientation_of_LB_Face3D(face)
+                angle = get_orientation_of_lb_face3d(face)
             # To orient according to the north angle
             else:
                 angle = north_angle + 90  # as the north angle is the y axis
@@ -79,7 +79,7 @@ def merge_facades_and_roof_faces_in_hb_model(hb_model_obj, orient_roof_mesh_to_a
             # Make a rotation matrix from the plane to project the other faces on the plane
             rotation_matrix = make_rotation_matrix(plane)
             # Make a Polygon 2d from the face
-            new_shapely_multipolygon_2d = make_shapely_2D_polygon_from_lb_face(face)  # Initialize the new multipolygon
+            new_shapely_multipolygon_2d = make_shapely_2d_polygon_from_lb_face(face)  # Initialize the new multipolygon
             used_faces.append(index)
             for index_face_to_merge, face_to_merge in enumerate(lb_face3d_list):  # Loop through all the faces
                 # Merge only if the face is not used and is coplanar to the first face
@@ -131,13 +131,15 @@ def merge_facades_and_roof_faces_in_hb_model(hb_model_obj, orient_roof_mesh_to_a
     # Apply the construction set (of conditioned zone) to the model
     """ The properties of the materials are used for the shading computation. The program doesn't really matter here,
      it's not meant for energy simulation) """
-    # todo @Elie, need to find the construction set of a conditioned zone that have at least one window and one wall
-    #  with outdoor boundary condition
+
+    assign_construction_to_merged_faces_hb_model(hb_model_obj=hb_model_obj,
+                                                 merged_faces_hb_model_obj=merged_faces_hb_model_obj)
+    # todo @Elie: test if this part works
 
     return merged_faces_hb_model_obj
 
 
-def make_shapely_2D_polygon_from_lb_face(lb_face_3D):
+def make_shapely_2d_polygon_from_lb_face(lb_face_3D):
     """Convert a Ladybug Face to a Shapely Polygon."""
     # convert vertices into tuples
     list_tuple_vertices_2d = [(x, y) for [x, y] in lb_face_3D.polygon2d.vertices]
@@ -200,7 +202,7 @@ def make_lb_face_from_shapely_2d_polygon(polygon, rotation_matrix, origin_new_co
     return lb_face_footprint
 
 
-def get_orientation_of_LB_Face3D(LB_Face3D_footprint, n_step=360):
+def get_orientation_of_lb_face3d(LB_Face3D_footprint, n_step=360):
     """ Get the Face3D oriented bounding rectangle/box of a Face3D geometry
     :param LB_Face3D_footprint: Ladybug Face3D
     :param n_step: int : number of steps for the angle of rotation of the bounding box
@@ -246,6 +248,81 @@ def add_apertures_to_merged_faces_hb_model(hb_model_obj, merged_faces_hb_model_o
             for face in room.faces:
                 if face.geometry.is_sub_face(aperture_obj.geometry, tolerance=TOLERANCE_LBT, angle_tolerance=0.1):
                     face.add_aperture(aperture_obj)
+
+
+def get_hb_construction(hb_model):
+    """
+    Get the most common construction for each type of facade (wall, roof, window)
+    :param hb_model: Honeybee Model
+    :return wall_construction: Honeybee Construction
+    :return roof_construction: Honeybee Construction
+    :return window_construction: Honeybee Construction
+    """
+    wall_construction_dict = {}  # key: constrcution_id, , values :occurence (int) and construction (Honeybee Construction)
+    roof_construction_dict = {}
+    window_construction_dict = {}
+    # Loop over all the rooms of the HB model
+    for room in hb_model.rooms:
+        # Loop over all the faces of the room
+        for face in room.faces:
+            # Check if the face is an outdoor face
+            if isinstance(face.boundary_condition, Outdoors) and isinstance(face.type, Wall):
+                # Check if the construction is already in the dict
+                if face.properties.energy.construction.identifier in wall_construction_dict:
+                    wall_construction_dict[face.properties.energy.construction.id]["occurrence"] += 1
+                else:
+                    # Add the construction to the dict
+                    wall_construction_dict[face.properties.energy.construction.id] = {
+                        "occurrence": 1,
+                        "construction": face.properties.energy.construction
+                    }
+                for hb_aperture in face.apertures:
+                    # Check if the construction is already in the dict
+                    if hb_aperture.properties.energy.construction.id in window_construction_dict:
+                        window_construction_dict[hb_aperture.properties.energy.construction.id]["occurrence"] += 1
+                    else:
+                        # Add the construction to the dict
+                        window_construction_dict[hb_aperture.properties.energy.construction.id] = {
+                            "occurrence": 1,
+                            "construction": hb_aperture.properties.energy.construction
+                        }
+            elif isinstance(face.boundary_condition, Outdoors) and isinstance(face.type, RoofCeiling):
+                # Check if the construction is already in the dict
+                if face.properties.energy.construction.identifier in roof_construction_dict:
+                    roof_construction_dict[face.properties.energy.construction.id]["occurrence"] += 1
+                else:
+                    # Add the construction to the dict
+                    roof_construction_dict[face.properties.energy.construction.id] = {
+                        "occurrence": 1,
+                        "construction": face.properties.energy.construction
+                    }
+    # Get the most common construction
+    wall_construction = max(wall_construction_dict, key=lambda key: wall_construction_dict[key]["occurrence"])
+    roof_construction = max(roof_construction_dict, key=lambda key: roof_construction_dict[key]["occurrence"])
+    window_construction = max(window_construction_dict, key=lambda key: window_construction_dict[key]["occurrence"])
+
+    return wall_construction_dict[wall_construction]["construction"], \
+        roof_construction_dict[roof_construction]["construction"], \
+        window_construction_dict[window_construction]["construction"]
+
+
+def assign_construction_to_merged_faces_hb_model(hb_model_obj, merged_faces_hb_model_obj):
+    """
+    Assign the most common construction for each type of facade (wall, roof, window) to the merged faces model
+    :param hb_model_obj: Honeybee Model
+    :param merged_faces_hb_model_obj: Honeybee Model
+    """
+    # Get the most common construction
+    wall_construction, roof_construction, window_construction = get_hb_construction(hb_model_obj)
+    # Assign the construction to the merged faces model
+    for room in merged_faces_hb_model_obj.rooms:
+        for face in room.faces:
+            if isinstance(face.boundary_condition, Outdoors) and isinstance(face.type, Wall):
+                face.properties.energy.construction = wall_construction
+                for hb_aperture in face.apertures:
+                    hb_aperture.properties.energy.construction = window_construction
+            elif isinstance(face.boundary_condition, Outdoors) and isinstance(face.type, RoofCeiling):
+                face.properties.energy.construction = roof_construction
 
 
 if __name__ == "__main__":
