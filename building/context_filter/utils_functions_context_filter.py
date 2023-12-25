@@ -170,9 +170,10 @@ def ray_list_from_emitter_to_receiver(face_emitter, face_receiver, exclude_surfa
     if exclude_surface_from_ray:
         for i in range(number_of_rays):
             ray_list[i] = excluding_surfaces_from_ray(start_point=ray_list[i][0], end_point=ray_list[i][1])
-    if lower_ray_z_axis:
+    if lower_ray_z_axis:  # todo @Elie: DO SOMETHING ABOUT THIS
         for i in range(number_of_rays):
             ray_list[i] = (ray_list[i][0] - np.array([0, 0, 0.5]), ray_list[i][1] - np.array([0, 0, 0.5]))
+
     return ray_list[:number_of_rays]
 
 
