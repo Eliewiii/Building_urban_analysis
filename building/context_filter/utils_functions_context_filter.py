@@ -13,7 +13,6 @@ from honeybee.model import Model
 from honeybee.boundarycondition import Outdoors
 
 
-
 def is_vector3d_vertical(vector3d):
     if vector3d.x == 0 and vector3d.y == 0:
         return True
@@ -81,7 +80,7 @@ def make_pyvista_polydata_from_list_of_hb_model_and_lb_polyface3d(hb_model_and_l
     list_of_faces_objects = []
     # Loop over all the elements of the list
     for lbt_obj in hb_model_and_lb_polyface3d_list:
-        if isinstance(lbt_obj, Polyface3D) :  # The attribute are the same for both
+        if isinstance(lbt_obj, Polyface3D):  # The attribute are the same for both
             list_of_faces_objects.extend(list(lbt_obj.faces))
         elif isinstance(lbt_obj, Model):
             hb_model_face_list = list(lbt_obj.faces)
@@ -117,7 +116,7 @@ def excluding_surfaces_from_ray(start_point, end_point):
 
 
 def ray_list_from_emitter_to_receiver(face_emitter, face_receiver, exclude_surface_from_ray=True,
-                                      number_of_rays=3):
+                                      lower_ray_z_axis=True, number_of_rays=3):
     """
         Args:
         todo @Elie
@@ -171,6 +170,9 @@ def ray_list_from_emitter_to_receiver(face_emitter, face_receiver, exclude_surfa
     if exclude_surface_from_ray:
         for i in range(number_of_rays):
             ray_list[i] = excluding_surfaces_from_ray(start_point=ray_list[i][0], end_point=ray_list[i][1])
+    if lower_ray_z_axis:
+        for i in range(number_of_rays):
+            ray_list[i] = (ray_list[i][0] - np.array([0, 0, 0.5]), ray_list[i][1] - np.array([0, 0, 0.5]))
     return ray_list[:number_of_rays]
 
 
