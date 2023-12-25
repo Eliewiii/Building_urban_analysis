@@ -6,8 +6,12 @@ import pyvista as pv
 
 from math import sqrt, atan, log, pi
 
+from ladybug_geometry.geometry3d.face import Face3D
+from ladybug_geometry.geometry3d.polyface import Polyface3D
 from honeybee.face import Face
-from ladybug_geometry.geometry3d import Face3D
+from honeybee.model import Model
+from honeybee.boundarycondition import Outdoors
+
 
 
 def is_vector3d_vertical(vector3d):
@@ -26,7 +30,6 @@ def convert_point3d_to_numpy_array(pt_3d):
     """ Convert Ladybug Point3D to numpy array """
 
     return (np.array([pt_3d.x, pt_3d.y, pt_3d.z]))
-
 
 
 def make_pyvista_polydata_from_hb_face_or_lb_face3d(face_object):
@@ -57,8 +60,8 @@ def make_pyvista_polydata_from_hb_face_or_lb_face3d_list(face_list):
         # Initialize mesh
         pyvista_polydata_mesh = make_pyvista_polydata_from_hb_face_or_lb_face3d(face_list[0])
         # concatenate the other faces to the mesh
-        for hb_face in face_list[1:]:
-            pyvista_polydata_mesh = pyvista_polydata_mesh + make_pyvista_polydata_from_hb_face_or_lb_face3d(hb_face)
+        for face_obj in face_list[1:]:
+            pyvista_polydata_mesh = pyvista_polydata_mesh + make_pyvista_polydata_from_hb_face_or_lb_face3d(face_obj)
 
         return pyvista_polydata_mesh
 
@@ -66,21 +69,31 @@ def make_pyvista_polydata_from_hb_face_or_lb_face3d_list(face_list):
         return []
 
 
-def make_pyvista_polydata_from_lb_polyface3d_list(lb_polyface3d_list):
+def make_pyvista_polydata_from_list_of_hb_model_and_lb_polyface3d(hb_model_and_lb_polyface3d_list):
     """
-    Convert a list of Ladybug Polyface3D to a Pyvista Polydata mesh
-    :param lb_polyface3d_list: list of Ladybug Polyface3D
-    :return Pyvista_Polydata_mesh: Pyvista Polydata mesh
+    Convert a list of Honeybee Model and Ladybug Polyface3D to a unified Pyvista Polydata mesh.
+    The function is useful to make a Pyvista mesh of all the context buildings, but can be used with LBT objects only.
+    :param hb_model_and_lb_polyface3d_list: list of Honeybee Model and Ladybug Polyface3D
+    :return pyvista_polydata_mesh: Pyvista Polydata mesh
     """
-    # todo @Elie: to test
-    # todo LATER : maybe add some test before to avaoid errors
-    # Make a list of all the faces in the Polyface3D
-    lb_face3d_list = []
-    for lb_polyface3d in lb_polyface3d_list:
-        lb_face3d_list.extend(
-            list(lb_polyface3d.faces))  # add the faces of the Polyface3D to the list, need to use list()
-    # Convert the list of lb_face3d to a Pyvista Polydata mesh
-    pyvista_polydata_mesh = make_pyvista_polydata_from_hb_face_or_lb_face3d_list(face_list=lb_face3d_list)
+    # list that wil contain the faces from the Honeybee Model and the Ladybug Polyface3D.
+    # They can be either LB Face3D or HB Face objects
+    list_of_faces_objects = []
+    # Loop over all the elements of the list
+    for lbt_obj in hb_model_and_lb_polyface3d_list:
+        if isinstance(lbt_obj, Polyface3D) :  # The attribute are the same for both
+            list_of_faces_objects.extend(list(lbt_obj.faces))
+        elif isinstance(lbt_obj, Model):
+            hb_model_face_list = list(lbt_obj.faces)
+            # Select only faces with outdoor boundary condition that do not have vertical normal
+            for hb_face in hb_model_face_list:
+                if isinstance(hb_face.boundary_condition, Outdoors) and not is_vector3d_vertical(hb_face.normal):
+                    list_of_faces_objects.append(hb_face)
+        else:
+            raise TypeError("The object {} is not a Honeybee Model or a Ladybug Polyface3D, it cannot be handled "
+                            "by the context filter".format(lbt_obj.identifier))
+    # Convert the list of faces to a Pyvista Polydata mesh
+    pyvista_polydata_mesh = make_pyvista_polydata_from_hb_face_or_lb_face3d_list(face_list=list_of_faces_objects)
 
     return pyvista_polydata_mesh
 
@@ -157,7 +170,7 @@ def ray_list_from_emitter_to_receiver(face_emitter, face_receiver, exclude_surfa
     ]
     if exclude_surface_from_ray:
         for i in range(number_of_rays):
-            ray_list[i] = excluding_surfaces_from_ray(start=ray_list[i][0], end_point=ray_list[i][1])
+            ray_list[i] = excluding_surfaces_from_ray(start_point=ray_list[i][0], end_point=ray_list[i][1])
     return ray_list[:number_of_rays]
 
 
@@ -170,8 +183,8 @@ def are_hb_face_or_lb_face3d_facing(face_1, face_2):
     """
     # todo @Elie: update
     # centroids
-    centroid_1 = face_1.centroid
-    centroid_2 = face_2.centroid
+    centroid_1 = get_centroid_of_hb_face_and_lb_face3d(face_1)
+    centroid_2 = get_centroid_of_hb_face_and_lb_face3d(face_2)
     # normal vectors
     normal_1 = face_1.normal
     normal_2 = face_2.normal
@@ -185,3 +198,15 @@ def are_hb_face_or_lb_face3d_facing(face_1, face_2):
         return True
     else:
         return False
+
+
+def get_centroid_of_hb_face_and_lb_face3d(face):
+    """
+
+    """
+    if isinstance(face, Face3D):
+        return face.centroid
+    elif isinstance(face, Face):
+        return face.geometry.centroid
+    else:
+        raise TypeError("face should be a Ladybug Face3D or a Honeybee Face object")

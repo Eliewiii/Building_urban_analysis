@@ -26,6 +26,8 @@ class ShadeManager:
     def __init__(self):
         # Parameter
         self.shade_construction_dict = {}
+        # todo : make sure this can be pickeled, otherwise convert it to dict and unpack it at the end in the function
+        #  in the urban canopy
 
     def from_hb_face_or_aperture_to_shade(self, hb_or_lb_object):
         """ Transform a HB Face or an Aperture (window) to a Shade object

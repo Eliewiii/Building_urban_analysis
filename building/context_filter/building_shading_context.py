@@ -33,7 +33,7 @@ class BuildingShadingContextFilter(BuildingContextFilter):
 
         # Results
         self.second_pass_duration = None
-        self.forced_hb_shades_from_user_list = []  # todo : change the name to forced shades from user
+        self.forced_hb_shades_from_user_list = []  # todo : Check if shades need to be turned to dict before pickling
         self.context_shading_hb_shade_list = []
         """
         We use a dictionary to store the shades of the context buildings. The keys are the building ids and the values 
@@ -113,8 +113,7 @@ class BuildingShadingContextFilter(BuildingContextFilter):
             selected_hb_face_lb_face3d_or_hb_aperture_list = self.select_non_obstructed_surfaces_of_context_hb_model_for_target_lb_polyface3d(
                 target_lb_polyface3d_extruded_footprint=target_lb_polyface3d_extruded_footprint,
                 context_hb_model_or_lb_polyface3d_list_to_test=context_hb_model_or_lb_polyface3d_list_to_test,
-                full_urban_canopy_pyvista_mesh=full_urban_canopy_pyvista_mesh,
-                number_of_rays=self.number_of_rays, consider_windows=self.consider_windows)
+                full_urban_canopy_pyvista_mesh=full_urban_canopy_pyvista_mesh, consider_windows=self.consider_windows)
 
         # Convert the Honeybee faces and apertures to Honeybee shades managing properly the construction
         self.context_shading_hb_shade_list = self.convert_hb_faces_and_apertures_to_shade(
@@ -151,9 +150,11 @@ class BuildingShadingContextFilter(BuildingContextFilter):
         # Loop through the context hb model
         for context_hb_model_or_lb_polyface_3d in context_hb_model_or_lb_polyface3d_list_to_test:
             if isinstance(context_hb_model_or_lb_polyface_3d, Model):
-                hb_face_or_lb_face3d_to_test_list = [hb_face for hb_face in hb_room.faces for hb_room in
-                                                     context_hb_model_or_lb_polyface_3d.rooms if
-                                                     isinstance(face.boundary_condition, Outdoors)]
+                hb_face_or_lb_face3d_to_test_list= []
+                for hb_room in context_hb_model_or_lb_polyface_3d.rooms:
+                    for hb_face in list(hb_room.faces):
+                        if isinstance(hb_face.boundary_condition, Outdoors):
+                            hb_face_or_lb_face3d_to_test_list.append(hb_face)
             elif isinstance(context_hb_model_or_lb_polyface_3d, Polyface3D):
                 hb_face_or_lb_face3d_to_test_list = list(context_hb_model_or_lb_polyface_3d.faces)
             else:

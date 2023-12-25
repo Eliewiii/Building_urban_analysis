@@ -65,7 +65,7 @@ class SimulationContextFiltering:
     def perform_first_pass_of_context_filtering_on_buildings(urban_canopy_object,
                                                              building_id_list=None,
                                                              on_building_to_simulate=False,
-                                                             min_vf_criterion=default_mvfc_context_shading_selection ,
+                                                             min_vf_criterion=default_mvfc_context_shading_selection,
                                                              overwrite=False):
         """
         Perform first pass of context filtering on buildings
@@ -80,7 +80,7 @@ class SimulationContextFiltering:
         timer = time()
 
         # Perform first pass of context filtering on buildings
-        context_building_id_list,sim_duration_dict = urban_canopy_object.perform_first_pass_context_filtering_on_buildings(
+        context_building_id_list, sim_duration_dict = urban_canopy_object.perform_first_pass_context_filtering_on_buildings(
             building_id_list=building_id_list,
             on_building_to_simulate=on_building_to_simulate,
             min_vf_criterion=min_vf_criterion,
@@ -91,6 +91,38 @@ class SimulationContextFiltering:
         return context_building_id_list, tot_duration, sim_duration_dict
 
     @staticmethod
-    def perform_second_pass_of_context_filtering_on_buildings(urban_canopy_object):
-        """ todo """
-        pass  # todo @ Elie
+    def perform_second_pass_of_context_filtering_on_buildings(urban_canopy_object,
+                                                              building_id_list=None,
+                                                              number_of_rays=default_shading_number_of_rays_context_filter_second_pass,
+                                                              on_building_to_simulate=False,
+                                                              consider_windows=False,
+                                                              keep_shades_from_user=False,
+                                                              no_ray_tracing=False,
+                                                              overwrite=False):
+        """
+        Perform second pass of context filtering on buildings.
+        :param urban_canopy_object: UrbanCanopy object, the urban canopy
+        :param building_id_list: list of str, the list of building id to perform the second pass context filtering on.
+        :param on_building_to_simulate: bool, if True, perform the second pass context filtering on the buildings
+            to simulate.
+        :param consider_windows: bool, if True, the windows will be considered in the context filtering.
+        :param keep_shades_from_user: bool, if True, the shades from the user will be kept in the context filtering.
+        :param no_ray_tracing: bool, if True, the second pass context filtering will be performed without ray-tracing.
+        :param overwrite: bool, if True, the existing context selection will be overwritten.
+        """
+
+        timer = time()
+
+        # Perform second pass of context filtering on buildings
+        sim_duration_dict = urban_canopy_object.perform_second_pass_context_filtering_on_buildings(
+            building_id_list=building_id_list,
+            number_of_rays=number_of_rays,
+            on_building_to_simulate=on_building_to_simulate,
+            consider_windows=consider_windows,
+            keep_shades_from_user=keep_shades_from_user,
+            no_ray_tracing=no_ray_tracing,
+            overwrite=overwrite)
+
+        tot_duration = time() - timer
+
+        return tot_duration, sim_duration_dict

@@ -18,6 +18,8 @@ from urban_canopy.uc_context_filter.shade_manager import ShadeManager
 from building.building_basic import BuildingBasic
 from building.building_modeled import BuildingModeled
 from building.solar_radiation_and_bipv.solar_rad_and_BIPV import SolarRadAndBipvSimulation
+from building.context_filter.utils_functions_context_filter import \
+    make_pyvista_polydata_from_list_of_hb_model_and_lb_polyface3d
 from libraries_addons.extract_gis_files import extract_gis
 from typology.typology import Typology
 from bipv.bipv_technology import BipvTechnology
@@ -439,9 +441,9 @@ class UrbanCanopy:
         # Loop over the buildings
         for i, (building_id, building_obj) in enumerate(self.building_dict.items()):
             if (isinstance(building_obj, BuildingModeled)
-                    and ((building_id in building_id_list)
+                    and (((building_id_list is not None and building_id_list is not []) and building_id in building_id_list)
                          or (on_building_to_simulate and building_obj.to_simulate)
-                         or building_obj.is_target)):
+                         or ((building_id_list is None or building_id_list is []) and building_obj.is_target))):
                 # Perform the first pass context filtering
                 current_building_selected_context_building_id_list, duration = building_obj. \
                     perform_first_pass_context_filtering(
@@ -476,8 +478,9 @@ class UrbanCanopy:
         # Make extruded footprints of the buildings in the LB polyface3d format if they don't exist already
         self.make_lb_polyface3d_extruded_footprint_of_buildings()
         # Generate the Pyvista mesh including all the buildings in the urban canopy
-        self.make_Pyvista_Polydata_mesh_of_all_buildings()  # todo @Elie: to be implemented and remove capital letters
-        # if we specify the building no need to do it on all the simulated buildings
+        if overwrite or self.full_context_pyvista_mesh is None:
+            self.make_pyvista_polydata_mesh_of_all_buildings()  # todo @Elie: to be implemented and remove capital letters
+        # If we specify the building no need to do it on all the simulated buildings
         if building_id_list is not None and building_id_list != []:
             on_building_to_simulate = False
         # Checks of the building_id_list parameter to give feedback to the user if there is an issue with an id
@@ -494,23 +497,18 @@ class UrbanCanopy:
                         f"attribute, context filtering cannot be performed. "
                         f"You can use the adequate functions or components to convert the building{building_id} "
                         f"into BuildingModeled.")
-        # Put the building ids and the bounding boxes in lists to pass down to the building context filtering method
-        uc_building_id_list = list(self.building_dict.keys())
-        uc_building_bounding_box_list = [building_obj.LB_polyface3d_oriented_bounding_box for
-                                         building_obj in self.building_dict.items()]
         # Dictionary of the simulation duration, to get the duration of the simulation for each building
         sim_duration_dict = {}
         flag_use_envelop = False  # To return a message if at least one context building does not have a HB model
         # Loop over the buildings
         for i, (building_id, building_obj) in enumerate(self.building_dict.items()):
             if (isinstance(building_obj, BuildingModeled)
-                    and ((building_id in building_id_list)
+                    and (((building_id_list is not None and building_id_list is not []) and building_id in building_id_list)
                          or (on_building_to_simulate and building_obj.to_simulate)
-                         or building_obj.is_target)):
-                # Perform the first pass context filtering
-                current_building_selected_context_building_id_list, duration, flag_use_envelop = building_obj. \
-                    perform_first_pass_context_filtering(
-                    uc_shade_manager=self.uc_shade_manager, uc_building_dictionary=self.building_dict,
+                         or ((building_id_list is None or building_id_list is []) and building_obj.is_target))):
+                # Perform the Second pass context filtering
+                nb_context_faces, duration, flag_use_envelop = building_obj.perform_second_pass_context_filtering(
+                    uc_shade_manager=self.shade_manager, uc_building_dictionary=self.building_dict,
                     full_urban_canopy_pyvista_mesh=self.full_context_pyvista_mesh, number_of_rays=number_of_rays,
                     consider_windows=consider_windows, keep_shades_from_user=keep_shades_from_user,
                     no_ray_tracing=no_ray_tracing, overwrite=overwrite, flag_use_envelop=flag_use_envelop)
@@ -518,23 +516,39 @@ class UrbanCanopy:
 
         return sim_duration_dict
 
-    def make_Pyvista_Polydata_mesh_of_all_buildings(self):
+    def make_pyvista_polydata_mesh_of_all_buildings(self):
         """
-
-        :return:
+        Make the Pyvista mesh of all the buildings in the urban canopy to be used for the second pass context filtering.
+        That way, the mesh is generated once only and can be reused for all the buildings.
         """
-        # todo @Elie: test the function
+        # Initialize the list of HB model and LB polyface3d to be used to make the full context mesh
+        hb_model_and_lb_polyface3d_list = []
 
-        # Make it from the merged faces HB model of the buildings when possible, otherwise the LB Polyface3d extruded
-        # footprint
+        for building in self.building_dict.values():
+            if isinstance(building, BuildingBasic):
+                # Use the LB Polyface3D extruded footprint for BuildingBasic,
+                building.make_lb_polyface3d_extruded_footprint()  # Create it if it doen't exist
+                hb_model_and_lb_polyface3d_list.append(building.lb_polyface3d_extruded_footprint)
+            elif isinstance(building, BuildingModeled):
+                # Use preferably the merged faces HB model of the building
+                if building.merged_faces_hb_model_dict is not None:
+                    hb_model_and_lb_polyface3d_list.append(Model.from_dict(building.merged_faces_hb_model_dict))
+                # Check if the building has a HB model
+                elif building.hb_model_obj is not None:
+                    # Make the HB model mesh
+                    hb_model_and_lb_polyface3d_list.append(building.hb_model_obj.to_pyvista_mesh())
+                else:
+                    dev_logger.info(
+                        f"The building {building.id} does not have a Honeybee model, it will not be included in the "
+                        f"full context mesh")
+            else:
+                dev_logger.info(
+                    f"The building {building.id} is not a BuildingBasic or a BuildingModeled type, it will not be "
+                    f"included in the full context mesh")
 
-        # Make list of all the LB_Polyface3D_extruded_footprint of the buildings in the urban canopy
-        list_of_building_LB_Polyface3D_extruded_footprint = [building.lb_polyface3d_extruded_footprint for
-                                                             building in
-                                                             self.building_dict.values()]
-        # Convert to Pyvista Polydata
-        # todo @Elie: add the mport and finish the function
-        # Pyvista_Polydata_mesh = make_Pyvista_Polydata_from_LB_Polyface3D_list(list_of_building_LB_Polyface3D_extruded_footprint)
+        # Make the full context mesh
+        self.full_context_pyvista_mesh = make_pyvista_polydata_from_list_of_hb_model_and_lb_polyface3d(
+            hb_model_and_lb_polyface3d_list=hb_model_and_lb_polyface3d_list)
 
     def generate_sensor_grid_on_buildings(self, building_id_list=None, bipv_on_roof=True,
                                           bipv_on_facades=True, roof_grid_size_x=1,
@@ -551,6 +565,7 @@ class UrbanCanopy:
         :param roof_grid_size_y: float, grid size of the sensor grid on the roof in the y direction.
         :param facades_grid_size_y: float, grid size of the sensor grid on the facades in the y direction.
         :param offset_dist: float, offset distance between the sensor grid and the building.
+        :param overwrite: bool, if True, the existing sensor grid will be overwritten.
         """
         # Checks of the building_id_list parameter to give feedback to the user if there is an issue with an id
         if not (building_id_list is None or building_id_list is []):
