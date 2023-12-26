@@ -114,7 +114,7 @@ class SimulationContextFiltering:
         timer = time()
 
         # Perform second pass of context filtering on buildings
-        sim_duration_dict = urban_canopy_object.perform_second_pass_context_filtering_on_buildings(
+        result_summary_dict = urban_canopy_object.perform_second_pass_context_filtering_on_buildings(
             building_id_list=building_id_list,
             number_of_rays=number_of_rays,
             on_building_to_simulate=on_building_to_simulate,
@@ -125,4 +125,4 @@ class SimulationContextFiltering:
 
         tot_duration = time() - timer
 
-        return tot_duration, sim_duration_dict
+        return tot_duration, result_summary_dict

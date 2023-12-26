@@ -64,7 +64,7 @@ class ShadeManager:
         elif isinstance(hb_or_lb_object, Aperture):
             # Move the aperture by 0.1m in the direction of the normal to avoid overlapping the facades
             hb_or_lb_object_geo = hb_or_lb_object.geometry  # copy of the geometry
-            hb_or_lb_object_geo = hb_or_lb_object_geo.move(hb_or_lb_object_geo.normal, 0.01)
+            hb_or_lb_object_geo = hb_or_lb_object_geo.move(hb_or_lb_object_geo.normal.normalize() * 0.01)
             identifier = hb_or_lb_object.identifier
         elif isinstance(hb_or_lb_object, Face3D):
             hb_or_lb_object_geo = hb_or_lb_object

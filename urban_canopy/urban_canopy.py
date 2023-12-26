@@ -511,7 +511,7 @@ class UrbanCanopy:
                         f"You can use the adequate functions or components to convert the building{building_id} "
                         f"into BuildingModeled.")
         # Dictionary of the simulation duration, to get the duration of the simulation for each building
-        sim_duration_dict = {}
+        result_summary_dict = {}
         flag_use_envelop = False  # To return a message if at least one context building does not have a HB model
         # Loop over the buildings
         for i, (building_id, building_obj) in enumerate(self.building_dict.items()):
@@ -525,9 +525,9 @@ class UrbanCanopy:
                     full_urban_canopy_pyvista_mesh=self.full_context_pyvista_mesh, number_of_rays=number_of_rays,
                     consider_windows=consider_windows, keep_shades_from_user=keep_shades_from_user,
                     no_ray_tracing=no_ray_tracing, overwrite=overwrite, flag_use_envelop=flag_use_envelop)
-                sim_duration_dict[building_id] = duration
+                result_summary_dict[building_id] = {"nb_context_faces": nb_context_faces, "duration": duration}
 
-        return sim_duration_dict
+        return result_summary_dict
 
     def make_pyvista_polydata_mesh_of_all_buildings(self):
         """

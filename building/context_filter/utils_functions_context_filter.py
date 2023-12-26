@@ -66,10 +66,9 @@ def convert_point3d_to_numpy_array(pt_3d):
 def make_pyvista_polydata_from_hb_face_or_lb_face3d(face_object):
     """
     Convert a Honeybee Face or Ladybug Face3D to a Pyvista PolyData mesh
-    :param face_object:
-    :return:
+    :param face_object: Honeybee Face or Ladybug Face3D
+    :return: Pyvista PolyData mesh
     """
-    # todo @Elie: update if needed
     # Get the vertices of the face
     vertices = []  # initialize the list of vertices
     lb_vertex_list = face_object.vertices  # extract the ladybug-geometry Point3D vertices

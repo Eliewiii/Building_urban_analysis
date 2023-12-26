@@ -269,30 +269,30 @@ def get_hb_construction(hb_model):
             if isinstance(face.boundary_condition, Outdoors) and isinstance(face.type, Wall):
                 # Check if the construction is already in the dict
                 if face.properties.energy.construction.identifier in wall_construction_dict:
-                    wall_construction_dict[face.properties.energy.construction.id]["occurrence"] += 1
+                    wall_construction_dict[face.properties.energy.construction.identifier]["occurrence"] += 1
                 else:
                     # Add the construction to the dict
-                    wall_construction_dict[face.properties.energy.construction.id] = {
+                    wall_construction_dict[face.properties.energy.construction.identifier] = {
                         "occurrence": 1,
                         "construction": face.properties.energy.construction
                     }
                 for hb_aperture in face.apertures:
                     # Check if the construction is already in the dict
-                    if hb_aperture.properties.energy.construction.id in window_construction_dict:
-                        window_construction_dict[hb_aperture.properties.energy.construction.id]["occurrence"] += 1
+                    if hb_aperture.properties.energy.construction.identifier in window_construction_dict:
+                        window_construction_dict[hb_aperture.properties.energy.construction.identifier]["occurrence"] += 1
                     else:
                         # Add the construction to the dict
-                        window_construction_dict[hb_aperture.properties.energy.construction.id] = {
+                        window_construction_dict[hb_aperture.properties.energy.construction.identifier] = {
                             "occurrence": 1,
                             "construction": hb_aperture.properties.energy.construction
                         }
             elif isinstance(face.boundary_condition, Outdoors) and isinstance(face.type, RoofCeiling):
                 # Check if the construction is already in the dict
                 if face.properties.energy.construction.identifier in roof_construction_dict:
-                    roof_construction_dict[face.properties.energy.construction.id]["occurrence"] += 1
+                    roof_construction_dict[face.properties.energy.construction.identifier]["occurrence"] += 1
                 else:
                     # Add the construction to the dict
-                    roof_construction_dict[face.properties.energy.construction.id] = {
+                    roof_construction_dict[face.properties.energy.construction.identifier] = {
                         "occurrence": 1,
                         "construction": face.properties.energy.construction
                     }

@@ -93,15 +93,17 @@ class SimulationBuildingManipulationFunctions:
     @staticmethod
     def make_merged_face_of_buildings_in_urban_canopy(urban_canopy_object, building_id_list=None,
                                                       orient_roof_mesh_to_according_to_building_orientation=True,
-                                                      north_angle=0):
+                                                      north_angle=0,
+                                                      overwrite=False):
         """
         Make oriented bounding boxes of buildings in the urban canopy
         :param urban_canopy_object: urban canopy object
         :param building_id_list: list of building id to be considered
         :param orient_roof_mesh_to_according_to_building_orientation: bool: default=True if True, the roof mesh will be oriented according to the building orientation
         :param north_angle: number: default=0: number of degrees to rotate the roof mesh
+        :param overwrite: bool: default=False: if True, the existing merged faces will be overwritten
         """
-
+        # todo @Elie: add the overwrite option in the function
         urban_canopy_object.make_merged_faces_hb_model_of_buildings(building_id_list=building_id_list,
                                                                     orient_roof_mesh_to_according_to_building_orientation=orient_roof_mesh_to_according_to_building_orientation,
                                                                     north_angle=north_angle)

@@ -137,6 +137,10 @@ class BuildingModeled(BuildingBasic):
             user_logger.error(err_message)
             dev_logger.error(err_message, exc_info=True)
             raise AttributeError(err_message)
+        # Add a prefix to the identifier of all the HB objects (Rooms, Faces, Apertures, Shades) in the model to make
+        # sure that they are unique
+        hb_model.add_prefix(identifier + "_")
+
         # Keep the context of the building
         if keep_context and (hb_model.shades != [] and hb_model.shades is not None):
             building_modeled_obj.shading_context_obj.get_hb_shades_from_hb_model(hb_model)

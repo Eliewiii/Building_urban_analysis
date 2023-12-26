@@ -186,7 +186,7 @@ class BuildingShadingContextFilter(BuildingContextFilter):
                 selected_hb_face_lb_face3d_or_hb_aperture_list.append(face)
             # Consider the windows (only if it is a Honeybee Face)
             if isinstance(face, Face) and consider_windows:
-                for hb_aperture in face.apertures:
+                for hb_aperture in list(face.apertures):
                     # Make a copy of the window geometry
                     window_lb_face3d = hb_aperture.geometry
                     # todo @Elie : should not be necessary to move the geometry here as it's already done
