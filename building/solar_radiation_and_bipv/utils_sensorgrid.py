@@ -43,23 +43,26 @@ def generate_sensor_grid_for_hb_model(hb_model_obj, grid_size_x, grid_size_y, of
         lb_punched_face3d_list = get_hb_faces_list_according_to_type(hb_model_obj, is_facade)
     # Generate the SensorGrid object
     sensor_grid_obj = generate_sensorgrid_obj_on_lb_punched_face_list(lb_punched_face3d_list, grid_size_x, grid_size_y,
-                                                              offset_dist)
+                                                                      offset_dist, surface_type)
 
     return sensor_grid_obj.to_dict()
 
 
-def generate_sensorgrid_obj_on_lb_punched_face_list(lb_punched_face3d_list, grid_size_x, grid_size_y, offset_dist):
+def generate_sensorgrid_obj_on_lb_punched_face_list(lb_punched_face3d_list, grid_size_x, grid_size_y, offset_dist,
+                                                    surface_type):
     """
     Generate a SensorGrid object for a list of Honeybee Faces
     :param hb_face_list: list of LB punched geometry
     :param grid_size_x: float : size of the grid in the x direction in meter
     :param grid_size_y: float : size of the grid in the y direction in meter
     :param offset_dist: float : offset distance on the border of the face to generate the mesh
+    :param surface_type: str : Surface type to generate the Sensorgrid on, either "roof" or "facades"
 
     :return sensor_grid_obj: Honeybee SensorGrid object
     """
     # generate Ladybug Mesh on the Honeybee Face
-    lb_mesh_obj = generate_lb_mesh_from_lb_punched_face_list(lb_punched_face3d_list, grid_size_x, grid_size_y, offset_dist)
+    lb_mesh_obj = generate_lb_mesh_from_lb_punched_face_list(lb_punched_face3d_list, grid_size_x, grid_size_y,
+                                                             offset_dist, surface_type)
     # Generate a SensorGrid object out of the mesh
     sensor_grid_obj = create_sensor_grid_from_mesh(lb_mesh_obj)
 
@@ -87,13 +90,15 @@ def create_sensor_grid_from_mesh(mesh, name=None):
     return sensor_grid
 
 
-def generate_lb_mesh_from_lb_punched_face_list(lb_punched_face3d_list, grid_size_x, grid_size_y, offset_dist):
+def generate_lb_mesh_from_lb_punched_face_list(lb_punched_face3d_list, grid_size_x, grid_size_y, offset_dist,
+                                               surface_type):
     """
     Create a Ladybug Mesh3D from a list of LB punched geometry
     :param lb_punched_face3d_list: list of LB punched geometry
     :param grid_size_x: float : size of the grid in the x direction in meter
     :param grid_size_y: float : size of the grid in the y direction in meter
     :param offset_dist: float : offset distance on the border of the face to generate the mesh
+    :param surface_type: str : Surface type to generate the Sensorgrid on, either "roof" or "facades"
     """
     # Initialize the list of Ladybug Meshes
     lb_meshes = []
@@ -106,8 +111,12 @@ def generate_lb_mesh_from_lb_punched_face_list(lb_punched_face3d_list, grid_size
         except AssertionError:  # tiny geometry not compatible with quad faces
             continue
     if len(lb_meshes) == 0:
+        # todo : Correct that to continue the simulation anyway, not generating the Sensorgrid and disabling the simulation
+        #  for the roof/facade for that building
         lb_mesh = None
         dev_logger.warning("No mesh was generated for the Honeybee Model")
+        raise AssertionError(
+            f"No mesh could be generated. It is liokely that there is not enough room in the {surface_type} to generate a mesh")
     elif len(lb_meshes) == 1:
         lb_mesh = lb_meshes[0]
     else:  # join the meshes
@@ -115,7 +124,8 @@ def generate_lb_mesh_from_lb_punched_face_list(lb_punched_face3d_list, grid_size
     return lb_mesh
 
 
-def generate_lb_mesh3d_from_hb_face(lb_punched_face3d, x_dim, y_dim=None, offset=None, flip=False, generate_centroids=True):
+def generate_lb_mesh3d_from_hb_face(lb_punched_face3d, x_dim, y_dim=None, offset=None, flip=False,
+                                    generate_centroids=True):
     """
     Function highly inspired from the in the todo @Elie, add the name of the function
      function in the original Honeybee code, modified to fit the needs of the project.
@@ -296,12 +306,13 @@ def generate_lb_mesh2d_from_lb_polygon2d(polygon, x_dim, y_dim, generate_centroi
                             _pattern_faces[index] = False
                             break
     # Remove the vertices that are not in the pattern
-    # if True not in _pattern_faces:
-    #     return None
+    if True not in _pattern_faces:
+        return None
     _new_mesh, _face_pattern = _new_mesh.remove_faces(_pattern_faces)
     _new_mesh._face_areas = x_dim * y_dim
 
     return _new_mesh
+
 
 def middle_point2d(point2d_1, point2d_2):
     """

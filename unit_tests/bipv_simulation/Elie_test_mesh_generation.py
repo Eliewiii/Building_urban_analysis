@@ -23,7 +23,7 @@ SimulationBuildingManipulationFunctions.move_buildings_to_origin(urban_canopy_ob
 # Load Buildings from json
 
 # path_folder_json = None
-path_file_json = r"C:\Users\eliem\OneDrive - Technion\BUA\Context_filter\Samples\Sample hbjsons\example_1.hbjson"
+path_file_json = r"C:\Users\eliem\OneDrive - Technion\BUA\Context_filter\Samples\Sample hbjsons\Buil_TA_9.hbjson"
 
 path_folder_json=None
 # path_folder_json = r"C:\Users\eliem\OneDrive - Technion\Ministry of Energy Research\IBPSA US conference\hbjson_2\var_sub_optimal\merged_or"
