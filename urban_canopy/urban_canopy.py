@@ -376,7 +376,7 @@ class UrbanCanopy:
 
     def make_merged_faces_hb_model_of_buildings(self, building_id_list=None,
                                                 orient_roof_mesh_to_according_to_building_orientation=True,
-                                                north_angle=0):
+                                                north_angle=0,overwrite=False):
         """
         Make the merged faces hb model of the buildings in the urban canopy.
         :param building_id_list: list of the building id to make the merged faces hb model,
@@ -404,7 +404,7 @@ class UrbanCanopy:
                     and isinstance(building_obj, BuildingModeled):
                 building_obj.make_merged_faces_hb_model(
                     orient_roof_mesh_to_according_to_building_orientation=orient_roof_mesh_to_according_to_building_orientation,
-                    north_angle=north_angle)
+                    north_angle=north_angle,overwrite=overwrite)
 
     def perform_first_pass_context_filtering_on_buildings(self, building_id_list=None,
                                                           on_building_to_simulate=False,
@@ -425,7 +425,7 @@ class UrbanCanopy:
         :return: sim_duration_dict: dict, the dictionary of the simulation duration for each building
         """
         # Make oriented bounding boxes of the buildings in the urban canopy if they don't exist already
-        self.make_oriented_bounding_boxes_of_buildings()
+        self.make_oriented_bounding_boxes_of_buildings(overwrite=overwrite)
         # if we specify the building no need to do it on all the simulated buildings
         if building_id_list is not None and building_id_list != []:
             on_building_to_simulate = False

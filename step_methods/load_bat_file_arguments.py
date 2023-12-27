@@ -1,8 +1,7 @@
 """
-
+Class to load the arguments from the command line to the main script with the values sent from Grasshopper
 """
 
-# todo @Ale is that ok for this specific file? as we will use everything
 from utils.utils_default_values_user_parameters import *
 
 
@@ -41,6 +40,9 @@ class LoadArguments:
         parser.add_argument("-t", "--are_buildings_target",
                             help="boolean (here '0' or '1') telling if the buildings inputed in the component are "
                                  "target ", nargs='?', default=False)
+        parser.add_argument("--on_building_to_simulate",
+                            help="boolean (0 or 1), telling of the simulation should be performed on building_to_simulate",
+                            nargs='?', default=False)
 
         # Extract Geometry GIS
         parser.add_argument("-g", "--path_gis_folder",
@@ -66,7 +68,7 @@ class LoadArguments:
         parser.add_argument("--use_properties_from_typology",
                             help="boolean (here '0' or '1') telling if it should be run on all buildings to simulate",
                             nargs='?', default=False)
-        # Mesh faces parameters
+        # Merge HB model faces parameters
         parser.add_argument("--orient_roof_according_to_building_orientation",
                             help="True if the roof mesh should be oriented according to the building orientation, else False",
                             default=True)
@@ -77,6 +79,15 @@ class LoadArguments:
         parser.add_argument("--nb_of_rays",
                             help="int, number of rays used for the raytracing", nargs='?',
                             default=default_shading_number_of_rays_context_filter_second_pass)
+        parser.add_argument("--consider_windows",
+                            help=f"boolean (here '0' or '1') telling if the windows should be considered in "
+                                 f"the context filtering", nargs='?', default=False)
+        parser.add_argument("--keep_shades_from_user",
+                            help=f"boolean (here '0' or '1') telling if the shades from the user should be kept "
+                                 f"in the context filtering", nargs='?', default=False)
+        parser.add_argument("--no_ray_tracing",
+                            help=f"boolean (here '0' or '1') telling if the ray tracing should be performed "
+                                 f"(used for testing purposes)", nargs='?', default=False)
         # Simulation general
         parser.add_argument("-w", "--path_weather_file", help="path to the weather file used",
                             default=default_path_weather_file)
@@ -143,7 +154,6 @@ class LoadArguments:
                             help="Cost in gCO2eq per kWh depending on the country energy mix",
                             default=default_country_ghe_cost)
 
-
     @staticmethod
     def add_user_simulation_features_to_parser(parser):
         """
@@ -188,9 +198,14 @@ class LoadArguments:
         # Context filtering features
         parser.add_argument("--generate_bounding_boxes", help="Generate bounding boxes for the buildings",
                             nargs='?', default=False)
-        parser.add_argument("--perform_context_filtering", help="Perform context filtering for buildings",
+        parser.add_argument("--run_full_context_filtering", help="Perform the full context filtering for buildings",
                             nargs='?', default=False)
-
+        parser.add_argument("--run_first_pass_context_filtering",
+                            help="Perform teh first pass of the context filtering for buildings",
+                            nargs='?', default=False)
+        parser.add_argument("--run_second_pass_context_filtering",
+                            help="Perform teh second pass of the context filtering for buildings",
+                            nargs='?', default=False)
         # Generate objects for visualization
         parser.add_argument("--generate_model_with_building_envelop",
                             help="Make a HB model containing the envelop of all the buildings in the urban canopy "
@@ -228,7 +243,6 @@ class LoadArguments:
         buildings_id_list = parse_and_clean_building_id_list_from_argument_parser(args.building_id_list)
 
         # Create a dictionary with the arguments and the name of their variable that will be imported in the main script
-        # todo @Elie, complete the dictionary with the new arguments through the development
         arguments_dictionary = {
             # Configuration
             "path_simulation_folder": args.path_simulation_folder,
@@ -241,6 +255,7 @@ class LoadArguments:
             "overwrite": bool(int(args.overwrite)),
             # Building manipulation
             "are_buildings_target": bool(int(args.are_buildings_target)),
+            "on_building_to_simulate": bool(int(args.on_building_to_simulate)),
             # Extract geometry
             "path_gis": args.path_gis_folder,
             "unit_gis": args.gis_unit,
@@ -250,7 +265,12 @@ class LoadArguments:
             # Mesh faces parameters
             "orient_roof_according_to_building_orientation": bool(
                 int(args.orient_roof_according_to_building_orientation)),
-            # todo @Elie add the new arguments for the new features when operational
+            # Context filter algorithm parameters
+            "min_vf_criterion": float(args.mvfc),
+            "number_of_rays": int(args.nb_of_rays),
+            "consider_windows": bool(int(args.consider_windows)),
+            "keep_shades_from_user": bool(int(args.keep_shades_from_user)),
+            "no_ray_tracing": bool(int(args.no_ray_tracing)),
             # Simulation general
             "path_weather_file": args.path_weather_file,
             "north_angle": float(args.north_angle),
@@ -278,7 +298,6 @@ class LoadArguments:
         }
 
         # Create a dictionary with the arguments and the name of their variable that will be imported in the main script
-        # # todo @Elie, complete the dictionary with the new arguments through the development
         step_dictionary = {
             # Initialization and wrapping
             "run_make_simulation_folder": bool(int(args.make_simulation_folder)),
@@ -296,23 +315,23 @@ class LoadArguments:
             "run_generate_bounding_boxes": bool(int(args.generate_bounding_boxes)),
             "run_generate_model_with_building_envelop": bool(int(args.generate_model_with_building_envelop)),
             # Context filtering
-            "run_perform_context_filtering": bool(int(args.perform_context_filtering)),
+            ""
+            "run_context_filtering": bool(int(args.run_full_context_filtering)),
+            "run_first_pass_context_filtering": bool(int(args.run_first_pass_context_filtering)),
+            "run_second_pass_context_filtering": bool(int(args.run_second_pass_context_filtering)),
             # Solar and BIPV simulation
             "run_generate_sensorgrids_on_buildings": bool(int(args.generate_sensorgrids_on_buildings)),
             "run_annual_solar_irradiance_simulation": bool(int(args.run_annual_solar_irradiance_simulation)),
             "run_bipv_harvesting_and_lca_simulation": bool(int(args.run_bipv_harvesting_and_lca_simulation)),
             "generate_panels_results_in_csv": bool(int(args.generate_panels_results_in_csv)),
             "plot_graph_results_building_panel_simulation": bool(
-                int(args.plot_graph_results_building_panel_simulation)),
-            "plot_graph_results_urban_canopy": bool(int(args.plot_graph_results_urban_canopy))
+                int(args.plot_graph_results_building_panel_simulation)),  # todo outdated
+            "plot_graph_results_urban_canopy": bool(int(args.plot_graph_results_urban_canopy))  # todo outdated
         }
-
-        # the rest todo
 
         return arguments_dictionary, step_dictionary
 
 
-# todo @Elie, this function is only used here, should it be moved somewhere else?
 def parse_and_clean_building_id_list_from_argument_parser(building_id_list_form_argument_parser):
     """
     Parse the building id list from the argument parser

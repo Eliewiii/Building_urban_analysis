@@ -188,18 +188,20 @@ class BuildingModeled(BuildingBasic):
         self.moved_to_origin = True
 
     def make_merged_faces_hb_model(self, orient_roof_mesh_to_according_to_building_orientation=True,
-                                   north_angle=0):
+                                   north_angle=0, overwrite=False):
         """
         Make a HB model with the faces merged. Useful for mesh generation and to simplify the geometry of the model
         for context shading computation.
         :param orient_roof_mesh_to_according_to_building_orientation: bool: default=True, if True, the roof mesh
             will be oriented according to the orientation of the building
         :param north_angle: float: default=0, angle of the north in degree
+        :param overwrite: bool: default=False, if True, overwrite the merged faces HB model if it already exists
         """
-        merged_faces_hb_model_obj = merge_facades_and_roof_faces_in_hb_model(hb_model_obj=self.hb_model_obj,
-                                                                             orient_roof_mesh_to_according_to_building_orientation=orient_roof_mesh_to_according_to_building_orientation,
-                                                                             north_angle=north_angle)
-        self.merged_faces_hb_model_dict = merged_faces_hb_model_obj.to_dict()
+        if self.merged_faces_hb_model_dict is None or overwrite:
+            merged_faces_hb_model_obj = merge_facades_and_roof_faces_in_hb_model(hb_model_obj=self.hb_model_obj,
+                                                                                 orient_roof_mesh_to_according_to_building_orientation=orient_roof_mesh_to_according_to_building_orientation,
+                                                                                 north_angle=north_angle)
+            self.merged_faces_hb_model_dict = merged_faces_hb_model_obj.to_dict()
 
     def perform_first_pass_context_filtering(self, uc_building_id_list, uc_building_bounding_box_list,
                                              min_vf_criterion=0.01, overwrite=True):

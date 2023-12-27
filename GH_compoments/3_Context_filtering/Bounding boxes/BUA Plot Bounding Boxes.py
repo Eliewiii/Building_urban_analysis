@@ -4,6 +4,7 @@ Useful mostly for the context filtering.
         path_simulation_folder_: Path to the folder. By default, the code will be run in
                                 Appdata\Local\Building_urban_analysis\Simulation_temp
         building_id_list_: List of building ids to display. If empty, all the buildings will be displayed.
+
         _run : Plug a boolean toggle to True to run the code and display the results.
     Output:
         bounding_box_list : Brep of the bounding_boxes of the target building
@@ -13,8 +14,8 @@ Useful mostly for the context filtering.
 __author__ = "Elie"
 __version__ = "2023.12.22"
 
-ghenv.Component.Name = "BUA Get Bounding Boxes"
-ghenv.Component.NickName = 'GetBoundingBoxes'
+ghenv.Component.Name = "BUA Plot Bounding Boxes"
+ghenv.Component.NickName = 'PlotBoundingBoxes'
 ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '3 :: Context filtering'

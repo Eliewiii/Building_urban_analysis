@@ -106,6 +106,6 @@ class SimulationBuildingManipulationFunctions:
         # todo @Elie: add the overwrite option in the function
         urban_canopy_object.make_merged_faces_hb_model_of_buildings(building_id_list=building_id_list,
                                                                     orient_roof_mesh_to_according_to_building_orientation=orient_roof_mesh_to_according_to_building_orientation,
-                                                                    north_angle=north_angle)
+                                                                    north_angle=north_angle,overwrite=overwrite)
         user_logger.info("Honeybee models with merges faces of the buildings have been generated successfully")
         dev_logger.info("Honeybee models with merges faces of the buildings have been generated successfully")
