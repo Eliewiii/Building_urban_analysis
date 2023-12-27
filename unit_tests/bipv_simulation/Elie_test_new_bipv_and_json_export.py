@@ -6,8 +6,7 @@ urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object
 
 SimFunSolarRadAndBipv.run_bipv_harvesting_and_lca_simulation(
     urban_canopy_object=urban_canopy_object,
-    # building_id_list=["Buil_TA_0"],
-    building_id_list=["Buil_TA_1"],
+    building_id_list=None,
     efficiency_computation_method=default_efficiency_computation_method,
     minimum_panel_eroi=default_minimum_panel_eroi,
     start_year=2030,

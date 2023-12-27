@@ -7,6 +7,7 @@ from step_methods.general_function_for_main import SimulationCommonMethods
 from step_methods.load_bat_file_arguments import LoadArguments
 from step_methods.load_building_or_geometry import SimulationLoadBuildingOrGeometry
 from step_methods.post_processing_and_plots import SimulationPostProcessingAndPlots
+from step_methods.context_filtering import SimulationContextFiltering
 from step_methods.run_simulations import SolarOrPanelSimulation
 from step_methods.solar_radiation_and_bipv import SimFunSolarRadAndBipv
 
@@ -71,6 +72,7 @@ def main():
     # Building manipulation #
     # Convert BuildingBasic obj tp BuildingModeled
     # todo @Elie
+
     # Remove Building from Urban canopy
     if simulation_step_dictionary["run_remove_building_list_from_urban_canopy"]:
         SimulationBuildingManipulationFunctions.remove_building_list_from_urban_canopy(
@@ -78,15 +80,14 @@ def main():
             building_id_list=arguments_dictionary["building_id_list"])
 
     # Move building to origin
-    if simulation_step_dictionary["run_move_buildings_to_origin"] or (
-            urban_canopy_object.moving_vector_to_origin is not None and False in [building_obj.moved_to_origin
-                                                                                  for
-                                                                                  building_obj in
-                                                                                  urban_canopy_object.building_dict.values()]):
-        # Move to origin if asked or if some buildings, but not all of them (a priori new ones), were moved to origin before
+    if (simulation_step_dictionary["run_move_buildings_to_origin"]
+            or (urban_canopy_object.moving_vector_to_origin is not None
+                and False in [building_obj.moved_to_origin for building_obj in
+                              urban_canopy_object.building_dict.values()])):
+        # Move to origin if asked or if some buildings, but not all of them (a priori new ones), were moved to origin
+        # before
         SimulationBuildingManipulationFunctions.move_buildings_to_origin(
             urban_canopy_object=urban_canopy_object)
-
 
     # Merge faces of buildings
     if simulation_step_dictionary["run_make_merged_faces_hb_model"]:
@@ -99,11 +100,34 @@ def main():
 
     # Context filtering #
     # Generate bounding boxes
-    # todo @Elie
-    # Perform context filtering
-    # todo @Elie
+    if simulation_step_dictionary["run_generate_bounding_boxes"]:
+        SimulationBuildingManipulationFunctions.make_oriented_bounding_boxes_of_buildings_in_urban_canopy(
+            urban_canopy_object=urban_canopy_object,
+            overwrite=arguments_dictionary["overwrite"])
 
+    # Perform first step of context filtering
+    if simulation_step_dictionary["run_first_pass_context_filtering"]:
+        SimulationContextFiltering.perform_first_pass_of_context_filtering_on_buildings(
+            urban_canopy_object=urban_canopy_object,
+            building_id_list=arguments_dictionary["building_id_list"],
+            on_building_to_simulate=arguments_dictionary["on_building_to_simulate"],
+            min_vf_criterion=arguments_dictionary["min_vf_criterion"],
+            overwrite=arguments_dictionary["overwrite"])
 
+    # Perform second step of context filtering
+    if simulation_step_dictionary["run_second_pass_context_filtering"]:
+        SimulationContextFiltering.perform_second_pass_of_context_filtering_on_buildings(
+            urban_canopy_object=urban_canopy_object,
+            building_id_list=arguments_dictionary["building_id_list"],
+            number_of_rays=arguments_dictionary["number_of_rays"],
+            on_building_to_simulate=arguments_dictionary["on_building_to_simulate"],
+            consider_windows=arguments_dictionary["consider_windows"],
+            keep_shades_from_user=arguments_dictionary["keep_shades_from_user"],
+            no_ray_tracing=arguments_dictionary["no_ray_tracing"],
+            overwrite=arguments_dictionary["overwrite"])
+
+    # Perform all steps of context filtering
+    # todo @Elie
 
     # Solar radiations and BIPV simulations
     # Generate sensor grids
@@ -166,11 +190,6 @@ def main():
 
     # Building Energy Simulation #
 
-    # Postprocessing and plots #
-    if simulation_step_dictionary["run_generate_model_with_building_envelop"]:
-        SimulationPostProcessingAndPlots.add_building_envelops_to_urban_canopy_json(
-            urban_canopy_object=urban_canopy_object)
-
     # Exports #
     # Export Urban canopy to pickle
     if simulation_step_dictionary["run_save_urban_canopy_object_to_pickle"]:
@@ -200,6 +219,7 @@ def main():
                                                          "study_duration_years"],
                                                      country_ghe_cost=arguments_dictionary[
                                                          "country_ghe_cost"])
+
 
 if __name__ == "__main__":
     main()

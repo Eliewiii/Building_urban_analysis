@@ -7,7 +7,7 @@
         hb_model_list: """
 
 __author__ = "Eliewiii"
-__version__ = "2023.09.20"
+__version__ = "2023..20"
 
 ghenv.Component.Name = "BUA Get HB Models"
 ghenv.Component.NickName = 'GetHBModels'

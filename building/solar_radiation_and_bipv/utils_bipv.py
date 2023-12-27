@@ -24,7 +24,9 @@ def init_bipv_on_sensor_grid(sensor_grid: SensorGrid, pv_technology_obj, annual_
     :param pv_technology_obj: PVPanelTechnology object
     :param annual_panel_irradiance_list: list of floats: annual irradiance on each face of the sensor_grid
     :param minimum_panel_eroi: float: minimum energy return on investment of the PV, (Default=1.2)
-    :param panel_performance_ratio: float: performance ratio of the PV, Default=0.80  todo: should it be an attribute of pv_tech ? 
+    :param electricity_primary_energy_gird_factor: float: factor of the primary energy needed to produce 1 kWh of
+    electricity for the grid (Default=1.)
+
     :return panel_obj_list
     """
     # initialize the list of the panel objects
@@ -141,14 +143,14 @@ def bipv_energy_harvesting_simulation_yearly_annual_irradiance(pv_panel_obj_list
             # Panel replacement according to replacement scenario
             elif replacement_scenario == "replace_failed_panels_every_X_years":
                 replacement_frequency_in_years = kwargs["replacement_frequency_in_years"]
-                if (year-start_year) % replacement_frequency_in_years == 0:
+                if (year - start_year) % replacement_frequency_in_years == 0:
                     for panel_obj in pv_panel_obj_list:
                         if not panel_obj.is_panel_working():
                             panel_obj.initialize_or_replace_panel(pv_tech_obj=pv_tech_obj)
                             nb_of_new_panels += 1
             elif replacement_scenario == "replace_all_panels_every_X_years":
                 replacement_frequency_in_years = kwargs["replacement_frequency_in_years"]
-                if (year-start_year) % replacement_frequency_in_years == 0:
+                if (year - start_year) % replacement_frequency_in_years == 0:
                     for panel_obj in pv_panel_obj_list:
                         panel_obj.initialize_or_replace_panel(pv_tech_obj=pv_tech_obj)
                         nb_of_new_panels += 1
@@ -213,8 +215,7 @@ def bipv_lca_dmfa_eol_computation(nb_of_panels_installed_yearly_list, pv_tech_ob
     dmfa_waste_yearly_list = [i * pv_tech_obj.weight for i in
                               nb_of_panels_installed_yearly_list]
 
-
     return primary_energy_material_extraction_and_manufacturing_yearly_list, primary_energy_transportation_yearly_list, \
-        primary_energy_recycling_yearly_list,  \
+        primary_energy_recycling_yearly_list, \
         carbon_material_extraction_and_manufacturing_yearly_list, carbon_transportation_yearly_list, \
-        carbon_recycling_yearly_list,  dmfa_waste_yearly_list
+        carbon_recycling_yearly_list, dmfa_waste_yearly_list
