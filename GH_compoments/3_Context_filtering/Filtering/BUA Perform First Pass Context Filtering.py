@@ -70,8 +70,8 @@ if _run:
         argument = argument + " --on_building_to_simulate {}".format(int(_on_building_to_simulate_))
     if _min_vf_criterion_ is not None:
         argument = argument + " --min_vf_criterion {}".format(float(_min_vf_criterion_))
-    if overwrite_ is not None:
-        argument = argument + " --overwrite {}".format(int(overwrite_))
+    if _overwrite_ is not None:
+        argument = argument + " --overwrite {}".format(int(_overwrite_))
 
     # Add the name of the component to the argument
     argument = argument + " -c {}".format(ghenv.Component.NickName)

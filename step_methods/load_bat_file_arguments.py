@@ -73,7 +73,7 @@ class LoadArguments:
                             help="True if the roof mesh should be oriented according to the building orientation, else False",
                             default=True)
         # Context filter algorithm parameters
-        parser.add_argument("--mvfc",
+        parser.add_argument("--min_vf_criterion",
                             help="float, value of the minimum view factor criterion", nargs='?',
                             default=default_mvfc_context_shading_selection)
         parser.add_argument("--nb_of_rays",
@@ -266,7 +266,7 @@ class LoadArguments:
             "orient_roof_according_to_building_orientation": bool(
                 int(args.orient_roof_according_to_building_orientation)),
             # Context filter algorithm parameters
-            "min_vf_criterion": float(args.mvfc),
+            "min_vf_criterion": float(args.min_vf_criterion),
             "number_of_rays": int(args.nb_of_rays),
             "consider_windows": bool(int(args.consider_windows)),
             "keep_shades_from_user": bool(int(args.keep_shades_from_user)),

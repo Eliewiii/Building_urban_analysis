@@ -1,8 +1,6 @@
 """ Generate the bounding boxes of the context buildings. The bounding boxes are used to filter the context buildings.
     Inputs:
         path_simulation_folder_: Path to the folder. Default = Appdata\Local\Building_urban_analysis\Simulation_temp
-        building_id_list_: list of buildings we want to run the simulation on. If set to None, it will be run on
-        all the buildings.
         _overwrite_: bool: Put to True if the context filtering should be run again for buildings for which
         it was already performed, otherwise the existing filtering will remain. Mandatory if new buildings were added.
         _run: Plug in a button to run the component
@@ -57,8 +55,6 @@ if _run:
     # OPtionnal argument of the bat file/Python script
     if path_simulation_folder_ is not None:
         argument = argument + ' -f "{}"'.format(path_simulation_folder_)
-    if building_id_list_ is not None and building_id_list_ != []:
-        argument = argument + ' --building_id_list "{}"'.format(building_id_list_)
     if overwrite_ is not None:
         argument = argument + " --overwrite {}".format(int(overwrite_))
 

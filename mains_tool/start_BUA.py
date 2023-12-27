@@ -103,7 +103,6 @@ def main():
     if simulation_step_dictionary["run_generate_bounding_boxes"]:
         SimulationBuildingManipulationFunctions.make_oriented_bounding_boxes_of_buildings_in_urban_canopy(
             urban_canopy_object=urban_canopy_object,
-            building_id_list=arguments_dictionary["building_id_list"],
             overwrite=arguments_dictionary["overwrite"])
 
     # Perform first step of context filtering

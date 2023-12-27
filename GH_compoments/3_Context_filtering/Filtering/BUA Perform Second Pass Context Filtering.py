@@ -81,8 +81,8 @@ if _run :
         argument = argument + " --keep_shades_from_user {}".format(int(_keep_shades_from_user_))
     if _no_ray_tracing_ is not None:
         argument = argument + " --no_ray_tracing {}".format(int(_no_ray_tracing_))
-    if overwrite_ is not None:
-        argument = argument + " --overwrite {}".format(int(overwrite_))
+    if _overwrite_ is not None:
+        argument = argument + " --overwrite {}".format(int(_overwrite_))
 
     # Add the name of the component to the argument
     argument = argument + " -c {}".format(ghenv.Component.NickName)

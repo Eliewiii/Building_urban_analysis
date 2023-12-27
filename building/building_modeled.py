@@ -183,8 +183,10 @@ class BuildingModeled(BuildingBasic):
         # make it moved
         moving_vector = Vector3D(vector[0], vector[1], vector[2])
         self.hb_model_obj.move(moving_vector)  # the model is moved fully
-        self.merged_faces_hb_model_dict = Model.from_dict(self.merged_faces_hb_model_dict).move(
-            moving_vector).to_dict()  # todo check
+        if self.merged_faces_hb_model_dict is not None:
+            moved_merged_faces_hb_model_dict = Model.from_dict(self.merged_faces_hb_model_dict)
+            moved_merged_faces_hb_model_dict.move(moving_vector)
+            self.merged_faces_hb_model_dict = moved_merged_faces_hb_model_dict.to_dict()
         self.moved_to_origin = True
 
     def make_merged_faces_hb_model(self, orient_roof_mesh_to_according_to_building_orientation=True,
@@ -238,7 +240,7 @@ class BuildingModeled(BuildingBasic):
                 uc_building_bounding_box_list=uc_building_bounding_box_list)
 
         # Return the list of context buildings
-        return selected_context_building_id_list, duration
+        return self.shading_context_obj.selected_context_building_id_list, self.shading_context_obj.first_pass_duration
 
     def perform_second_pass_context_filtering(self, uc_shade_manager, uc_building_dictionary,
                                               full_urban_canopy_pyvista_mesh, number_of_rays=3, consider_windows=False,
@@ -305,7 +307,8 @@ class BuildingModeled(BuildingBasic):
                 keep_shades_from_user=keep_shades_from_user, no_ray_tracing=no_ray_tracing)
 
         # Return the list of context buildings
-        return nb_context_faces, duration, flag_use_envelop
+        nb_context_faces = len(self.shading_context_obj.context_shading_hb_shade_list)
+        return nb_context_faces, self.shading_context_obj.second_pass_duration, flag_use_envelop
 
     def generate_sensor_grid(self, bipv_on_roof=True, bipv_on_facades=True,
                              roof_grid_size_x=1, facades_grid_size_x=1, roof_grid_size_y=1,
