@@ -2,17 +2,18 @@
 BuildingBasic class, representing one building in an urban canopy.
 """
 
-
 import logging
 import shapely
 from math import isnan
 
-from ladybug_geometry.geometry3d import Vector3D
+from ladybug_geometry.geometry3d.pointvector import Vector3D
+from ladybug_geometry.geometry3d.polyface import Polyface3D
+
 from libraries_addons.lb_face_addons import make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint, \
     LB_face_footprint_to_lB_polyface3D_extruded_footprint
 from libraries_addons.hb_rooms_addons import RoomsAddons
-from libraries_addons.function_for_gis_extraction_to_sort import polygon_to_LB_footprint,add_additional_attribute_keys_to_dict
-
+from libraries_addons.function_for_gis_extraction_to_sort import polygon_to_LB_footprint, \
+    add_additional_attribute_keys_to_dict
 
 user_logger = logging.getLogger("user")  # f"{__name__} user"
 dev_logger = logging.getLogger("dev")  # f"{__name__} dev"
@@ -113,10 +114,12 @@ class BuildingBasic:
                 polygon_to_LB_footprint(footprint, unit)
 
             except:
-                user_logger.warning(f"The footprint of the building id {building_id} in the GIS file could not be converted"
-                                " to a Ladybug footprint. The building will be ignored.")
-                dev_logger.warning(f"The footprint of the building id {building_id} in the GIS file could not be converted"
-                                " to a Ladybug footprint. The building will be ignored.")
+                user_logger.warning(
+                    f"The footprint of the building id {building_id} in the GIS file could not be converted"
+                    " to a Ladybug footprint. The building will be ignored.")
+                dev_logger.warning(
+                    f"The footprint of the building id {building_id} in the GIS file could not be converted"
+                    " to a Ladybug footprint. The building will be ignored.")
             else:
                 building_obj = cls.make_buildingbasic_from_shapely_polygon(polygon=footprint, identifier=building_id,
                                                                            unit=unit,
@@ -265,6 +268,22 @@ class BuildingBasic:
             self.num_floor = 3
             self.floor_height = 3.
 
+    def add_buildings_from_lb_polyface3d_json_dict_to_dict(self, lb_polyface3d_dict, typology=None,
+                                                           other_options_to_generate_building=None):
+        """
+        Add the buildings from a LB Polyface3D json dict, usually from Breps, to the building_dict of the urban canopy.
+        :param lb_polyface3d_dict: LB Polyface3D dictionary
+        :param typology: typology of the building
+        :param other_options_to_generate_building: other options to generate the building
+        """
+        try:
+            lb_polyface3d = Polyface3D.from_dict(lb_polyface3d_dict)
+        except: # if the  cannot be converted to a polyface3d
+            return None
+        else:
+            None
+
+
     def move(self, vector):
         """
         Move the building to a new location
@@ -303,10 +322,6 @@ class BuildingBasic:
             self.lb_polyface3d_oriented_bounding_box = make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint(
                 lb_face_footprint=self.lb_face_footprint, height=self.height, elevation=self.elevation)
 
-
-
-
-
     def export_building_to_elevated_HB_room_envelop(self):
         """
         Convert the building to HB Room object showing the envelope of the building for plotting purposes
@@ -314,10 +329,11 @@ class BuildingBasic:
         :return: HB Room envelop
         """
         # convert the envelop of the building to a HB Room
-        HB_room_envelop = RoomsAddons.LB_face_footprint_to_elevated_HB_room_envelop(lb_face_footprint=self.lb_face_footprint,
-                                                                                    building_id=self.id,
-                                                                                    height=self.height,
-                                                                                    elevation=self.elevation)
+        HB_room_envelop = RoomsAddons.LB_face_footprint_to_elevated_HB_room_envelop(
+            lb_face_footprint=self.lb_face_footprint,
+            building_id=self.id,
+            height=self.height,
+            elevation=self.elevation)
         return HB_room_envelop
 
     def to_HB_model(self, layout_from_typology=False, automatic_subdivision=True, properties_from_typology=True):
@@ -360,5 +376,3 @@ class BuildingBasic:
 
         HB_model = None  # todo @Elie: remove later, just not to show an error
         return HB_model
-
-
