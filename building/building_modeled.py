@@ -155,7 +155,7 @@ class BuildingModeled(BuildingBasic):
         try:
             # todo @Elie : make the lb_face_footprint from the hb_model
             building_modeled_obj.lb_face_footprint = HbAddons.make_LB_face_footprint_from_HB_model(
-                HB_model=hb_model)
+                HB_model=hb_model, elevation=elevation)
         except:
             # todo @Elie: Check if this is the correct message.
             err_message = "Cannot make the Ladybug face footprint from the Honeybee model."

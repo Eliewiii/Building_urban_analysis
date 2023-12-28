@@ -50,7 +50,9 @@ class BuildingBasic:
         self.elevation = 0  # elevation of the building in meter
         self.floor_height = None  # height of the floors in meter
         # Geometry
-        self.lb_face_footprint = lb_face_footprint  # footprint of the building, including the holes in the LB geometry face format
+        """ The footprint of teh buildiong is not elevated, it is at z=0."""
+        self.lb_face_footprint = lb_face_footprint  # footprint of the building, including the holes in the LB geometry
+        # face format
         # Context filter algorithm
         self.lb_polyface3d_oriented_bounding_box = None  # oriented bounding box of the building
         self.lb_polyface3d_extruded_footprint = None  # extruded footprint of the building
@@ -268,7 +270,7 @@ class BuildingBasic:
             self.num_floor = 3
             self.floor_height = 3.
 
-    def add_buildings_from_lb_polyface3d_json_dict_to_dict(self, lb_polyface3d_dict, typology=None,
+    def make_buildingbasic_from_lb_polyface3d_json_dict(self, lb_polyface3d_dict, typology=None,
                                                            other_options_to_generate_building=None):
         """
         Add the buildings from a LB Polyface3D json dict, usually from Breps, to the building_dict of the urban canopy.

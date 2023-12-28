@@ -146,15 +146,26 @@ class UrbanCanopy:
             dev_logger.warning("The building id {building_id} is already in the urban canopy, "
                                "it will not be added again to the urban canopy".format(
                 building_id=building_id))
+            return False
         else:
             # add the building to the urban canopy
             self.building_dict[building_id] = building_obj
+            return True
 
     def add_list_of_buildings_to_dict(self, building_id_list, building_obj_list):
-        """ Add a list of buildings to the urban canopy"""
+        """ Add a list of buildings to the urban canopy
+        :param building_id_list: list of the building ids
+        :param building_obj_list: list of the building objects
+        :return added_building_id_list: list of the building ids that were added to the urban canopy
+        """
+        added_building_id_list = []
         for i, building_id in enumerate(building_id_list):
             building_obj = building_obj_list[i]
-            self.add_building_to_dict(building_id, building_obj)
+            is_added = self.add_building_to_dict(building_id, building_obj)
+            if is_added:
+                added_building_id_list.append(building_id)
+
+        return added_building_id_list
 
     def remove_building_from_dict(self, building_id):
         """
@@ -190,6 +201,7 @@ class UrbanCanopy:
             additional_gis_attribute_key_dict = None
 
         ## loop to create a building_obj for each footprint in the shp file
+        collected_building_id_list = []
         number_of_buildings_in_shp_file = len(shape_file['geometry'])
         for building_index_in_gis in range(0, number_of_buildings_in_shp_file):
             # create the building object
@@ -199,11 +211,13 @@ class UrbanCanopy:
                                                                                             unit)
             # add the building to the urban canopy
             if building_obj_list is not None:
-                self.add_list_of_buildings_to_dict(building_id_list, building_obj_list)
+                added_building_id_list = self.add_list_of_buildings_to_dict(building_id_list, building_obj_list)
+                collected_building_id_list.extend(added_building_id_list)
 
         # Collect the attributes to the buildings from the shp file
-        for building in self.building_dict.values():
-            building.extract_building_attributes_from_GIS(shape_file, additional_gis_attribute_key_dict)
+        for building_id in collected_building_id_list:
+            self.building_dict[building_id].extract_building_attributes_from_GIS(shape_file,
+                                                                                 additional_gis_attribute_key_dict)
 
     def add_buildings_from_lb_polyface3d_json_dict_to_dict(self, path_lb_polyface3d_json_dict, typology=None,
                                                            other_options_to_generate_building=None):
@@ -497,7 +511,7 @@ class UrbanCanopy:
     def perform_second_pass_context_filtering_on_buildings(self, building_id_list=None, number_of_rays=3,
                                                            on_building_to_simulate=False, consider_windows=False,
                                                            keep_shades_from_user=False, no_ray_tracing=False,
-                                                           overwrite=False,keep_discarded_faces=False):
+                                                           overwrite=False, keep_discarded_faces=False):
         """
         Perform the second pass context filtering on BuildingModeled objects in the urban canopy.
         It uses ray-tracing to select the relevant context surfaces for shading computation.
