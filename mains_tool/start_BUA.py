@@ -61,7 +61,14 @@ def main():
                                                                     arguments_dictionary[
                                                                         "path_additional_gis_attribute_key_dict"],
                                                                     unit=arguments_dictionary["unit_gis"])
-    # Load Buildings from json
+    # Load Buildings from LB Polyface3D json
+    if simulation_step_dictionary["run_extract_buildings_from_polyface3d_json"]:
+        SimulationLoadBuildingOrGeometry.add_buildings_from_lb_polyface3d_json_in_urban_canopy(
+            urban_canopy_object=urban_canopy_object,
+            path_lb_polyface3d_json_file=arguments_dictionary["path_file"],
+            typology=arguments_dictionary["typology"])
+
+    # Load Buildings from hbjson
     if simulation_step_dictionary["run_extract_buildings_from_hbjson_models"]:
         SimulationLoadBuildingOrGeometry.add_buildings_from_hbjson_to_urban_canopy(
             urban_canopy_object=urban_canopy_object, path_folder_hbjson=arguments_dictionary["path_folder"],

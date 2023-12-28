@@ -52,6 +52,10 @@ class LoadArguments:
         parser.add_argument("-d", "--path_dic_additional_gis_attribute_keys",
                             help="path to the additional key dictionary of the attributes in the GIS file",
                             nargs='?', default=None)
+        # Extract Geometry frpm json
+        parser.add_argument("--typology",
+                            help="name of the typology of that should be applied to the buildings",
+                            nargs='?', default=None)
         # Building model generation parameters
         parser.add_argument("--keep_context",
                             help="boolean (here '0' or '1') telling if the context should be kept",
@@ -186,6 +190,9 @@ class LoadArguments:
         parser.add_argument("--extract_buildings_from_hbjson_models",
                             help="Extract buildings from hbjson files and add them to the urban canopy object",
                             nargs='?', default=False)
+        parser.add_argument("--extract_buildings_from_polyface3d_json",
+                            help="Extract buildings from polyface3d json files and add them to the urban canopy object",
+                            nargs='?', default=False)
 
         # Building manipulation features
         parser.add_argument("--move_buildings_to_origin",
@@ -263,6 +270,8 @@ class LoadArguments:
             "path_gis": args.path_gis_folder,
             "unit_gis": args.gis_unit,
             "path_additional_gis_attribute_key_dict": args.path_dic_additional_gis_attribute_keys,
+            # Extract geometry from json
+            "typology": args.typology,
             # Building model generation parameters
             "keep_context": bool(int(args.keep_context)),
             # Mesh faces parameters
@@ -311,6 +320,7 @@ class LoadArguments:
             # Import geometry
             "run_extract_gis": bool(int(args.extract_gis)),
             "run_extract_buildings_from_hbjson_models": bool(int(args.extract_buildings_from_hbjson_models)),
+            "run_extract_buildings_from_polyface3d_json": bool(int(args.extract_buildings_from_polyface3d_json)),
             # Building manipulation
             "run_move_buildings_to_origin": bool(int(args.move_buildings_to_origin)),
             "run_remove_building_list_from_urban_canopy": bool(
@@ -319,7 +329,6 @@ class LoadArguments:
             "run_generate_bounding_boxes": bool(int(args.generate_bounding_boxes)),
             "run_generate_model_with_building_envelop": bool(int(args.generate_model_with_building_envelop)),
             # Context filtering
-            ""
             "run_context_filtering": bool(int(args.run_full_context_filtering)),
             "run_first_pass_context_filtering": bool(int(args.run_first_pass_context_filtering)),
             "run_second_pass_context_filtering": bool(int(args.run_second_pass_context_filtering)),

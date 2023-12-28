@@ -15,6 +15,8 @@ from libraries_addons.hb_rooms_addons import RoomsAddons
 from libraries_addons.function_for_gis_extraction_to_sort import polygon_to_LB_footprint, \
     add_additional_attribute_keys_to_dict
 
+from building.geometry.prepare_lb_polyface3d import LBPolyface3dAddons
+
 user_logger = logging.getLogger("user")  # f"{__name__} user"
 dev_logger = logging.getLogger("dev")  # f"{__name__} dev"
 
@@ -270,21 +272,39 @@ class BuildingBasic:
             self.num_floor = 3
             self.floor_height = 3.
 
-    def make_buildingbasic_from_lb_polyface3d_json_dict(self, lb_polyface3d_dict, typology=None,
-                                                           other_options_to_generate_building=None):
+    @classmethod
+    def make_buildingbasic_from_lb_polyface3d_json_dict(cls, identifier, lb_polyface3d_dict, typology=None,
+                                                        other_options_to_generate_building=None):
         """
         Add the buildings from a LB Polyface3D json dict, usually from Breps, to the building_dict of the urban canopy.
+        :param identifier: id of the building in the urban canopy building_dict
         :param lb_polyface3d_dict: LB Polyface3D dictionary
         :param typology: typology of the building
         :param other_options_to_generate_building: other options to generate the building
         """
         try:
             lb_polyface3d = Polyface3D.from_dict(lb_polyface3d_dict)
-        except: # if the  cannot be converted to a polyface3d
+        except:  # if the  cannot be converted to a polyface3d
+            user_logger.warning(
+                f"The footprint of the building id {identifier} in the GIS file could not be converted"
+                " to a Ladybug footprint. The building will be ignored.")
             return None
         else:
-            None
+            # extract the elevation and height of the building
+            elevation, height = LBPolyface3dAddons.elevation_and_height_from_polyface3d(lb_polyface3d)
+            # extract the footprint of the building
+            lb_face_footprint = LBPolyface3dAddons.make_lb_face3d_footprint_from_polyface3d(lb_polyface3d, elevation)
+            # make the building
+            building_obj = cls(identifier, lb_face_footprint)
+            # assign the properties of the building
+            building_obj.height = height
+            building_obj.elevation = elevation
+            building_obj.typology = typology
+            # check the height, number of floor and floor height
+            # (in the case here it will deduce the number of floor and floor height)
+            building_obj.check_and_correct_property()
 
+            return building_obj
 
     def move(self, vector):
         """

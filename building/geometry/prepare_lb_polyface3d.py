@@ -14,7 +14,7 @@ dev_logger = logging.getLogger("dev")
 user_logger = logging.getLogger("user")
 
 
-class LbPolyface3dAddons:
+class LBPolyface3dAddons:
 
     @staticmethod
     def elevation_and_height_from_polyface3d(lb_polyface3d_obj):
