@@ -497,7 +497,7 @@ class UrbanCanopy:
     def perform_second_pass_context_filtering_on_buildings(self, building_id_list=None, number_of_rays=3,
                                                            on_building_to_simulate=False, consider_windows=False,
                                                            keep_shades_from_user=False, no_ray_tracing=False,
-                                                           overwrite=False):
+                                                           overwrite=False,keep_discarded_faces=False):
         """
         Perform the second pass context filtering on BuildingModeled objects in the urban canopy.
         It uses ray-tracing to select the relevant context surfaces for shading computation.
@@ -511,6 +511,9 @@ class UrbanCanopy:
         :param keep_shades_from_user: bool, if True, the shades from the user will be kept in the context filtering.
         :param no_ray_tracing: bool, if True, the second pass context filtering will be performed without ray-tracing.
         :param overwrite: bool, if True, the existing context selection will be overwritten.
+        :param keep_discarded_faces: bool, if True, the discarded faces will be kept in the context filtering.
+        :return: result_summary_dict: dict, the dictionary of the number of context faces for each building
+            and the duration of the simulation for each building
         """
         # Make extruded footprints of the buildings in the LB polyface3d format if they don't exist already
         self.make_lb_polyface3d_extruded_footprint_of_buildings()
@@ -549,7 +552,8 @@ class UrbanCanopy:
                     uc_shade_manager=self.shade_manager, uc_building_dictionary=self.building_dict,
                     full_urban_canopy_pyvista_mesh=self.full_context_pyvista_mesh, number_of_rays=number_of_rays,
                     consider_windows=consider_windows, keep_shades_from_user=keep_shades_from_user,
-                    no_ray_tracing=no_ray_tracing, overwrite=overwrite, flag_use_envelop=flag_use_envelop)
+                    no_ray_tracing=no_ray_tracing, overwrite=overwrite, flag_use_envelop=flag_use_envelop,
+                    keep_discarded_faces=keep_discarded_faces)
                 result_summary_dict[building_id] = {"nb_context_faces": nb_context_faces, "duration": duration}
 
         return result_summary_dict

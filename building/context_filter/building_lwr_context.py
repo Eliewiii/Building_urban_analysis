@@ -25,9 +25,6 @@ class BuildingLWRContextFilter(BuildingContextFilter):
                                                                                     target_lb_polyface3d_extruded_footprint,
                                                                                     context_building_hb_model_list,
                                                                                     context_building_id_list,
-
-
-
                                                                                     full_urban_canopy_pyvista_mesh,
                                                                                     consider_windows=False):
         """

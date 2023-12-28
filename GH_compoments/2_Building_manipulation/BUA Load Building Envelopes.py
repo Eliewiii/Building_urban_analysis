@@ -2,6 +2,7 @@
     Inputs:
         path_simulation_folder_: Path to the folder. By default, the code will be run in
                                 Appdata\Local\Building_urban_analysis\Simulation_temp
+        building_id_list_: List of building ids to display. If empty, all the buildings will be displayed.
         _run : True if we want to run the code
     Output:
         target_building_envelopes : Brep of the envelopes of the target building
@@ -49,11 +50,23 @@ if _run and os.path.isfile(path_json):
     with open(path_json, "r") as f:
         urban_canopy_dict = json.load(f)
 
+    # Get the list of the building ids to display
+    if building_id_list_ == [] or building_id_list_ is None:
+        _building_id_list = list(urban_canopy_dict["buildings"].keys())
+    else: # Check if the building ids are in the json file
+        for building_id in building_id_list_:
+            try :
+                urban_canopy_dict["buildings"][building_id]
+            except KeyError:
+                raise KeyError("Building with ID '{}' not found in the dictionary.".format(building_id))
+
+    # Initialize the lists
     target_building_id_list = []
     simulated_building_id_list = []
     context_building_id_list = []
 
-    for id in list(urban_canopy_dict["buildings"].keys()):
+    # Get the list of the target, simulated and context buildings
+    for id in building_id_list_:
         if urban_canopy_dict["buildings"][id]["is_target_building"] == True:
             target_building_id_list.append(id)
         elif urban_canopy_dict["buildings"][id]["is_building_to_simulate"] == True:
@@ -64,25 +77,7 @@ if _run and os.path.isfile(path_json):
     target_building_envelopes = []
     simulated_building_envelopes = []
     context_building_envelopes = []
-    # todo : fast way, to check if it works
-    # target_building_envelopes = [from_polyface3d(
-    #     Room.from_dict(urban_canopy_dict["building"][building_id]["hb_room_envelope"]).geometry) for
-    #                              building_id in
-    #                              urban_canopy_dict["list_of_building_ids"] if
-    #                              urban_canopy_dict["building"][building_id]["is_target_building"]]
-    # simulated_building_envelopes = [from_polyface3d(
-    #     Room.from_dict(urban_canopy_dict["building"][building_id]["hb_room_envelope"]).geometry) for
-    #                                  building_id in
-    #                                  urban_canopy_dict["list_of_building_ids"] if
-    #                                  urban_canopy_dict["building"][building_id][
-    #                                      "is_building_to_simulate"] and not
-    #                                  urban_canopy_dict["building"][building_id]["is_target_building"]]
-    # context_building_envelopes = [from_polyface3d(
-    #     Room.from_dict(urban_canopy_dict["building"][building_id]["hb_room_envelope"]).geometry) for
-    #                               building_id in
-    #                               urban_canopy_dict["list_of_building_ids"] if
-    #                               not urban_canopy_dict["building"][building_id]["is_target_building"] and not
-    #                               urban_canopy_dict["building"][building_id]["is_building_to_simulate"]]
+
 
     building_hb_rooms = [Room.from_dict(urban_canopy_dict["buildings"][building_id]["hb_room_envelope"]) for
                          building_id in

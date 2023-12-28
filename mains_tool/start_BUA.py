@@ -124,7 +124,8 @@ def main():
             consider_windows=arguments_dictionary["consider_windows"],
             keep_shades_from_user=arguments_dictionary["keep_shades_from_user"],
             no_ray_tracing=arguments_dictionary["no_ray_tracing"],
-            overwrite=arguments_dictionary["overwrite"])
+            overwrite=arguments_dictionary["overwrite"],
+            keep_discarded_faces=arguments_dictionary["keep_discarded_faces"])
 
     # Perform all steps of context filtering
     # todo @Elie

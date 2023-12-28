@@ -88,6 +88,9 @@ class LoadArguments:
         parser.add_argument("--no_ray_tracing",
                             help=f"boolean (here '0' or '1') telling if the ray tracing should be performed "
                                  f"(used for testing purposes)", nargs='?', default=False)
+        parser.add_argument("--keep_discarded_faces",
+                            help=f"boolean (here '0' or '1') telling if the discarded faces should be kept "
+                                 f"(used for testing purposes)", nargs='?', default=False)
         # Simulation general
         parser.add_argument("-w", "--path_weather_file", help="path to the weather file used",
                             default=default_path_weather_file)
@@ -271,6 +274,7 @@ class LoadArguments:
             "consider_windows": bool(int(args.consider_windows)),
             "keep_shades_from_user": bool(int(args.keep_shades_from_user)),
             "no_ray_tracing": bool(int(args.no_ray_tracing)),
+            "keep_discarded_faces": bool(int(args.keep_discarded_faces)),
             # Simulation general
             "path_weather_file": args.path_weather_file,
             "north_angle": float(args.north_angle),
