@@ -98,7 +98,8 @@ class SimulationContextFiltering:
                                                               consider_windows=False,
                                                               keep_shades_from_user=False,
                                                               no_ray_tracing=False,
-                                                              overwrite=False):
+                                                              overwrite=False,
+                                                              keep_discarded_faces=False):
         """
         Perform second pass of context filtering on buildings.
         :param urban_canopy_object: UrbanCanopy object, the urban canopy
@@ -109,6 +110,9 @@ class SimulationContextFiltering:
         :param keep_shades_from_user: bool, if True, the shades from the user will be kept in the context filtering.
         :param no_ray_tracing: bool, if True, the second pass context filtering will be performed without ray-tracing.
         :param overwrite: bool, if True, the existing context selection will be overwritten.
+        :param keep_discarded_faces: bool, if True, the discarded faces will be kept in the context filtering.
+        :return tot_duration: float, the total duration of the second pass context filtering.
+        :return result_summary_dict: dict, the result summary of the second pass context filtering.
         """
 
         timer = time()
@@ -121,7 +125,8 @@ class SimulationContextFiltering:
             consider_windows=consider_windows,
             keep_shades_from_user=keep_shades_from_user,
             no_ray_tracing=no_ray_tracing,
-            overwrite=overwrite)
+            overwrite=overwrite,
+            keep_discarded_faces=keep_discarded_faces)
 
         tot_duration = time() - timer
 

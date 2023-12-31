@@ -57,8 +57,8 @@ def LB_face_footprint_to_lB_polyface3D_extruded_footprint(lb_face_footprint, hei
     """
     # extrude the footprint to obtain the room envelop
     extruded_face = Polyface3D.from_offset_face(lb_face_footprint, height)
-    # move the room to the right elevation
-    extruded_face = extruded_face.move(Vector3D(0, 0, elevation))
+    # # move the room to the right elevation
+    # extruded_face = extruded_face.move(Vector3D(0, 0, elevation))
 
     return extruded_face
 

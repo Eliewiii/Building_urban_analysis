@@ -12,8 +12,10 @@ simulations, but they can hinder some operations and displays and are thus not a
         forced_shade_from_user_tree : Tree of the list of forced hb shades for each read building. Forced shades can be
             added with the dedicated component or while loading the HB model in the BUA with the option "keep_context" to True.
         first_pass_selected_building_id_tree : Tree of the list of selected buildings ids for each read building (first pass).
+        first_pass_discarded_building_id_tree : Tree of the list of discarded faces for each read building (first pass).
         second_pass_selected_hb_shade_tree : Tree of the list of selected HB shades for each read building (second pass).
             Can be converted to brep for easier display.
+        second_pass_discarded_surface_tree : Tree of the list of discarded faces for each read building (second pass).
 """
 
 __author__ = "Elie"
@@ -26,11 +28,12 @@ ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '3 :: Context filtering'
 ghenv.Component.AdditionalHelpFromDocStrings = "1"
 
-
 import json
 import os
 
 import ghpythonlib.treehelpers as th
+from ladybug_rhino.fromgeometry import from_face3d
+from ladybug_geometry.geometry3d.face import Face3D
 
 from honeybee.shade import Shade
 
@@ -80,7 +83,9 @@ if _run and os.path.isfile(path_json):
     # Init
     forced_shade_from_user_tree = []
     first_pass_selected_building_id_tree = []
+    first_pass_discarded_building_id_tree = []
     second_pass_selected_hb_shade_tree = []
+    second_pass_discarded_surface_tree = []
     read_building_id_list = _building_id_list
 
     for building_id in _building_id_list:
@@ -95,6 +100,10 @@ if _run and os.path.isfile(path_json):
         if urban_canopy_dict["buildings"][building_id]["context_surfaces"]["parameters"]["first_pass_done"]:
             first_pass_selected_building_id_tree.append(
                 urban_canopy_dict["buildings"][building_id]["context_surfaces"]["first_pass_selected_building_id_list"])
+            # make a list of discarded building ids
+            first_pass_discarded_building_id_tree.append(
+                [id for id in list(urban_canopy_dict["buildings"].keys()) if
+                 (id not in first_pass_selected_building_id_tree[-1] and id != building_id)])
         else:
             first_pass_selected_building_id_tree.append([])
             print(
@@ -104,16 +113,28 @@ if _run and os.path.isfile(path_json):
             second_pass_selected_hb_shade_tree.append([Shade.from_dict(shade) for shade in
                                                        urban_canopy_dict["buildings"][building_id]["context_surfaces"][
                                                            "second_pass_selected_hb_shade_list"]])
+            if urban_canopy_dict["buildings"][building_id]["context_surfaces"][
+                "discarded_face3d_second_pass_list"] is not None:
+                second_pass_discarded_surface_tree.append([from_face3d(Face3D.from_dict(face)) for face in
+                                                           urban_canopy_dict["buildings"][building_id][
+                                                               "context_surfaces"][
+                                                               "discarded_face3d_second_pass_list"]])
+            else:
+                second_pass_discarded_surface_tree.append([])
+                print(
+                    "The the option to keep the discarded surfaces for the second pass of the context filtering was " \
+                    "not done for the building with id {}".format(building_id))
         else:
             second_pass_selected_hb_shade_tree.append([])
             print(
                 "The second pass of the context filtering was not done for the building with id {}".format(building_id))
 
-
     # Convert to tree
     forced_shade_from_user_tree = th.list_to_tree(forced_shade_from_user_tree)
     first_pass_selected_building_id_tree = th.list_to_tree(first_pass_selected_building_id_tree)
+    first_pass_discarded_building_id_tree = th.list_to_tree(first_pass_discarded_building_id_tree)
     second_pass_selected_hb_shade_tree = th.list_to_tree(second_pass_selected_hb_shade_tree)
+    second_pass_discarded_surface_tree = th.list_to_tree(second_pass_discarded_surface_tree)
 
 if not os.path.isfile(path_json):
     print("the json file of the urban canopy does not exist")

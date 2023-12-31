@@ -155,7 +155,7 @@ class BuildingModeled(BuildingBasic):
         try:
             # todo @Elie : make the lb_face_footprint from the hb_model
             building_modeled_obj.lb_face_footprint = HbAddons.make_LB_face_footprint_from_HB_model(
-                HB_model=hb_model)
+                HB_model=hb_model, elevation=elevation)
         except:
             # todo @Elie: Check if this is the correct message.
             err_message = "Cannot make the Ladybug face footprint from the Honeybee model."
@@ -246,11 +246,26 @@ class BuildingModeled(BuildingBasic):
                                               full_urban_canopy_pyvista_mesh, number_of_rays=3, consider_windows=False,
                                               keep_shades_from_user=False, no_ray_tracing=False,
                                               use_merged_face_hb_model=True, overwrite=True,
-                                              flag_use_envelop=False):
+                                              flag_use_envelop=False,keep_discarded_faces=False):
         """
         Perform the second pass of the context filtering for the shading computation. It selects the context surfaces
         for the shading computation using the ray tracing method.
-
+        :param uc_shade_manager: ShadeManager object: ShadeManager object of the urban canopy
+        :param uc_building_dictionary: dict: dictionary of the buildings in the urban canopy
+        :param full_urban_canopy_pyvista_mesh: Pyvista mesh: Pyvista mesh of the full urban canopy
+        :param number_of_rays: int: default=3, number of rays to use for the ray tracing method
+        :param consider_windows: bool: default=False, if True, the windows will be considered for the ray tracing
+            method
+        :param keep_shades_from_user: bool: default=False, if True, the shades from the user will be kept
+        :param no_ray_tracing: bool: default=False, if True, the ray tracing method will not be used
+        :param use_merged_face_hb_model: bool: default=True, if True, the merged faces HB model will be used for the
+            ray tracing method
+        :param overwrite: bool: default=False, if True, overwrite the context building list of the building
+        if it already exists
+        :param flag_use_envelop: bool: default=False, if True, the envelope of the context buildings will be used
+            instead of the HB models
+        :param keep_discarded_faces: bool: default=False, if True, the discarded faces will be kept in the context
+            shading object
         """
         # Check if the first pass was done, if not second pass cannot be performed
         if not self.shading_context_obj.first_pass_done:
@@ -304,7 +319,8 @@ class BuildingModeled(BuildingBasic):
                 target_lb_polyface3d_extruded_footprint=self.lb_polyface3d_extruded_footprint,
                 context_hb_model_or_lb_polyface3d_list_to_test=context_hb_model_or_lb_polyface3d_list_to_test,
                 full_urban_canopy_pyvista_mesh=full_urban_canopy_pyvista_mesh,
-                keep_shades_from_user=keep_shades_from_user, no_ray_tracing=no_ray_tracing)
+                keep_shades_from_user=keep_shades_from_user, no_ray_tracing=no_ray_tracing,
+                keep_discarded_faces=keep_discarded_faces)
 
         # Return the list of context buildings
         nb_context_faces = len(self.shading_context_obj.context_shading_hb_shade_list)

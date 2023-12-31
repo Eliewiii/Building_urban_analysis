@@ -43,6 +43,7 @@ tree_structure_per_building_urban_canopy_json_dict = {
         },
         "first_pass_selected_building_id_list": None,
         "second_pass_selected_hb_shade_list": None,
+        "discarded_face3d_second_pass_list": None,
         "forced_shades_from_user": None
     },
     "solar_radiation_and_bipv": {
@@ -126,12 +127,11 @@ class ExportUrbanCanopyToJson:
                 urban_canopy_obj.json_dict["buildings"][building_id][
                     "merged_faces_hb_model"] = building_obj.merged_faces_hb_model_dict
 
-
     @staticmethod
     def add_building_shades_to_json_dict(urban_canopy_obj):
         """ Add the context filtering results of the building to the json dictionary of the urban canopy object. """
         for building_id, building_obj in urban_canopy_obj.building_dict.items():
-            if isinstance(building_obj, BuildingModeled) :
+            if isinstance(building_obj, BuildingModeled):
                 # List of the forced shades from the user
                 # No need to convert the shades to dict, they are already in dict format after pickling
                 urban_canopy_obj.json_dict["buildings"][building_id][
@@ -155,6 +155,9 @@ class ExportUrbanCanopyToJson:
                     urban_canopy_obj.json_dict["buildings"][building_id][
                         "context_surfaces"]["second_pass_selected_hb_shade_list"] = \
                         building_obj.shading_context_obj.context_shading_hb_shade_list
+                    urban_canopy_obj.json_dict["buildings"][building_id][
+                        "context_surfaces"]["discarded_face3d_second_pass_list"] = [face.to_dict() for face in
+                                                                                    building_obj.shading_context_obj.discarded_lb_face3d_context_shading_second_pass_list]
                     # parameters of the second pass
                     urban_canopy_obj.json_dict["buildings"][building_id][
                         "context_surfaces"]["parameters"]["second_pass_done"] = \
@@ -165,7 +168,6 @@ class ExportUrbanCanopyToJson:
                     urban_canopy_obj.json_dict["buildings"][building_id][
                         "context_surfaces"]["parameters"]["consider_windows"] = \
                         building_obj.shading_context_obj.consider_windows
-
 
     @staticmethod
     def add_solar_radiation_and_bipv_to_json_dict(urban_canopy_obj):

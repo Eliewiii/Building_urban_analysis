@@ -10,6 +10,7 @@ from dragonfly.building import Building
 from honeybee.room import Room
 from honeybee_energy.lib.constructionsets import construction_set_by_identifier
 from honeybee_energy.lib.programtypes import program_type_by_identifier
+from ladybug_geometry.geometry3d.pointvector import Vector3D
 
 
 
@@ -30,7 +31,7 @@ class HbAddons:
         return elevation, height
 
     @staticmethod
-    def make_LB_face_footprint_from_HB_model(HB_model):
+    def make_LB_face_footprint_from_HB_model(HB_model,elevation):
         """
         Extract the footprint of the building from the hb model
         :param HB_model:
@@ -40,18 +41,20 @@ class HbAddons:
         # turn into dragonfly building
         dragonfly_building = Building.from_honeybee(HB_model)
         # get the footprint
-        LB_footprint_list = dragonfly_building.footprint()
-        if len(LB_footprint_list) > 1:
+        lb_footprint_list = dragonfly_building.footprint()
+        if len(lb_footprint_list) > 1:
             user_logger.warning("The HB model has more than one footprint, an oriented bounded box will be used to represent the footprint")
             dev_logger.warning("The HB model has more than one footprint, an oriented bounded box will be used to represent the footprint")
             # todo : @Elie : convert the function that makes the oriented bounded box from LB
 
-        elif len(LB_footprint_list) == 0:
+        elif len(lb_footprint_list) == 0:
             user_logger.warning("The HB model has no footprint")
             dev_logger.warning("The HB model has no footprint")
             # todo : @Elie : convert the function that makes the oriented bounded box from LB
         else:
-            return LB_footprint_list[0]
+            # Move the footprint to elevation 0
+            lb_footprint = lb_footprint_list[0].move(Vector3D(0., 0., - elevation))
+            return lb_footprint
 
 
     @staticmethod

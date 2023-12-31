@@ -52,6 +52,10 @@ class LoadArguments:
         parser.add_argument("-d", "--path_dic_additional_gis_attribute_keys",
                             help="path to the additional key dictionary of the attributes in the GIS file",
                             nargs='?', default=None)
+        # Extract Geometry frpm json
+        parser.add_argument("--typology",
+                            help="name of the typology of that should be applied to the buildings",
+                            nargs='?', default=None)
         # Building model generation parameters
         parser.add_argument("--keep_context",
                             help="boolean (here '0' or '1') telling if the context should be kept",
@@ -76,7 +80,7 @@ class LoadArguments:
         parser.add_argument("--min_vf_criterion",
                             help="float, value of the minimum view factor criterion", nargs='?',
                             default=default_mvfc_context_shading_selection)
-        parser.add_argument("--nb_of_rays",
+        parser.add_argument("--number_of_rays",
                             help="int, number of rays used for the raytracing", nargs='?',
                             default=default_shading_number_of_rays_context_filter_second_pass)
         parser.add_argument("--consider_windows",
@@ -87,6 +91,9 @@ class LoadArguments:
                                  f"in the context filtering", nargs='?', default=False)
         parser.add_argument("--no_ray_tracing",
                             help=f"boolean (here '0' or '1') telling if the ray tracing should be performed "
+                                 f"(used for testing purposes)", nargs='?', default=False)
+        parser.add_argument("--keep_discarded_faces",
+                            help=f"boolean (here '0' or '1') telling if the discarded faces should be kept "
                                  f"(used for testing purposes)", nargs='?', default=False)
         # Simulation general
         parser.add_argument("-w", "--path_weather_file", help="path to the weather file used",
@@ -183,6 +190,9 @@ class LoadArguments:
         parser.add_argument("--extract_buildings_from_hbjson_models",
                             help="Extract buildings from hbjson files and add them to the urban canopy object",
                             nargs='?', default=False)
+        parser.add_argument("--extract_buildings_from_polyface3d_json",
+                            help="Extract buildings from polyface3d json files and add them to the urban canopy object",
+                            nargs='?', default=False)
 
         # Building manipulation features
         parser.add_argument("--move_buildings_to_origin",
@@ -260,6 +270,8 @@ class LoadArguments:
             "path_gis": args.path_gis_folder,
             "unit_gis": args.gis_unit,
             "path_additional_gis_attribute_key_dict": args.path_dic_additional_gis_attribute_keys,
+            # Extract geometry from json
+            "typology": args.typology,
             # Building model generation parameters
             "keep_context": bool(int(args.keep_context)),
             # Mesh faces parameters
@@ -267,10 +279,11 @@ class LoadArguments:
                 int(args.orient_roof_according_to_building_orientation)),
             # Context filter algorithm parameters
             "min_vf_criterion": float(args.min_vf_criterion),
-            "number_of_rays": int(args.nb_of_rays),
+            "number_of_rays": int(args.number_of_rays),
             "consider_windows": bool(int(args.consider_windows)),
             "keep_shades_from_user": bool(int(args.keep_shades_from_user)),
             "no_ray_tracing": bool(int(args.no_ray_tracing)),
+            "keep_discarded_faces": bool(int(args.keep_discarded_faces)),
             # Simulation general
             "path_weather_file": args.path_weather_file,
             "north_angle": float(args.north_angle),
@@ -307,6 +320,7 @@ class LoadArguments:
             # Import geometry
             "run_extract_gis": bool(int(args.extract_gis)),
             "run_extract_buildings_from_hbjson_models": bool(int(args.extract_buildings_from_hbjson_models)),
+            "run_extract_buildings_from_polyface3d_json": bool(int(args.extract_buildings_from_polyface3d_json)),
             # Building manipulation
             "run_move_buildings_to_origin": bool(int(args.move_buildings_to_origin)),
             "run_remove_building_list_from_urban_canopy": bool(
@@ -315,7 +329,6 @@ class LoadArguments:
             "run_generate_bounding_boxes": bool(int(args.generate_bounding_boxes)),
             "run_generate_model_with_building_envelop": bool(int(args.generate_model_with_building_envelop)),
             # Context filtering
-            ""
             "run_context_filtering": bool(int(args.run_full_context_filtering)),
             "run_first_pass_context_filtering": bool(int(args.run_first_pass_context_filtering)),
             "run_second_pass_context_filtering": bool(int(args.run_second_pass_context_filtering)),

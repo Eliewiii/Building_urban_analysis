@@ -60,7 +60,8 @@ tot_duration, result_summary_dict = SimulationContextFiltering.perform_second_pa
     consider_windows=True,
     keep_shades_from_user=False,
     no_ray_tracing=False,
-    overwrite=True)
+    overwrite=True,
+    keep_discarded_faces=True)
 
 print(f"tot_dur :{tot_duration}")
 print(result_summary_dict)

@@ -13,6 +13,7 @@
         Default = False
         _no_ray_tracing_: bool: True if the ray tracing should not be performed for the context filtering, it will just
         add as shades .
+        _keep_discarded_surfaces_: bool: True if the discarded surfaces should be stored to be displayed later on.
         _overwrite_: bool: Put to True if the context filtering should be run again for buildings for which
         it was already performed, otherwise the existing filtering will remain. Mandatory if new buildings were added.
         _run: Plug in a button to run the component
@@ -81,6 +82,8 @@ if _run :
         argument = argument + " --keep_shades_from_user {}".format(int(_keep_shades_from_user_))
     if _no_ray_tracing_ is not None:
         argument = argument + " --no_ray_tracing {}".format(int(_no_ray_tracing_))
+    if _keep_discarded_surfaces_ is not None:
+        argument = argument + " --keep_discarded_faces {}".format(int(_keep_discarded_surfaces_))
     if _overwrite_ is not None:
         argument = argument + " --overwrite {}".format(int(_overwrite_))
 

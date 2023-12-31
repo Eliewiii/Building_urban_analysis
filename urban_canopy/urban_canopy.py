@@ -127,10 +127,6 @@ class UrbanCanopy:
 
     def load_building_HB_attributes(self):
         """ Load the buildings objects that might have some properties stored into dict (ex HB_models) """
-        # todo @Elie: here there is only one function that works for any type of building, but maybe we will
-        # todo.cont: have to make a specific function for each type of building (like this it's simpler but maybe more confusing)
-        # it is depend in the the action - it is better to have one method if all the functions purpose is the same
-        # if not how can we separarte the building type into groups and then decide what is unique for each group
         for building_id, building_obj in self.building_dict.items():
             building_obj.load_HB_attributes()
 
@@ -150,16 +146,26 @@ class UrbanCanopy:
             dev_logger.warning("The building id {building_id} is already in the urban canopy, "
                                "it will not be added again to the urban canopy".format(
                 building_id=building_id))
+            return False
         else:
             # add the building to the urban canopy
             self.building_dict[building_id] = building_obj
+            return True
 
     def add_list_of_buildings_to_dict(self, building_id_list, building_obj_list):
-        """ Add a list of buildings to the urban canopy"""
-        # TODO the "i" describe the building type? building name? buikding number? index_building_id_list
+        """ Add a list of buildings to the urban canopy
+        :param building_id_list: list of the building ids
+        :param building_obj_list: list of the building objects
+        :return added_building_id_list: list of the building ids that were added to the urban canopy
+        """
+        added_building_id_list = []
         for i, building_id in enumerate(building_id_list):
             building_obj = building_obj_list[i]
-            self.add_building_to_dict(building_id, building_obj)
+            is_added = self.add_building_to_dict(building_id, building_obj)
+            if is_added:
+                added_building_id_list.append(building_id)
+
+        return added_building_id_list
 
     def remove_building_from_dict(self, building_id):
         """
@@ -174,15 +180,12 @@ class UrbanCanopy:
         """ Extract the data from a shp file and create the associated buildings objects"""
         # Read GIS file
         shape_file = extract_gis(path_gis)
-
-        # Check if the building_id_key_gis is an attribute in the shape file other - set it to None,
-        # and the building will automatically be assigned an id
+        # Check if the building_id_key_gis is an attribute of the shape file
         try:
             shape_file[building_id_key_gis]
         except KeyError:
             logging.error(
                 f"The key {building_id_key_gis} is not an attribute of the shape file, the id will be generated automatically")
-
             raise
             building_id_key_gis = None
 
@@ -198,6 +201,7 @@ class UrbanCanopy:
             additional_gis_attribute_key_dict = None
 
         ## loop to create a building_obj for each footprint in the shp file
+        collected_building_id_list = []
         number_of_buildings_in_shp_file = len(shape_file['geometry'])
         for building_index_in_gis in range(0, number_of_buildings_in_shp_file):
             # create the building object
@@ -207,13 +211,50 @@ class UrbanCanopy:
                                                                                             unit)
             # add the building to the urban canopy
             if building_obj_list is not None:
-                self.add_list_of_buildings_to_dict(building_id_list, building_obj_list)
+                added_building_id_list = self.add_list_of_buildings_to_dict(building_id_list, building_obj_list)
+                collected_building_id_list.extend(added_building_id_list)
 
         # Collect the attributes to the buildings from the shp file
-        for building in self.building_dict.values():
-            building.extract_building_attributes_from_GIS(shape_file, additional_gis_attribute_key_dict)
+        for building_id in collected_building_id_list:
+            (self.building_dict[building_id]
+             .extract_building_attributes_from_GIS(shape_file, additional_gis_attribute_key_dict))
 
-    # todo : New, to test
+    def add_buildings_from_lb_polyface3d_json_to_dict(self, path_lb_polyface3d_json_file, typology=None,
+                                                               other_options_to_generate_building=None):
+        """
+        Add the buildings from the lb polyface3d json dict to the urban canopy
+        :param path_lb_polyface3d_json_file: path to the json file containing the lb polyface3d dict
+        :param typology: typology object, if None, the typology will not be used
+        :param other_options_to_generate_building: dict, other options to generate the building  todo: @Elie: to implement
+        """
+        # Load the json dict
+        with open(path_lb_polyface3d_json_file, 'r') as json_file:
+            lb_polyface3d_json_dict = json.load(json_file)
+
+        # Loop over the buildings
+        for identifier, lb_polyface3d_dict in lb_polyface3d_json_dict.items():
+            if not (isinstance(lb_polyface3d_dict, dict) and (isinstance(identifier, float) or isinstance(identifier, str))):
+                raise TypeError( f"The json file is not valid, the identifier of the building should be "
+                                 f"a string or a floatand the values dictionaries dexcribing a LB Polyface3D")
+            # Check if the building id is already in the urban canopy
+            if identifier not in self.building_dict.keys():
+                # Create the building object
+                building_obj = BuildingBasic.make_buildingbasic_from_lb_polyface3d_json_dict(
+                    identifier=identifier,
+                    lb_polyface3d_dict=lb_polyface3d_dict,
+                    typology=typology)
+                if building_obj is not None:
+                    # Add the building to the urban canopy
+                    self.add_building_to_dict(identifier, building_obj)
+            else:
+                user_logger.warning("The building id {building_id} is already in the urban canopy, "
+                                    "it will not be added again to the urban canopy. Please make sure you did not try "
+                                    "to load the same file twice. Make sure that you did not use the same prefix to "
+                                    "save the geometries".format(building_id=identifier))
+                dev_logger.warning("The building id {building_id} is already in the urban canopy, "
+                                   "it will not be added again to the urban canopy".format(building_id=identifier))
+
+
     def add_buildings_from_hbjson_to_dict(self, path_directory_hbjson=None, path_file_hbjson=None,
                                           are_buildings_targets=False, keep_context_from_hbjson=False):
         """ Add the buildings from the hb models in the folder
@@ -376,7 +417,7 @@ class UrbanCanopy:
 
     def make_merged_faces_hb_model_of_buildings(self, building_id_list=None,
                                                 orient_roof_mesh_to_according_to_building_orientation=True,
-                                                north_angle=0,overwrite=False):
+                                                north_angle=0, overwrite=False):
         """
         Make the merged faces hb model of the buildings in the urban canopy.
         :param building_id_list: list of the building id to make the merged faces hb model,
@@ -404,7 +445,7 @@ class UrbanCanopy:
                     and isinstance(building_obj, BuildingModeled):
                 building_obj.make_merged_faces_hb_model(
                     orient_roof_mesh_to_according_to_building_orientation=orient_roof_mesh_to_according_to_building_orientation,
-                    north_angle=north_angle,overwrite=overwrite)
+                    north_angle=north_angle, overwrite=overwrite)
 
     def perform_first_pass_context_filtering_on_buildings(self, building_id_list=None,
                                                           on_building_to_simulate=False,
@@ -454,7 +495,8 @@ class UrbanCanopy:
         # Loop over the buildings
         for i, (building_id, building_obj) in enumerate(self.building_dict.items()):
             if (isinstance(building_obj, BuildingModeled)
-                    and (((building_id_list is not None and building_id_list is not []) and building_id in building_id_list)
+                    and (((
+                                  building_id_list is not None and building_id_list is not []) and building_id in building_id_list)
                          or (on_building_to_simulate and building_obj.to_simulate)
                          or ((building_id_list is None or building_id_list is []) and building_obj.is_target))):
                 # Perform the first pass context filtering
@@ -473,7 +515,7 @@ class UrbanCanopy:
     def perform_second_pass_context_filtering_on_buildings(self, building_id_list=None, number_of_rays=3,
                                                            on_building_to_simulate=False, consider_windows=False,
                                                            keep_shades_from_user=False, no_ray_tracing=False,
-                                                           overwrite=False):
+                                                           overwrite=False, keep_discarded_faces=False):
         """
         Perform the second pass context filtering on BuildingModeled objects in the urban canopy.
         It uses ray-tracing to select the relevant context surfaces for shading computation.
@@ -487,6 +529,9 @@ class UrbanCanopy:
         :param keep_shades_from_user: bool, if True, the shades from the user will be kept in the context filtering.
         :param no_ray_tracing: bool, if True, the second pass context filtering will be performed without ray-tracing.
         :param overwrite: bool, if True, the existing context selection will be overwritten.
+        :param keep_discarded_faces: bool, if True, the discarded faces will be kept in the context filtering.
+        :return: result_summary_dict: dict, the dictionary of the number of context faces for each building
+            and the duration of the simulation for each building
         """
         # Make extruded footprints of the buildings in the LB polyface3d format if they don't exist already
         self.make_lb_polyface3d_extruded_footprint_of_buildings()
@@ -516,7 +561,8 @@ class UrbanCanopy:
         # Loop over the buildings
         for i, (building_id, building_obj) in enumerate(self.building_dict.items()):
             if (isinstance(building_obj, BuildingModeled)
-                    and (((building_id_list is not None and building_id_list is not []) and building_id in building_id_list)
+                    and (((
+                                  building_id_list is not None and building_id_list is not []) and building_id in building_id_list)
                          or (on_building_to_simulate and building_obj.to_simulate)
                          or ((building_id_list is None or building_id_list is []) and building_obj.is_target))):
                 # Perform the Second pass context filtering
@@ -524,7 +570,8 @@ class UrbanCanopy:
                     uc_shade_manager=self.shade_manager, uc_building_dictionary=self.building_dict,
                     full_urban_canopy_pyvista_mesh=self.full_context_pyvista_mesh, number_of_rays=number_of_rays,
                     consider_windows=consider_windows, keep_shades_from_user=keep_shades_from_user,
-                    no_ray_tracing=no_ray_tracing, overwrite=overwrite, flag_use_envelop=flag_use_envelop)
+                    no_ray_tracing=no_ray_tracing, overwrite=overwrite, flag_use_envelop=flag_use_envelop,
+                    keep_discarded_faces=keep_discarded_faces)
                 result_summary_dict[building_id] = {"nb_context_faces": nb_context_faces, "duration": duration}
 
         return result_summary_dict
