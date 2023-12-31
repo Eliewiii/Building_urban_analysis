@@ -219,7 +219,7 @@ class UrbanCanopy:
             (self.building_dict[building_id]
              .extract_building_attributes_from_GIS(shape_file, additional_gis_attribute_key_dict))
 
-    def add_buildings_from_lb_polyface3d_json_dict_to_dict(self, path_lb_polyface3d_json_file, typology=None,
+    def add_buildings_from_lb_polyface3d_json_to_dict(self, path_lb_polyface3d_json_file, typology=None,
                                                                other_options_to_generate_building=None):
         """
         Add the buildings from the lb polyface3d json dict to the urban canopy
@@ -233,7 +233,7 @@ class UrbanCanopy:
 
         # Loop over the buildings
         for identifier, lb_polyface3d_dict in lb_polyface3d_json_dict.items():
-            if isinstance(lb_polyface3d_dict, dict) and (isinstance(identifier, float) or isinstance(identifier, str)):
+            if not (isinstance(lb_polyface3d_dict, dict) and (isinstance(identifier, float) or isinstance(identifier, str))):
                 raise TypeError( f"The json file is not valid, the identifier of the building should be "
                                  f"a string or a floatand the values dictionaries dexcribing a LB Polyface3D")
             # Check if the building id is already in the urban canopy

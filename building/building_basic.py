@@ -304,6 +304,9 @@ class BuildingBasic:
             # (in the case here it will deduce the number of floor and floor height)
             building_obj.check_and_correct_property()
 
+            # The Breps are added after the GIS if there is any, thus they are supposed to be in position already
+            building_obj.moved_to_origin = True
+
             return building_obj
 
     def move(self, vector):

@@ -37,7 +37,7 @@ def read_logs(path_simulation_folder):
 
 
 # Check path_simulation_folder_
-if path_simulation_folder_ is not None and os.path.isdir(path_simulation_folder_) is False:
+if path_simulation_folder_ is not None and os.path.isdir(clean_path(path_simulation_folder_)) is False:
     raise ValueError("The simulation folder does not exist, enter a valid path")
 
 # Get Appdata\local folder
@@ -49,7 +49,7 @@ path_bat_file = os.path.join(path_tool, "Scripts", "mains_tool", "run_BUA.bat")
 typology_possible_values_list = ["VALUES WILL BE PUT WHEN THE FUNCTION WILL BE OPERATIONAL"]
 
 if _run:
-    if os.path.isfile(_path_polyface3d_json_file):
+    if not os.path.isfile(clean_path(_path_polyface3d_json_file)):
         raise ValueError("The polyface3d json file does not exist, enter a valid path")
     # Write the command
     command = path_bat_file
@@ -58,11 +58,11 @@ if _run:
     argument = argument + "--make_simulation_folder 1 " + "--create_or_load_urban_canopy_object 1 " + "--save_urban_canopy_object_to_pickle 1 " + "--save_urban_canopy_object_to_json 1 " + "--extract_buildings_from_polyface3d_json 1 "
     # OPtionnal argument of the bat file/Python script
     if path_simulation_folder_ is not None:
-        argument = argument + ' -f "{}"'.format(path_simulation_folder_)
-    if os.path.isfile(_path_polyface3d_json_file):
-        argument = argument + ' -path-file "{}"'.format(_path_polyface3d_json_file)
-    if _typology_ is not None or typology in typology_possible_values_list:
-        argument = argument + ' -typology "{}"'.format(_typology_)
+        argument = argument + ' -f "{}"'.format(clean_path(path_simulation_folder_))
+    if os.path.isfile(clean_path(_path_polyface3d_json_file)):
+        argument = argument + ' --path_file "{}"'.format(clean_path(_path_polyface3d_json_file))
+    if _typology_ is not None or _typology_ in typology_possible_values_list:
+        argument = argument + ' --typology "{}"'.format(_typology_)
 
     # Add the name of the component to the argument
     argument = argument + " -c {}".format(ghenv.Component.NickName)

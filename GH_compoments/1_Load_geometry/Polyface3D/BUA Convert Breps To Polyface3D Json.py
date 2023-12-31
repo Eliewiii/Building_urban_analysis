@@ -4,7 +4,7 @@
         (mostly to send them to the urban canopy)
         _prefix: Prefix to add to the identifier of the Polyface3D object. Make sure it is unique to this project
         _file_name_ : Name of the json file to create without extension (Default: polyface3d)
-        _folder_path: True if you want to keep the context of the HB Model of the hbjsons. (Default: False)
+        _path_folder: True if you want to keep the context of the HB Model of the hbjsons. (Default: False)
         _run: Plug in a button to run the component
     Output:
         path_polyface3d_json_file: path to the json file containing the polyface3d object"""
@@ -18,16 +18,19 @@ ghenv.Component.SubCategory = '1 :: Load geometry'
 import os
 import json
 
+from ladybug_rhino.togeometry import to_polyface3d
+
 
 def clean_path(path):
     path = path.replace("\\", "/")
     return (path)
 
 
-if os.path.isdir(_folder_pat):
+
+if _path_folder is not None and os.path.isdir(clean_path(_path_folder)):
     if _file_name_ is None or _file_name_ == "":
         _file_name_ = "polyface3d"
-    path_polyface3d_json_file = os.path.join(_folder_path, _file_name_ + ".json")
+    path_polyface3d_json_file = os.path.join(clean_path(_path_folder), _file_name_ + ".json")
 else:
     path_polyface3d_json_file = None
     print("The folder path is not valid")
@@ -37,7 +40,7 @@ if _run and _close_brep_list is not None and _close_brep_list != [] and _prefix 
     polyface3d_dict = {}
     # Convert the closed breps to polyface3d
     for index, brep in enumerate(_close_brep_list):
-        polyface3d_list["{}_{}".format(_prefix, index)] = Polyface3D.from_brep().to_dict  # todo: finish this
+        polyface3d_dict["{}_{}".format(_prefix, index)] = to_polyface3d(brep).to_dict()  # todo: finish this
 
     # Create the json file
     with open(path_polyface3d_json_file, 'w') as outfile:

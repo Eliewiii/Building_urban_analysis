@@ -52,7 +52,7 @@ if _run and os.path.isfile(path_json):
 
     # Get the list of the building ids to display
     if building_id_list_ == [] or building_id_list_ is None:
-        _building_id_list = list(urban_canopy_dict["buildings"].keys())
+        building_id_list_ = list(urban_canopy_dict["buildings"].keys())
     else: # Check if the building ids are in the json file
         for building_id in building_id_list_:
             try :
