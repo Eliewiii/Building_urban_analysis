@@ -243,7 +243,7 @@ class BuildingBasic:
     def check_and_correct_property(self):
         """ check if there is enough information about the building"""
         # no valid height and no valid number of floor
-        if ((type(self.height) != int or type(self.height) != float) or (
+        if ((type(self.height) != int and type(self.height) != float) or (
                 self.height < 3)) and (type(self.num_floor) != int or self.num_floor < 1):
             self.height = 9.
             self.num_floor = 3
