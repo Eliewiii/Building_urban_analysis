@@ -7,6 +7,10 @@ from copy import deepcopy
 from building.solar_radiation_and_bipv.solar_rad_and_BIPV import empty_bipv_results_dict, \
     sum_bipv_results_dicts_with_different_years, bipv_results_to_csv
 
+from building.energy_simulation.building_energy_simulation import empty_bes_results_dict
+
+from urban_canopy.kpis.urban_canopy_kpis import UrbanCanopyKPIs
+
 
 class BipvScenario:
     """
@@ -24,14 +28,24 @@ class BipvScenario:
         self.id = identifier
         self.start_year = start_year
         self.end_year = end_year
-        self.bipv_results_dict=None
+        self.bipv_results_dict = None
+        self.bes_result_dict = None
+        self.urban_canopy_kpis = UrbanCanopyKPIs()
+        # Initialize the results dictionaries
         self.init_bipv_results_dict()
+        self.init_bes_results_dict()
 
     def init_bipv_results_dict(self):
         """
         Initialize the BIPV results
         """
         self.bipv_results_dict = deepcopy(empty_bipv_results_dict)
+
+    def init_bes_results_dict(self):
+        """
+        Initialize the BES results
+        """
+        self.bes_results_dict = deepcopy(empty_bes_results_dict)
 
     def continue_simulation(self, start_year: int, end_year: int):
         """
@@ -97,3 +111,19 @@ class BipvScenario:
                             building_id_or_uc_scenario_name=self.id,
                             bipv_results_dict=self.bipv_results_dict, start_year=self.start_year,
                             study_duration_in_years=self.end_year - self.start_year)
+
+    def set_parameters_for_kpis_computation(self, grid_ghg_intensity, grid_energy_intensity, grid_energy_cost, other):
+        """
+        Set the parameters needed for the computation of the KPIs
+        todo: add the other parameters
+        """
+        self.urban_canopy_kpis.set_parameters(grid_ghg_intensity=grid_ghg_intensity,
+                                              grid_energy_intensity=grid_energy_intensity,
+                                              grid_energy_cost=grid_energy_cost)
+
+    def compute_kpis(self):
+        """
+        Compute the KPIs of the scenario
+        """
+        self.urban_canopy_kpis.compute_kpis(bes_result_dict=self.bes_result_dict,
+                                            bipv_results_dict=self.bipv_results_dict)
