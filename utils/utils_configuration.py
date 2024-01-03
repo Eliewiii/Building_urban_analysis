@@ -20,6 +20,7 @@ path_simulation_temp_folder = os.path.join(path_tool, "Simulation_temp")
 name_gh_components_logs_folder = "gh_components_logs"
 name_temporary_files_folder = "temporary_files"
 name_radiation_simulation_folder = 'Irradiance and BIPV Simulation'
+name_bes_simulation_folder = "BES Simulation"
 
 # Urban Canopy name and exports
 name_urban_canopy_export_file = "urban_canopy"

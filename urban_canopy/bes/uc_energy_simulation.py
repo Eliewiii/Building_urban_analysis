@@ -6,20 +6,12 @@ import logging
 
 from copy import deepcopy
 
+from building.energy_simulation.building_energy_simulation import empty_bes_results_dict
+
 user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")
 
-empty_bes_results_dict = {
-    "heating": {"monthly": [], "monthly_cumulative": [], "yearly": None},
-    "cooling": {"monthly": [], "monthly_cumulative": [], "yearly": None},
-    "equipment": {"monthly": [], "monthly_cumulative": [], "yearly": None},
-    "lighting": {"monthly": [], "monthly_cumulative": [], "yearly": None},
-    "ventilation": {"monthly": [], "monthly_cumulative": [], "yearly": None},  # Unused for now
-    "total": {"monthly": [], "monthly_cumulative": [], "yearly": None}
-}
-
-
-class BuildingEnergySimulation:
+class Urban_canopyEnergySimulation:
     """
     Class to perform the energy simulation of a building using the EnergyPlus software and saves the results in a
     dictionary.

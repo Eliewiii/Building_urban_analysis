@@ -32,6 +32,10 @@ default_unit_gis = "m"
 # EPW weather file
 default_path_weather_file = os.path.join(path_tool, "Libraries", "EPW", "IS_5280_A_Haifa.epw")
 
+# Building Energy Simulation
+default_path_hbjson_simulation_parameter_file = os.path.join(path_libraries_tool_folder, "Simulation_parameters",
+                                                        "sim_par_basic.json")  # todo: check the link and update the file
+
 # Creation of BuildingModeled objects
 default_automatic_floor_subdivision_for_new_BuildingModeled = False
 default_use_layout_from_typology_for_new_BuildingModeled = False
