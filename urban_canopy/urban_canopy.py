@@ -14,6 +14,7 @@ from urban_canopy.urban_canopy_additional_functions import UrbanCanopyAdditional
 from urban_canopy.export_to_json import ExportUrbanCanopyToJson
 from urban_canopy.bipv_urban_canopy import BipvScenario
 from urban_canopy.uc_context_filter.shade_manager import ShadeManager
+from urban_canopy.bes.uc_energy_simulation import UrbanBuildingEnergySimulation
 
 from building.building_basic import BuildingBasic
 from building.building_modeled import BuildingModeled
@@ -46,6 +47,9 @@ class UrbanCanopy:
         # Context filtering
         self.full_context_pyvista_mesh = None  # pyvista mesh of all the buildings within the urban canopy
         self.shade_manager = ShadeManager()  # Shade manager object
+
+        # UBES
+        self.ubes_obj = UrbanBuildingEnergySimulation()  # Urban Building Energy Simulation object
 
         # BIPV simulation
         self.bipv_scenario_dict = {}  # dictionary of the BIPV scenarios
@@ -220,7 +224,7 @@ class UrbanCanopy:
              .extract_building_attributes_from_GIS(shape_file, additional_gis_attribute_key_dict))
 
     def add_buildings_from_lb_polyface3d_json_to_dict(self, path_lb_polyface3d_json_file, typology=None,
-                                                               other_options_to_generate_building=None):
+                                                      other_options_to_generate_building=None):
         """
         Add the buildings from the lb polyface3d json dict to the urban canopy
         :param path_lb_polyface3d_json_file: path to the json file containing the lb polyface3d dict
@@ -233,9 +237,10 @@ class UrbanCanopy:
 
         # Loop over the buildings
         for identifier, lb_polyface3d_dict in lb_polyface3d_json_dict.items():
-            if not (isinstance(lb_polyface3d_dict, dict) and (isinstance(identifier, float) or isinstance(identifier, str))):
-                raise TypeError( f"The json file is not valid, the identifier of the building should be "
-                                 f"a string or a floatand the values dictionaries dexcribing a LB Polyface3D")
+            if not (isinstance(lb_polyface3d_dict, dict) and (
+                    isinstance(identifier, float) or isinstance(identifier, str))):
+                raise TypeError(f"The json file is not valid, the identifier of the building should be "
+                                f"a string or a floatand the values dictionaries dexcribing a LB Polyface3D")
             # Check if the building id is already in the urban canopy
             if identifier not in self.building_dict.keys():
                 # Create the building object
@@ -253,7 +258,6 @@ class UrbanCanopy:
                                     "save the geometries".format(building_id=identifier))
                 dev_logger.warning("The building id {building_id} is already in the urban canopy, "
                                    "it will not be added again to the urban canopy".format(building_id=identifier))
-
 
     def add_buildings_from_hbjson_to_dict(self, path_directory_hbjson=None, path_file_hbjson=None,
                                           are_buildings_targets=False, keep_context_from_hbjson=False):
@@ -609,6 +613,22 @@ class UrbanCanopy:
         # Make the full context mesh
         self.full_context_pyvista_mesh = make_pyvista_polydata_from_list_of_hb_model_and_lb_polyface3d(
             hb_model_and_lb_polyface3d_list=hb_model_and_lb_polyface3d_list)
+
+    def load_epw_and_hb_simulation_parameters_for_bes(self, path_hbjson_simulation_parameter_file,
+                                              path_file_epw,ddy_file=None,
+                                              overwrite=False):
+        """
+        Load the HB simulation parameters from the json file, check if it is valid, correct it eventually and add to the
+        UrbanCanopyEnergySimulation object.
+        :param path_hbjson_simulation_parameter_file: string, path to the json file containing the HB simulation
+            parameters.
+        :param overwrite: bool, if True, the existing HB simulation parameters will be overwritten.
+        """
+
+        self.ubes_obj.load_epw_and_hb_simulation_parameters(
+            path_hbjson_simulation_parameter_file=path_hbjson_simulation_parameter_file,
+            path_file_epw=path_file_epw,ddy_file=ddy_file,
+            overwrite=overwrite)
 
     def generate_sensor_grid_on_buildings(self, building_id_list=None, bipv_on_roof=True,
                                           bipv_on_facades=True, roof_grid_size_x=1,

@@ -20,11 +20,19 @@ dev_logger = logging.getLogger("dev")  # f"{__name__} dev"
 class BuildingEnergySimulationFunctions:
 
     @staticmethod
-    def load_check_and_correct_hb_simulation_parameters(urban_canopy_obj,path_simulation_folder=default_path_simulation_folder,
-                                                   path_hbjson_simulation_parameter_file=default_path_hbjson_simulation_parameter_file):
-        # Copy the simulation parameter file to the temps and make a copy in each building object
+    def load_epw_and_hb_simulation_parameters_for_bes_in_urban_canopy(urban_canopy_obj,
+                                                                        path_hbjson_simulation_parameter_file=default_path_hbjson_simulation_parameter_file,
+                                                                        path_file_epw=default_path_weather_file, ddy_file=None,
+                                                                        overwrite=False):
+        """
+        Load the simulation parameters from the simulation parameter file and check and correct them if needed.
+        :param urban_canopy_obj: UrbanCanopy object
+        :param path_hbjson_simulation_parameter_file: str, path to the simulation parameter file
+        """
 
-        #
+        urban_canopy_obj.load_epw_and_hb_simulation_parameters(
+            path_hbjson_simulation_parameter_file=path_hbjson_simulation_parameter_file,
+            path_file_epw=path_file_epw,ddy_file=ddy_file, overwrite=overwrite)
 
         user_logger.info("New urban canopy object was created")
         dev_logger.info("New urban canopy object was created")
@@ -71,9 +79,9 @@ class BuildingEnergySimulationFunctions:
         timer = time()
 
         duration_dict = urban_canopy_obj.run_idf_files_for_bes(path_simulation_folder=path_simulation_folder,
-                                                           building_id_list=building_id_list,
-                                                           path_epw_file=path_epw_file,
-                                                           run_in_parallel=run_in_parallel)
+                                                               building_id_list=building_id_list,
+                                                               path_epw_file=path_epw_file,
+                                                               run_in_parallel=run_in_parallel)
 
         tot_duration = time() - timer
 

@@ -33,8 +33,6 @@ class BuildingEnergySimulation:
 
         self.building_id = building_id
         # Parameters
-        self.simulation_parameters = None
-        self.epw_name = None
         self.cop_heating = None
         self.cop_cooling = None
         # Flags
@@ -42,6 +40,17 @@ class BuildingEnergySimulation:
         # Results
         self.bes_results_dict = deepcopy(empty_bes_results_dict)
 
+    def re_initialize(self):
+        """
+        Re-initialize the values of the attributes of the BuildingEnergySimulation object.
+        """
+        # Parameters
+        self.cop_heating = None
+        self.cop_cooling = None
+        # Flags
+        self.has_run = False
+        # Results
+        self.bes_results_dict = deepcopy(empty_bes_results_dict)
 
     def set_parameters(self, hb_simulation_parameter_obj, epw_name, cop_heating, cop_cooling):
         """
@@ -53,9 +62,9 @@ class BuildingEnergySimulation:
         """
         Make
         """
-
-        (path_osm, path_idf) = from_hbjson_to_idf(dir_to_write_idf_in, path_hbjson_file, path_epw_file,
-                                          path_simulation_parameter)
+        #
+        # (path_osm, path_idf) = from_hbjson_to_idf(dir_to_write_idf_in, path_hbjson_file, path_epw_file,
+        #                                   path_simulation_parameter)
 
     @staticmethod
     def make_hbjson_from_hb_model_and_shades(hb_model, hb_shade_list):
