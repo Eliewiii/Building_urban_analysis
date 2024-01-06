@@ -38,7 +38,7 @@ class BuildingEnergySimulation:
         # Flags
         self.has_run = False
         # Results
-        self.bes_results_dict = deepcopy(empty_bes_results_dict)
+        self.bes_results_dict = None
 
     def re_initialize(self):
         """
@@ -50,15 +50,14 @@ class BuildingEnergySimulation:
         # Flags
         self.has_run = False
         # Results
-        self.bes_results_dict = deepcopy(empty_bes_results_dict)
+        self.bes_results_dict = None
 
     def set_parameters(self, hb_simulation_parameter_obj, epw_name, cop_heating, cop_cooling):
         """
 
         """
 
-
-    def make_idf_with_openstudio(self,path_bes_folder,path_epw_file, path_simulation_parameter):
+    def make_idf_with_openstudio(self, path_bes_folder, path_epw_file, path_simulation_parameter):
         """
         Make
         """
@@ -73,38 +72,3 @@ class BuildingEnergySimulation:
         :param hb_model: Honeybee Model
         :param hb_shade_list: list of Honeybee Shades
         """
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

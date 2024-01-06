@@ -615,20 +615,56 @@ class UrbanCanopy:
             hb_model_and_lb_polyface3d_list=hb_model_and_lb_polyface3d_list)
 
     def load_epw_and_hb_simulation_parameters_for_bes(self, path_hbjson_simulation_parameter_file,
-                                              path_file_epw,ddy_file=None,
-                                              overwrite=False):
+                                                      path_file_epw, ddy_file=None,
+                                                      overwrite=False):
         """
         Load the HB simulation parameters from the json file, check if it is valid, correct it eventually and add to the
         UrbanCanopyEnergySimulation object.
         :param path_hbjson_simulation_parameter_file: string, path to the json file containing the HB simulation
             parameters.
+        :param path_file_epw: string, path to the epw file.
+        :param ddy_file: string, path to the ddy (design days) file.
         :param overwrite: bool, if True, the existing HB simulation parameters will be overwritten.
         """
 
-        self.ubes_obj.load_epw_and_hb_simulation_parameters(
+        flag_re_initialize_building_bes = self.ubes_obj.load_epw_and_hb_simulation_parameters(
             path_hbjson_simulation_parameter_file=path_hbjson_simulation_parameter_file,
-            path_file_epw=path_file_epw,ddy_file=ddy_file,
-            overwrite=overwrite)
+            path_file_epw=path_file_epw, ddy_file=ddy_file, overwrite=overwrite)
+
+        # Re-initialize the BES of the buildings if needed
+        if flag_re_initialize_building_bes:
+            for building_obj in self.building_dict.values():
+                if isinstance(building_obj, BuildingModeled):
+                    building_obj.re_initialize_bes()
+
+    def generate_idf_files_for_bes_with_openstudio(self, path_simulation_folder, building_id_list=None, overwrite=False):
+        """
+        Generate the idf files for the buildings in the urban canopy.
+        :param path_simulation_folder: string, path to the folder where the simulation will be performed.
+        :param building_id_list: list of the building id to generate the idf files,
+            if None or empty list, all the target buildings will be initialized.
+        :param overwrite: bool, if True, the existing idf files will be overwritten.
+        """
+        # Checks of the building_id_list parameter to give feedback to the user if there is an issue with an id
+        if not (building_id_list is None or building_id_list is []):
+            for building_id in building_id_list:
+                if building_id not in self.building_dict.keys():
+                    user_logger.warning(f"The building id {building_id} is not in the urban canopy")
+                    dev_logger.info(
+                        f"The building id {building_id} is not in the urban canopy, make sure you indicated "
+                        f"the proper identifier in the input")
+                elif not isinstance(self.building_dict[building_id], BuildingModeled) or not \
+                        self.building_dict[building_id].is_target:
+                    user_logger.warning(
+                        f"The building id {building_id} is not a target building, a radiation analysis "
+                        f"cannot be performed if the building is not a target. You can update "
+                        f"the properties of the building {building_id} to make it a target building.")
+        # Generate the idf files for the buildings
+        for building_obj in self.building_dict.values():
+            if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
+                    and isinstance(building_obj, BuildingModeled) and building_obj.is_target:
+                building_obj.generate_idf_file_with_openstudio(path_simulation_folder=path_simulation_folder,
+                                                               overwrite=overwrite)
 
     def generate_sensor_grid_on_buildings(self, building_id_list=None, bipv_on_roof=True,
                                           bipv_on_facades=True, roof_grid_size_x=1,

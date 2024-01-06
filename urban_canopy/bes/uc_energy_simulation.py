@@ -50,35 +50,36 @@ class UrbanBuildingEnergySimulation:
         simulation parameters if needed.
         :param path_hbjson_simulation_parameter_file: str, path to the simulation parameter hbjson file
         :param path_file_epw: str, path to the epw file
+        :param ddy_file: str, path to the ddy (design day) file
         :param overwrite: bool, if True, overwrite the existing simulation parameters
+        :return flag_re_initialize_building_bes: bool, True if the building bes needs to be re-initialized because
+        the simulation parameters or epw file were changed.
         """
-        # Flag
+        # Flag that the building bes needs to be re-initialized, it will be done by the Urban Canopy
         flag_re_initialize_building_bes = False
-        
-        # Check that the UrbanBuildingEnergySimulation does not already have a simulation parameter and epw file
+
+        """ If the simulation parameter file and epw file are already loaded and they should not be overwritten, 
+        nothing should be done. """
         if self.hb_simulation_parameters is not None and self.lb_epw_obj is not None and not overwrite:
             return flag_re_initialize_building_bes
-        
-        # Check if the simulation parameter file and epw file are valid and correct them if needed
-        hb_sim_parameter_obj, lb_epw_obj = check_simulation_parameter(path_hbjson_simulation_parameter_file, path_file_epw)
+
+        # Check if the simulation parameter file and epw file are valid and adjust them if needed
+        hb_sim_parameter_obj, lb_epw_obj = check_simulation_parameter(
+            path_hbjson_simulation_parameter_file=path_hbjson_simulation_parameter_file, path_file_epw=path_file_epw,
+            ddy_file=ddy_file)
         # Set the simulation parameter and epw file
         self.hb_simulation_parameters = hb_sim_parameter_obj
         self.lb_epw_obj = lb_epw_obj
+
+        """ If the the simulation paramters and the epw should be overwritten, all the simulation that were run before
+        have to be run again, thus the has_run attribute is set back to False and a flag is raised to re-initialize the
+        bes of the buildings that run"""
         if overwrite:
-            # Put back the has_run flag to False as all the simulation will need to be run again
             self.has_run = False
-            # Flag that the building bes needs to be re-initialized, it will be done by the Urban Canopy
             flag_re_initialize_building_bes = True
-        
+
         return flag_re_initialize_building_bes
 
-    @staticmethod
-    def re_initialize_building_bes(building_bes_obj_list):
-        """
-        Re-initialize the values of the attributes of the BuildingEnergySimulation object.
-        """
-        for building_bes_obj in building_bes_obj_list:
-            building_bes_obj.re_initialize()
 
     def make_idf_with_openstudio(self, path_bes_folder, path_epw_file, path_simulation_parameter):
         """
