@@ -634,7 +634,7 @@ class UrbanCanopy:
         # Re-initialize the BES of the buildings if needed
         if flag_re_initialize_building_bes:
             for building_obj in self.building_dict.values():
-                if isinstance(building_obj, BuildingModeled):
+                if isinstance(building_obj, BuildingModeled) and (building_obj.is_target or building_obj.to_simulate):
                     building_obj.re_initialize_bes()
 
     def generate_idf_files_for_bes_with_openstudio(self, path_simulation_folder, building_id_list=None, overwrite=False):
@@ -659,11 +659,17 @@ class UrbanCanopy:
                         f"The building id {building_id} is not a target building, a radiation analysis "
                         f"cannot be performed if the building is not a target. You can update "
                         f"the properties of the building {building_id} to make it a target building.")
+        # Generate or clean the temporary folder ost the bes simulation files
+
+
         # Generate the idf files for the buildings
         for building_obj in self.building_dict.values():
             if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
-                    and isinstance(building_obj, BuildingModeled) and building_obj.is_target:
-                building_obj.generate_idf_file_with_openstudio(path_simulation_folder=path_simulation_folder,
+                    and isinstance(building_obj, BuildingModeled) and (building_obj.is_target or building_obj.to_simulate):
+                # Generate the sub simulation folder for the building
+
+                # Generate the hbjson then idf file for the building simulatio
+                building_obj.generate_idf_file_with_openstudio_for_bes(path_simulation_folder=path_simulation_folder,
                                                                overwrite=overwrite)
 
     def generate_sensor_grid_on_buildings(self, building_id_list=None, bipv_on_roof=True,
