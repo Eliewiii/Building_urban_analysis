@@ -5,6 +5,7 @@ as they will be simulated
 
 import os
 import logging
+import shutil
 import matplotlib.pyplot as plt
 
 from ladybug_geometry.geometry3d import Vector3D
@@ -19,7 +20,8 @@ from building.energy_simulation.building_energy_simulation import BuildingEnergy
 from building.solar_radiation_and_bipv.solar_rad_and_BIPV import SolarRadAndBipvSimulation
 
 from libraries_addons.hb_model_addons import HbAddons
-from libraries_addons.solar_panels.useful_functions_solar_panel import get_cumul_values, add_elements_of_two_lists, \
+from libraries_addons.solar_panels.useful_functions_solar_panel import get_cumul_values, \
+    add_elements_of_two_lists, \
     transform_to_linear_function, find_intersection_functions, \
     generate_step_function
 
@@ -112,7 +114,8 @@ class BuildingModeled(BuildingBasic):
             # todo : change if needed where the dictionary of the urban canopy is pointing, to point to the new object
 
     @classmethod
-    def make_buildingmodeled_from_hbjson(cls, path_hbjson, is_target=False, keep_context=False, urban_canopy=None):
+    def make_buildingmodeled_from_hbjson(cls, path_hbjson, is_target=False, keep_context=False,
+                                         urban_canopy=None):
         """
         Create a BuildingModeled object from a HBJSON file
         :return: building_hb_model : BuildingModeled object
@@ -195,9 +198,10 @@ class BuildingModeled(BuildingBasic):
         :param overwrite: bool: default=False, if True, overwrite the merged faces HB model if it already exists
         """
         if self.merged_faces_hb_model_dict is None or overwrite:
-            merged_faces_hb_model_obj = merge_facades_and_roof_faces_in_hb_model(hb_model_obj=self.hb_model_obj,
-                                                                                 orient_roof_mesh_to_according_to_building_orientation=orient_roof_mesh_to_according_to_building_orientation,
-                                                                                 north_angle=north_angle)
+            merged_faces_hb_model_obj = merge_facades_and_roof_faces_in_hb_model(
+                hb_model_obj=self.hb_model_obj,
+                orient_roof_mesh_to_according_to_building_orientation=orient_roof_mesh_to_according_to_building_orientation,
+                north_angle=north_angle)
             self.merged_faces_hb_model_dict = merged_faces_hb_model_obj.to_dict()
 
     def perform_first_pass_context_filtering(self, uc_building_id_list, uc_building_bounding_box_list,
@@ -238,7 +242,8 @@ class BuildingModeled(BuildingBasic):
         return self.shading_context_obj.selected_context_building_id_list, self.shading_context_obj.first_pass_duration
 
     def perform_second_pass_context_filtering(self, uc_shade_manager, uc_building_dictionary,
-                                              full_urban_canopy_pyvista_mesh, number_of_rays=3, consider_windows=False,
+                                              full_urban_canopy_pyvista_mesh, number_of_rays=3,
+                                              consider_windows=False,
                                               keep_shades_from_user=False, no_ray_tracing=False,
                                               use_merged_face_hb_model=True, overwrite=True,
                                               flag_use_envelop=False, keep_discarded_faces=False):
@@ -287,7 +292,8 @@ class BuildingModeled(BuildingBasic):
         # check if the first pass was already done and run it (if it was overwritten, it will be run again)
         if not self.shading_context_obj.second_pass_done:
             # Set the min VF criterion
-            self.shading_context_obj.set_number_of_rays(number_of_rays=number_of_rays, no_ray_tracing=no_ray_tracing)
+            self.shading_context_obj.set_number_of_rays(number_of_rays=number_of_rays,
+                                                        no_ray_tracing=no_ray_tracing)
             self.shading_context_obj.set_consider_windows(consider_windows=consider_windows)
             # Get the list of the HB models or LB Polyface3d of the context buildings
             context_hb_model_or_lb_polyface3d_list_to_test = []
@@ -321,6 +327,18 @@ class BuildingModeled(BuildingBasic):
         nb_context_faces = len(self.shading_context_obj.context_shading_hb_shade_list)
         return nb_context_faces, self.shading_context_obj.second_pass_duration, flag_use_envelop
 
+    def generate_idf_for_bes_with_openstudio(self, path_bes_temp_folder, overwrite=False):
+        """
+
+        """
+        # Check if the building sub-folder exist in the temporary folder, if not create it
+        path_building_bes_temp_folder = os.path.join(path_bes_temp_folder, self.id)
+        if os.path.isdir(path_building_bes_temp_folder):
+            if overwrite:
+                shutil.rmtree(path_building_bes_temp_folder)
+                os.mkdir(path_building_bes_temp_folder)
+        else:
+            os.mkdir(path_building_bes_temp_folder)
 
     def re_initialize_bes(self):
         """
@@ -366,7 +384,8 @@ class BuildingModeled(BuildingBasic):
                                                                           offset_dist=offset_dist,
                                                                           overwrite=overwrite)
 
-    def run_annual_solar_irradiance_simulation(self, path_simulation_folder, path_weather_file, overwrite=False,
+    def run_annual_solar_irradiance_simulation(self, path_simulation_folder, path_weather_file,
+                                               overwrite=False,
                                                north_angle=0, silent=False):
         """
         Run the annual solar radiation simulation for the building on the roof and/or on the facades if a Honeybee SensorGrid
@@ -386,7 +405,8 @@ class BuildingModeled(BuildingBasic):
             return
         # check if the epw file exists (should be check in the components in Grasshopper as well)
         if not os.path.isfile(path_weather_file):
-            dev_logger.info(f"The epw file {path_weather_file} does not exist, the simulation will be ignored")
+            dev_logger.info(
+                f"The epw file {path_weather_file} does not exist, the simulation will be ignored")
             user_logger.info(
                 f"The building {self.id} was not simulated for the annual solar radiation simulation no mesh for the PVs was generated")
             return
@@ -402,11 +422,11 @@ class BuildingModeled(BuildingBasic):
 
         # run the annual solar radiation simulation
         self.solar_radiation_and_bipv_simulation_obj.run_annual_solar_irradiance_simulation(
-            path_simulation_folder=path_simulation_folder, building_id=self.id, hb_model_obj=self.hb_model_obj,
+            path_simulation_folder=path_simulation_folder, building_id=self.id,
+            hb_model_obj=self.hb_model_obj,
             context_shading_hb_shade_list=hb_shades_list,
             path_weather_file=path_weather_file, overwrite=overwrite,
             north_angle=north_angle, silent=silent)
-
 
     # def building_run_bipv_panel_simulation(self, path_simulation_folder, roof_pv_tech_obj, facades_pv_tech_obj,
     #                                        uc_start_year,

@@ -12,7 +12,7 @@ required_outputs = ["Zone Electric Equipment Electricity Energy", "Zone Ideal Lo
                     "Zone Ideal Loads Supply Air Total Heating Energy", "Zone Lights Electricity Energy"]
 
 
-def check_simulation_parameter(path_hbjson_simulation_parameter_file, path_file_epw, ddy_file=None):
+def check_simulation_parameters(path_hbjson_simulation_parameter_file, path_file_epw, ddy_file=None):
     """
     Check if the simulation parameter file is valid
     :param path_hbjson_simulation_parameter_file: str, path to the simulation parameter file

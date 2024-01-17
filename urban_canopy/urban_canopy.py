@@ -5,6 +5,7 @@ import os
 import pickle
 import json
 import logging
+import shutil
 
 from datetime import datetime
 
@@ -26,7 +27,7 @@ from typology.typology import Typology
 from bipv.bipv_technology import BipvTechnology
 
 from utils.utils_configuration import name_urban_canopy_export_file_pkl, name_urban_canopy_export_file_json, \
-    name_radiation_simulation_folder
+    name_radiation_simulation_folder, name_temporary_files_folder, name_bes_temp_simulation_folder
 from utils.utils_constants import TOLERANCE_LBT
 
 from utils.utils_default_values_user_parameters import default_path_weather_file
@@ -215,7 +216,8 @@ class UrbanCanopy:
                                                                                             unit)
             # add the building to the urban canopy
             if building_obj_list is not None:
-                added_building_id_list = self.add_list_of_buildings_to_dict(building_id_list, building_obj_list)
+                added_building_id_list = self.add_list_of_buildings_to_dict(building_id_list,
+                                                                            building_obj_list)
                 collected_building_id_list.extend(added_building_id_list)
 
         # Collect the attributes to the buildings from the shp file
@@ -257,7 +259,8 @@ class UrbanCanopy:
                                     "to load the same file twice. Make sure that you did not use the same prefix to "
                                     "save the geometries".format(building_id=identifier))
                 dev_logger.warning("The building id {building_id} is already in the urban canopy, "
-                                   "it will not be added again to the urban canopy".format(building_id=identifier))
+                                   "it will not be added again to the urban canopy".format(
+                    building_id=identifier))
 
     def add_buildings_from_hbjson_to_dict(self, path_directory_hbjson=None, path_file_hbjson=None,
                                           are_buildings_targets=False, keep_context_from_hbjson=False):
@@ -363,8 +366,9 @@ class UrbanCanopy:
         for building_id in building_id_list:
             # Check if the building_id is in the urban canopy
             if building_id not in self.building_dict.keys():
-                user_logger.info("The building id {building_id} is not in the urban canopy, it will not be converted "
-                                 "to BuildingModeled".format(building_id=building_id))
+                user_logger.info(
+                    "The building id {building_id} is not in the urban canopy, it will not be converted "
+                    "to BuildingModeled".format(building_id=building_id))
                 dev_logger.info("{building_id} is not in the urban canopy, it will not be converted "
                                 "to BuildingModeled".format(building_id=building_id))
                 continue
@@ -382,8 +386,9 @@ class UrbanCanopy:
             except:
                 user_logger.info("The conversion of the building {building_id} to BuildingModeled failed, it "
                                  "will not be converted".format(building_id=building_id))
-                dev_logger.info("The conversion of the building {building_id} to BuildingModeled failed".format(
-                    building_id=building_id))
+                dev_logger.info(
+                    "The conversion of the building {building_id} to BuildingModeled failed".format(
+                        building_id=building_id))
 
     def compute_moving_vector_to_origin(self):
         """ Make the moving vector to move the urban canopy to the origin """
@@ -502,7 +507,8 @@ class UrbanCanopy:
                     and (((
                                   building_id_list is not None and building_id_list is not []) and building_id in building_id_list)
                          or (on_building_to_simulate and building_obj.to_simulate)
-                         or ((building_id_list is None or building_id_list is []) and building_obj.is_target))):
+                         or ((
+                                     building_id_list is None or building_id_list is []) and building_obj.is_target))):
                 # Perform the first pass context filtering
                 current_building_selected_context_building_id_list, duration = building_obj. \
                     perform_first_pass_context_filtering(
@@ -517,7 +523,8 @@ class UrbanCanopy:
         return selected_context_building_id_list, sim_duration_dict
 
     def perform_second_pass_context_filtering_on_buildings(self, building_id_list=None, number_of_rays=3,
-                                                           on_building_to_simulate=False, consider_windows=False,
+                                                           on_building_to_simulate=False,
+                                                           consider_windows=False,
                                                            keep_shades_from_user=False, no_ray_tracing=False,
                                                            overwrite=False, keep_discarded_faces=False):
         """
@@ -568,15 +575,18 @@ class UrbanCanopy:
                     and (((
                                   building_id_list is not None and building_id_list is not []) and building_id in building_id_list)
                          or (on_building_to_simulate and building_obj.to_simulate)
-                         or ((building_id_list is None or building_id_list is []) and building_obj.is_target))):
+                         or ((
+                                     building_id_list is None or building_id_list is []) and building_obj.is_target))):
                 # Perform the Second pass context filtering
                 nb_context_faces, duration, flag_use_envelop = building_obj.perform_second_pass_context_filtering(
                     uc_shade_manager=self.shade_manager, uc_building_dictionary=self.building_dict,
-                    full_urban_canopy_pyvista_mesh=self.full_context_pyvista_mesh, number_of_rays=number_of_rays,
+                    full_urban_canopy_pyvista_mesh=self.full_context_pyvista_mesh,
+                    number_of_rays=number_of_rays,
                     consider_windows=consider_windows, keep_shades_from_user=keep_shades_from_user,
                     no_ray_tracing=no_ray_tracing, overwrite=overwrite, flag_use_envelop=flag_use_envelop,
                     keep_discarded_faces=keep_discarded_faces)
-                result_summary_dict[building_id] = {"nb_context_faces": nb_context_faces, "duration": duration}
+                result_summary_dict[building_id] = {"nb_context_faces": nb_context_faces,
+                                                    "duration": duration}
 
         return result_summary_dict
 
@@ -596,7 +606,8 @@ class UrbanCanopy:
             elif isinstance(building, BuildingModeled):
                 # Use preferably the merged faces HB model of the building
                 if building.merged_faces_hb_model_dict is not None:
-                    hb_model_and_lb_polyface3d_list.append(Model.from_dict(building.merged_faces_hb_model_dict))
+                    hb_model_and_lb_polyface3d_list.append(
+                        Model.from_dict(building.merged_faces_hb_model_dict))
                 # Check if the building has a HB model
                 elif building.hb_model_obj is not None:
                     # Make the HB model mesh
@@ -614,12 +625,14 @@ class UrbanCanopy:
         self.full_context_pyvista_mesh = make_pyvista_polydata_from_list_of_hb_model_and_lb_polyface3d(
             hb_model_and_lb_polyface3d_list=hb_model_and_lb_polyface3d_list)
 
-    def load_epw_and_hb_simulation_parameters_for_bes(self, path_hbjson_simulation_parameter_file,
+    def load_epw_and_hb_simulation_parameters_for_bes(self, path_simulation_folder,
+                                                      path_hbjson_simulation_parameter_file,
                                                       path_file_epw, ddy_file=None,
                                                       overwrite=False):
         """
         Load the HB simulation parameters from the json file, check if it is valid, correct it eventually and add to the
         UrbanCanopyEnergySimulation object.
+        :param path_simulation_folder: string, path to the simulation folder.
         :param path_hbjson_simulation_parameter_file: string, path to the json file containing the HB simulation
             parameters.
         :param path_file_epw: string, path to the epw file.
@@ -631,13 +644,21 @@ class UrbanCanopy:
             path_hbjson_simulation_parameter_file=path_hbjson_simulation_parameter_file,
             path_file_epw=path_file_epw, ddy_file=ddy_file, overwrite=overwrite)
 
-        # Re-initialize the BES of the buildings if needed
+        # Re-initialize the UBES of the whole UrbanCanopy if needed
         if flag_re_initialize_building_bes:
+            # Delete the BES temporary folder if it exists
+            path_bes_temp_folder = os.path.join(path_simulation_folder, name_temporary_files_folder,
+                                                name_bes_temp_simulation_folder)
+            if os.path.exists(path_bes_temp_folder):
+                shutil.rmtree(path_bes_temp_folder)
+            # Re-initialize the BES of the buildings
             for building_obj in self.building_dict.values():
-                if isinstance(building_obj, BuildingModeled) and (building_obj.is_target or building_obj.to_simulate):
+                if isinstance(building_obj, BuildingModeled) and (
+                        building_obj.is_target or building_obj.to_simulate):
                     building_obj.re_initialize_bes()
 
-    def generate_idf_files_for_bes_with_openstudio(self, path_simulation_folder, building_id_list=None, overwrite=False):
+    def generate_idf_files_for_bes_with_openstudio(self, path_simulation_folder, building_id_list=None,
+                                                   overwrite=False):
         """
         Generate the idf files for the buildings in the urban canopy.
         :param path_simulation_folder: string, path to the folder where the simulation will be performed.
@@ -660,22 +681,32 @@ class UrbanCanopy:
                         f"cannot be performed if the building is not a target. You can update "
                         f"the properties of the building {building_id} to make it a target building.")
         # Generate or clean the temporary folder ost the bes simulation files
-
+        path_bes_temp_folder = os.path.join(path_simulation_folder, name_temporary_files_folder,
+                                            name_bes_temp_simulation_folder)
+        if os.path.isdir(path_bes_temp_folder):
+            if overwrite:
+                shutil.rmtree(path_bes_temp_folder)
+                os.mkdir(path_bes_temp_folder)
+        else:
+            os.mkdir(path_bes_temp_folder)
 
         # Generate the idf files for the buildings
         for building_obj in self.building_dict.values():
             if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
-                    and isinstance(building_obj, BuildingModeled) and (building_obj.is_target or building_obj.to_simulate):
+                    and isinstance(building_obj, BuildingModeled) and (
+                    building_obj.is_target or building_obj.to_simulate):
                 # Generate the sub simulation folder for the building
 
-                # Generate the hbjson then idf file for the building simulatio
-                building_obj.generate_idf_file_with_openstudio_for_bes(path_simulation_folder=path_simulation_folder,
-                                                               overwrite=overwrite)
+                # Generate the hbjson then idf file for the building simulation
+                building_obj.generate_idf_file_with_openstudio_for_bes(
+                    path_bes_temp_folder=path_bes_temp_folder,
+                    overwrite=overwrite)
 
     def generate_sensor_grid_on_buildings(self, building_id_list=None, bipv_on_roof=True,
                                           bipv_on_facades=True, roof_grid_size_x=1,
                                           facades_grid_size_x=1,
-                                          roof_grid_size_y=1, facades_grid_size_y=1, offset_dist=0.1, overwrite=False):
+                                          roof_grid_size_y=1, facades_grid_size_y=1, offset_dist=0.1,
+                                          overwrite=False):
         """
         Generate the sensor grid for the buildings in the urban canopy.
         :param bipv_on_roof: Boolean to indicate if the simulation should be done on the roof
@@ -758,7 +789,8 @@ class UrbanCanopy:
                     north_angle=north_angle, silent=silent)
 
     def run_bipv_panel_simulation_on_buildings(self, path_simulation_folder, bipv_scenario_identifier,
-                                               path_folder_pv_tech_dictionary_json, building_id_list, roof_id_pv_tech,
+                                               path_folder_pv_tech_dictionary_json, building_id_list,
+                                               roof_id_pv_tech,
                                                facades_id_pv_tech, efficiency_computation_method="yearly",
                                                minimum_panel_eroi=1.2, start_year=datetime.now().year,
                                                end_year=datetime.now().year + 50,
@@ -785,13 +817,15 @@ class UrbanCanopy:
 
         # If start_year is higher than end_year, raise an error
         if start_year >= end_year:
-            raise ValueError("The start year is higher than the end year, the simulation will not be performed")
+            raise ValueError(
+                "The start year is higher than the end year, the simulation will not be performed")
 
         # Add a new scenario if it does not exist already
         if not continue_simulation or bipv_scenario_identifier not in self.bipv_scenario_dict.keys():
-            self.bipv_scenario_dict[bipv_scenario_identifier] = BipvScenario(identifier=bipv_scenario_identifier,
-                                                                             start_year=start_year,
-                                                                             end_year=end_year)
+            self.bipv_scenario_dict[bipv_scenario_identifier] = BipvScenario(
+                identifier=bipv_scenario_identifier,
+                start_year=start_year,
+                end_year=end_year)
         # Continue the simulation with the existing scenario
         else:
             self.bipv_scenario_dict[bipv_scenario_identifier].continue_simulation(start_year=start_year,
@@ -836,7 +870,8 @@ class UrbanCanopy:
         # Run the simulation for the buildings
         solar_rad_and_bipv_obj_list = []
         for building_obj in self.building_dict.values():
-            if self.does_building_fits_bipv_requirement(building_obj=building_obj, building_id_list=building_id_list,
+            if self.does_building_fits_bipv_requirement(building_obj=building_obj,
+                                                        building_id_list=building_id_list,
                                                         continue_simulation=continue_simulation):
                 roof_pv_tech_obj = pv_technologies_dictionary[roof_id_pv_tech]
                 facade_pv_tech_obj = pv_technologies_dictionary[facades_id_pv_tech]
@@ -849,11 +884,13 @@ class UrbanCanopy:
                                                                 efficiency_computation_method=efficiency_computation_method,
                                                                 minimum_panel_eroi=minimum_panel_eroi,
                                                                 replacement_scenario=replacement_scenario,
-                                                                continue_simulation=continue_simulation, **kwargs)
+                                                                continue_simulation=continue_simulation,
+                                                                **kwargs)
                 solar_rad_and_bipv_obj_list.append(building_obj.solar_radiation_and_bipv_simulation_obj)
 
         # Compute the results at urban scale
-        bipv_scenario_obj.sum_bipv_results_at_urban_scale(solar_rad_and_bipv_obj_list=solar_rad_and_bipv_obj_list)
+        bipv_scenario_obj.sum_bipv_results_at_urban_scale(
+            solar_rad_and_bipv_obj_list=solar_rad_and_bipv_obj_list)
         # Write urban scale results to CSV file (overwrite existing file if it exists)
         bipv_scenario_obj.write_bipv_results_to_csv(path_simulation_folder=path_simulation_folder)
         # todo: add another function to plot the graphs
@@ -868,7 +905,8 @@ class UrbanCanopy:
         :return: boolean, True if the building fits the requirements, False if it does not
         """
         # Building is in the list of buildings to simulate or the list is empty
-        condition_1 = ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list)
+        condition_1 = ((
+                               building_id_list is None or building_id_list is []) or building_obj.id in building_id_list)
         # Building is a BuildingModeled and is a target
         condition_2 = isinstance(building_obj, BuildingModeled) and building_obj.is_target
         # The annual irradiance of the building were computed
@@ -876,10 +914,11 @@ class UrbanCanopy:
                 building_obj.solar_radiation_and_bipv_simulation_obj.roof_annual_panel_irradiance_list is not None or \
                 building_obj.solar_radiation_and_bipv_simulation_obj.facades_annual_panel_irradiance_list is not None)
         # The simulationm for this building is ongoing
-        condition_3 = condition_2 and (building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["roof"][
-                                           "start_year"] is not None or \
-                                       building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["facades"][
-                                           "start_year"] is not None)
+        condition_3 = condition_2 and (
+                building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["roof"][
+                    "start_year"] is not None or \
+                building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["facades"][
+                    "start_year"] is not None)
 
         return (condition_1 and condition_2) or (
                 condition_2 and condition_3 and continue_simulation)

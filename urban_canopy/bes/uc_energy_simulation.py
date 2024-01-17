@@ -11,7 +11,7 @@ from copy import deepcopy
 from honeybee_energy.simulation.parameter import SimulationParameter
 from ladybug.epw import EPW
 
-from urban_canopy.bes.check_simulation_parameter import check_simulation_parameter
+from urban_canopy.bes.check_simulation_parameter import check_simulation_parameters
 from building.energy_simulation.building_energy_simulation import empty_bes_results_dict
 
 user_logger = logging.getLogger("user")
@@ -64,7 +64,7 @@ class UrbanBuildingEnergySimulation:
             return flag_re_initialize_building_bes
 
         # Check if the simulation parameter file and epw file are valid and adjust them if needed
-        hb_sim_parameter_obj, lb_epw_obj = check_simulation_parameter(
+        hb_sim_parameter_obj, lb_epw_obj = check_simulation_parameters(
             path_hbjson_simulation_parameter_file=path_hbjson_simulation_parameter_file, path_file_epw=path_file_epw,
             ddy_file=ddy_file)
         # Set the simulation parameter and epw file
@@ -79,6 +79,21 @@ class UrbanBuildingEnergySimulation:
             flag_re_initialize_building_bes = True
 
         return flag_re_initialize_building_bes
+
+
+    def write_epw_and_hb_simulation_parameters(self, path_ubes_simulation_folder):
+        """
+        Write the epw file and simulation parameters to the simulation parameter file in the UBES simulation
+        folder.
+        :param path_ubes_simulation_folder: str, path to the UBES simulation folder
+        """
+        # Write the epw file
+        path_file_epw = os.path.join(path_ubes_simulation_folder, "uc_epw.epw")
+        self.lb_epw_obj.write_to_epw(path_file_epw)
+        # Write the simulation parameters
+        path_file_simulation_parameter = os.path.join(path_ubes_simulation_folder, "uc_simulation_parameter.json")
+        with open(path_file_simulation_parameter, "w") as fp:
+            json.dump(self.hb_simulation_parameters.to_dict(), fp, indent=4)
 
 
     def make_idf_with_openstudio(self, path_bes_folder, path_epw_file, path_simulation_parameter):
