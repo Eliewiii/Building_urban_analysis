@@ -37,7 +37,7 @@ class BuildingEnergySimulationFunctions:
         :param overwrite: bool, if True, overwrite the existing simulation parameter file
         """
 
-        urban_canopy_obj.load_epw_and_hb_simulation_parameters_for_bes(
+        urban_canopy_obj.load_epw_and_hb_simulation_parameters_for_ubes(
             path_simulation_folder=path_simulation_folder,
             path_hbjson_simulation_parameter_file=path_hbjson_simulation_parameter_file,
             path_file_epw=path_file_epw, ddy_file=ddy_file, overwrite=overwrite)
@@ -50,18 +50,22 @@ class BuildingEnergySimulationFunctions:
     def generate_idf_files_for_bes_with_openstudio_in_urban_canopy(urban_canopy_obj,
                                                                    path_simulation_folder=default_path_simulation_folder,
                                                                    building_id_list=None,
-                                                                   overwrite=False):
+                                                                   overwrite=False,
+                                                                   silent=False):
         """
         Generate idf files of buildings in the Urban Canopy through OpenStudio for further simulation with EnergyPlus.
         :param urban_canopy_obj: UrbanCanopy object
         :param path_simulation_folder: str, path to the simulation folder
         :param building_id_list: list of str, list of building id to run the simulation on
+        :param overwrite: bool, if True, overwrite the existing idf files
+        :param silent: bool, if True, do not print the progress
         """
 
-        urban_canopy_obj.generate_idf_files_for_bes_with_openstudio(
+        urban_canopy_obj.generate_idf_files_for_ubes_with_openstudio(
             path_simulation_folder=path_simulation_folder,
             building_id_list=building_id_list,
-            overwrite=overwrite)
+            overwrite=overwrite,
+            silent=silent)
 
         user_logger.info("New urban canopy object was created")
         dev_logger.info("New urban canopy object was created")
@@ -71,24 +75,29 @@ class BuildingEnergySimulationFunctions:
     @staticmethod
     def run_idf_files_for_bes_in_urban_canopy(urban_canopy_obj,
                                               path_simulation_folder=default_path_simulation_folder,
-                                              building_id_list=None, path_epw_file=None,
+                                              building_id_list=None,
+                                              overwrite=False,
+                                              silent=False,
                                               run_in_parallel=False):
         """
         Run idf files of buildings in the Urban Canopy through EnergyPlus
         :param urban_canopy_obj: UrbanCanopy object
         :param path_simulation_folder: str, path to the simulation folder
         :param building_id_list: list of str, list of building id to run the simulation on
-        :param path_epw_file: str, path to the epw file
+        :param overwrite: bool, if True, overwrite the existing idf files
+        :param silent: bool, if True, do not print the progress
         :param run_in_parallel: bool, True if the idf files should be run in parallel
         :return total_duration: float, total duration of the simulation
         :return duration_dict: dict, duration of the simulation for each building
         """
         timer = time()
 
-        duration_dict = urban_canopy_obj.run_idf_files_for_bes(path_simulation_folder=path_simulation_folder,
-                                                               building_id_list=building_id_list,
-                                                               path_epw_file=path_epw_file,
-                                                               run_in_parallel=run_in_parallel)
+        duration_dict = urban_canopy_obj.run_idf_files_for_ubes_with_openstudio(
+            path_simulation_folder=path_simulation_folder,
+            building_id_list=building_id_list,
+            overwrite=overwrite,
+            silent=silent,
+            run_in_parallel=run_in_parallel)
 
         tot_duration = time() - timer
 

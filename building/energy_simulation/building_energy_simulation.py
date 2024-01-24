@@ -83,7 +83,7 @@ class BuildingEnergySimulation:
         from_hbjson_to_idf(dir_to_write_idf_in=path_building_bes_temp_folder,
                            path_hbjson_file=path_hbjson_file,
                            path_epw_file=path_epw_file,
-                           path_hbjson_simulation_parameters=path_hbjson_simulation_parameters)
+                           path_hbjson_simulation_parameters=path_hbjson_simulation_parameters, silent=False)
 
         self.idf_generated = True
 
@@ -107,7 +107,7 @@ class BuildingEnergySimulation:
 
 
 def from_hbjson_to_idf(dir_to_write_idf_in, path_hbjson_file, path_epw_file,
-                       path_hbjson_simulation_parameters):
+                       path_hbjson_simulation_parameters,silent=False):
     """
     Convert a hbjson file to an idf file (input for EnergyPlus)
     """
@@ -115,6 +115,6 @@ def from_hbjson_to_idf(dir_to_write_idf_in, path_hbjson_file, path_epw_file,
     osw = to_openstudio_osw(osw_directory=dir_to_write_idf_in,
                             model_path=path_hbjson_file,
                             sim_par_json_path=path_hbjson_simulation_parameters,
-                            epw_file=path_epw_file)
+                            epw_file=path_epw_file,silent=silent)
     ## Run simulation in OpenStudio to generate IDF ##
-    (path_osm, path_idf) = run_osw(osw, silent=False)
+    (path_osm, path_idf) = run_osw(osw, silent=silent)

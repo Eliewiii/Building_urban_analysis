@@ -327,17 +327,19 @@ class BuildingModeled(BuildingBasic):
         nb_context_faces = len(self.shading_context_obj.context_shading_hb_shade_list)
         return nb_context_faces, self.shading_context_obj.second_pass_duration, flag_use_envelop
 
-    def generate_idf_for_bes_with_openstudio(self, path_bes_temp_folder, path_epw_file,
-                                             path_hbjson_simulation_parameters, overwrite=False):
+    def generate_idf_for_bes_with_openstudio(self, path_ubes_temp_folder, path_epw_file,
+                                             path_hbjson_simulation_parameters, overwrite=False,
+                                             silent=False):
         """
         Generate the IDF file of the building with OpenStudio.
-        :param path_bes_temp_folder: str: path to the temporary folder where the IDF file will be generated
+        :param path_ubes_temp_folder: str: path to the temporary folder where the IDF file will be generated
         :param path_epw_file: str: path to the EPW file
         :param path_hbjson_simulation_parameters: str: path to the HBJSON file containing the simulation parameters
         :param overwrite: bool: default=False, if True, the IDF file will be overwritten if it already exists
+        :param silent: bool: default=False, if True, the OpenStudio messages will not be printed
         """
         # Check if the building sub-folder exist in the temporary folder, if not create it
-        path_building_bes_temp_folder = os.path.join(path_bes_temp_folder, self.id)
+        path_building_bes_temp_folder = os.path.join(path_ubes_temp_folder, self.id)
         if os.path.isdir(path_building_bes_temp_folder):
             if overwrite:
                 shutil.rmtree(path_building_bes_temp_folder)
@@ -361,21 +363,24 @@ class BuildingModeled(BuildingBasic):
         self.bes_obj.generate_idf_with_openstudio(path_building_bes_temp_folder=path_building_bes_temp_folder,
                                                   path_epw_file=path_epw_file,
                                                   path_hbjson_simulation_parameters=path_hbjson_simulation_parameters,
-                                                  hb_model_obj=hb_model_with_shades)
+                                                  hb_model_obj=hb_model_with_shades,
+                                                  silent=silent)
 
-    def run_idf_with_energyplus_for_bes(self, path_bes_temp_folder, path_epw_file, silent=False, overwrite=False):
+    def run_idf_with_energyplus_for_bes(self, path_ubes_temp_folder, path_epw_file, overwrite=False,
+                                        silent=False):
         """
         Run the IDF file of teh building with EnergyPlus.
-        :param path_bes_temp_folder: str: path to the temporary folder where the IDF file will be generated
+        :param path_ubes_temp_folder: str: path to the temporary folder where the IDF file will be generated
         :param path_epw_file: str: path to the EPW file
-        :param silent: bool: default=False, if True, the EnergyPlus output will not be printed in the console
         :param overwrite: bool: default=False, if True, the IDF file will be overwritten if it already exists
+        :param silent: bool: default=False, if True, the EnergyPlus output will not be printed in the console
         """
         # Check if the building sub-folder exist in the temporary folder, if not create it
-        path_building_bes_temp_folder = os.path.join(path_bes_temp_folder, self.id)
+        path_building_bes_temp_folder = os.path.join(path_ubes_temp_folder, self.id)
         if not self.bes_obj.idf_generated:
-            user_logger.warning(f"The IDF file of the building {self.id} has not been generated yet, it cannot "
-                                f"be run with EnergyPlus")
+            user_logger.warning(
+                f"The IDF file of the building {self.id} has not been generated yet, it cannot "
+                f"be run with EnergyPlus")
             dev_logger.warning(f"The IDF file not generated for building {self.id}")
             return
         elif self.bes_obj.idf_run:
@@ -386,9 +391,6 @@ class BuildingModeled(BuildingBasic):
         # Run the IDF file
         self.bes_obj.run_idf_with_energyplus(path_building_bes_temp_folder=path_building_bes_temp_folder,
                                              path_epw_file=path_epw_file, silent=silent)
-
-
-
 
     def re_initialize_bes(self):
         """
