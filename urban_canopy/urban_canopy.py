@@ -689,16 +689,16 @@ class UrbanCanopy:
                 os.mkdir(path_bes_temp_folder)
         else:
             os.mkdir(path_bes_temp_folder)
-
+        # Write the EPW and simulation parameters files in the temporary bes folder
+        path_epw_file, path_hbjson_simulation_paramaters = self.ubes_obj.write_epw_and_hb_simulation_parameters(
+            path_bes_temp_folder=path_bes_temp_folder)
         # Generate the idf files for the buildings
         for building_obj in self.building_dict.values():
             if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
                     and isinstance(building_obj, BuildingModeled) and (
                     building_obj.is_target or building_obj.to_simulate):
-                # Generate the sub simulation folder for the building
-
                 # Generate the hbjson then idf file for the building simulation
-                building_obj.generate_idf_file_with_openstudio_for_bes(
+                building_obj.generate_idf_for_bes_with_openstudio(
                     path_bes_temp_folder=path_bes_temp_folder,
                     overwrite=overwrite)
 
