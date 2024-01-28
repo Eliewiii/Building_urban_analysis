@@ -684,17 +684,17 @@ class UrbanCanopy:
                         f"The building id {building_id} is not a target building or is not set to be "
                         f"simulated, thus it cannot be simulated by with EnergyPlus")
         # Generate or clean the temporary folder ost the ubes simulation files
-        path_ubes_temp_folder = os.path.join(path_simulation_folder, name_temporary_files_folder,
+        path_ubes_temp_sim_folder = os.path.join(path_simulation_folder, name_temporary_files_folder,
                                              name_ubes_temp_simulation_folder)
-        if os.path.isdir(path_ubes_temp_folder):
+        if os.path.isdir(path_ubes_temp_sim_folder):
             if overwrite:
-                shutil.rmtree(path_ubes_temp_folder)
-                os.mkdir(path_ubes_temp_folder)
+                shutil.rmtree(path_ubes_temp_sim_folder)
+                os.mkdir(path_ubes_temp_sim_folder)
         else:
-            os.mkdir(path_ubes_temp_folder)
+            os.mkdir(path_ubes_temp_sim_folder)
         # Write the EPW and simulation parameters files in the temporary ubes folder
-        path_epw_file, path_hbjson_simulation_paramaters = self.ubes_obj.write_epw_and_hb_simulation_parameters(
-            path_ubes_temp_folder=path_ubes_temp_folder)
+        path_epw_file, path_hbjson_simulation_parameters = self.ubes_obj.write_epw_and_hb_simulation_parameters(
+            path_ubes_temp_sim_folder=path_ubes_temp_sim_folder)
         # Generate the idf files for the buildings
         for building_obj in self.building_dict.values():
             if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
@@ -702,12 +702,12 @@ class UrbanCanopy:
                     building_obj.is_target or building_obj.to_simulate):
                 # Generate the hbjson then idf file for the building simulation
                 building_obj.generate_idf_for_bes_with_openstudio(
-                    path_ubes_temp_folder=path_ubes_temp_folder,
-                    path_hbjson_simulation_paramaters=path_hbjson_simulation_paramaters,
+                    path_ubes_temp_sim_folder=path_ubes_temp_sim_folder,
+                    path_hbjson_simulation_parameters=path_hbjson_simulation_parameters,
                     path_epw_file=path_epw_file, overwrite=overwrite, silent=silent)
 
-    def run_idf_files_for_ubes_with_openstudio(self, path_simulation_folder, building_id_list=None,
-                                               overwrite=False, silent=False):
+    def run_idf_files_for_ubes_with_energyplus(self, path_simulation_folder, building_id_list=None,
+                                               overwrite=False, silent=False, run_in_parallel=False):
         """
         Run the idf files for the buildings in the urban canopy.
         :param path_simulation_folder: string, path to the folder where the simulation will be performed.
@@ -716,6 +716,8 @@ class UrbanCanopy:
         :param overwrite: bool, if True, the existing idf files will be overwritten.
         :param silent: bool, if True, the OpenStudio messages will not be printed.
         """
+        # Check if EPW and simulation parameters files are in the temporary ubes folder
+
         # Checks of the building_id_list parameter to give feedback to the user if there is an issue with an id
         if not (building_id_list is None or building_id_list is []):
             for building_id in building_id_list:
@@ -731,21 +733,23 @@ class UrbanCanopy:
                         f"The building id {building_id} is not a target building or is not set to be "
                         f"simulated, thus it cannot be simulated by with EnergyPlus")
         # Path to the temporary folder ost the ubes simulation files
-        path_ubes_temp_folder = os.path.join(path_simulation_folder, name_temporary_files_folder,
+        path_ubes_temp_sim_folder = os.path.join(path_simulation_folder, name_temporary_files_folder,
                                              name_ubes_temp_simulation_folder)
-        path_hbjson_simulation_paramaters = os.path.join(path_ubes_temp_folder,
-                                                         name_ubes_hbjson_simulation_parameters_file)
-        path_epw_file = os.path.join(path_ubes_temp_folder, name_ubes_epw_file)
+
+        path_epw_file = os.path.join(path_ubes_temp_sim_folder, name_ubes_epw_file)
+        # Initialize the duration directory
+        duration_dict = {}
         # Generate the idf files for the buildings
         for building_obj in self.building_dict.values():
             if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
                     and isinstance(building_obj, BuildingModeled) and (
                     building_obj.is_target or building_obj.to_simulate):
                 # Run the idf file for the building simulation
-                building_obj.run_idf_for_bes_with_openstudio(
-                    path_ubes_temp_folder=path_ubes_temp_folder,
-                    path_hbjson_simulation_paramaters=path_hbjson_simulation_paramaters,
+                duration = building_obj.run_idf_with_energyplus_for_bes(
+                    path_ubes_temp_sim_folder=path_ubes_temp_sim_folder,
                     path_epw_file=path_epw_file, overwrite=overwrite, silent=silent)
+                duration_dict[building_obj.id] = duration
+        return duration_dict
 
     def generate_sensor_grid_on_buildings(self, building_id_list=None, bipv_on_roof=True,
                                           bipv_on_facades=True, roof_grid_size_x=1,

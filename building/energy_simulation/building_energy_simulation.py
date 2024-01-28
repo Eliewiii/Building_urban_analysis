@@ -69,13 +69,14 @@ class BuildingEnergySimulation:
         """
 
     def generate_idf_with_openstudio(self, path_building_bes_temp_folder, path_epw_file,
-                                     path_hbjson_simulation_parameters, hb_model_obj: Model):
+                                     path_hbjson_simulation_parameters, hb_model_obj: Model,silent=False):
         """
         Generate the idf file using OpenStudio.
         :param path_building_bes_temp_folder: str, path to the folder where the idf file will be saved
         :param path_epw_file: str, path to the epw file
         :param path_hbjson_simulation_parameters: str, path to the simulation parameter file
         :param hb_model_obj: Honeybee Model object
+        :param silent: bool, if True, the EnergyPlus output will not be printed in the console
         """
         # Export the Honeybee Model to a hbjson file in the path_building_bes_temp_folder
         path_hbjson_file = hb_model_obj.to_hbjson(name=self.building_id, folder=path_building_bes_temp_folder)
@@ -83,7 +84,7 @@ class BuildingEnergySimulation:
         from_hbjson_to_idf(dir_to_write_idf_in=path_building_bes_temp_folder,
                            path_hbjson_file=path_hbjson_file,
                            path_epw_file=path_epw_file,
-                           path_hbjson_simulation_parameters=path_hbjson_simulation_parameters, silent=False)
+                           path_hbjson_simulation_parameters=path_hbjson_simulation_parameters, silent=silent)
 
         self.idf_generated = True
 
@@ -115,6 +116,6 @@ def from_hbjson_to_idf(dir_to_write_idf_in, path_hbjson_file, path_epw_file,
     osw = to_openstudio_osw(osw_directory=dir_to_write_idf_in,
                             model_path=path_hbjson_file,
                             sim_par_json_path=path_hbjson_simulation_parameters,
-                            epw_file=path_epw_file,silent=silent)
+                            epw_file=path_epw_file)
     ## Run simulation in OpenStudio to generate IDF ##
     (path_osm, path_idf) = run_osw(osw, silent=silent)

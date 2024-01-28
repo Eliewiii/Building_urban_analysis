@@ -62,7 +62,7 @@ class UrbanBuildingEnergySimulation:
 
         """ If the simulation parameter file and epw file are already loaded and they should not be overwritten, 
         nothing should be done. """
-        if self.hb_simulation_parameters is not None and self.lb_epw_obj is not None and not overwrite:
+        if self.hb_simulation_parameters_obj is not None and self.lb_epw_obj is not None and not overwrite:
             return flag_re_initialize_building_bes
 
         # Check if the simulation parameter file and epw file are valid and adjust them if needed
@@ -71,7 +71,7 @@ class UrbanBuildingEnergySimulation:
             path_file_epw=path_file_epw,
             ddy_file=ddy_file)
         # Set the simulation parameter and epw file
-        self.hb_simulation_parameters = hb_sim_parameter_obj
+        self.hb_simulation_parameters_obj = hb_sim_parameter_obj
         self.lb_epw_obj = lb_epw_obj
 
         """ If the the simulation paramters and the epw should be overwritten, all the simulation that were run before
@@ -83,19 +83,26 @@ class UrbanBuildingEnergySimulation:
 
         return flag_re_initialize_building_bes
 
-    def write_epw_and_hb_simulation_parameters(self, path_ubes_simulation_folder):
+    def write_epw_and_hb_simulation_parameters(self, path_ubes_temp_sim_folder):
         """
-        Write the epw file and simulation parameters to the simulation parameter file in the UBES simulation
-        folder.
-        :param path_ubes_simulation_folder: str, path to the UBES simulation folder
+        Write the epw file and simulation parameters files to the temporary UBES simulation folder
+        if they don't exist already.
+        Return the path to the two files.
+        :param path_ubes_temp_sim_folder: str, path to the UBES simulation folder
+        :return path_file_epw: str, path to the epw file
+        :return path_file_simulation_parameter: str, path to the simulation parameter file
         """
-        # Write the epw file
+        # Path to the two files
+        path_file_epw = os.path.join(path_ubes_temp_sim_folder, name_ubes_epw_file)
+        path_file_simulation_parameter = os.path.join(path_ubes_temp_sim_folder,
+                                                        name_ubes_hbjson_simulation_parameters_file)
+        # Check if the epw files exist
+        if not os.path.isfile(path_file_epw):
+            self.lb_epw_obj.write(path_file_epw)
+        # Check if the simulation parameter file exists
+        if not os.path.isfile(path_file_simulation_parameter):
+            with open(path_file_simulation_parameter, "w") as fp:
+                json.dump(self.hb_simulation_parameters_obj.to_dict(), fp, indent=4)
 
-        path_file_epw = os.path.join(path_ubes_simulation_folder, name_ubes_epw_file)
-        self.lb_epw_obj.write_to_epw(path_file_epw)
-        # Write the simulation parameters
-        path_file_simulation_parameter = os.path.join(path_ubes_simulation_folder,
-                                                      name_ubes_hbjson_simulation_parameters_file)
-        with open(path_file_simulation_parameter, "w") as fp:
-            json.dump(self.hb_simulation_parameters.to_dict(), fp, indent=4)
+        return path_file_epw, path_file_simulation_parameter
 

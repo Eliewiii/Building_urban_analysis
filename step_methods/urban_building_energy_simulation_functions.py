@@ -9,7 +9,7 @@ import logging
 from time import time
 
 from urban_canopy.urban_canopy import UrbanCanopy
-from utils.utils_configuration import name_temporary_files_folder, name_bes_simulation_folder
+
 from utils.utils_default_values_user_parameters import default_path_simulation_folder, \
     default_path_weather_file, \
     default_path_hbjson_simulation_parameter_file
@@ -18,15 +18,15 @@ user_logger = logging.getLogger("user")  # f"{__name__} user"
 dev_logger = logging.getLogger("dev")  # f"{__name__} dev"
 
 
-class BuildingEnergySimulationFunctions:
+class UrbanBuildingEnergySimulationFunctions:
 
     @staticmethod
-    def load_epw_and_hb_simulation_parameters_for_bes_in_urban_canopy(urban_canopy_obj,
-                                                                      path_simulation_folder=default_path_simulation_folder,
-                                                                      path_hbjson_simulation_parameter_file=default_path_hbjson_simulation_parameter_file,
-                                                                      path_file_epw=default_path_weather_file,
-                                                                      ddy_file=None,
-                                                                      overwrite=False):
+    def load_epw_and_hb_simulation_parameters_for_ubes_in_urban_canopy(urban_canopy_obj: UrbanCanopy,
+                                                                       path_simulation_folder=default_path_simulation_folder,
+                                                                       path_hbjson_simulation_parameter_file=default_path_hbjson_simulation_parameter_file,
+                                                                       path_file_epw=default_path_weather_file,
+                                                                       ddy_file=None,
+                                                                       overwrite=False):
         """
         Load the simulation parameters from the simulation parameter file and check and correct them if needed.
         :param urban_canopy_obj: UrbanCanopy object
@@ -47,11 +47,11 @@ class BuildingEnergySimulationFunctions:
         return
 
     @staticmethod
-    def generate_idf_files_for_bes_with_openstudio_in_urban_canopy(urban_canopy_obj,
-                                                                   path_simulation_folder=default_path_simulation_folder,
-                                                                   building_id_list=None,
-                                                                   overwrite=False,
-                                                                   silent=False):
+    def generate_idf_files_for_ubes_with_openstudio_in_urban_canopy(urban_canopy_obj,
+                                                                    path_simulation_folder=default_path_simulation_folder,
+                                                                    building_id_list=None,
+                                                                    overwrite=False,
+                                                                    silent=False):
         """
         Generate idf files of buildings in the Urban Canopy through OpenStudio for further simulation with EnergyPlus.
         :param urban_canopy_obj: UrbanCanopy object
@@ -73,12 +73,12 @@ class BuildingEnergySimulationFunctions:
         return
 
     @staticmethod
-    def run_idf_files_for_bes_in_urban_canopy(urban_canopy_obj,
-                                              path_simulation_folder=default_path_simulation_folder,
-                                              building_id_list=None,
-                                              overwrite=False,
-                                              silent=False,
-                                              run_in_parallel=False):
+    def run_idf_files_with_energyplus_for_ubes_in_urban_canopy(urban_canopy_obj,
+                                                                path_simulation_folder=default_path_simulation_folder,
+                                                                building_id_list=None,
+                                                                overwrite=False,
+                                                                silent=False,
+                                                                run_in_parallel=False):
         """
         Run idf files of buildings in the Urban Canopy through EnergyPlus
         :param urban_canopy_obj: UrbanCanopy object
@@ -92,7 +92,7 @@ class BuildingEnergySimulationFunctions:
         """
         timer = time()
 
-        duration_dict = urban_canopy_obj.run_idf_files_for_ubes_with_openstudio(
+        duration_dict = urban_canopy_obj.run_idf_files_for_ubes_with_energyplus(
             path_simulation_folder=path_simulation_folder,
             building_id_list=building_id_list,
             overwrite=overwrite,
