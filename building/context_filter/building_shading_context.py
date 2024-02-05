@@ -37,6 +37,11 @@ class BuildingShadingContextFilter(BuildingContextFilter):
         self.second_pass_duration = None
         self.forced_hb_shades_from_user_list = []  # todo : Check if shades need to be turned to dict before pickling
         self.context_shading_hb_shade_list = []
+        # Additional shades
+        self.solar_panels_hb_shade_list = []  # from the solar panels simulation
+        # todo: In this specific case, the panels need to face the building to be considered (so basically
+        #  flipped), and be opaque with reflectance to 0
+        # Simulation tracking
         self.discarded_lb_face3d_context_shading_second_pass_list = []
         """
         We use a dictionary to store the shades of the context buildings. The keys are the building ids and the values 

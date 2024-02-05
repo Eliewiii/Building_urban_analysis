@@ -32,6 +32,10 @@ default_unit_gis = "m"
 # EPW weather file
 default_path_weather_file = os.path.join(path_tool, "Libraries", "EPW", "IS_5280_A_Haifa.epw")
 
+# Building Energy Simulation
+default_path_hbjson_simulation_parameter_file = os.path.join(path_libraries_tool_folder, "Simulation_parameters",
+                                                        "default_hb_sim_paramters.json")  # todo: check the link and update the file
+
 # Creation of BuildingModeled objects
 default_automatic_floor_subdivision_for_new_BuildingModeled = False
 default_use_layout_from_typology_for_new_BuildingModeled = False
@@ -47,7 +51,7 @@ default_perform_context_filtering_on_building_to_simulate = True
 # Default values for the simulations - Solar radiation calculation
 default_name_radiation_simulation_folder = 'Radiation Simulation'
 default_grid_size = 1.5  # todo check it !
-default_offset_dist = 0.1
+
 default_on_roof = True
 default_on_facades = True
 
