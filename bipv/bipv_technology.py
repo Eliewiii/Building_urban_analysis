@@ -56,7 +56,7 @@ class BipvTechnology:
         """
         Create the PanelTechnology objects from json file and save them in a dictionary
         :param path_json_folder: path to the folder containing the json file
-        : return pv_technologies_dict: dictionary of the technologies
+        :return pv_technologies_dict: dictionary of the technologies
         """
         pv_technologies_dict = {}  # initialize the dictionary
         for json_file in os.listdir(path_json_folder):  # for every json file in the folder
