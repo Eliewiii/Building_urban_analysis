@@ -14,26 +14,73 @@ class BipvTechnology:
     """
 
     Example of a json file containing the data of the pv technologies
-      "mitrex_roof c-Si": {
-            "weibull_lifetime": 30,
-            "weibull_shape": 5.3759,
-            "initial_efficiency": 0.1920,
-            "panel_area": 2.03,
-            "efficiency_function" : "degrading_rate_efficiency_loss",
-            "weight" : 22,
-            "primary_energy_manufacturing_in_kWh_per_panel": 2189.9,
-            "gh_gas_emissions_manufacturing_in_kgCO2eq_per_panel" : 384.849,
-            "primary_energy_transport_in_kWh_per_panel": 0,
-            "carbon_transport_in_kgCO2_per_panel": 0,
-            "end_of_life_primary_energy_in_kWh_per_panel": 16.99,
-            "end_of_life_carbon_in_kgCO2_per_panel": 8.14
-                      }"""
+      "  "mitrex_facades c-Si Solar Siding 350W - Dove Grey china": {
+            "id": "mitrex_facades c-Si Solar Siding 350W - Dove Grey china",
+            "type": "pv_techology",
+            "pv_type": "facade",
+            "manufacturing_country": "china",
+            "manufacturer": "mitrex",
+            "model": "c-Si Solar Siding 350W - Dove Grey",
+            "peak_power_generation_per_panel": 350,
+            "physical_parameters": {
+              "panel_area": 2.03,
+              "panel_weight": 22,
+              "panel_volume": null
+            },
+            "failure_parameters": {
+              "weibull_scale_parameter": 30,
+              "weibull_shape_parameter": 2.49
+            },
+            "efficiency_parameters": {
+              "initial_efficiency": 0.173,
+              "first_year_degrading_rate": 0.02,
+              "degrading_rate": 0.005,
+              "panel_performance_ratio": 0.8,
+              "efficiency_function": "degrading_rate_efficiency_loss",
+              "other_parameters": null
+            },
+            "lca_ghg_emission": {
+              "manufacturing_in_kgCO2eq_per_panel": 904,
+              "end_of_life_in_kgCO2eq_per_panel": 8.14
+            },
+            "lca_primary_energy_use": {
+              "manufacturing_in_kWh_per_panel": 2840,
+              "end_of_life_in_kWh_per_panel": 17
+            },
+            "economic_parameters": {
+              "costs": {
+                "total_investment_in_USD_per_Wp": 1.4,
+                "annual_maintenance_in_USD_per_Wp": 0.05,
+                "recycling_in_USD_per_kg": 1.06145
+              },
+              "revenues": {
+                "substituted_construction_material_roof_in_USD_per_m^2": 142,
+                "substituted_construction_material_facade_in_USD_per_m^2": 251,
+                "material_recovery_factor_in_USD_per_kg": 1.562
+              }
+            },
+            "inverter": {
+              "estimated_ghg_emission_in_fraction_of_manufacturing": 0.1,
+              "estimated_primary_energy_use_in_fraction_of_manufacturing": 0.1,
+              "estimated_cost_in_fraction_investement_cost": 0.1
+            },
+            "transport": {
+              "transport_included_in_ghg_emission": false,
+              "transport_included_in_primary_energy_use": false,
+              "transport_included_in_investements": true
+            }
+          }
+  """
 
     def __init__(self, identifier):
+        # General information
         self.identifier = identifier
-        #
+        self.pv_type = None  # roof or facade
+        # Physical properties
         self.panel_area = None  # in square meter
-        self.weight = None  # per square meter
+        self.weight = None  # in kg per module meter
+        self.volume = None  # in cubic meter per module (including packaging,for transportation only)
+        #
 
         # Efficiency
         self.efficiency_function = None
@@ -167,7 +214,8 @@ class BipvTechnology:
         if age == 0:
             return self.initial_efficiency
         else:
-            return self.initial_efficiency * (1 - self.first_year_degrading_rate - self.degrading_rate * (age - 1))
+            return self.initial_efficiency * (
+                        1 - self.first_year_degrading_rate - self.degrading_rate * (age - 1))
 
     def irradiance_dependent_efficiency(self, irradiance, **kwargs):
         """ todo: this one is just an example, to be changed"""

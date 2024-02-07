@@ -94,7 +94,7 @@ class BipvTransportation:
                         else:
                             raise ValueError(
                                 f"The transportation object{transportation_obj.identifier} already exists, "
-                                f"it must have been duplicatedin the json file")
+                                f"it must have been duplicated in the json file")
 
         return transportation_dict
 
