@@ -75,28 +75,42 @@ class BipvTechnology:
     def __init__(self, identifier):
         # General information
         self.identifier = identifier
-        self.pv_type = None  # roof or facade
+        self.pv_type = None  # Roof or facade
+        # Peak power generation (nominal power)
+        self.peak_power = None  # Nominal power of the panel in Watt
         # Physical properties
-        self.panel_area = None  # in square meter
-        self.weight = None  # in kg per module meter
-        self.volume = None  # in cubic meter per module (including packaging,for transportation only)
-        #
-
+        self.panel_area = None  # In square meter
+        self.weight = None  # In kg per module meter
+        self.volume = None  # In cubic meter per module (including packaging,for transportation only)
+        # Failure
+        self.weibull_law_failure_parameters = {"lifetime": None, "shape": None}
         # Efficiency
         self.efficiency_function = None
         self.initial_efficiency = None
-        self.panel_performance_ratio = None
         self.first_year_degrading_rate = None
         self.degrading_rate = None
-        # Failure
-        self.weibull_law_failure_parameters = {"lifetime": None, "shape": None}
-        # LCA and DMFA parameters
-        self.primary_energy_manufacturing = None  # per square meter
-        self.carbon_manufacturing = None
-        self.primary_energy_transport = None
-        self.carbon_transport = None
-        self.primary_energy_recycling = None
-        self.carbon_recycling = None
+        self.panel_performance_ratio = None
+        # LCA primary energy
+        self.primary_energy_manufacturing = None  # In kWh per square meter
+        self.primary_energy_recycling = None  # In kWh per square meter
+        # LCA greenhouse gas emission
+        self.ghg_manufacturing = None  # In kgCO2eq per square meter
+        self.ghg_recycling = None  # In kgCO2eq per square meter
+        # Economical parameters
+        self.cost_investment = None  # In USD per Wp
+        self.cost_annual_maintenance = None  # In USD per Wp per year
+        self.cost_recycling = None  # In USD per kg
+        self.revenue_substituted_construction_material_roof = None  # In USD per square meter
+        self.revenue_substituted_construction_material_facade = None  # In USD per square meter
+        self.revenue_material_recovery_factor = None  # In USD per kg
+        # Inverter estimation parameters
+        self.estimated_ghg_inverter = None  # In fraction of the manufacturing
+        self.estimated_primary_energy_inverter = None  # In fraction of the manufacturing
+        self.estimated_cost_inverter = None  # In fraction of the investment cost
+        # Transport
+        self.transport_included_in_ghg_emission = None
+        self.transport_included_in_primary_energy_use = None
+        self.transport_included_in_investments = None
 
     @classmethod
     def load_pv_technologies_from_json_to_dictionary(cls, path_json_folder):
@@ -112,13 +126,19 @@ class BipvTechnology:
                 with open(path_json_file) as f:  # open and load the json file
                     pv_dict_data = json.load(f)
                     for identifier_key in pv_dict_data:  # for every technology in the json, we create and load the
-                        # Initialize the object
-                        pv_tech_obj = cls(identifier_key)
-                        # Load physical paramters
+                        # Load general information and Initialize the object
+                        identifier = pv_dict_data[identifier_key]["id"]
+                        pv_tech_obj = cls(identifier)
+                        pv_tech_obj.pv_type = pv_dict_data[identifier_key]["pv_type"]
+                        # Load peak power generation
+                        pv_tech_obj.peak_power = pv_dict_data[identifier_key]["peak_power_generation_per_panel"]
+                        # Load physical parameters
                         pv_tech_obj.panel_area = pv_dict_data[identifier_key]["physical_parameters"][
                             "panel_area"]
                         pv_tech_obj.weight = pv_dict_data[identifier_key]["physical_parameters"][
                             "panel_weight"]
+                        pv_tech_obj.volume = pv_dict_data[identifier_key]["physical_parameters"][
+                            "panel_volume"]
                         # Load failure parameters
                         pv_tech_obj.weibull_law_failure_parameters["lifetime"] = pv_dict_data[identifier_key][
                             "failure_parameters"]["weibull_scale_parameter"]
@@ -139,26 +159,60 @@ class BipvTechnology:
                         efficiency_function_name = pv_dict_data[identifier_key]["efficiency_parameters"][
                             "efficiency_function"]
                         pv_tech_obj.efficiency_function = getattr(pv_tech_obj, efficiency_function_name)
-                        # Load LCA parameters
+                        # Load LCA primary energy parameters
                         pv_tech_obj.primary_energy_manufacturing = \
-                            pv_dict_data[identifier_key]["lca_parameters"][
-                                "primary_energy_manufacturing_in_kWh_per_panel"]
-                        pv_tech_obj.carbon_manufacturing = pv_dict_data[identifier_key]["lca_parameters"][
-                            "carbon_footprint_manufacturing_in_kgCO2eq_per_panel"]
-                        pv_tech_obj.primary_energy_transport = pv_dict_data[identifier_key]["lca_parameters"][
-                            "primary_energy_transport_in_kWh_per_panel"]
-                        pv_tech_obj.carbon_transport = pv_dict_data[identifier_key]["lca_parameters"][
-                            "carbon_footprint_transport_in_kgCO2eq_per_panel"]
+                            pv_dict_data[identifier_key]["lca_primary_energy_use"][
+                                "manufacturing_in_kWh_per_panel"]
+                        pv_tech_obj.primary_energy_recycling = \
+                            pv_dict_data[identifier_key]["lca_primary_energy_use"][
+                                "end_of_life_in_kWh_per_panel"]
+                        # Load LCA greenhouse gas emission parameters
+                        pv_tech_obj.ghg_manufacturing = pv_dict_data[identifier_key]["lca_ghg_emission"][
+                            "manufacturing_in_kgCO2eq_per_panel"]
+                        pv_tech_obj.ghg_recycling = pv_dict_data[identifier_key]["lca_ghg_emission"][
+                            "end_of_life_in_kgCO2eq_per_panel"]
+                        # Load economical parameters
+                        pv_tech_obj.cost_investment = pv_dict_data[identifier_key]["economic_parameters"]["costs"][
+                            "total_investment_in_USD_per_Wp"]
+                        pv_tech_obj.cost_annual_maintenance = \
+                            pv_dict_data[identifier_key]["economic_parameters"]["costs"][
+                                "annual_maintenance_in_USD_per_Wp"]
+                        pv_tech_obj.cost_recycling = pv_dict_data[identifier_key]["economic_parameters"]["costs"][
+                            "recycling_in_USD_per_kg"]
+                        pv_tech_obj.revenue_substituted_construction_material_roof = \
+                            pv_dict_data[identifier_key]["economic_parameters"]["revenues"][
+                                "substituted_construction_material_roof_in_USD_per_m^2"]
+                        pv_tech_obj.revenue_substituted_construction_material_facade = \
+                            pv_dict_data[identifier_key]["economic_parameters"]["revenues"][
+                                "substituted_construction_material_facade_in_USD_per_m^2"]
+                        pv_tech_obj.revenue_material_recovery_factor = \
+                            pv_dict_data[identifier_key]["economic_parameters"]["revenues"][
+                                "material_recovery_factor_in_USD_per_kg"]
+                        # Load inverter estimation parameters
+                        pv_tech_obj.estimated_ghg_inverter = pv_dict_data[identifier_key]["inverter"][
+                            "estimated_ghg_emission_in_fraction_of_manufacturing"]
+                        pv_tech_obj.estimated_primary_energy_inverter = pv_dict_data[identifier_key]["inverter"][
+                            "estimated_primary_energy_use_in_fraction_of_manufacturing"]
+                        pv_tech_obj.estimated_cost_inverter = pv_dict_data[identifier_key]["inverter"][
+                            "estimated_cost_in_fraction_investement_cost"]
+                        # Load transport parameters
+                        pv_tech_obj.transport_included_in_ghg_emission = pv_dict_data[identifier_key]["transport"][
+                            "transport_included_in_ghg_emission"]
+                        pv_tech_obj.transport_included_in_primary_energy_use = \
+                            pv_dict_data[identifier_key]["transport"][
+                                "transport_included_in_primary_energy_use"]
+                        pv_tech_obj.transport_included_in_investments = pv_dict_data[identifier_key]["transport"][
+                            "transport_included_in_investements"]
+                        # Save the object in the dictionary if it does not exist
+                        if identifier_key not in pv_technologies_dict:
+                            pv_technologies_dict[identifier_key] = pv_tech_obj
+                        else:
+                            raise ValueError(f"The pv technology object{identifier_key} already exists, it must have "
+                                             f"been duplicated in the json file")
 
-                        pv_tech_obj.primary_energy_recycling = pv_dict_data[identifier_key]["lca_parameters"][
-                            "end_of_life_primary_energy_in_kWh_per_panel"]
-                        pv_tech_obj.carbon_recycling = pv_dict_data[identifier_key]["lca_parameters"][
-                            "end_of_life_carbon_footprint_in_kgCO2eq_per_panel"]
-
-                        pv_technologies_dict[identifier_key] = pv_tech_obj
         return pv_technologies_dict
 
-    def compute_transportation_energy(self):
+    def compute_transportation_lca_and_cost(self):
         """
         Compute the energy needed for the transportation of the panels
 
@@ -215,7 +269,7 @@ class BipvTechnology:
             return self.initial_efficiency
         else:
             return self.initial_efficiency * (
-                        1 - self.first_year_degrading_rate - self.degrading_rate * (age - 1))
+                    1 - self.first_year_degrading_rate - self.degrading_rate * (age - 1))
 
     def irradiance_dependent_efficiency(self, irradiance, **kwargs):
         """ todo: this one is just an example, to be changed"""

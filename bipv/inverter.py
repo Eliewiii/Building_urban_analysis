@@ -86,7 +86,13 @@ class BipvInverter:
                                 "offset_primary_energy_in_kWh"]
                         else:
                             raise ValueError("The primary energy function is not implemented")
-                        inverter_dict[key] = inverter_obj
+
+                        # Add the inverter object to the dictionary if it does not exist already
+                        if inverter_obj.identifier not in inverter_dict:
+                            inverter_dict[key] = inverter_obj
+                        else:
+                            raise ValueError(f"The inverter object{inverter_obj.identifier} already exists, "
+                                             f"it must have been duplicated in the json file")
         return inverter_dict
 
     def linear_ghg_emission(self, capacity):

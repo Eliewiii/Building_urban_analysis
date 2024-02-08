@@ -24,7 +24,6 @@ def init_bipv_on_sensor_grid(sensor_grid: SensorGrid, pv_technology_obj, annual_
     :param pv_technology_obj: PVPanelTechnology object
     :param annual_panel_irradiance_list: list of floats: annual irradiance on each face of the sensor_grid
     :param minimum_panel_eroi: float: minimum energy return on investment of the PV, (Default=1.2)
-    :param electricity_primary_energy_gird_factor: float: factor of the primary energy needed to produce 1 kWh of
     electricity for the grid (Default=1.)
 
     :return panel_obj_list
