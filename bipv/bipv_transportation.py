@@ -18,10 +18,15 @@ class BipvTransportation:
         "source": "China",
         "destination": "Israel",
         "from_factory_to_construction_site": {
-          "ghg_emission_in_kgCo2_per_kg": 0.0001,
-          "pe_consumption_in_kWh_per_kg": 0.0001,
-          "cost_in_USD_per_kg": 0.0,
-          "cost_in_USD_per_m3": 0.0
+          "ghg_emission_in_kgCo2_per_panel": 0.0001,
+          "pe_consumption_in_kWh_per_panel": 0.0001,
+          "cost_in_USD_per_panel": 0.0,
+          "values_in_other_units":{
+              "ghg_emission_in_kgCo2_per_kg": 0.0001,
+              "pe_consumption_in_kWh_per_kg": 0.0001,
+              "cost_in_USD_per_kg": 0.0,
+              "cost_in_USD_per_m3": 0.0
+          }
         },
         "from_construction_site_to_recycling_factory": {
           "shipping_parameters": {
@@ -30,11 +35,17 @@ class BipvTransportation:
             "volume_shipping_unit_in_m^3": 55,
             "transportation_to_recycling_in_USD_per_shipping_unit": 440
           },
-          "ghg_emission_in_kgCo2_per_kg": 0.0001,
-          "pe_consumption_in_kWh_per_kg": 0.0001,
-          "cost_in_USD_per_kg": null,
-          "cost_in_USD_per_m3": 8.0
+          "ghg_emission_in_kgCo2_per_panel": 0.0001,
+          "pe_consumption_in_kWh_per_panel": 0.0001,
+          "cost_in_USD_per_panel": 0.0,
+          "values_in_other_units":{
+              "ghg_emission_in_kgCo2_per_kg": 0.0001,
+              "pe_consumption_in_kWh_per_kg": 0.0001,
+              "cost_in_USD_per_kg": 0.0,
+              "cost_in_USD_per_m3": 0.0
+          }
         }
+
     }
   """
 
@@ -43,11 +54,9 @@ class BipvTransportation:
         #
         self.source = None
         self.destination = None
-        # Impacts, ghg emission in kgCO2eq/kg, primary energy in kWh/kg, cost in USD per kg or m3
-        self.gate_to_gate = {"ghg_emission_per_kg": None, "pe_consumption_per_kg": None, "cost_per_kg": None,
-                             "cost_per_m3": None}
-        self.recycling = {"ghg_emission_per_kg": None, "pe_consumption_per_kg": None, "cost_per_kg": None,
-                          "cost_per_m3": None}
+        # Impacts, ghg emission in kgCO2eq, primary energy in kWh, cost in USD, all values are per panel
+        self.gate_to_gate = {"ghg_emission": None, "pe_consumption": None, "cost": None}
+        self.recycling = {"ghg_emission": None, "pe_consumption": None, "cost": None}
 
     @classmethod
     def load_transportation_obj_from_json_to_dictionary(cls, path_json_folder):
@@ -66,27 +75,19 @@ class BipvTransportation:
                         transportation_obj.source = value["source"]
                         transportation_obj.destination = value["destination"]
                         # Gate to gate environmental impacts and cost of transport
-                        transportation_obj.gate_to_gate["ghg_emission_per_kg"] = \
-                            value["from_factory_to_construction_site"]["ghg_emission_in_kgCo2_per_kg"]
-                        transportation_obj.gate_to_gate["pe_consumption_per_kg"] = \
-                            value["from_factory_to_construction_site"]["pe_consumption_in_kWh_per_kg"]
-                        transportation_obj.gate_to_gate["cost_per_kg"] = \
-                            value["from_factory_to_construction_site"]["cost_in_USD_per_kg"]
-                        transportation_obj.gate_to_gate["cost_per_m3"] = \
-                            value["from_factory_to_construction_site"]["cost_in_USD_per_m3"]
+                        transportation_obj.gate_to_gate["ghg_emission"] = \
+                            value["from_factory_to_construction_site"]["ghg_emission_in_kgCo2_per_panel"]
+                        transportation_obj.gate_to_gate["pe_consumption"] = \
+                            value["from_factory_to_construction_site"]["pe_consumption_in_kWh_per_panel"]
+                        transportation_obj.gate_to_gate["cost"] = \
+                            value["from_factory_to_construction_site"]["cost_in_USD_per_panel"]
                         # Recycling environmental impacts and cost of transport
-                        transportation_obj.recycling["ghg_emission_per_kg"] = \
-                            value["from_construction_site_to_recycling_factory"][
-                                "ghg_emission_in_kgCo2_per_kg"]
-                        transportation_obj.recycling["pe_consumption_per_kg"] = \
-                            value["from_construction_site_to_recycling_factory"][
-                                "pe_consumption_in_kWh_per_kg"]
-                        transportation_obj.recycling["cost_per_kg"] = \
-                            value["from_construction_site_to_recycling_factory"][
-                                "cost_in_USD_per_kg"]
-                        transportation_obj.recycling["cost_per_m3"] = \
-                            value["from_construction_site_to_recycling_factory"][
-                                "cost_in_USD_per_m3"]
+                        transportation_obj.recycling["ghg_emission"] = \
+                            value["from_construction_site_to_recycling_factory"]["ghg_emission_in_kgCo2_per_panel"]
+                        transportation_obj.recycling["pe_consumption"] = \
+                            value["from_construction_site_to_recycling_factory"]["pe_consumption_in_kWh_per_panel"]
+                        transportation_obj.recycling["cost"] = \
+                            value["from_construction_site_to_recycling_factory"]["cost_in_USD_per_panel"]
                         if (transportation_obj.source, transportation_obj.destination) \
                                 not in transportation_dict:
                             transportation_dict[(transportation_obj.source,

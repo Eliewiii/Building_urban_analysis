@@ -49,14 +49,24 @@ class BipvTechnology:
             },
             "economic_parameters": {
               "costs": {
-                "total_investment_in_USD_per_Wp": 1.4,
-                "annual_maintenance_in_USD_per_Wp": 0.05,
-                "recycling_in_USD_per_kg": 1.06145
+                "total_investment_in_USD_per_panel": 1.4,
+                "annual_maintenance_in_USD_per_panel": 0.05,
+                "recycling_in_USD_per_panel": 1.06145,
+                "values_in_other_units":{
+                    "total_investment_in_USD_per_Wp": 1.4,
+                    "annual_maintenance_in_USD_per_Wp": 0.05,
+                    "recycling_in_USD_per_kg": 1.06145
+                }
               },
               "revenues": {
-                "substituted_construction_material_roof_in_USD_per_m^2": 142,
-                "substituted_construction_material_facade_in_USD_per_m^2": 251,
-                "material_recovery_factor_in_USD_per_kg": 1.562
+                "substituted_construction_material_roof_in_USD_per_panel": 142,
+                "substituted_construction_material_facade_in_USD_per_panel": 251,
+                "material_recovery_factor_in_USD_per_panel": 1.562,
+                "values_in_other_units":{
+                    "substituted_construction_material_roof_in_USD_per_m^2": 142,
+                    "substituted_construction_material_facade_in_USD_per_m^2": 251,
+                    "material_recovery_factor_in_USD_per_kg": 1.562
+                }
               }
             },
             "inverter": {
@@ -64,11 +74,16 @@ class BipvTechnology:
               "estimated_primary_energy_use_in_fraction_of_manufacturing": 0.1,
               "estimated_cost_in_fraction_investement_cost": 0.1
             },
-            "transport": {
-              "transport_included_in_ghg_emission": false,
-              "transport_included_in_primary_energy_use": false,
-              "transport_included_in_investements": true
+            "gate_to_gate_transportation": {
+              "included_in_ghg_emission": false,
+              "included_in_primary_energy_use": false,
+              "included_in_investements": true
             }
+            "recycling_transportation": {
+                "included_in_ghg_emission": false,
+                "included_in_primary_energy_use": false,
+                "included_in_investements": true
+                }
           }
   """
 
@@ -91,26 +106,25 @@ class BipvTechnology:
         self.degrading_rate = None
         self.panel_performance_ratio = None
         # LCA primary energy
-        self.primary_energy_manufacturing = None  # In kWh per square meter
-        self.primary_energy_recycling = None  # In kWh per square meter
+        self.primary_energy_manufacturing = None  # In kWh per panel
+        self.primary_energy_recycling = None  # In kWh per panel
         # LCA greenhouse gas emission
-        self.ghg_manufacturing = None  # In kgCO2eq per square meter
-        self.ghg_recycling = None  # In kgCO2eq per square meter
+        self.ghg_manufacturing = None  # In kgCO2eq per panel
+        self.ghg_recycling = None  # In kgCO2eq per panel
         # Economical parameters
-        self.cost_investment = None  # In USD per Wp
-        self.cost_annual_maintenance = None  # In USD per Wp per year
+        self.cost_investment = None  # In USD per panel
+        self.cost_annual_maintenance = None  # In USD per panel per year
         self.cost_recycling = None  # In USD per kg
-        self.revenue_substituted_construction_material_roof = None  # In USD per square meter
-        self.revenue_substituted_construction_material_facade = None  # In USD per square meter
-        self.revenue_material_recovery_factor = None  # In USD per kg
-        # Inverter estimation parameters
-        self.estimated_ghg_inverter = None  # In fraction of the manufacturing
-        self.estimated_primary_energy_inverter = None  # In fraction of the manufacturing
-        self.estimated_cost_inverter = None  # In fraction of the investment cost
-        # Transport
-        self.transport_included_in_ghg_emission = None
-        self.transport_included_in_primary_energy_use = None
-        self.transport_included_in_investments = None
+        self.revenue_substituted_construction_material_roof = None  # In USD per panel
+        self.revenue_substituted_construction_material_facade = None  # In USD per panel
+        self.revenue_material_recovery_factor = None  # In USD per panel
+        # Inverter estimation parameters for the whole life time
+        self.estimated_ghg_inverter = None  # In kgCO2eq per panel
+        self.estimated_primary_energy_inverter = None  # In kWh per panel
+        self.estimated_cost_inverter = None  # In USD per panel
+        # Transport, gate to gate and recycling, if included in manufacturing or recycling
+        self.gtg_transportation = {"ghg_included": None, "primary_energy_included": None, "cost_included": None}
+        self.recycling_transportation = {"ghg_included": None, "primary_energy_included": None, "cost_included": None}
 
     @classmethod
     def load_pv_technologies_from_json_to_dictionary(cls, path_json_folder):
@@ -173,36 +187,41 @@ class BipvTechnology:
                             "end_of_life_in_kgCO2eq_per_panel"]
                         # Load economical parameters
                         pv_tech_obj.cost_investment = pv_dict_data[identifier_key]["economic_parameters"]["costs"][
-                            "total_investment_in_USD_per_Wp"]
+                            "total_investment_in_USD_per_panel"]
                         pv_tech_obj.cost_annual_maintenance = \
                             pv_dict_data[identifier_key]["economic_parameters"]["costs"][
-                                "annual_maintenance_in_USD_per_Wp"]
+                                "annual_maintenance_in_USD_per_panel"]
                         pv_tech_obj.cost_recycling = pv_dict_data[identifier_key]["economic_parameters"]["costs"][
-                            "recycling_in_USD_per_kg"]
+                            "recycling_in_USD_per_panel"]
                         pv_tech_obj.revenue_substituted_construction_material_roof = \
                             pv_dict_data[identifier_key]["economic_parameters"]["revenues"][
-                                "substituted_construction_material_roof_in_USD_per_m^2"]
+                                "substituted_construction_material_roof_in_USD_per_panel"]
                         pv_tech_obj.revenue_substituted_construction_material_facade = \
                             pv_dict_data[identifier_key]["economic_parameters"]["revenues"][
-                                "substituted_construction_material_facade_in_USD_per_m^2"]
+                                "substituted_construction_material_facade_in_USD_per_panel"]
                         pv_tech_obj.revenue_material_recovery_factor = \
                             pv_dict_data[identifier_key]["economic_parameters"]["revenues"][
-                                "material_recovery_factor_in_USD_per_kg"]
+                                "material_recovery_factor_in_USD_per_panel"]
                         # Load inverter estimation parameters
                         pv_tech_obj.estimated_ghg_inverter = pv_dict_data[identifier_key]["inverter"][
-                            "estimated_ghg_emission_in_fraction_of_manufacturing"]
+                                                                 "estimated_ghg_emission_in_fraction_of_manufacturing"] * pv_tech_obj.ghg_manufacturing
                         pv_tech_obj.estimated_primary_energy_inverter = pv_dict_data[identifier_key]["inverter"][
-                            "estimated_primary_energy_use_in_fraction_of_manufacturing"]
+                                                                            "estimated_primary_energy_use_in_fraction_of_manufacturing"] * pv_tech_obj.primary_energy_manufacturing
                         pv_tech_obj.estimated_cost_inverter = pv_dict_data[identifier_key]["inverter"][
-                            "estimated_cost_in_fraction_investement_cost"]
+                                                                    "estimated_cost_in_fraction_investement_cost"] * pv_tech_obj.cost_investment
                         # Load transport parameters
-                        pv_tech_obj.transport_included_in_ghg_emission = pv_dict_data[identifier_key]["transport"][
-                            "transport_included_in_ghg_emission"]
-                        pv_tech_obj.transport_included_in_primary_energy_use = \
-                            pv_dict_data[identifier_key]["transport"][
-                                "transport_included_in_primary_energy_use"]
-                        pv_tech_obj.transport_included_in_investments = pv_dict_data[identifier_key]["transport"][
-                            "transport_included_in_investements"]
+                        pv_tech_obj.gtg_transportation["ghg_included"] = pv_dict_data[identifier_key][
+                            "gate_to_gate_transportation"]["included_in_ghg_emission"]
+                        pv_tech_obj.gtg_transportation["primary_energy_included"] = pv_dict_data[identifier_key][
+                            "gate_to_gate_transportation"]["included_in_primary_energy_use"]
+                        pv_tech_obj.gtg_transportation["cost_included"] = pv_dict_data[identifier_key][
+                            "gate_to_gate_transportation"]["included_in_investements"]
+                        pv_tech_obj.recycling_transportation["ghg_included"] = pv_dict_data[identifier_key][
+                            "recycling_transportation"]["included_in_ghg_emission"]
+                        pv_tech_obj.recycling_transportation["primary_energy_included"] = pv_dict_data[identifier_key][
+                            "recycling_transportation"]["included_in_primary_energy_use"]
+                        pv_tech_obj.recycling_transportation["cost_included"] = pv_dict_data[identifier_key][
+                            "recycling_transportation"]["included_in_investements"]
                         # Save the object in the dictionary if it does not exist
                         if identifier_key not in pv_technologies_dict:
                             pv_technologies_dict[identifier_key] = pv_tech_obj
@@ -212,12 +231,30 @@ class BipvTechnology:
 
         return pv_technologies_dict
 
-    def compute_transportation_lca_and_cost(self):
+    def compute_transportation_lca_and_cost(self, bipv_transportation_obj):
         """
-        Compute the energy needed for the transportation of the panels
+        Compute the transportation ghg, primary energy and cost of a panel according the source and destination if not
+        included in the manufacturing or recycling process.
+        :param bipv_transportation_obj: BipvTransportation object
+        :return gtg_transportation_dict: dictionary of the gate to gate transportation
+        :return recycling_recycling_dict: dictionary of the recycling transportation
+        """
+        gtg_transportation_dict = {"ghg": 0, "primary_energy": 0, "cost": 0}
+        recycling_recycling_dict = {"ghg": 0, "primary_energy": 0, "cost": 0}
+        if not self.gtg_transportation["ghg_included"]:
+            gtg_transportation_dict["ghg"] = bipv_transportation_obj.gate_to_gate["ghg_emission"]
+        if not self.gtg_transportation["primary_energy_included"]:
+            gtg_transportation_dict["primary_energy"] = bipv_transportation_obj.gate_to_gate["pe_consumption"]
+        if not self.gtg_transportation["cost_included"]:
+            gtg_transportation_dict["cost"] = bipv_transportation_obj.gate_to_gate["cost"]
+        if not self.recycling_transportation["ghg_included"]:
+            recycling_recycling_dict["ghg"] = bipv_transportation_obj.recycling["ghg_emission"]
+        if not self.recycling_transportation["primary_energy_included"]:
+            recycling_recycling_dict["primary_energy"] = bipv_transportation_obj.recycling["pe_consumption"]
+        if not self.recycling_transportation["cost_included"]:
+            recycling_recycling_dict["cost"] = bipv_transportation_obj.recycling["cost"]
 
-        """
-        # todo
+        return gtg_transportation_dict, recycling_recycling_dict
 
     def get_life_expectancy_of_a_panel(self):
         """

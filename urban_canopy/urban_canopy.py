@@ -13,7 +13,7 @@ from honeybee.model import Model
 
 from urban_canopy.urban_canopy_additional_functions import UrbanCanopyAdditionalFunction
 from urban_canopy.export_to_json import ExportUrbanCanopyToJson
-from urban_canopy.bipv_urban_canopy import BipvScenario
+from urban_canopy.bipv_scenario_urban_canopy import BipvScenario
 from urban_canopy.uc_context_filter.shade_manager import ShadeManager
 from urban_canopy.ubes.uc_energy_simulation import UrbanBuildingEnergySimulation
 
@@ -24,7 +24,10 @@ from building.context_filter.utils_functions_context_filter import \
     make_pyvista_polydata_from_list_of_hb_model_and_lb_polyface3d
 from libraries_addons.extract_gis_files import extract_gis
 from typology.typology import Typology
+
 from bipv.bipv_technology import BipvTechnology
+from bipv.bipv_inverter import BipvInverter
+from bipv.bipv_transportation import BipvTransportation
 
 from utils.utils_configuration import name_urban_canopy_export_file_pkl, name_urban_canopy_export_file_json, \
     name_radiation_simulation_folder, name_temporary_files_folder, name_ubes_temp_simulation_folder, \
@@ -907,7 +910,11 @@ class UrbanCanopy:
                                         f"{building_id}, the BIPV simulation will not be run for this building.")
 
         # todo: check ifg the file exist and put a default value
-        pv_technologies_dictionary = BipvTechnology.load_pv_technologies_from_json_to_dictionary(
+        bipv_technologi_obj_dict = BipvTechnology.load_pv_technologies_from_json_to_dictionary(
+            path_json_folder=path_folder_pv_tech_dictionary_json)
+        bipv_transportation_obj_dict = BipvTechnology.load_bipv_transportation_from_json_to_dictionary(
+            path_json_folder=path_folder_pv_tech_dictionary_json)
+        bipv_inverter_obj_dict = BipvTechnology.load_bipv_inverter_from_json_to_dictionary(
             path_json_folder=path_folder_pv_tech_dictionary_json)
 
         # Reinitialize the simulation for the all the buildings if the simulation is not continued
@@ -922,8 +929,8 @@ class UrbanCanopy:
             if self.does_building_fits_bipv_requirement(building_obj=building_obj,
                                                         building_id_list=building_id_list,
                                                         continue_simulation=continue_simulation):
-                roof_pv_tech_obj = pv_technologies_dictionary[roof_id_pv_tech]
-                facade_pv_tech_obj = pv_technologies_dictionary[facades_id_pv_tech]
+                roof_pv_tech_obj = bipv_technologi_obj_dict[roof_id_pv_tech]
+                facade_pv_tech_obj = bipv_technologi_obj_dict[facades_id_pv_tech]
                 building_obj.building_run_bipv_panel_simulation(path_simulation_folder=path_simulation_folder,
                                                                 roof_pv_tech_obj=roof_pv_tech_obj,
                                                                 facades_pv_tech_obj=facade_pv_tech_obj,
