@@ -14,7 +14,7 @@ class BipvTransportation:
     Example of a json file containing the data of the transport
       "Transport China - Israel": {
         "id": "China -Israel",
-        "type": "transport",
+        "type": "transportation",
         "source": "China",
         "destination": "Israel",
         "from_factory_to_construction_site": {
@@ -59,19 +59,21 @@ class BipvTransportation:
         self.recycling = {"ghg_emission": None, "pe_consumption": None, "cost": None}
 
     @classmethod
-    def load_transportation_obj_from_json_to_dictionary(cls, path_json_folder):
+    def load_transportation_obj_from_json_to_dictionary(cls, transportation_obj_dict,path_json_folder):
         """
-        Create the BipvTransportation objects from json file and save them in a dictionary
+        Create the BipvTransportation objects from json file and save them in a dictionary.
+        :param transportation_obj_dict: dictionary of the transportation objects
         :param path_json_folder: path to the folder containing the json file
         :return inverter_dict: dictionary of the inverters
         """
-        transportation_dict = {}
         for file in os.listdir(path_json_folder):
             if file.endswith(".json"):
                 with open(os.path.join(path_json_folder, file), "r") as f:
                     data = json.load(f)
                     for key, value in data.items():
-                        transportation_obj = BipvTransportation(key)
+                        if value.type != "transportation":
+                            continue  # skip to the next element
+                        transportation_obj = cls(value["id"])
                         transportation_obj.source = value["source"]
                         transportation_obj.destination = value["destination"]
                         # Gate to gate environmental impacts and cost of transport
@@ -89,13 +91,13 @@ class BipvTransportation:
                         transportation_obj.recycling["cost"] = \
                             value["from_construction_site_to_recycling_factory"]["cost_in_USD_per_panel"]
                         if (transportation_obj.source, transportation_obj.destination) \
-                                not in transportation_dict:
-                            transportation_dict[(transportation_obj.source,
+                                not in transportation_obj_dict:
+                            transportation_obj_dict[(transportation_obj.source,
                                                  transportation_obj.destination)] = transportation_obj
                         else:
                             raise ValueError(
                                 f"The transportation object{transportation_obj.identifier} already exists, "
                                 f"it must have been duplicated in the json file")
 
-        return transportation_dict
+        return transportation_obj_dict
 

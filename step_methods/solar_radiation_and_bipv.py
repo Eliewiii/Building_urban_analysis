@@ -9,7 +9,7 @@ from utils.utils_default_values_user_parameters import default_path_simulation_f
 from utils.utils_default_values_user_parameters import default_roof_grid_size_x, default_facades_grid_size_x, \
     default_roof_grid_size_y, default_facades_grid_size_y, default_offset_dist
 
-from utils.utils_default_values_user_parameters import default_path_pv_tech_dictionary_folder, default_id_pv_tech_roof, \
+from utils.utils_default_values_user_parameters import default_id_pv_tech_roof, \
     default_id_pv_tech_facades, default_minimum_panel_eroi, default_start_year, default_end_year, \
     default_efficiency_computation_method, default_replacement_scenario, default_replacement_frequency_in_years, \
     default_bipv_scenario_identifier
@@ -85,7 +85,6 @@ class SimFunSolarRadAndBipv:
     def run_bipv_harvesting_and_lca_simulation(urban_canopy_object,
                                                path_simulation_folder=default_path_simulation_folder,
                                                bipv_scenario_identifier=default_bipv_scenario_identifier,
-                                               path_folder_pv_tech_dictionary_json=default_path_pv_tech_dictionary_folder,
                                                building_id_list=None, roof_id_pv_tech=default_id_pv_tech_roof,
                                                facades_id_pv_tech=default_id_pv_tech_facades,
                                                efficiency_computation_method=default_efficiency_computation_method,
@@ -99,7 +98,6 @@ class SimFunSolarRadAndBipv:
         :param urban_canopy_object: urban canopy object
         :param path_simulation_folder: path to the folder where the simulation will be run
         :param bipv_scenario_identifier: str: identifier of the BIPV scenario
-        :param path_folder_pv_tech_dictionary_json: path to the folder containing the json files with the PV technology
         :param building_id_list: list of building id to be considered
         :param roof_id_pv_tech: str: identifier of the PV technology to be used on the roof
         :param facades_id_pv_tech: str: identifier of the PV technology to be used on the facades
@@ -114,7 +112,6 @@ class SimFunSolarRadAndBipv:
 
         urban_canopy_object.run_bipv_panel_simulation_on_buildings(path_simulation_folder=path_simulation_folder,
                                                                    bipv_scenario_identifier=bipv_scenario_identifier,
-                                                                   path_folder_pv_tech_dictionary_json=path_folder_pv_tech_dictionary_json,
                                                                    building_id_list=building_id_list,
                                                                    roof_id_pv_tech=roof_id_pv_tech,
                                                                    facades_id_pv_tech=facades_id_pv_tech,

@@ -31,7 +31,8 @@ from bipv.bipv_transportation import BipvTransportation
 
 from utils.utils_configuration import name_urban_canopy_export_file_pkl, name_urban_canopy_export_file_json, \
     name_radiation_simulation_folder, name_temporary_files_folder, name_ubes_temp_simulation_folder, \
-    name_ubes_hbjson_simulation_parameters_file, name_ubes_epw_file
+    name_ubes_hbjson_simulation_parameters_file, name_ubes_epw_file, path_folder_default_bipv_parameters, \
+    path_folder_user_bipv_parameters
 from utils.utils_constants import TOLERANCE_LBT
 
 from utils.utils_default_values_user_parameters import default_path_weather_file
@@ -662,7 +663,7 @@ class UrbanCanopy:
                     building_obj.re_initialize_bes()
 
     def generate_idf_files_for_ubes_with_openstudio(self, path_simulation_folder, building_id_list=None,
-                                                    overwrite=False, silent=False,run_in_parallel=False):
+                                                    overwrite=False, silent=False, run_in_parallel=False):
         """
         Generate the idf files for the buildings in the urban canopy.
         :param path_simulation_folder: string, path to the folder where the simulation will be performed.
@@ -688,7 +689,7 @@ class UrbanCanopy:
                         f"simulated, thus it cannot be simulated by with EnergyPlus")
         # Generate or clean the temporary folder ost the ubes simulation files
         path_ubes_temp_sim_folder = os.path.join(path_simulation_folder, name_temporary_files_folder,
-                                             name_ubes_temp_simulation_folder)
+                                                 name_ubes_temp_simulation_folder)
         if os.path.isdir(path_ubes_temp_sim_folder):
             if overwrite:
                 shutil.rmtree(path_ubes_temp_sim_folder)
@@ -737,7 +738,7 @@ class UrbanCanopy:
                         f"simulated, thus it cannot be simulated by with EnergyPlus")
         # Path to the temporary folder ost the ubes simulation files
         path_ubes_temp_sim_folder = os.path.join(path_simulation_folder, name_temporary_files_folder,
-                                             name_ubes_temp_simulation_folder)
+                                                 name_ubes_temp_simulation_folder)
 
         path_epw_file = os.path.join(path_ubes_temp_sim_folder, name_ubes_epw_file)
         # Initialize the duration directory
@@ -841,9 +842,9 @@ class UrbanCanopy:
                     north_angle=north_angle, silent=silent)
 
     def run_bipv_panel_simulation_on_buildings(self, path_simulation_folder, bipv_scenario_identifier,
-                                               path_folder_pv_tech_dictionary_json, building_id_list,
-                                               roof_id_pv_tech,
-                                               facades_id_pv_tech, efficiency_computation_method="yearly",
+                                               building_id_list, roof_id_pv_tech, facades_id_pv_tech, roof_transport_id,
+                                               facades_transport_id, roof_inverter_id, facades_inverter_id,
+                                               efficiency_computation_method="yearly",
                                                minimum_panel_eroi=1.2, start_year=datetime.now().year,
                                                end_year=datetime.now().year + 50,
                                                replacement_scenario="replace_failed_panels_every_X_years",
@@ -852,10 +853,13 @@ class UrbanCanopy:
         Run the panels simulation on the urban canopy
         :param path_simulation_folder: path to the simulation folder
         :param bipv_scenario_identifier: string: identifier of the BIPV scenario
-        :param path_folder_pv_tech_dictionary_json: string: path to the folder containing the pv tech dictionary json
         :param building_id_list: list of string: list of the building id to run the simulation on
-        :param roof_id_pv_tech: string: id of the roof technology used, default = "mitrex_roof c-Si"
-        :param facades_id_pv_tech: string: id of the facades technology used, default = "metsolar_facades c-Si"
+        :param roof_id_pv_tech: string: id of the roof technology used
+        :param facades_id_pv_tech: string: id of the facades technology used
+        :param roof_transport_id: string: id of the roof transportation used
+        :param facades_transport_id: string: id of the facades transportation used
+        :param roof_inverter_id: string: id of the roof inverter used
+        :param facades_inverter_id: string: id of the facades inverter used
         :param efficiency_computation_method: string: method used to compute the efficiency of the panels,
             default = "yearly"
         :param minimum_panel_eroi: float: minimum energy return on investment of the panels, default = 1.2
@@ -909,13 +913,21 @@ class UrbanCanopy:
                     user_logger.warning(f"No irradiance simulation was run for The building id "
                                         f"{building_id}, the BIPV simulation will not be run for this building.")
 
-        # todo: check ifg the file exist and put a default value
-        bipv_technologi_obj_dict = BipvTechnology.load_pv_technologies_from_json_to_dictionary(
-            path_json_folder=path_folder_pv_tech_dictionary_json)
-        bipv_transportation_obj_dict = BipvTechnology.load_bipv_transportation_from_json_to_dictionary(
-            path_json_folder=path_folder_pv_tech_dictionary_json)
-        bipv_inverter_obj_dict = BipvTechnology.load_bipv_inverter_from_json_to_dictionary(
-            path_json_folder=path_folder_pv_tech_dictionary_json)
+        # Read the files in the defauly and library and extract the BIPV technologies, transportation and inverter objects
+        json_file_path_list = [os.path.joint(path_folder_default_bipv_parameters, file) for file in
+                               os.listdir(path_folder_default_bipv_parameters) if file.endswith(".json")]
+        json_file_path_list.extend([os.path.joint(path_folder_user_bipv_parameters, file) for file in
+                                    os.listdir(path_folder_user_bipv_parameters) if file.endswith(".json")])
+        bipv_technology_obj_dict = {}
+        bipv_transportation_obj_dict = {}
+        bipv_inverter_obj_dict = {}
+        for file_path in json_file_path_list:
+            bipv_technology_obj_dict = BipvTechnology.load_pv_technologies_from_json_to_dictionary(
+                bipv_technology_obj_dict=bipv_technology_obj_dict, path_json_folder=file_path)
+            bipv_transportation_obj_dict = BipvTransportation.load_bipv_transportation_from_json_to_dictionary(
+                transportation_obj_dict=bipv_transportation_obj_dict, path_json_folder=file_path)
+            bipv_inverter_obj_dict = BipvInverter.load_bipv_inverter_from_json_to_dictionary(
+                inverter_obj_dict=bipv_inverter_obj_dict, path_json_folder=file_path)
 
         # Reinitialize the simulation for the all the buildings if the simulation is not continued
         if not continue_simulation:
@@ -929,8 +941,8 @@ class UrbanCanopy:
             if self.does_building_fits_bipv_requirement(building_obj=building_obj,
                                                         building_id_list=building_id_list,
                                                         continue_simulation=continue_simulation):
-                roof_pv_tech_obj = bipv_technologi_obj_dict[roof_id_pv_tech]
-                facade_pv_tech_obj = bipv_technologi_obj_dict[facades_id_pv_tech]
+                roof_pv_tech_obj = bipv_technology_obj_dict[roof_id_pv_tech]
+                facade_pv_tech_obj = bipv_technology_obj_dict[facades_id_pv_tech]
                 building_obj.building_run_bipv_panel_simulation(path_simulation_folder=path_simulation_folder,
                                                                 roof_pv_tech_obj=roof_pv_tech_obj,
                                                                 facades_pv_tech_obj=facade_pv_tech_obj,

@@ -132,9 +132,6 @@ class LoadArguments:
         # BIPV
         parser.add_argument("--bipv_scenario_identifier",
                             help="Identifier of the BIPV scenario", default=default_bipv_scenario_identifier)
-        parser.add_argument("--path_pv_tech_dictionary_folder",
-                            help="path to the folder containing the json with PVPanelTechnologies",
-                            default=default_path_pv_tech_dictionary_folder)
         parser.add_argument("--id_pv_tech_roof", help="name of the pv tech used on the roof",
                             default=default_id_pv_tech_roof)
         parser.add_argument("--id_pv_tech_facades", help="name of the pv tech used on the facades",
@@ -297,7 +294,6 @@ class LoadArguments:
             "offset_dist": float(args.offset_dist),
             # BIPV
             "bipv_scenario_identifier": args.bipv_scenario_identifier,
-            "path_pv_tech_dictionary": args.path_pv_tech_dictionary_folder,
             "roof_id_pv_tech": args.id_pv_tech_roof,
             "facades_id_pv_tech": args.id_pv_tech_facades,
             "start_year": int(args.start_year),

@@ -51,21 +51,21 @@ class BipvInverter:
         self.primary_energy_offset = None  # in kWh
 
     @classmethod
-    def load_inverter_from_json_to_dictionary(cls, path_json_folder):
+    def load_inverter_from_json_to_dictionary(cls, inverter_obj_dict, path_json_folder):
         """
-        Create the BipvInverter objects from json file and save them in a dictionary
+        Create the BipvInverter objects from json file and save them in a dictionary.
+        :param inverter_obj_dict: dictionary of the inverters
         :param path_json_folder: path to the folder containing the json file
         :return inverter_dict: dictionary of the inverters
         """
-        inverter_dict = {}
         for file in os.listdir(path_json_folder):
             if file.endswith(".json"):
                 with open(os.path.join(path_json_folder, file), "r") as f:
                     data = json.load(f)
                     for key, value in data.items():
                         if value.type != "inverter":
-                            raise ValueError("The type of the object is not inverter")
-                        inverter_obj = cls(key)
+                            continue  # skip to the next element
+                        inverter_obj = cls(value["id"])
                         inverter_obj.replacement_frequency = int(value["replacement_frequency_in_year"])
                         for k, v in value["capacity_in_kW_vs_cost_in_USD"].items():
                             inverter_obj.capacity_vs_cost[int(k)] = float(v)
@@ -88,12 +88,12 @@ class BipvInverter:
                             raise ValueError("The primary energy function is not implemented")
 
                         # Add the inverter object to the dictionary if it does not exist already
-                        if inverter_obj.identifier not in inverter_dict:
-                            inverter_dict[key] = inverter_obj
+                        if inverter_obj.identifier not in inverter_obj_dict:
+                            inverter_obj_dict[key] = inverter_obj
                         else:
                             raise ValueError(f"The inverter object{inverter_obj.identifier} already exists, "
                                              f"it must have been duplicated in the json file")
-        return inverter_dict
+        return inverter_obj_dict
 
     def linear_ghg_emission(self, capacity):
         """
