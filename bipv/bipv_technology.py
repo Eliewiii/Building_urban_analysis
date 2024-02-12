@@ -21,7 +21,7 @@ class BipvTechnology:
             "manufacturing_country": "china",
             "manufacturer": "mitrex",
             "model": "c-Si Solar Siding 350W - Dove Grey",
-            "peak_power_generation_per_panel": 350,
+            "max_power_output_per_panel": 350,
             "physical_parameters": {
               "panel_area": 2.03,
               "panel_weight": 22,
@@ -92,7 +92,7 @@ class BipvTechnology:
         self.identifier = identifier
         self.pv_type = None  # Roof or facade
         # Peak power generation (nominal power)
-        self.peak_power = None  # Nominal power of the panel in Watt
+        self.max_power_output = None  # Nominal power of the panel in Watt
         # Physical properties
         self.panel_area = None  # In square meter
         self.weight = None  # In kg per module meter
@@ -147,7 +147,7 @@ class BipvTechnology:
                         pv_tech_obj = cls(identifier)
                         pv_tech_obj.pv_type = value["pv_type"]
                         # Load peak power generation
-                        pv_tech_obj.peak_power = value["peak_power_generation_per_panel"]
+                        pv_tech_obj.max_power_output = value["max_power_output_per_panel"]
                         # Load physical parameters
                         pv_tech_obj.panel_area = value["physical_parameters"]["panel_area"]
                         pv_tech_obj.weight = value["physical_parameters"]["panel_weight"]
@@ -216,101 +216,104 @@ class BipvTechnology:
 
         return bipv_technology_obj_dict
 
+    def compute_transportation_lca_and_cost(self, bipv_transportation_obj):
+        """
+        Compute the transportation ghg, primary energy and cost of a panel according the source and destination if not
+        included in the manufacturing or recycling process.
+        :param bipv_transportation_obj: BipvTransportation object
+        :return gtg_transportation_dict: dictionary of the gate to gate transportation
+        :return recycling_recycling_dict: dictionary of the recycling transportation
+        """
+        gtg_transportation_dict = {"ghg": 0, "primary_energy": 0, "cost": 0}
+        recycling_recycling_dict = {"ghg": 0, "primary_energy": 0, "cost": 0}
+        if not self.gtg_transportation["ghg_included"]:
+            gtg_transportation_dict["ghg"] = bipv_transportation_obj.gate_to_gate["ghg_emission"]
+        if not self.gtg_transportation["primary_energy_included"]:
+            gtg_transportation_dict["primary_energy"] = bipv_transportation_obj.gate_to_gate["pe_consumption"]
+        if not self.gtg_transportation["cost_included"]:
+            gtg_transportation_dict["cost"] = bipv_transportation_obj.gate_to_gate["cost"]
+        if not self.recycling_transportation["ghg_included"]:
+            recycling_recycling_dict["ghg"] = bipv_transportation_obj.recycling["ghg_emission"]
+        if not self.recycling_transportation["primary_energy_included"]:
+            recycling_recycling_dict["primary_energy"] = bipv_transportation_obj.recycling["pe_consumption"]
+        if not self.recycling_transportation["cost_included"]:
+            recycling_recycling_dict["cost"] = bipv_transportation_obj.recycling["cost"]
 
-def compute_transportation_lca_and_cost(self, bipv_transportation_obj):
-    """
-    Compute the transportation ghg, primary energy and cost of a panel according the source and destination if not
-    included in the manufacturing or recycling process.
-    :param bipv_transportation_obj: BipvTransportation object
-    :return gtg_transportation_dict: dictionary of the gate to gate transportation
-    :return recycling_recycling_dict: dictionary of the recycling transportation
-    """
-    gtg_transportation_dict = {"ghg": 0, "primary_energy": 0, "cost": 0}
-    recycling_recycling_dict = {"ghg": 0, "primary_energy": 0, "cost": 0}
-    if not self.gtg_transportation["ghg_included"]:
-        gtg_transportation_dict["ghg"] = bipv_transportation_obj.gate_to_gate["ghg_emission"]
-    if not self.gtg_transportation["primary_energy_included"]:
-        gtg_transportation_dict["primary_energy"] = bipv_transportation_obj.gate_to_gate["pe_consumption"]
-    if not self.gtg_transportation["cost_included"]:
-        gtg_transportation_dict["cost"] = bipv_transportation_obj.gate_to_gate["cost"]
-    if not self.recycling_transportation["ghg_included"]:
-        recycling_recycling_dict["ghg"] = bipv_transportation_obj.recycling["ghg_emission"]
-    if not self.recycling_transportation["primary_energy_included"]:
-        recycling_recycling_dict["primary_energy"] = bipv_transportation_obj.recycling["pe_consumption"]
-    if not self.recycling_transportation["cost_included"]:
-        recycling_recycling_dict["cost"] = bipv_transportation_obj.recycling["cost"]
+        return gtg_transportation_dict, recycling_recycling_dict
 
-    return gtg_transportation_dict, recycling_recycling_dict
+    def get_life_expectancy_of_a_panel(self):
+        """
+        Get the probabilistic time failure of a panel using the inverse of the quantile (inverse of the cumulative
+        distribution0) function for the Weibull distribution
+        return life_expectancy: life expectancy of a panel according to the probabilistic law of Weibull
+        """
 
+        y = random.random()  # we randomly choose a value between 0 and 1
+        shape = self.weibull_law_failure_parameters["shape"]  # extract the failure parameters
+        lifetime = self.weibull_law_failure_parameters["lifetime"]
+        # Quantile function for the Weibull distribution
+        life_expectancy = ceil(lifetime * (-log(1 - y)) ** (1 / shape))
+        return life_expectancy
 
-def get_life_expectancy_of_a_panel(self):
-    """
-    Get the probabilistic time failure of a panel using the inverse of the quantile (inverse of the cumulative
-    distribution0) function for the Weibull distribution
-    return life_expectancy: life expectancy of a panel according to the probabilistic law of Weibull
-    """
-
-    y = random.random()  # we randomly choose a value between 0 and 1
-    shape = self.weibull_law_failure_parameters["shape"]  # extract the failure parameters
-    lifetime = self.weibull_law_failure_parameters["lifetime"]
-    # Quantile function for the Weibull distribution
-    life_expectancy = ceil(lifetime * (-log(1 - y)) ** (1 / shape))
-    return life_expectancy
-
-
-def get_energy_harvested_by_panel(self, irradiance, age, **kwargs):
-    """
-    Get the energy harvested by a panel in Watt
-    :param irradiance: irradiance on the panel
-    :param age: age of the panel
-    :param kwargs: kwargs
+    def get_energy_harvested_by_panel(self, hourly_irradiance_list, age, **kwargs):
+        """
+        Get the energy harvested by a panel in Watt
+        :param hourly_irradiance_list: list of hourly irradiance on the panel during a year
+        :param age: age of the panel
+        :param kwargs: kwargs
 
 
-    :return: energy_harvested: energy harvested by the panel
-    """
+        :return: energy_harvested: energy harvested by the panel
+        """
 
-    # Check if the efficiency function is defined in the kwargs
-    if "efficiency_function" in kwargs and kwargs["efficiency_function"] in [
-        getattr(self, method_name) for method_name in dir(self) if callable(getattr(self, method_name))]:
-        """ The efficiency function can be defined in the kwargs. If it is not defined, the default efficiency function
-                is used. If it is defined, the efficiency function is used. The efficiency function must be a method of the
-                class."""
-        efficiency_function = kwargs["efficiency_function"]
-        efficiency = efficiency_function(age=age, irradiance=irradiance, **kwargs)
-    else:
-        efficiency = self.efficiency_function(age=age, irradiance=irradiance, **kwargs)
+        # Check if the efficiency function is defined in the kwargs
+        if "efficiency_function" in kwargs and kwargs["efficiency_function"] in [
+            getattr(self, method_name) for method_name in dir(self) if callable(getattr(self, method_name))]:
+            """ The efficiency function can be defined in the kwargs. If it is not defined, the default efficiency function
+                    is used. If it is defined, the efficiency function is used. The efficiency function must be a method of the
+                    class."""
+            efficiency_function = kwargs["efficiency_function"]
+            efficiency = efficiency_function(age=age, hourly_irradiance_list=hourly_irradiance_list, **kwargs)
+        else:
+            efficiency = self.efficiency_function(age=age, hourly_irradiance_list=hourly_irradiance_list, **kwargs)
 
-    energy_harvested = efficiency * irradiance * self.panel_performance_ratio * self.panel_area
+        # Cap the output power of the panel
+        max_irradiance = self.max_power_output/self.panel_area/efficiency
+        # Initialize energy harvested
+        yearly_energy_harvested = 0
+        for hourly_irradiance in hourly_irradiance_list:
+            if hourly_irradiance/self.panel_area > max_irradiance:
+                hourly_irradiance = max_irradiance
+        None  # todo: to be continued
 
-    return energy_harvested
 
+        # energy_harvested = efficiency * hourly_irradiance * self.panel_performance_ratio * self.panel_area
 
-def constant_efficiency(self, **kwargs):
-    """ Constant efficiency through the life of the panel """
-    return self.initial_efficiency
+        return energy_harvested
 
-
-def degrading_rate_efficiency_loss(self, age, **kwargs):
-    """ loose 2% efficiency the first year and then 0.5% every year"""
-    if age == 0:
+    def constant_efficiency(self, **kwargs):
+        """ Constant efficiency through the life of the panel """
         return self.initial_efficiency
-    else:
-        return self.initial_efficiency * (
-                1 - self.first_year_degrading_rate - self.degrading_rate * (age - 1))
 
+    def degrading_rate_efficiency_loss(self, age, **kwargs):
+        """ loose 2% efficiency the first year and then 0.5% every year"""
+        if age == 0:
+            return self.initial_efficiency
+        else:
+            return self.initial_efficiency * (
+                    1 - self.first_year_degrading_rate - self.degrading_rate * (age - 1))
 
-def irradiance_dependent_efficiency(self, irradiance, **kwargs):
-    """ todo: this one is just an example, to be changed"""
-    return self.initial_efficiency * irradiance * self.param_1_irradiance + self.param_2_irradiance * irradiance ** 2
+    def irradiance_dependent_efficiency(self, irradiance, **kwargs):
+        """ todo: this one is just an example, to be changed"""
+        return self.initial_efficiency * irradiance * self.param_1_irradiance + self.param_2_irradiance * irradiance ** 2
 
+    def irradiance_temperature_and_age_dependent_efficiency(self, irradiance, age,
+                                                            outdoor_temperature=temp_ref, **kwargs):
+        """ todo: this one is just an example, to be changed"""
+        return self.initial_efficiency * irradiance * self.param_1_irradiance + self.param_2_irradiance * irradiance ** 2
 
-def irradiance_temperature_and_age_dependent_efficiency(self, irradiance, age,
-                                                        outdoor_temperature=temp_ref, **kwargs):
-    """ todo: this one is just an example, to be changed"""
-    return self.initial_efficiency * irradiance * self.param_1_irradiance + self.param_2_irradiance * irradiance ** 2
-
-# todo to delete
-# def get_efficiency_loss_function_from_string(self,fucntion_name):
-#     """todo"""
-#     if fucntion_name == "degrading_rate_efficiency_loss":
-#         return self.degrading_rate_efficiency_loss
+    # todo to delete
+    # def get_efficiency_loss_function_from_string(self,fucntion_name):
+    #     """todo"""
+    #     if fucntion_name == "degrading_rate_efficiency_loss":
+    #         return self.degrading_rate_efficiency_loss

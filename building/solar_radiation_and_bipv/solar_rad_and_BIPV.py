@@ -76,13 +76,14 @@ name_results_file_csv = "bipv_results.csv"
 
 class SolarRadAndBipvSimulation:
     """
-
+    todo @Elie
     """
 
-    def __init__(self):
-        """
-        todo @Elie
-        """
+    def __init__(self, building_id):
+
+        # Building id
+        self.building_id = building_id
+        # Run the simulations for roof and/or facades
         self.on_roof = False
         self.on_facades = False
         # SensorGrid objects
@@ -91,7 +92,7 @@ class SolarRadAndBipvSimulation:
         # Panel objects
         self.roof_panel_list = None
         self.facades_panel_list = None
-        # solar_irradiance results
+        # Solar irradiance on each of the face of the mesh
         self.roof_annual_panel_irradiance_list = None
         self.facades_annual_panel_irradiance_list = None
         # bipv results
@@ -99,6 +100,13 @@ class SolarRadAndBipvSimulation:
         self.init_bipv_results_dict()
         # parameters
         self.parameter_dict = deepcopy(empty_parameter_dict)
+        # flags
+        self.roof_irradiance_run = False
+        self.facades_irradiance_run = False
+        self.roof_bipv_sim_run = False
+        self.facades_bipv_sim_run = False
+
+
 
     def set_mesh_parameters(self, roof_or_facades, on_roof_or_facades, grid_size_x=1, grid_size_y=1,
                             offset_dist=0.1):
@@ -460,6 +468,8 @@ class SolarRadAndBipvSimulation:
                     kwargs["replacement_frequency_in_years"] = \
                     self.parameter_dict[roof_or_facades]["replacement_scenario"][
                         "replacement_frequency_in_years"]
+
+            # Compute the
 
             # Run the simulation
             if efficiency_computation_method == "yearly":

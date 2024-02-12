@@ -935,6 +935,15 @@ class UrbanCanopy:
                 if isinstance(building_obj, BuildingModeled) and building_obj.is_target:
                     building_obj.solar_radiation_and_bipv_simulation_obj.init_bipv_simulation()
 
+        #
+        roof_pv_tech_obj = bipv_technology_obj_dict[roof_id_pv_tech]
+        facade_pv_tech_obj = bipv_technology_obj_dict[facades_id_pv_tech]
+        roof_transport_obj = bipv_transportation_obj_dict[roof_transport_id]
+        facades_transport_obj = bipv_transportation_obj_dict[facades_transport_id]
+        roof_inverter_obj = bipv_inverter_obj_dict[roof_inverter_id]
+        facades_inverter_obj = bipv_inverter_obj_dict[facades_inverter_id]
+
+
         # Run the simulation for the buildings
         solar_rad_and_bipv_obj_list = []
         for building_obj in self.building_dict.values():
@@ -943,6 +952,11 @@ class UrbanCanopy:
                                                         continue_simulation=continue_simulation):
                 roof_pv_tech_obj = bipv_technology_obj_dict[roof_id_pv_tech]
                 facade_pv_tech_obj = bipv_technology_obj_dict[facades_id_pv_tech]
+                roof_transport_obj = bipv_transportation_obj_dict[roof_transport_id]
+                facades_transport_obj = bipv_transportation_obj_dict[facades_transport_id]
+                roof_inverter_obj = bipv_inverter_obj_dict[roof_inverter_id]
+                facades_inverter_obj = bipv_inverter_obj_dict[facades_inverter_id]
+
                 building_obj.building_run_bipv_panel_simulation(path_simulation_folder=path_simulation_folder,
                                                                 roof_pv_tech_obj=roof_pv_tech_obj,
                                                                 facades_pv_tech_obj=facade_pv_tech_obj,

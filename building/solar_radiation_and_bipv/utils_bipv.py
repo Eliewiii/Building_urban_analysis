@@ -103,7 +103,7 @@ def bipv_energy_harvesting_simulation_hourly_annual_irradiance(pv_panel_obj_list
 
 
 def bipv_energy_harvesting_simulation_yearly_annual_irradiance(pv_panel_obj_list,
-                                                               annual_solar_irradiance_value,
+                                                               hourly_solar_irradiance_value,
                                                                start_year, current_study_duration_in_years,
                                                                uc_start_year,
                                                                uc_end_year, replacement_scenario,
@@ -112,9 +112,13 @@ def bipv_energy_harvesting_simulation_yearly_annual_irradiance(pv_panel_obj_list
     Loop over every year of the study duration to get the energy harvested, the energy used and the dmfa waste harvested
     every year
     :param pv_panel_obj_list: list of panel objects
-    :param annual_solar_irradiance_value: list of floats: list of the yearly cumulative solar radiation got by the solar
+    :param hourly_solar_irradiance_value: list of floats: list of the yearly cumulative solar radiation got by the solar
     radiation simulation in Wh/panel/year
-    :param iteration_duration_in_years: int: Number of year during which the simulation is run
+    :param start_year: int: year when the simulation starts
+    :param current_study_duration_in_years: int: duration of the study in years
+    :param uc_start_year: int: year when the uc starts
+    :param uc_end_year: int: year when the uc ends
+    :param pv_tech_obj: PVPanelTechnology object
     :param replacement_scenario: string: replacement scenario chosen between
     "replace_failed_panels_every_X_year" and "replace_all_panels_every_X_year",
     Default="replace_failed_panels_every_X_year"
@@ -175,7 +179,7 @@ def bipv_energy_harvesting_simulation_yearly_annual_irradiance(pv_panel_obj_list
             # Get the energy harvesting and increment the age of panel by 1 year
             for panel_obj in pv_panel_obj_list:
                 energy_harvested_panel = panel_obj.energy_harvested_in_one_year(
-                    irradiance=annual_solar_irradiance_value[panel_obj.index], **kwargs)
+                    hourly_irradiance=hourly_solar_irradiance_value[panel_obj.index], **kwargs)
                 panel_obj.increment_age_by_one_year()
                 energy_harvested += energy_harvested_panel
                 # Eventually the energy harvested by the panel could be stored in a list for each panel, but heavy
