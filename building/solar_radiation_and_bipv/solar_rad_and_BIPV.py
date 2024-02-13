@@ -49,19 +49,51 @@ empty_parameter_dict = {
 }
 empty_sub_bipv_results_dict = {
     "energy_harvested": {"yearly": [], "cumulative": [], "total": 0.0},
-    "lca_primary_energy": {
-        "material_extraction_and_manufacturing": {"yearly": [], "cumulative": [], "total": 0.0},
-        "transportation": {"yearly": [], "cumulative": [], "total": 0.0},
+    "primary_energy": {
+        "gate_to_gate": {"yearly": [], "cumulative": [], "total": 0.0},
+        "transportation": {
+            "gate_to_gate": {"yearly": [], "cumulative": [], "total": 0.0},
+            "recycling": {"yearly": [], "cumulative": [], "total": 0.0},
+            "total": {"yearly": [], "cumulative": [], "total": 0.0}
+        },
+        "maintenance": {"yearly": [], "cumulative": [], "total": 0.0},
+        "inverter": {"yearly": [], "cumulative": [], "total": 0.0},
         "recycling": {"yearly": [], "cumulative": [], "total": 0.0},
         "total": {"yearly": [], "cumulative": [], "total": 0.0}
     },
-    "lca_carbon_footprint": {
-        "material_extraction_and_manufacturing": {"yearly": [], "cumulative": [], "total": 0.0},
-        "transportation": {"yearly": [], "cumulative": [], "total": 0.0},
+    "ghg": {
+        "gate_to_gate": {"yearly": [], "cumulative": [], "total": 0.0},
+        "transportation": {
+            "gate_to_gate": {"yearly": [], "cumulative": [], "total": 0.0},
+            "recycling": {"yearly": [], "cumulative": [], "total": 0.0},
+            "total": {"yearly": [], "cumulative": [], "total": 0.0}
+        },
+        "maintenance": {"yearly": [], "cumulative": [], "total": 0.0},
+        "inverter": {"yearly": [], "cumulative": [], "total": 0.0},
         "recycling": {"yearly": [], "cumulative": [], "total": 0.0},
         "total": {"yearly": [], "cumulative": [], "total": 0.0}
     },
-    "dmfa_waste": {"yearly": [], "cumulative": [], "total": 0.0}
+    "cost": {
+        "investment": {
+            "gate_to_gate": {"yearly": [], "cumulative": [], "total": 0.0},
+            "transportation": {
+                "gate_to_gate": {"yearly": [], "cumulative": [], "total": 0.0},
+                "recycling": {"yearly": [], "cumulative": [], "total": 0.0}
+            },
+            "maintenance": {"yearly": [], "cumulative": [], "total": 0.0},
+            "inverter": {"yearly": [], "cumulative": [], "total": 0.0},
+            "recycling": {"yearly": [], "cumulative": [], "total": 0.0},
+            "total": {"yearly": [], "cumulative": [], "total": 0.0}
+        },
+        "revenue": {
+            "substituted_construction_material": {"yearly": [], "cumulative": [], "total": 0.0},
+            "material_recovery": {"yearly": [], "cumulative": [], "total": 0.0},
+            "total": {"yearly": [], "cumulative": [], "total": 0.0}
+
+        },
+        "total": {"yearly": [], "cumulative": [], "total": 0.0}
+    },
+    "dmfa": {"yearly": [], "cumulative": [], "total": 0.0}
 }
 
 empty_bipv_results_dict = {
@@ -532,9 +564,10 @@ class SolarRadAndBipvSimulation:
                 current_study_duration_in_years=self.parameter_dict[roof_or_facades][
                     "study_duration_in_years"],
                 uc_end_year=uc_end_year)
-            # Save the results in obj
-            self.bipv_results_dict[roof_or_facades] = self.add_result_dicts_to_global_results_dict(
+            # Add results to the global results dictionary
+            self.bipv_results_dict[roof_or_facades] = self.add_results_to_global_results_dict(
                 bipv_results_dict=self.bipv_results_dict[roof_or_facades],
+                energy_harvested_yearly_list=energy_harvested_yearly_list,
                 gtg_result_dict=gtg_result_dict,
                 transport_result_dict=transport_result_dict,
                 maintenance_result_dict=maintenance_result_dict,
@@ -570,52 +603,85 @@ class SolarRadAndBipvSimulation:
         return bipv_results_dict
 
     @staticmethod
-    def add_result_dicts_to_global_results_dict(bipv_results_dict, energy_harvested_yearly_list,
-                                                primary_energy_material_extraction_and_manufacturing_yearly_list,
-                                                primary_energy_transportation_yearly_list,
-                                                primary_energy_recycling_yearly_list,
-                                                carbon_material_extraction_and_manufacturing_yearly_list,
-                                                carbon_transportation_yearly_list, carbon_recycling_yearly_list,
-                                                dmfa_waste_yearly_list):
+    def add_results_to_global_results_dict(bipv_results_dict, energy_harvested_yearly_list, gtg_result_dict,
+                                           transport_result_dict, maintenance_result_dict, recycling_result_dict,
+                                           inverter_result_dict):
         """
         Convert the results to a dict
         :param bipv_results_dict: dict of the results
-        :param energy_harvested_yearly_list: list of the energy harvested yearly
-        :param primary_energy_material_extraction_and_manufacturing_yearly_list: list of the primary energy used for the material extraction and manufacturing
-        :param primary_energy_transportation_yearly_list: list of the primary energy used for the transportation
-        :param primary_energy_recycling_yearly_list: list of the primary energy used for the recycling
-        :param carbon_material_extraction_and_manufacturing_yearly_list: list of the carbon used for the material extraction and manufacturing
-        :param carbon_transportation_yearly_list: list of the carbon used for the transportation
-        :param carbon_recycling_yearly_list: list of the carbon used for the recycling
-        :param dmfa_waste_yearly_list: list of the waste
+        :param energy_harvested_yearly_list: list of the results
+        :param gtg_result_dict: dict of the results
+        :param transport_result_dict: dict of the results
+        :param maintenance_result_dict: dict of the results
+        :param recycling_result_dict: dict of the results
+        :param inverter_result_dict: dict of the results
         :return: dict of the results
         """
 
         # Energy harvested
         bipv_results_dict["energy_harvested"]["yearly"] += energy_harvested_yearly_list
-        # LCA primary
-        bipv_results_dict["lca_primary_energy"]["material_extraction_and_manufacturing"][
-            "yearly"] += primary_energy_material_extraction_and_manufacturing_yearly_list
-        bipv_results_dict["lca_primary_energy"]["transportation"][
-            "yearly"] += primary_energy_transportation_yearly_list
-        bipv_results_dict["lca_primary_energy"]["recycling"]["yearly"] += primary_energy_recycling_yearly_list
-        bipv_results_dict["lca_primary_energy"]["total"]["yearly"] += [sum(i) for i in zip(
-            primary_energy_transportation_yearly_list,
-            primary_energy_material_extraction_and_manufacturing_yearly_list,
-            primary_energy_recycling_yearly_list)]
-        # LCA carbon footprint
-        bipv_results_dict["lca_carbon_footprint"]["material_extraction_and_manufacturing"][
-            "yearly"] += carbon_material_extraction_and_manufacturing_yearly_list
-        bipv_results_dict["lca_carbon_footprint"]["transportation"][
-            "yearly"] += carbon_transportation_yearly_list
-        bipv_results_dict["lca_carbon_footprint"]["recycling"]["yearly"] += carbon_recycling_yearly_list
-        bipv_results_dict["lca_carbon_footprint"]["total"]["yearly"] += [sum(i) for i in zip(
-            carbon_transportation_yearly_list, carbon_material_extraction_and_manufacturing_yearly_list,
-            carbon_recycling_yearly_list)]
+        # LCA Primary energy
+        bipv_results_dict["primary_energy"]["gate_to_gate"]["yearly"] += gtg_result_dict["primary_energy"]
+        bipv_results_dict["primary_energy"]["transportation"]["gate_to_gate"]["yearly"] += transport_result_dict[
+            "primary_energy"]["gtg"]
+        bipv_results_dict["primary_energy"]["transportation"]["recycling"]["yearly"] += transport_result_dict[
+            "primary_energy"]["recycling"]
+        bipv_results_dict["primary_energy"]["transportation"]["total"]["yearly"] += [sum(i) for i in zip(
+            transport_result_dict["primary_energy"]["gtg"], transport_result_dict["primary_energy"]["recycling"])]
+        bipv_results_dict["primary_energy"]["maintenance"]["yearly"] += maintenance_result_dict["primary_energy"]
+        bipv_results_dict["primary_energy"]["inverter"]["yearly"] += inverter_result_dict["primary_energy"]
+        bipv_results_dict["primary_energy"]["recycling"]["yearly"] += recycling_result_dict["primary_energy"]
+        bipv_results_dict["primary_energy"]["total"]["yearly"] += [sum(i) for i in zip(
+            gtg_result_dict["primary_energy"], transport_result_dict["primary_energy"]["gtg"],
+            transport_result_dict["primary_energy"]["recycling"], maintenance_result_dict["primary_energy"],
+            inverter_result_dict["primary_energy"], recycling_result_dict["primary_energy"])]
+        # LCA greenhouse gas emissions (ghg)
+        bipv_results_dict["ghg"]["gate_to_gate"]["yearly"] += gtg_result_dict["ghg"]
+        bipv_results_dict["ghg"]["transportation"]["gate_to_gate"]["yearly"] += transport_result_dict["ghg"]["gtg"]
+        bipv_results_dict["ghg"]["transportation"]["recycling"]["yearly"] += transport_result_dict["ghg"]["recycling"]
+        bipv_results_dict["ghg"]["transportation"]["total"]["yearly"] += [sum(i) for i in zip(
+            transport_result_dict["ghg"]["gtg"], transport_result_dict["ghg"]["recycling"])]
+        bipv_results_dict["ghg"]["maintenance"]["yearly"] += maintenance_result_dict["ghg"]
+        bipv_results_dict["ghg"]["inverter"]["yearly"] += inverter_result_dict["ghg"]
+        bipv_results_dict["ghg"]["recycling"]["yearly"] += recycling_result_dict["ghg"]
+        bipv_results_dict["ghg"]["total"]["yearly"] += [sum(i) for i in zip(
+            gtg_result_dict["ghg"], transport_result_dict["ghg"]["gtg"], transport_result_dict["ghg"]["recycling"],
+            maintenance_result_dict["ghg"], inverter_result_dict["ghg"], recycling_result_dict["ghg"])]
         # DMFA
-        bipv_results_dict["dmfa_waste"]["yearly"] += dmfa_waste_yearly_list
+        bipv_results_dict["dmfa"]["yearly"] += recycling_result_dict["dmfa"]
+        # Economical investment
+        bipv_results_dict["cost"]["investment"]["gate_to_gate"]["yearly"] += gtg_result_dict["cost"]["investment"]
+        bipv_results_dict["cost"]["investment"]["transportation"]["gate_to_gate"]["yearly"] += transport_result_dict[
+            "cost"]["investment"]["gtg"]
+        bipv_results_dict["cost"]["investment"]["transportation"]["recycling"]["yearly"] += transport_result_dict[
+            "cost"]["investment"]["recycling"]
+        bipv_results_dict["cost"]["investment"]["transportation"]["total"]["yearly"] += [sum(i) for i in zip(
+            transport_result_dict["cost"]["investment"]["gtg"],
+            transport_result_dict["cost"]["investment"]["recycling"])]
+        bipv_results_dict["cost"]["investment"]["maintenance"]["yearly"] += maintenance_result_dict["cost"][
+            "investment"]
+        bipv_results_dict["cost"]["investment"]["inverter"]["yearly"] += inverter_result_dict["cost"]["investment"]
+        bipv_results_dict["cost"]["investment"]["recycling"]["yearly"] += recycling_result_dict["cost"]["investment"]
+        bipv_results_dict["cost"]["investment"]["total"]["yearly"] += [sum(i) for i in zip(
+            gtg_result_dict["cost"]["investment"], transport_result_dict["cost"]["investment"]["gtg"],
+            transport_result_dict["cost"]["investment"]["recycling"], maintenance_result_dict["cost"]["investment"],
+            inverter_result_dict["cost"]["investment"], recycling_result_dict["cost"]["investment"])]
+        # Economical revenue
+        bipv_results_dict["cost"]["revenue"]["substituted_construction_material"]["yearly"] += \
+            gtg_result_dict["cost"]["revenue"]["substituted_construction_material"]
+        bipv_results_dict["cost"]["revenue"]["material_recovery"]["yearly"] += \
+            recycling_result_dict["cost"]["revenue"]["material_recovery"]
+        bipv_results_dict["cost"]["revenue"]["total"]["yearly"] += [sum(i) for i in zip(
+            gtg_result_dict["cost"]["revenue"]["substituted_construction_material"],
+            recycling_result_dict["cost"]["revenue"]["material_recovery"])]
+        # Economical net cost
+        bipv_results_dict["cost"]["net_cost"]["yearly"] += [investment - revenue for [investment,revenue] in zip(
+            bipv_results_dict["cost"]["investment"]["total"]["yearly"],
+            bipv_results_dict["cost"]["revenue"]["total"]["yearly"])]
+
         # Compute cumulative and total values
         bipv_results_dict = compute_cumulative_and_total_value_bipv_result_dict(bipv_results_dict)
+        # todo: check it works for the new results
 
         return bipv_results_dict
 

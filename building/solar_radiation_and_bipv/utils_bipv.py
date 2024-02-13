@@ -200,9 +200,7 @@ def compute_lca_and_cost_for_gtg(nb_of_panels_installed_yearly_list, pv_tech_obj
     # Carbon footprint
     carbon_material_extraction_and_manufacturing_yearly_list = [i * pv_tech_obj.carbon_manufacturing for i in
                                                                 nb_of_panels_installed_yearly_list]
-    # Compute DMFA waste in kg for each year
-    dmfa_waste_yearly_list = [i * pv_tech_obj.weight for i in
-                              nb_of_panels_installed_yearly_list]
+
 
     # Economic cost
     cost_investement_yearly_list = [i * pv_tech_obj.cost_investment for i in
@@ -219,8 +217,8 @@ def compute_lca_and_cost_for_gtg(nb_of_panels_installed_yearly_list, pv_tech_obj
             nb_of_panels_installed_yearly_list]
 
     gtg_result_dict = {
-        "primary_energy": primary_energy_material_extraction_and_manufacturing_yearly_list
-        "ghg": carbon_material_extraction_and_manufacturing_yearly_list
+        "primary_energy": primary_energy_material_extraction_and_manufacturing_yearly_list,
+        "ghg": carbon_material_extraction_and_manufacturing_yearly_list,
         "cost": {
             "investment": cost_investement_yearly_list,
             "revenue": revenue_substituted_construction_material_yearly_list
@@ -328,16 +326,16 @@ def compute_lca_and_cost_for_transportation(nb_of_panels_installed_yearly_list, 
 
     transport_result_dict = {
         "primary_energy": {
-            "transportation_gtg": primary_energy_transport_gtg_yearly_list,
-            "transportation_recycling": primary_energy_transport_recycling_yearly_list
+            "gtg": primary_energy_transport_gtg_yearly_list,
+            "recycling": primary_energy_transport_recycling_yearly_list
         },
         "ghg": {
-            "transportation_gtg": carbon_transport_gtg_yearly_list,
-            "transportation_recycling": carbon_transport_recycling_yearly_list
+            "gtg": carbon_transport_gtg_yearly_list,
+            "recycling": carbon_transport_recycling_yearly_list
         },
         "cost": {
-            "transportation_gtg": cost_transport_gtg_yearly_list,
-            "transportation_recycling": cost_transport_recycling_yearly_list
+            "gtg": cost_transport_gtg_yearly_list,
+            "recycling": cost_transport_recycling_yearly_list
         }
     }
 
