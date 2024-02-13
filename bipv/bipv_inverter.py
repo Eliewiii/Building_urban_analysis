@@ -118,22 +118,26 @@ class BipvInverter:
         Calculate the size of the inverter according to the peak power of the panels and a sizing ratio
         :param peak_power: float: peak power of the panels in kWp
         :param sizing_ratio: float: ratio to size the inverter
-        :return total_size: float: size of the inverter in kWp
-        :return sub_sizes_list: list of float: list of the individual sizes of the inverters used if necessary in kWp
+        :return total_capacity: float: size of the inverter in kWp
+        :return sub_capacities_list: list of float: list of the individual sizes of the inverters used if necessary in kWp
         """
         # Ideal size of the inverter according to the peak power of the panels and a sizing ratio
-        ideal_size = peak_power * sizing_ratio
-
-        available_sizes = sorted([float(capacity) for capacity in self.capacity_vs_cost.keys()])
-        # if the ideal size is smaller than the smallest available size
-        if ideal_size <= available_sizes[-1]:
-            for size in available_sizes:
-                if size >= ideal_size:
-                    return size, [size]
-        # if the ideal size is larger than the largest available size
+        ideal_capacity = peak_power * sizing_ratio
+        available_capacities = sorted([float(capacity) for capacity in self.capacity_vs_cost.keys()])
+        # if the ideal capacity is smaller than the smallest available capacity
+        if ideal_capacity <= available_capacities[-1]:
+            for capacity in available_capacities:
+                if capacity >= ideal_capacity:
+                    total_capacity = capacity
+                    sub_capacities_list = [capacity]
+                    break
+        # if the ideal capacity is larger than the largest available capacities
         else:
-            multiplier = ceil(ideal_size / available_sizes[-1])
-            for size in available_sizes:
-                if size * multiplier >= ideal_size:
-                    return size * multiplier, [size] * int(multiplier)  # the int is not mandatory, just in case
+            multiplier = ceil(ideal_capacity / available_capacities[-1])
+            for capacity in available_capacities:
+                if capacity * multiplier >= ideal_capacity:
+                    total_capacity = capacity * multiplier
+                    sub_capacities_list = [capacity] * int(multiplier)  # the int is not mandatory, just in case
+                    break
 
+        return total_capacity, sub_capacities_list

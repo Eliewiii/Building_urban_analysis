@@ -194,7 +194,7 @@ def bipv_lca_dmfa_eol_computation(nb_of_panels_installed_yearly_list, pv_tech_ob
     :return primary_energy_material_extraction_and_manufacturing_yearly_list: list of floats: list of the primary
 
     """
-    # Compute LCA primary energy and carbon footprint each year
+    # Primary energy
     primary_energy_material_extraction_and_manufacturing_yearly_list = [
         i * pv_tech_obj.primary_energy_manufacturing for
         i in nb_of_panels_installed_yearly_list]
@@ -202,6 +202,7 @@ def bipv_lca_dmfa_eol_computation(nb_of_panels_installed_yearly_list, pv_tech_ob
                                                  nb_of_panels_installed_yearly_list]
     primary_energy_recycling_yearly_list = [i * pv_tech_obj.primary_energy_recycling for i in
                                             nb_of_panels_installed_yearly_list]
+    # Carbon footprint
     carbon_material_extraction_and_manufacturing_yearly_list = [i * pv_tech_obj.carbon_manufacturing for i in
                                                                 nb_of_panels_installed_yearly_list]
     carbon_transportation_yearly_list = [i * pv_tech_obj.carbon_transport for i in

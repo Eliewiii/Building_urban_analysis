@@ -36,7 +36,9 @@ empty_sub_parameter_dict = {
     "efficiency_computation_method": {"id": None,
                                       "parameter": None},
     "inverter": {"technology": None,
-                 "capacity": None}
+                 "sizing_ratio": None,
+                 "capacity": None,
+                 "sub_capacities": None}
 }
 
 empty_parameter_dict = {
@@ -431,6 +433,16 @@ class SolarRadAndBipvSimulation:
                                                       annual_panel_irradiance_list=annual_panel_irradiance_list,
                                                       minimum_panel_eroi=minimum_panel_eroi)
 
+                # Size the inverters capacity
+                peak_power = sum([panel.peak_power for panel in panel_list])
+                total_capacity, sub_capacities_list = inverter_tech_obj.size_inverter(peak_power=peak_power,
+                                                                                      sizing_ratio=inverter_sizing_ratio)
+                self.parameter_dict[roof_or_facades]["inverter"]["technology"] = inverter_tech_obj
+                self.parameter_dict[roof_or_facades]["inverter"]["sizing_ratio"] = inverter_sizing_ratio
+                self.parameter_dict[roof_or_facades]["inverter"]["capacity"] = total_capacity
+                self.parameter_dict[roof_or_facades]["inverter"]["sub_capacities"] = sub_capacities_list
+
+
             # If the simulation continue we keep the existing panels and the parameters
             else:
                 simulation_continued = True
@@ -466,9 +478,6 @@ class SolarRadAndBipvSimulation:
                         self.parameter_dict[roof_or_facades]["replacement_scenario"][
                             "replacement_frequency_in_years"]
 
-            # Size the inverters capacity
-            peak_power = sum([panel.peak_power for panel in panel_list])
-
             # Run the simulation
             path_result_folder = os.path.join(path_simulation_folder, name_radiation_simulation_folder,
                                               str(building_id))
@@ -485,6 +494,7 @@ class SolarRadAndBipvSimulation:
             energy_harvested_yearly_list, nb_of_panels_installed_yearly_list = simulate_bipv_yearly_energy_harvesting(
                 pv_panel_obj_list=panel_list,
                 hourly_solar_irradiance_table=hourly_irradiance_table,
+                inverter_capacity=self.parameter_dict[roof_or_facades]["inverter"]["capacity"],
                 start_year=self.parameter_dict[roof_or_facades]["start_year"],
                 current_study_duration_in_years=self.parameter_dict[roof_or_facades][
                     "study_duration_in_years"],
