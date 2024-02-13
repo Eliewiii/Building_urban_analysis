@@ -16,7 +16,9 @@ from building.solar_radiation_and_bipv.utils_sensorgrid import generate_sensor_g
 from building.solar_radiation_and_bipv.utils_solar_radiation import \
     run_hb_model_annual_irradiance_simulation, move_annual_irr_hb_radiance_results, get_hourly_irradiance_table
 from building.solar_radiation_and_bipv.utils_bipv import init_bipv_on_sensor_grid, \
-    simulate_bipv_yearly_energy_harvesting, bipv_lca_dmfa_eol_computation
+    simulate_bipv_yearly_energy_harvesting, compute_lca_and_cost_for_gtg, compute_lca_cost_and_dmfa_for_recycling, \
+    compute_lca_and_cost_for_transportation, \
+    compute_lca_and_cost_for_inverter, compute_lca_and_cost_for_maintenance
 
 from utils.utils_configuration import name_temporary_files_folder, name_radiation_simulation_folder
 
@@ -403,6 +405,7 @@ class SolarRadAndBipvSimulation:
                                                      annual_panel_irradiance_list, panel_list,
                                                      path_simulation_folder,
                                                      building_id, pv_tech_obj, inverter_tech_obj, inverter_sizing_ratio,
+                                                     transport_obj,
                                                      uc_end_year, uc_start_year,
                                                      uc_current_year, efficiency_computation_method,
                                                      minimum_panel_eroi,
@@ -502,27 +505,41 @@ class SolarRadAndBipvSimulation:
                 replacement_scenario=replacement_scenario,
                 pv_tech_obj=pv_tech_obj, **kwargs)
 
-            # Post process and run LCA and DMFA results todo: use a dictionary instead of having variables
-            primary_energy_material_extraction_and_manufacturing_yearly_list, \
-                primary_energy_transportation_yearly_list, primary_energy_recycling_yearly_list, \
-                carbon_material_extraction_and_manufacturing_yearly_list, \
-                carbon_transportation_yearly_list, \
-                carbon_recycling_yearly_list, \
-                dmfa_waste_yearly_lis = bipv_lca_dmfa_eol_computation(
+            # LCA and economic for the gate to gate processes for the panels except transportation
+            gtg_result_dict = compute_lca_and_cost_for_gtg(
                 nb_of_panels_installed_yearly_list=nb_of_panels_installed_yearly_list,
-                pv_tech_obj=pv_tech_obj)
-
+                pv_tech_obj=pv_tech_obj,
+                roof_or_facades=roof_or_facades)
+            # LCA and economic for transportation
+            transport_result_dict = compute_lca_and_cost_for_transportation(
+                nb_of_panels_installed_yearly_list=nb_of_panels_installed_yearly_list,
+                pv_tech_obj=pv_tech_obj,
+                transport_obj=transport_obj)
+            # LCA and economic for maintenance
+            maintenance_result_dict = compute_lca_and_cost_for_maintenance(
+                panel_list=panel_list,
+                start_year=self.parameter_dict[roof_or_facades]["start_year"],
+                current_study_duration_in_years=self.parameter_dict[roof_or_facades]["study_duration_in_years"],
+                uc_end_year=uc_end_year)
+            # LCA and economic for recycling
+            recycling_result_dict = compute_lca_cost_and_dmfa_for_recycling(
+                nb_of_panels_installed_yearly_list=nb_of_panels_installed_yearly_list, pv_tech_obj=pv_tech_obj)
+            # LCA and economic for the inverter
+            inverter_result_dict = compute_lca_and_cost_for_inverter(
+                inverter_obj=self.parameter_dict[roof_or_facades]["inverter"]["technology"],
+                inverter_sub_capacities=self.parameter_dict[roof_or_facades]["inverter"]["sub_capacities"],
+                start_year=self.parameter_dict[roof_or_facades]["start_year"],
+                current_study_duration_in_years=self.parameter_dict[roof_or_facades][
+                    "study_duration_in_years"],
+                uc_end_year=uc_end_year)
             # Save the results in obj
-            self.bipv_results_dict[roof_or_facades] = self.add_results_to_dict(
+            self.bipv_results_dict[roof_or_facades] = self.add_result_dicts_to_global_results_dict(
                 bipv_results_dict=self.bipv_results_dict[roof_or_facades],
-                energy_harvested_yearly_list=energy_harvested_yearly_list,
-                primary_energy_material_extraction_and_manufacturing_yearly_list=primary_energy_material_extraction_and_manufacturing_yearly_list,
-                primary_energy_transportation_yearly_list=primary_energy_transportation_yearly_list,
-                primary_energy_recycling_yearly_list=primary_energy_recycling_yearly_list,
-                carbon_material_extraction_and_manufacturing_yearly_list=carbon_material_extraction_and_manufacturing_yearly_list,
-                carbon_transportation_yearly_list=carbon_transportation_yearly_list,
-                carbon_recycling_yearly_list=carbon_recycling_yearly_list,
-                dmfa_waste_yearly_list=dmfa_waste_yearly_lis)
+                gtg_result_dict=gtg_result_dict,
+                transport_result_dict=transport_result_dict,
+                maintenance_result_dict=maintenance_result_dict,
+                recycling_result_dict=recycling_result_dict,
+                inverter_result_dict=inverter_result_dict)
 
             # Update the duration in year of the simulation
             self.parameter_dict[roof_or_facades]["study_duration_in_years"] = uc_end_year - \
@@ -553,13 +570,13 @@ class SolarRadAndBipvSimulation:
         return bipv_results_dict
 
     @staticmethod
-    def add_results_to_dict(bipv_results_dict, energy_harvested_yearly_list,
-                            primary_energy_material_extraction_and_manufacturing_yearly_list,
-                            primary_energy_transportation_yearly_list,
-                            primary_energy_recycling_yearly_list,
-                            carbon_material_extraction_and_manufacturing_yearly_list,
-                            carbon_transportation_yearly_list, carbon_recycling_yearly_list,
-                            dmfa_waste_yearly_list):
+    def add_result_dicts_to_global_results_dict(bipv_results_dict, energy_harvested_yearly_list,
+                                                primary_energy_material_extraction_and_manufacturing_yearly_list,
+                                                primary_energy_transportation_yearly_list,
+                                                primary_energy_recycling_yearly_list,
+                                                carbon_material_extraction_and_manufacturing_yearly_list,
+                                                carbon_transportation_yearly_list, carbon_recycling_yearly_list,
+                                                dmfa_waste_yearly_list):
         """
         Convert the results to a dict
         :param bipv_results_dict: dict of the results

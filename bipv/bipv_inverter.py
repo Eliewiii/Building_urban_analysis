@@ -113,6 +113,21 @@ class BipvInverter:
         primary_energy = self.primary_energy_coefficient * capacity + self.primary_energy_offset
         return primary_energy
 
+    def get_primary_energy_ghg_and_cost_for_capacity_list(self, capacity_list):
+        """
+        Return the primary energy, ghg emission and cost for a list of capacities
+        :param capacity_list: list of float: list of capacities in kWp
+        :return primary_energy: float: primary energy of all the inverters in kWh
+        :return ghg_emission: float: ghg emission of all the inverters in kgCO2eq
+        :return cost: float: cost of all the inverters in USD
+        """
+        primary_energy_list = sum([self.primary_energy_function(capacity) for capacity in capacity_list])
+        ghg_emission_list = sum([self.ghg_function(capacity) for capacity in capacity_list])
+        cost_list = [self.capacity_vs_cost[capacity] for capacity in capacity_list]
+        return primary_energy_list, ghg_emission_list, cost_list
+
+
+
     def size_inverter(self, peak_power, sizing_ratio):
         """
         Calculate the size of the inverter according to the peak power of the panels and a sizing ratio

@@ -184,36 +184,200 @@ def simulate_bipv_yearly_energy_harvesting(pv_panel_obj_list,
     return energy_production_per_year_list, nb_of_panels_installed_per_year_list
 
 
-def bipv_lca_dmfa_eol_computation(nb_of_panels_installed_yearly_list, pv_tech_obj):
+def compute_lca_and_cost_for_gtg(nb_of_panels_installed_yearly_list, pv_tech_obj, roof_or_facades):
     """
     Take the results from function loop_over_the_years_for_solar_panels and use the pv_tech_obj info to transform it to data
     :param nb_of_panels_installed_yearly_list: list of int: list of the number of panels installed each year
     :param pv_tech_obj: PVPanelTechnology object
-    :return primary_energy_transportation_yearly_list: list of floats: list of the primary energy needed for the
-    transportation of the panels each year in Wh/year
-    :return primary_energy_material_extraction_and_manufacturing_yearly_list: list of floats: list of the primary
-
+    :param roof_or_facades: string: "roof" or "facades"
+    :return gtg_result_dict: dictionary of the gtg results
     """
     # Primary energy
     primary_energy_material_extraction_and_manufacturing_yearly_list = [
         i * pv_tech_obj.primary_energy_manufacturing for
         i in nb_of_panels_installed_yearly_list]
-    primary_energy_transportation_yearly_list = [i * pv_tech_obj.primary_energy_transport for i in
-                                                 nb_of_panels_installed_yearly_list]
-    primary_energy_recycling_yearly_list = [i * pv_tech_obj.primary_energy_recycling for i in
-                                            nb_of_panels_installed_yearly_list]
+
     # Carbon footprint
     carbon_material_extraction_and_manufacturing_yearly_list = [i * pv_tech_obj.carbon_manufacturing for i in
                                                                 nb_of_panels_installed_yearly_list]
-    carbon_transportation_yearly_list = [i * pv_tech_obj.carbon_transport for i in
-                                         nb_of_panels_installed_yearly_list]
+    # Compute DMFA waste in kg for each year
+    dmfa_waste_yearly_list = [i * pv_tech_obj.weight for i in
+                              nb_of_panels_installed_yearly_list]
+
+    # Economic cost
+    cost_investement_yearly_list = [i * pv_tech_obj.cost_investment for i in
+                                    nb_of_panels_installed_yearly_list]
+
+    # Economic revenues
+    if roof_or_facades == "roof":
+        revenue_substituted_construction_material_yearly_list = [
+            i * pv_tech_obj.revenue_substituted_construction_material_roof for i in
+            nb_of_panels_installed_yearly_list]
+    else:
+        revenue_substituted_construction_material_yearly_list = [
+            i * pv_tech_obj.revenue_substituted_construction_material_facades for i in
+            nb_of_panels_installed_yearly_list]
+
+    gtg_result_dict = {
+        "primary_energy": primary_energy_material_extraction_and_manufacturing_yearly_list
+        "ghg": carbon_material_extraction_and_manufacturing_yearly_list
+        "cost": {
+            "investment": cost_investement_yearly_list,
+            "revenue": revenue_substituted_construction_material_yearly_list
+        }
+    }
+
+    return gtg_result_dict
+
+
+def compute_lca_cost_and_dmfa_for_recycling(nb_of_panels_installed_yearly_list, pv_tech_obj):
+    """
+    Take the results from function loop_over_the_years_for_solar_panels and use the pv_tech_obj info to transform it to data
+    :param nb_of_panels_installed_yearly_list: list of int: list of the number of panels installed each year
+    :param pv_tech_obj: PVPanelTechnology object
+    :return recycling_dict: dictionary of the recycling results
+    """
+    # Primary energy
+    primary_energy_recycling_yearly_list = [i * pv_tech_obj.primary_energy_recycling for i in
+                                            nb_of_panels_installed_yearly_list]
+    # Carbon footprint
     carbon_recycling_yearly_list = [i * pv_tech_obj.carbon_recycling for i in
                                     nb_of_panels_installed_yearly_list]
     # Compute DMFA waste in kg for each year
     dmfa_waste_yearly_list = [i * pv_tech_obj.weight for i in
                               nb_of_panels_installed_yearly_list]
 
-    return primary_energy_material_extraction_and_manufacturing_yearly_list, primary_energy_transportation_yearly_list, \
-        primary_energy_recycling_yearly_list, \
-        carbon_material_extraction_and_manufacturing_yearly_list, carbon_transportation_yearly_list, \
-        carbon_recycling_yearly_list, dmfa_waste_yearly_list
+    # Economic cost
+    cost_recycling_yearly_list = [i * pv_tech_obj.cost_recycling for i in
+                                  nb_of_panels_installed_yearly_list]
+    # Economic revenues
+    revenue_material_recovery_yearly_list = [i * pv_tech_obj.revenue_material_recovery for i in
+                                             nb_of_panels_installed_yearly_list]
+
+    recycling_dict = {
+        "primary_energy": primary_energy_recycling_yearly_list,
+        "ghg": carbon_recycling_yearly_list,
+        "cost": {
+            "investment": cost_recycling_yearly_list,
+            "revenue": revenue_material_recovery_yearly_list
+        },
+        "dmfa": dmfa_waste_yearly_list
+    }
+
+    return recycling_dict
+
+
+def compute_lca_and_cost_for_maintenance(panel_list, start_year, current_study_duration_in_years, uc_end_year):
+    """
+    Compute the LCA and cost of the maintenance of the panels over the simulated years
+    :param panel_list: list of BipvPanel objects
+    :param start_year: int: year when the simulation starts
+    :param current_study_duration_in_years: int: duration of the study in years
+    :param uc_end_year: int: year when the uc ends
+    :return maintenance_result_dict: dictionary of the maintenance results
+    """
+    primary_energy_maintenance_yearly_list = []
+    ghg_maintenance_yearly_list = []
+    cost_maintenance_yearly_list = []
+    # Loop over the years
+    iteration_start_year = start_year + current_study_duration_in_years
+    if iteration_start_year < uc_end_year:
+        for year in range(iteration_start_year, uc_end_year):
+            primary_energy_maintenance_yearly_list.append(
+                sum([panel_obj.primary_energy_annual_maintenance for panel_obj in panel_list]))
+            ghg_maintenance_yearly_list.append(
+                sum([panel_obj.carbon_annual_maintenance for panel_obj in panel_list]))
+            cost_maintenance_yearly_list.append(
+                sum([panel_obj.cost_annual_maintenance for panel_obj in panel_list]))
+
+    maintenance_result_dict = {
+        "primary_energy": primary_energy_maintenance_yearly_list,
+        "ghg": ghg_maintenance_yearly_list,
+        "cost": cost_maintenance_yearly_list
+    }
+
+    return maintenance_result_dict
+
+
+def compute_lca_and_cost_for_transportation(nb_of_panels_installed_yearly_list, pv_tech_obj, transportation_obj):
+    """
+    Take the results from function loop_over_the_years_for_solar_panels and use the pv_tech_obj info to transform it to data
+    :param nb_of_panels_installed_yearly_list: list of int: list of the number of panels installed each year
+    :param pv_tech_obj: PVPanelTechnology object
+    :param transportation_obj: BipvTransportation object
+    :return transport_result_dict: dictionary of the transportation results
+    """
+    # Transportation values
+    gtg_transportation_dict, recycling_dict = pv_tech_obj.get_transportation_values(
+        bipv_transportation_obj=transportation_obj)
+    # Primary energy
+    primary_energy_transport_gtg_yearly_list = [i * gtg_transportation_dict["primary_energy"] for i in
+                                                nb_of_panels_installed_yearly_list]
+    primary_energy_transport_recycling_yearly_list = [i * recycling_dict["primary_energy"] for i in
+                                                      nb_of_panels_installed_yearly_list]
+    # Carbon footprint
+    carbon_transport_gtg_yearly_list = [i * gtg_transportation_dict["carbon"] for i in
+                                        nb_of_panels_installed_yearly_list]
+    carbon_transport_recycling_yearly_list = [i * recycling_dict["carbon"] for i in
+                                              nb_of_panels_installed_yearly_list]
+    # Economic cost
+    cost_transport_gtg_yearly_list = [i * gtg_transportation_dict["cost"] for i in
+                                      nb_of_panels_installed_yearly_list]
+    cost_transport_recycling_yearly_list = [i * recycling_dict["cost"] for i in
+                                            nb_of_panels_installed_yearly_list]
+
+    transport_result_dict = {
+        "primary_energy": {
+            "transportation_gtg": primary_energy_transport_gtg_yearly_list,
+            "transportation_recycling": primary_energy_transport_recycling_yearly_list
+        },
+        "ghg": {
+            "transportation_gtg": carbon_transport_gtg_yearly_list,
+            "transportation_recycling": carbon_transport_recycling_yearly_list
+        },
+        "cost": {
+            "transportation_gtg": cost_transport_gtg_yearly_list,
+            "transportation_recycling": cost_transport_recycling_yearly_list
+        }
+    }
+
+    return transport_result_dict
+
+
+def compute_lca_and_cost_for_inverter(inverter_obj, inverter_sub_capacities, start_year,
+                                      current_study_duration_in_years, uc_end_year):
+    """
+    Compute the LCA and cost of the inverter(s) over the simulated years
+    :param inverter_obj: BipvInverter object
+    :param inverter_sub_capacities: list of float: list of the individual sizes of the inverters used if necessary in kWp
+    :param start_year: int: year when the simulation starts
+    :param current_study_duration_in_years: int: duration of the study in years
+    :param uc_end_year: int: year when the uc ends
+    :return inverter_result_dict: dictionary of the inverter results
+    """
+    inverter_primary_energy_yearly_list = []
+    inverter_ghg_yearly_list = []
+    inverter_cost_yearly_list = []
+
+    # Loop over the years
+    iteration_start_year = start_year + current_study_duration_in_years
+    if iteration_start_year < uc_end_year:
+        for year in range(iteration_start_year, uc_end_year):
+            if (year - start_year) % inverter_obj.replacement_frequency == 0:
+                primary_energy_list, ghg_emission_list, cost_list = inverter_obj.get_primary_energy_ghg_and_cost_for_capacity_list(
+                    inverter_sub_capacities)
+                inverter_primary_energy_yearly_list.append(primary_energy_list)
+                inverter_ghg_yearly_list.append(ghg_emission_list)
+                inverter_cost_yearly_list.append(cost_list)
+            else:
+                inverter_primary_energy_yearly_list.append(0.)
+                inverter_ghg_yearly_list.append(0.)
+                inverter_cost_yearly_list.append(0.)
+
+    inverter_result_dict = {
+        "primary_energy": inverter_primary_energy_yearly_list,
+        "ghg": inverter_ghg_yearly_list,
+        "cost": inverter_cost_yearly_list
+    }
+
+    return inverter_result_dict

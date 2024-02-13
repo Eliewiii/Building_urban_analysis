@@ -50,7 +50,6 @@ class BipvTechnology:
             "economic_parameters": {
               "costs": {
                 "total_investment_in_USD_per_panel": 1.4,
-                "annual_maintenance_in_USD_per_panel": 0.05,
                 "recycling_in_USD_per_panel": 1.06145,
                 "values_in_other_units":{
                     "total_investment_in_USD_per_Wp": 1.4,
@@ -61,7 +60,7 @@ class BipvTechnology:
               "revenues": {
                 "substituted_construction_material_roof_in_USD_per_panel": 142,
                 "substituted_construction_material_facade_in_USD_per_panel": 251,
-                "material_recovery_factor_in_USD_per_panel": 1.562,
+                "material_recovery_in_USD_per_panel": 1.562,
                 "values_in_other_units":{
                     "substituted_construction_material_roof_in_USD_per_m^2": 142,
                     "substituted_construction_material_facade_in_USD_per_m^2": 251,
@@ -69,6 +68,11 @@ class BipvTechnology:
                 }
               }
             },
+            "annual_maintenance": {
+                "primary_energy_use_in_kWh_per_panel": 0.1,
+                "ghg_emission_in_kgCO2eq_per_panel": 0.1,
+                "cost_in_USD_per_panel": 0.1
+                },
             "inverter": {
               "estimated_ghg_emission_in_fraction_of_manufacturing": 0.1,
               "estimated_primary_energy_use_in_fraction_of_manufacturing": 0.1,
@@ -113,11 +117,14 @@ class BipvTechnology:
         self.ghg_recycling = None  # In kgCO2eq per panel
         # Economical parameters
         self.cost_investment = None  # In USD per panel
-        self.cost_annual_maintenance = None  # In USD per panel per year
         self.cost_recycling = None  # In USD per kg
         self.revenue_substituted_construction_material_roof = None  # In USD per panel
         self.revenue_substituted_construction_material_facade = None  # In USD per panel
-        self.revenue_material_recovery_factor = None  # In USD per panel
+        self.revenue_material_recovery = None  # In USD per panel
+        # Annual maintenance
+        self.primary_energy_annual_maintenance = None  # In kWh per panel per year
+        self.ghg_annual_maintenance = None  # In kgCO2eq per panel per year
+        self.cost_annual_maintenance = None  # In USD per panel per year
         # Inverter estimation parameters for the whole life time
         self.estimated_ghg_inverter = None  # In kgCO2eq per panel
         self.estimated_primary_energy_inverter = None  # In kWh per panel
@@ -177,8 +184,6 @@ class BipvTechnology:
                         # Load economical parameters
                         pv_tech_obj.cost_investment = value["economic_parameters"]["costs"][
                             "total_investment_in_USD_per_panel"]
-                        pv_tech_obj.cost_annual_maintenance = value["economic_parameters"]["costs"][
-                            "annual_maintenance_in_USD_per_panel"]
                         pv_tech_obj.cost_recycling = value["economic_parameters"]["costs"]["recycling_in_USD_per_panel"]
                         pv_tech_obj.revenue_substituted_construction_material_roof = \
                             value["economic_parameters"]["revenues"][
@@ -187,7 +192,13 @@ class BipvTechnology:
                             value["economic_parameters"]["revenues"][
                                 "substituted_construction_material_facade_in_USD_per_panel"]
                         pv_tech_obj.revenue_material_recovery_factor = value["economic_parameters"]["revenues"][
-                            "material_recovery_factor_in_USD_per_panel"]
+                            "material_recovery_in_USD_per_panel"]
+                        # Annual maintenance
+                        pv_tech_obj.primary_energy_annual_maintenance = value["Annual maintenance"][
+                            "primary_energy_use_in_kWh_per_panel"]
+                        pv_tech_obj.ghg_annual_maintenance = value["annual_maintenance"][
+                            "ghg_emission_in_kgCO2eq_per_panel"]
+                        pv_tech_obj.cost_annual_maintenance = value["annual_maintenance"]["cost_in_USD_per_panel"]
                         # Load inverter estimation parameters
                         pv_tech_obj.estimated_ghg_inverter = value["inverter"][
                                                                  "estimated_ghg_emission_in_fraction_of_manufacturing"] * pv_tech_obj.ghg_manufacturing
