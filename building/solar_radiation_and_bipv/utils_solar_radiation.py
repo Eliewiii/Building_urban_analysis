@@ -6,6 +6,7 @@ import logging
 import os
 import shutil
 import subprocess
+from typing import List
 
 from ladybug.futil import write_to_file
 from honeybee.config import folders
@@ -200,3 +201,18 @@ def cumulative_values(ill_file, su_pattern, timestep):
                 values = [float(r) for r, is_hoy in zip(pt_res.split(), su_pattern) if is_hoy]
                 cumul_vals.append(sum(values) / timestep)
     return cumul_vals
+
+
+def get_hourly_irradiance_table(path_to_ill_file):
+    """
+    Get the hourly irradiance table from a .ill file
+    :param path_to_ill_file : Path to the .ill file
+    :return hourly_irradiance_table : List of 8760 lists of 145 values, each list of 145 values represents the hourly
+    irradiance on a sensor grid
+    """
+    # @ credit LBT
+    hourly_irradiance_table: list[list[float]] = []
+    with open(path_to_ill_file) as results:
+        for pt_res in results:
+            hourly_irradiance_table.append([float(value) for value in pt_res.split()])
+    return hourly_irradiance_table

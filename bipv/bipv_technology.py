@@ -35,7 +35,7 @@ class BipvTechnology:
               "initial_efficiency": 0.173,
               "first_year_degrading_rate": 0.02,
               "degrading_rate": 0.005,
-              "panel_performance_ratio": 0.8,
+              "infrastructure_performance_ratio": 0.8,
               "efficiency_function": "degrading_rate_efficiency_loss",
               "other_parameters": null
             },
@@ -104,7 +104,7 @@ class BipvTechnology:
         self.initial_efficiency = None
         self.first_year_degrading_rate = None
         self.degrading_rate = None
-        self.panel_performance_ratio = None
+        self.infrastructure_performance_ratio = None
         # LCA primary energy
         self.primary_energy_manufacturing = None  # In kWh per panel
         self.primary_energy_recycling = None  # In kWh per panel
@@ -162,7 +162,8 @@ class BipvTechnology:
                         pv_tech_obj.first_year_degrading_rate = value["efficiency_parameters"][
                             "first_year_degrading_rate"]
                         pv_tech_obj.degrading_rate = value["efficiency_parameters"]["degrading_rate"]
-                        pv_tech_obj.panel_performance_ratio = value["efficiency_parameters"]["panel_performance_ratio"]
+                        pv_tech_obj.infrastructure_performance_ratio = value["efficiency_parameters"][
+                            "infrastructure_performance_ratio"]
                         efficiency_function_name = value["efficiency_parameters"]["efficiency_function"]
                         pv_tech_obj.efficiency_function = getattr(pv_tech_obj, efficiency_function_name)
                         # Load LCA primary energy parameters
@@ -255,7 +256,7 @@ class BipvTechnology:
         life_expectancy = ceil(lifetime * (-log(1 - y)) ** (1 / shape))
         return life_expectancy
 
-    def get_energy_harvested_by_panel(self, hourly_irradiance_list, age, **kwargs):
+    def get_hourly_power_generation_over_a_year_by_panel(self, hourly_irradiance_list, age, **kwargs):
         """
         Get the energy harvested by a panel in Watt
         :param hourly_irradiance_list: list of hourly irradiance on the panel during a year
@@ -272,24 +273,22 @@ class BipvTechnology:
             """ The efficiency function can be defined in the kwargs. If it is not defined, the default efficiency function
                     is used. If it is defined, the efficiency function is used. The efficiency function must be a method of the
                     class."""
-            efficiency_function = kwargs["efficiency_function"]
+            efficiency_function = getattr(self, kwargs["efficiency_function"])
             efficiency = efficiency_function(age=age, hourly_irradiance_list=hourly_irradiance_list, **kwargs)
         else:
             efficiency = self.efficiency_function(age=age, hourly_irradiance_list=hourly_irradiance_list, **kwargs)
 
-        # Cap the output power of the panel
-        max_irradiance = self.max_power_output/self.panel_area/efficiency
+        # Compute the irradiance that would generate the maximum output power of the panel
+        max_irradiance = self.max_power_output / self.panel_area / efficiency
         # Initialize energy harvested
-        yearly_energy_harvested = 0
+        hourly_power_generation_list = 0
         for hourly_irradiance in hourly_irradiance_list:
-            if hourly_irradiance/self.panel_area > max_irradiance:
+            # cap the irradiance to the maximum output power of the panel if necessary (in case of over irradiance)
+            if hourly_irradiance / self.panel_area > max_irradiance:
                 hourly_irradiance = max_irradiance
-        None  # todo: to be continued
+            hourly_power_generation_list += hourly_irradiance * efficiency * self.panel_area * self.infrastructure_performance_ratio
 
-
-        # energy_harvested = efficiency * hourly_irradiance * self.panel_performance_ratio * self.panel_area
-
-        return energy_harvested
+        return hourly_power_generation_list
 
     def constant_efficiency(self, **kwargs):
         """ Constant efficiency through the life of the panel """

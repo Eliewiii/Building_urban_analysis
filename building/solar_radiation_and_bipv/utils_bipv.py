@@ -88,32 +88,20 @@ def init_bipv_on_sensor_grid(sensor_grid: SensorGrid, pv_technology_obj, annual_
     return panel_obj_list
 
 
-def bipv_energy_harvesting_simulation_hourly_annual_irradiance(pv_panel_obj_list,
-                                                               path_time_step_illuminance_file,
-                                                               start_year, current_study_duration_in_years,
-                                                               uc_start_year,
-                                                               uc_end_year, replacement_scenario,
-                                                               pv_tech_obj=None, **kwargs):
-    """
-
-    """
-
-    # todo : add test to check if the type of efficiency function and if the inputs are ok,
-    #  (need epw if the efficiency is a fnction of outdorr temperature)
-
-
-def bipv_energy_harvesting_simulation_yearly_annual_irradiance(pv_panel_obj_list,
-                                                               hourly_solar_irradiance_value,
-                                                               start_year, current_study_duration_in_years,
-                                                               uc_start_year,
-                                                               uc_end_year, replacement_scenario,
-                                                               pv_tech_obj=None, **kwargs):
+def simulate_bipv_yearly_energy_harvesting(pv_panel_obj_list,
+                                           hourly_solar_irradiance_table,
+                                           inverter_capacity,
+                                           start_year, current_study_duration_in_years,
+                                           uc_start_year,
+                                           uc_end_year, replacement_scenario,
+                                           pv_tech_obj=None, **kwargs):
     """
     Loop over every year of the study duration to get the energy harvested, the energy used and the dmfa waste harvested
     every year
     :param pv_panel_obj_list: list of panel objects
-    :param hourly_solar_irradiance_value: list of floats: list of the yearly cumulative solar radiation got by the solar
-    radiation simulation in Wh/panel/year
+    :param hourly_solar_irradiance_table: list of floats: table (list of list) with the hourly solar irradiance
+    in Wh/m2, of all the faces of the sensor grid
+    :param inverter_capacity: float: capacity of the inverter in kW
     :param start_year: int: year when the simulation starts
     :param current_study_duration_in_years: int: duration of the study in years
     :param uc_start_year: int: year when the uc starts
@@ -136,7 +124,7 @@ def bipv_energy_harvesting_simulation_yearly_annual_irradiance(pv_panel_obj_list
     if iteration_start_year < uc_end_year:
         for year in range(iteration_start_year, uc_end_year):
             # initialize
-            energy_harvested = 0.
+            annual_energy_harvested = 0.
             nb_of_new_panels = 0
             # Initialize panels for the first year they are installed
             if (start_year - year) == 0:
@@ -176,15 +164,22 @@ def bipv_energy_harvesting_simulation_yearly_annual_irradiance(pv_panel_obj_list
             elif replacement_scenario == "no_replacement":
                 pass
 
-            # Get the energy harvesting and increment the age of panel by 1 year
-            for panel_obj in pv_panel_obj_list:
-                energy_harvested_panel = panel_obj.energy_harvested_in_one_year(
-                    hourly_irradiance=hourly_solar_irradiance_value[panel_obj.index], **kwargs)
-                panel_obj.increment_age_by_one_year()
-                energy_harvested += energy_harvested_panel
-                # Eventually the energy harvested by the panel could be stored in a list for each panel, but heavy
+            # Loop over all the sun hours
+            nb_of_sun_hours = len(
+                hourly_solar_irradiance_table[0])  # Number of sun hours in the year, same for all faces
+            hourly_power_generation_by_panels_table = [panel_obj.get_hourly_power_generation_over_a_year(
+                hourly_irradiance=hourly_solar_irradiance_table[panel_obj.index], **kwargs) for panel_obj in
+                pv_panel_obj_list]
+            annual_energy_harvested = 0.  # Initialize the total energy harvested by the panels at the current sun hour
+            for i in range(nb_of_sun_hours):
+                total_power = sum(
+                    [hourly_power_generation_by_panels_table[j][i] for j in range(len(pv_panel_obj_list))])
+                if total_power > inverter_capacity:
+                    total_power = inverter_capacity
+                # Energy in kWh/h is power in kW * 1h
+                annual_energy_harvested += total_power
 
-            energy_production_per_year_list.append(energy_harvested)
+            energy_production_per_year_list.append(annual_energy_harvested)
             nb_of_panels_installed_per_year_list.append(nb_of_new_panels)
 
     return energy_production_per_year_list, nb_of_panels_installed_per_year_list

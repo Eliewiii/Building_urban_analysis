@@ -14,11 +14,9 @@ from honeybee_radiance.sensorgrid import SensorGrid
 
 from building.solar_radiation_and_bipv.utils_sensorgrid import generate_sensor_grid_for_hb_model
 from building.solar_radiation_and_bipv.utils_solar_radiation import \
-    run_hb_model_annual_irradiance_simulation, \
-    move_annual_irr_hb_radiance_results
+    run_hb_model_annual_irradiance_simulation, move_annual_irr_hb_radiance_results, get_hourly_irradiance_table
 from building.solar_radiation_and_bipv.utils_bipv import init_bipv_on_sensor_grid, \
-    bipv_energy_harvesting_simulation_yearly_annual_irradiance, \
-    bipv_energy_harvesting_simulation_hourly_annual_irradiance, bipv_lca_dmfa_eol_computation
+    simulate_bipv_yearly_energy_harvesting, bipv_lca_dmfa_eol_computation
 
 from utils.utils_configuration import name_temporary_files_folder, name_radiation_simulation_folder
 
@@ -36,7 +34,9 @@ empty_sub_parameter_dict = {
     "replacement_scenario": {"id": None,
                              "replacement_frequency_in_years": None},
     "efficiency_computation_method": {"id": None,
-                                      "parameter": None}
+                                      "parameter": None},
+    "inverter": {"technology": None,
+                 "capacity": None}
 }
 
 empty_parameter_dict = {
@@ -105,8 +105,6 @@ class SolarRadAndBipvSimulation:
         self.facades_irradiance_run = False
         self.roof_bipv_sim_run = False
         self.facades_bipv_sim_run = False
-
-
 
     def set_mesh_parameters(self, roof_or_facades, on_roof_or_facades, grid_size_x=1, grid_size_y=1,
                             offset_dist=0.1):
@@ -332,8 +330,6 @@ class SolarRadAndBipvSimulation:
         if os.path.isdir(path_folder_run_radiation_temp):
             shutil.rmtree(path_folder_run_radiation_temp)
 
-
-
     def run_bipv_panel_simulation(self, path_simulation_folder, building_id, roof_pv_tech_obj,
                                   facades_pv_tech_obj,
                                   uc_end_year, uc_start_year, uc_current_year,
@@ -404,7 +400,8 @@ class SolarRadAndBipvSimulation:
                                                      sensorgrid_dict,
                                                      annual_panel_irradiance_list, panel_list,
                                                      path_simulation_folder,
-                                                     building_id, pv_tech_obj, uc_end_year, uc_start_year,
+                                                     building_id, pv_tech_obj, inverter_tech_obj, inverter_sizing_ratio,
+                                                     uc_end_year, uc_start_year,
                                                      uc_current_year, efficiency_computation_method,
                                                      minimum_panel_eroi,
                                                      replacement_scenario, continue_simulation=False,
@@ -466,50 +463,34 @@ class SolarRadAndBipvSimulation:
                 if self.parameter_dict[roof_or_facades]["replacement_scenario"][
                     "replacement_frequency_in_years"] is not None:
                     kwargs["replacement_frequency_in_years"] = \
-                    self.parameter_dict[roof_or_facades]["replacement_scenario"][
-                        "replacement_frequency_in_years"]
+                        self.parameter_dict[roof_or_facades]["replacement_scenario"][
+                            "replacement_frequency_in_years"]
 
-            # Compute the
+            # Size the inverters capacity
+            peak_power = sum([panel.peak_power for panel in panel_list])
 
             # Run the simulation
-            if efficiency_computation_method == "yearly":
-                energy_harvested_yearly_list, nb_of_panels_installed_yearly_list = bipv_energy_harvesting_simulation_yearly_annual_irradiance(
-                    pv_panel_obj_list=panel_list,
-                    annual_solar_irradiance_value=annual_panel_irradiance_list,
-                    start_year=self.parameter_dict[roof_or_facades]["start_year"],
-                    current_study_duration_in_years=self.parameter_dict[roof_or_facades][
-                        "study_duration_in_years"],
-                    uc_start_year=uc_start_year, uc_end_year=uc_end_year,
-                    replacement_scenario=replacement_scenario,
-                    pv_tech_obj=pv_tech_obj, **kwargs)
-            # The hourly method is not implemented yet
-            elif efficiency_computation_method == "hourly":
-                path_result_folder = os.path.join(path_simulation_folder, name_radiation_simulation_folder,
-                                                  str(building_id))
-                if roof_or_facades == "roof":
-                    path_ill_file = os.path.join(path_result_folder, name_roof_ill_file)
-                    path_sun_up_hours_file = os.path.join(path_result_folder, name_roof_sun_up_hours_file)
-                else:
-                    path_ill_file = os.path.join(path_result_folder, name_facades_ill_file)
-                    path_sun_up_hours_file = os.path.join(path_result_folder, name_facades_sun_up_hours_file)
-
-                energy_harvested_yearly_list, nb_of_panels_installed_yearly_list = bipv_energy_harvesting_simulation_hourly_annual_irradiance(
-                    pv_panel_obj_list=self.roof_panel_list,
-                    path_ill_file=path_ill_file,
-                    path_sun_up_hours_file=path_sun_up_hours_file,
-                    start_year=self.parameter_dict[roof_or_facades][
-                        "start_year"],
-                    current_study_duration_in_years=self.parameter_dict[roof_or_facades][
-                        "study_duration_in_years"],
-                    uc_start_year=uc_start_year, uc_end_year=uc_end_year,
-                    replacement_scenario=replacement_scenario,
-                    pv_tech_obj=pv_tech_obj, **kwargs)
+            path_result_folder = os.path.join(path_simulation_folder, name_radiation_simulation_folder,
+                                              str(building_id))
+            if roof_or_facades == "roof":
+                path_ill_file = os.path.join(path_result_folder, name_roof_ill_file)
+                path_sun_up_hours_file = os.path.join(path_result_folder, name_roof_sun_up_hours_file)
             else:
-                raise ValueError("The efficiency computation method is not valid")
+                path_ill_file = os.path.join(path_result_folder, name_facades_ill_file)
+                path_sun_up_hours_file = os.path.join(path_result_folder, name_facades_sun_up_hours_file)
 
-            """ Even if energy_harvested_yearly_list and nb_of_panels_installed_yearly_list are empty, because 
-            the simulation for this building was already run in a previous iteration for the requested years, 
-            the simulation will still run properly"""
+            # Get the hourly irradiance table
+            hourly_irradiance_table = get_hourly_irradiance_table(path_ill_file, path_sun_up_hours_file)
+
+            energy_harvested_yearly_list, nb_of_panels_installed_yearly_list = simulate_bipv_yearly_energy_harvesting(
+                pv_panel_obj_list=panel_list,
+                hourly_solar_irradiance_table=hourly_irradiance_table,
+                start_year=self.parameter_dict[roof_or_facades]["start_year"],
+                current_study_duration_in_years=self.parameter_dict[roof_or_facades][
+                    "study_duration_in_years"],
+                uc_start_year=uc_start_year, uc_end_year=uc_end_year,
+                replacement_scenario=replacement_scenario,
+                pv_tech_obj=pv_tech_obj, **kwargs)
 
             # Post process and run LCA and DMFA results todo: use a dictionary instead of having variables
             primary_energy_material_extraction_and_manufacturing_yearly_list, \

@@ -112,3 +112,13 @@ class BipvInverter:
         """
         primary_energy = self.primary_energy_coefficient * capacity + self.primary_energy_offset
         return primary_energy
+
+    def size_inverter(self, peak_power, sizing_ratio):
+        """
+        Calculate the size of the inverter according to the peak power of the panels and a sizing ratio
+        :param peak_power: float: peak power of the panels in kWp
+        :param sizing_ratio: float: ratio to size the inverter
+        :return total_size: float: size of the inverter in kWp
+        :return sub_sizes_list: list of float: list of the individual sizes of the inverters used if necessary in kWp
+        """
+        ideal_size = peak_power * sizing_ratio
