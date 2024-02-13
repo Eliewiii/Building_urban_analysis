@@ -170,7 +170,6 @@ def simulate_bipv_yearly_energy_harvesting(pv_panel_obj_list,
             hourly_power_generation_by_panels_table = [panel_obj.get_hourly_power_generation_over_a_year(
                 hourly_irradiance=hourly_solar_irradiance_table[panel_obj.index], **kwargs) for panel_obj in
                 pv_panel_obj_list]
-            annual_energy_harvested = 0.  # Initialize the total energy harvested by the panels at the current sun hour
             for i in range(nb_of_sun_hours):
                 total_power = sum(
                     [hourly_power_generation_by_panels_table[j][i] for j in range(len(pv_panel_obj_list))])
