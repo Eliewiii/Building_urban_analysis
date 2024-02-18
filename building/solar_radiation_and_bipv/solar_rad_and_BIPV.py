@@ -78,7 +78,8 @@ empty_sub_bipv_results_dict = {
             "gate_to_gate": {"yearly": [], "cumulative": [], "total": 0.0},
             "transportation": {
                 "gate_to_gate": {"yearly": [], "cumulative": [], "total": 0.0},
-                "recycling": {"yearly": [], "cumulative": [], "total": 0.0}
+                "recycling": {"yearly": [], "cumulative": [], "total": 0.0
+                              }
             },
             "maintenance": {"yearly": [], "cumulative": [], "total": 0.0},
             "inverter": {"yearly": [], "cumulative": [], "total": 0.0},
@@ -823,9 +824,12 @@ def compute_cumulative_and_total_value_bipv_result_dict(bipv_results_dict):
             bipv_results_dict[key] = compute_cumulative_and_total_value_bipv_result_dict(
                 bipv_results_dict[key])
         elif isinstance(bipv_results_dict[key], list) and key == "yearly":
-            bipv_results_dict["cumulative"] = [sum(bipv_results_dict["yearly"][0:i]) for i in
-                                               range(1, len(bipv_results_dict["yearly"]) + 1)]
-            bipv_results_dict["total"] = bipv_results_dict["cumulative"][-1]
+            if "cumulative" in bipv_results_dict:
+                bipv_results_dict["cumulative"] = [sum(bipv_results_dict["yearly"][0:i]) for i in
+                                                   range(1, len(bipv_results_dict["yearly"]) + 1)]
+            if "total" in bipv_results_dict:
+                bipv_results_dict["total"] = [sum(bipv_results_dict["yearly"][i]) for i in
+                                              range(len(bipv_results_dict["yearly"]))]
 
     return bipv_results_dict
 

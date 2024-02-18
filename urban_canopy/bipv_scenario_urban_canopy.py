@@ -14,12 +14,12 @@ from urban_canopy.kpis.urban_canopy_kpis import UrbanCanopyKPIs
 
 class BipvScenario:
     """
-
+    Class to manage and generated multiple BIPV scenarios at the urban canopy scale.
     """
 
     def __init__(self, identifier, start_year, end_year):
         """
-        todo
+        Initialize the BIPV scenario
         :param identifier: str: id of the scenario
         :param start_year: int: year when the scenario starts
         :param end_year: int: year when the scenario ends

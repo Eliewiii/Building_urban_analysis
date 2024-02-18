@@ -6,8 +6,30 @@ import logging
 
 from copy import deepcopy
 
+from building.solar_radiation_and_bipv.solar_rad_and_BIPV import compute_cumulative_and_total_value_bipv_result_dict
+
 user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")
+
+empty_sub_bipv_uc_kpi_results_dict = {
+    "energy_harvested_density": {"zone": {"yearly": [], "cumulative": [], "total": 0.0},
+                                 "conditioned_apartment": {"yearly": [], "cumulative": [], "total": 0.0}},
+    "eroi": {"yearly": []},
+    "primary_energy_emission_intensity": {"yearly": []},
+    "ghg_emissions_intensity": {"yearly": []},
+    "electricity_cost": {"yearly": []},
+    "spared_ghg_emissions_from_the_grid": {"yearly": [], "cumulative": [], "total": 0.0},
+    "spared_primary_energy_from_the_grid": {"yearly": [], "cumulative": [], "total": 0.0},
+    "net_electricity_compensation": {"yearly": [], "cumulative": [], "total": 0.0},
+    "net_economical_benefit": {"yearly": [], "cumulative": [], "total": 0.0},
+    "net_economical_benefit_density": {"yearly": [], "cumulative": [], "total": 0.0}
+}
+
+empty_bipv_uc_kpi_results_dict = {
+    "roof": deepcopy(empty_sub_bipv_uc_kpi_results_dict),
+    "facades": deepcopy(empty_sub_bipv_uc_kpi_results_dict),
+    "total": deepcopy(empty_sub_bipv_uc_kpi_results_dict)
+}
 
 
 class UrbanCanopyKPIs:
@@ -22,12 +44,19 @@ class UrbanCanopyKPIs:
         :param building_id: str, id of the building the object belongs to
         """
 
-        # Parameters
+        # Location related parameters
         self.grid_ghg_intensity = None
         self.grid_energy_intensity = None
-        self.grid_energy_cost = None
+        self.grid_electricity_cost = None
+        self.grid_electricity_sell_price = None
+        self.ubes_electricity_consumption = None
+        # Zone related parameters
+        self.zone_area = None
+        self.conditioned_apartment_area = None
         # Flags
         self.has_run = False
+        # Intermediate result dictionary
+        self.bipv_uc_kpi_results_dict = deepcopy(empty_bipv_uc_kpi_results_dict)
         # Environmental KPIs
         self.eroi = None
         self.energy_payback_time = None
@@ -44,20 +73,62 @@ class UrbanCanopyKPIs:
         self.economical_payback_time = None
         self.initial_investment_per_area = None  # something like this
 
-    def set_parameters(self, grid_ghg_intensity, grid_energy_intensity, grid_energy_cost):
+    def set_parameters(self, grid_ghg_intensity, grid_energy_intensity, grid_electricity_cost,
+                       grid_electricity_sell_price, ubes_electricity_consumption, zone_area,
+                       conditioned_apartment_area):
         """
         Set the parameters needed for the computation of the KPIs
+        :param grid_ghg_intensity: float: the ghg intensity of the grid in kgCO2eq/kWh
+        :param grid_energy_intensity: float: the primary energy intensity of the grid in kWh/kWh
+        :param grid_electricity_cost: float: the cost of the electricity in USD/kWh
+        :param grid_electricity_sell_price: float: the sell price of the electricity in USD/kWh
+        :param ubes_electricity_consumption: float: the electricity consumption of the building in kWh
+        :param zone_area: float: the area of the zone in m2
+        :param conditioned_apartment_area: float: the area of the conditioned apartment in m2
         """
+        # Location related parameters
         self.grid_ghg_intensity = grid_ghg_intensity
         self.grid_energy_intensity = grid_energy_intensity
-        self.grid_energy_cost = grid_energy_cost
+        self.grid_electricity_cost = grid_electricity_cost
+        self.grid_electricity_sell_price = grid_electricity_sell_price
+        self.ubes_electricity_consumption = ubes_electricity_consumption
+        # Area related parameters
+        self.zone_area = zone_area
+        self.conditioned_apartment_area = conditioned_apartment_area
 
-    def compute_kpis(self, bes_result_dict,bipv_results_dict ):
+        # todo, other parameter to consider changes through year of these values, especially due to inflation
+        #  and changes in the electricity mix
+
+    def compute_intermediate_results_dict(self, bipv_results_dict):
+        """
+        Compute the intermediate results of the building.
+        :param bipv_results_dict: dictionary, the results of the BIPV simulation
+        """
+        self.bipv_uc_kpi_results_dict["roof"] = self.compute_intermediate_sub_results_dict(
+            bipv_result_dict=bipv_results_dict["roof"])
+        self.bipv_uc_kpi_results_dict["facades"] = self.compute_intermediate_sub_results_dict(
+            bipv_result_dict=bipv_results_dict["facades"])
+        self.bipv_uc_kpi_results_dict["total"] = self.compute_intermediate_sub_results_dict(
+            bipv_result_dict=bipv_results_dict["total"])
+
+        self.bipv_uc_kpi_results_dict = compute_cumulative_and_total_value_bipv_result_dict(
+            bipv_results_dict=self.bipv_uc_kpi_results_dict)
+
+    def compute_intermediate_sub_results_dict(self, bipv_result_dict):
+        """
+        Compute the intermediate results of the building.
+        :param bipv_result_dict: dictionary, the results of the BIPV simulation
+        """
+        sub_bipv_uc_kpi_results_dict = deepcopy(empty_sub_bipv_uc_kpi_results_dict)
+        # Energy KPIs
+        sub_bipv_uc_kpi_results_dict["energy_harvested_density"]["zone"]["yearly"] = [
+            energy_harvested / self.zone_area for energy_harvested in
+            bipv_result_dict["energy_harvested"]["zone"]["yearly"]]
+
+        return sub_bipv_uc_kpi_results_dict
+
+    def compute_kpis(self, bes_result_dict, bipv_results_dict):
         """
         Compute the KPIs of the building.
         :param building_energy_simulation: BuildingEnergySimulation object, the energy simulation of the building
         """
-
-
-
-
