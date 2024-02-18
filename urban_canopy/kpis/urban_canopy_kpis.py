@@ -12,17 +12,17 @@ user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")
 
 empty_sub_bipv_uc_kpi_results_dict = {
-    "energy_harvested_density": {"zone": {"yearly": [], "cumulative": [], "total": 0.0},
-                                 "conditioned_apartment": {"yearly": [], "cumulative": [], "total": 0.0}},
-    "eroi": {"yearly": []},
-    "primary_energy_emission_intensity": {"yearly": []},
-    "ghg_emissions_intensity": {"yearly": []},
-    "electricity_cost": {"yearly": []},
-    "spared_ghg_emissions_from_the_grid": {"yearly": [], "cumulative": [], "total": 0.0},
-    "spared_primary_energy_from_the_grid": {"yearly": [], "cumulative": [], "total": 0.0},
-    "net_electricity_compensation": {"yearly": [], "cumulative": [], "total": 0.0},
+    "electricity_harvested_density": {"zone": {"yearly": [], "cumulative": [], "total": 0.0},
+                                      "conditioned_apartment": {"yearly": [], "cumulative": [], "total": 0.0}},
+    "eroi": {"cumulative": []},
+    "ghg_emissions_intensity": {"cumulative": []},
+    "electricity_cost": {"cumulative": []},
+    "ghg_emissions_offset_from_the_grid": {"yearly": [], "cumulative": [], "total": 0.0},
+    "primary_energy_offset_from_the_grid": {"yearly": [], "cumulative": [], "total": 0.0},
+    "net_building_electricity_compensation": {"yearly": [], "cumulative": [], "total": 0.0},
     "net_economical_benefit": {"yearly": [], "cumulative": [], "total": 0.0},
-    "net_economical_benefit_density": {"yearly": [], "cumulative": [], "total": 0.0}
+    "net_economical_benefit_density": {"zone": {"yearly": [], "cumulative": [], "total": 0.0},
+                                       "conditioned_apartment": {"yearly": [], "cumulative": [], "total": 0.0}}
 }
 
 empty_bipv_uc_kpi_results_dict = {
@@ -45,11 +45,11 @@ class UrbanCanopyKPIs:
         """
 
         # Location related parameters
-        self.grid_ghg_intensity = None
-        self.grid_energy_intensity = None
-        self.grid_electricity_cost = None
-        self.grid_electricity_sell_price = None
-        self.ubes_electricity_consumption = None
+        self.grid_ghg_intensity = {"roof": None, "facades": None, "total": None}
+        self.grid_energy_intensity = {"roof": None, "facades": None, "total": None}
+        self.grid_electricity_cost = {"roof": None, "facades": None, "total": None}
+        self.grid_electricity_sell_price = {"roof": None, "facades": None, "total": None}
+        self.ubes_electricity_consumption = {"roof": None, "facades": None, "total": None}
         # Zone related parameters
         self.zone_area = None
         self.conditioned_apartment_area = None
@@ -58,19 +58,21 @@ class UrbanCanopyKPIs:
         # Intermediate result dictionary
         self.bipv_uc_kpi_results_dict = deepcopy(empty_bipv_uc_kpi_results_dict)
         # Environmental KPIs
-        self.eroi = None
-        self.energy_payback_time = None
-        self.ghg_emissions_intensity = None
-        self.ghg_emissions_payback_time = None
+        self.eroi = {"roof": None, "facades": None, "total": None}
+        self.energy_payback_time = {"roof": None, "facades": None, "total": None}
+        self.ghg_emissions_intensity = {"roof": None, "facades": None, "total": None}
+        self.ghg_emissions_payback_time = {"roof": None, "facades": None, "total": None}
         # Energy KPIs
-        self.harvested_energy_density = None
-        self.net_energy_compensation = None
-        self.energy_comsumption_density = None
+        self.harvested_energy_density = {"zone": {"roof": None, "facades": None, "total": None},
+                                         "conditioned_apartment": {"roof": None, "facades": None, "total": None}}
+        self.net_energy_compensation = {"roof": None, "facades": None, "total": None}
+        self.energy_comsumption_density = {"roof": None, "facades": None, "total": None}
         # todo : need proper KPIs for the energy, that are independent of the building/urban size
         # Economic KPIs
-        self.net_economical_benefit = None
-        self.net_economical_benefit_density = None  # ?
-        self.economical_payback_time = None
+        self.net_economical_benefit = {"roof": None, "facades": None, "total": None}
+        self.net_economical_benefit_density = {"zone": {"roof": None, "facades": None, "total": None},
+                                               "conditioned_apartment": {"roof": None, "facades": None, "total": None}}
+        self.economical_payback_time = {"roof": None, "facades": None, "total": None}
         self.initial_investment_per_area = None  # something like this
 
     def set_parameters(self, grid_ghg_intensity, grid_energy_intensity, grid_electricity_cost,
@@ -114,21 +116,70 @@ class UrbanCanopyKPIs:
         self.bipv_uc_kpi_results_dict = compute_cumulative_and_total_value_bipv_result_dict(
             bipv_results_dict=self.bipv_uc_kpi_results_dict)
 
+    def compute_kpis(self, bipv_results_dict):
+        """
+        Compute the KPIs of the building.
+        :param bipv_results_dict: dictionary, the results of the BIPV simulation
+        """
+        # Elecitricity harvested
+
+        # Primary energy
+
+        # GHG emissions
+
+        # Economical
+
     def compute_intermediate_sub_results_dict(self, bipv_result_dict):
         """
         Compute the intermediate results of the building.
         :param bipv_result_dict: dictionary, the results of the BIPV simulation
         """
         sub_bipv_uc_kpi_results_dict = deepcopy(empty_sub_bipv_uc_kpi_results_dict)
-        # Energy KPIs
-        sub_bipv_uc_kpi_results_dict["energy_harvested_density"]["zone"]["yearly"] = [
-            energy_harvested / self.zone_area for energy_harvested in
+        # Electricity harvested density
+        sub_bipv_uc_kpi_results_dict["electricity_harvested_density"]["zone"]["yearly"] = [
+            electricity_harvested / self.zone_area for electricity_harvested in
             bipv_result_dict["energy_harvested"]["zone"]["yearly"]]
+        sub_bipv_uc_kpi_results_dict["electricity_harvested_density"]["conditioned_apartment"]["yearly"] = [
+            energy_harvested / self.conditioned_apartment_area for energy_harvested in
+            bipv_result_dict["energy_harvested"]["conditioned_apartment"]["yearly"]]
+        # Intnesity
+        sub_bipv_uc_kpi_results_dict["eroi"]["yearly"] = [electricity_harvested / primary_energy_cost for
+                                                          electricity_harvested, primary_energy_cost in
+                                                          zip(bipv_result_dict["energy_harvested"]["cumulative"],
+                                                              bipv_result_dict["primary_energy"]["total"][
+                                                                  "cumulative"])]
+        sub_bipv_uc_kpi_results_dict["ghg_emissions_intensity"]["yearly"] = [ghg_emissions / electricity_harvested for
+                                                                             ghg_emissions, electricity_harvested in
+                                                                             zip(bipv_result_dict["ghg_emissions"][
+                                                                                     "cumulative"],
+                                                                                 bipv_result_dict["energy_harvested"][
+                                                                                     "cumulative"])]
+        sub_bipv_uc_kpi_results_dict["electricity_cost"]["yearly"] = [bipv_cost / electricity_harvested for
+                                                                      bipv_cost, electricity_harvested in
+                                                                      zip(bipv_result_dict["cost"]["total"][
+                                                                              "cumulative"],
+                                                                          bipv_result_dict["energy_harvested"][
+                                                                              "cumulative"])]
+        # Spared ghg emissions from the grid
+        sub_bipv_uc_kpi_results_dict["ghg_emissions_offset_from_the_grid"]["yearly"] = [
+            electricity_harvested * self.grid_ghg_intensity for electricity_harvested in
+            bipv_result_dict["energy_harvested"]["yearly"]]
+        sub_bipv_uc_kpi_results_dict["primary_energy_offset_from_the_grid"]["yearly"] = [
+            electricity_harvested * self.grid_energy_intensity for electricity_harvested in
+            bipv_result_dict["energy_harvested"]["yearly"]]
+        # Net building electricity compensation
+        sub_bipv_uc_kpi_results_dict["net_building_electricity_compensation"]["yearly"] = [
+            electricity_harvested / self.ubes_electricity_consumption for electricity_harvested in
+            bipv_result_dict["energy_harvested"]["yearly"]]
+        # Net economical benefit
+        sub_bipv_uc_kpi_results_dict["net_economical_benefit"]["yearly"] = [
+            electricity_harvested * self.grid_electricity_sell_price - bipv_cost for electricity_harvested, bipv_cost in
+            zip(bipv_result_dict["energy_harvested"]["yearly"], bipv_result_dict["cost"]["total"]["yearly"])]
+        sub_bipv_uc_kpi_results_dict["net_economical_benefit_density"]["zone"]["yearly"] = [
+            net_economical_benefit / self.zone_area for net_economical_benefit in
+            sub_bipv_uc_kpi_results_dict["net_economical_benefit"]["yearly"]]
+        sub_bipv_uc_kpi_results_dict["net_economical_benefit_density"]["conditioned_apartment"]["yearly"] = [
+            net_economical_benefit / self.conditioned_apartment_area for net_economical_benefit in
+            sub_bipv_uc_kpi_results_dict["net_economical_benefit"]["yearly"]]
 
         return sub_bipv_uc_kpi_results_dict
-
-    def compute_kpis(self, bes_result_dict, bipv_results_dict):
-        """
-        Compute the KPIs of the building.
-        :param building_energy_simulation: BuildingEnergySimulation object, the energy simulation of the building
-        """
