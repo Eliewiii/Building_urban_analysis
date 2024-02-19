@@ -842,7 +842,8 @@ class UrbanCanopy:
                     north_angle=north_angle, silent=silent)
 
     def run_bipv_panel_simulation_on_buildings(self, path_simulation_folder, bipv_scenario_identifier,
-                                               building_id_list, roof_id_pv_tech, facades_id_pv_tech, roof_transport_id,
+                                               building_id_list, roof_id_pv_tech, facades_id_pv_tech,
+                                               roof_transport_id,
                                                facades_transport_id, roof_inverter_id, facades_inverter_id,
                                                efficiency_computation_method="yearly",
                                                minimum_panel_eroi=1.2, start_year=datetime.now().year,
@@ -943,7 +944,6 @@ class UrbanCanopy:
         roof_inverter_obj = bipv_inverter_obj_dict[roof_inverter_id]
         facades_inverter_obj = bipv_inverter_obj_dict[facades_inverter_id]
 
-
         # Run the simulation for the buildings
         solar_rad_and_bipv_obj_list = []
         for building_obj in self.building_dict.values():
@@ -973,6 +973,7 @@ class UrbanCanopy:
         # Compute the results at urban scale
         bipv_scenario_obj.sum_bipv_results_at_urban_scale(
             solar_rad_and_bipv_obj_list=solar_rad_and_bipv_obj_list)
+
         # Write urban scale results to CSV file (overwrite existing file if it exists)
         bipv_scenario_obj.write_bipv_results_to_csv(path_simulation_folder=path_simulation_folder)
         # todo: add another function to plot the graphs
@@ -1005,68 +1006,125 @@ class UrbanCanopy:
         return (condition_1 and condition_2) or (
                 condition_2 and condition_3 and continue_simulation)
 
-    def post_process_bipv_results_at_urban_scale(self, path_simulation_folder, building_id_list):
+
+
+    def compute_bipv_kpis_at_urban_scale(self, path_simulation_folder, bipv_scenario_identifier,
+                                         grid_ghg_intensity, grid_energy_intensity,
+                                         grid_electricity_sell_price, zone_area):
+        """
+        Post-process the BIPV results at urban scale
+        :param path_simulation_folder: string, path to the simulation folder
+        :param bipv_scenario_identifier: string, identifier of the BIPV scenario
+        :param grid_ghg_intensity: float, gCO2/kWh, grid GHG intensity
+        :param grid_energy_intensity: float, kWh/m2, grid energy intensity
+        :param grid_electricity_sell_price: float, €/kWh, grid electricity sell price
+
+        :param zone_area: float, m2, area of the zone
+
         """
 
+        bipv_scenario_obj = self.bipv_scenario_dict[bipv_scenario_identifier]
+
+        ubes_electricity_consumption = 0  # kWh, todo: if not available because UBES did not run, raise flag and set value to 0
+        conditioned_apartment_area = self.get_conditioned_area_of_bipv_simulated_buildings()
+        # Set the grid parameters
+        kpi_results_dict = bipv_scenario_obj.compute_kpis(
+            grid_ghg_intensity=grid_ghg_intensity,
+            grid_energy_intensity=grid_energy_intensity,
+            grid_electricity_sell_price=grid_electricity_sell_price,
+            ubes_electricity_consumption=ubes_electricity_consumption,
+            conditioned_apartment_area=conditioned_apartment_area,
+            zone_area=zone_area)
+
+        # Add t
+
+    def get_energy_consumption_of_bipv_simulated_buildings(self):
         """
+        Get the energy consumption of the buildings for which the BIPV simulation was run
+        """
+        # todo: finalize the function
+        energy_consumption = 0
+        for building_obj in self.building_dict.values():
+            if isinstance(building_obj, BuildingModeled) and building_obj.is_target \
+                    and (building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["roof"][
+                             "start_year"] is not None or \
+                         building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["facades"][
+                             "start_year"] is not None):
+                energy_consumption += building_obj.get_energy_consumption()
+        return energy_consumption
 
-    def plot_graphs_buildings(self, path_simulation_folder, study_duration_years, country_ghe_cost):
-        for building in self.building_dict.values():
-            if type(building) is BuildingModeled and building.is_target:
-                if building.results_panels["roof"] and building.results_panels["facades"] and \
-                        building.results_panels[
-                            "Total"]:
-                    path_simulation_folder_building = os.path.join(path_simulation_folder,
-                                                                   name_radiation_simulation_folder,
-                                                                   building.id)
-                    building.plot_panels_energy_results(path_simulation_folder_building, study_duration_years)
-                    building.plot_panels_ghg_results(path_simulation_folder_building, study_duration_years,
-                                                     country_ghe_cost)
-                    building.plot_panels_results_ghe_per_kwh(path_simulation_folder_building,
-                                                             study_duration_years)
-                    building.plot_panels_results_eroi(path_simulation_folder_building, study_duration_years)
+    def get_conditioned_area_of_bipv_simulated_buildings(self):
+        """
+        Get the conditioned area of the buildings for which the BIPV simulation was run
+        """
+        conditioned_area = 0
+        for building_obj in self.building_dict.values():
+            if isinstance(building_obj, BuildingModeled) and building_obj.is_target \
+                    and (building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["roof"][
+                             "start_year"] is not None or \
+                         building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["facades"][
+                             "start_year"] is not None):
+                conditioned_area += building_obj.get_conditioned_area()
+        return conditioned_area
 
-    def plot_graphs_urban_canopy(self, path_simulation_folder, study_duration_years, country_ghe_cost):
 
-        energy_data = UrbanCanopyAdditionalFunction.get_energy_data_from_all_buildings(self.building_dict)
-        carbon_data = UrbanCanopyAdditionalFunction.get_carbon_data_from_all_buildings(self.building_dict,
-                                                                                       country_ghe_cost)
-
-        cum_energy_harvested_roof_uc, cum_energy_harvested_facades_uc, cum_energy_harvested_total_uc = \
-            energy_data[0], \
-                energy_data[1], energy_data[2]
-        cum_primary_energy_roof_uc, cum_primary_energy_facades_uc, cum_primary_energy_total_uc = energy_data[
-            3], \
-            energy_data[4], energy_data[5]
-
-        cum_avoided_carbon_emissions_roof_uc, cum_avoided_carbon_emissions_facades_uc, \
-            cum_avoided_carbon_emissions_total_uc = carbon_data[0], carbon_data[1], carbon_data[2]
-        cum_carbon_emissions_roof_uc, cum_carbon_emissions_facades_uc, cum_carbon_emissions_total_uc = \
-            carbon_data[3], \
-                carbon_data[4], carbon_data[5]
-
-        years = list(range(study_duration_years))
-
-        UrbanCanopyAdditionalFunction.plot_energy_results_uc(path_simulation_folder, years,
-                                                             cum_energy_harvested_roof_uc,
-                                                             cum_energy_harvested_facades_uc,
-                                                             cum_energy_harvested_total_uc,
-                                                             cum_primary_energy_roof_uc,
-                                                             cum_primary_energy_facades_uc,
-                                                             cum_primary_energy_total_uc)
-
-        UrbanCanopyAdditionalFunction.plot_carbon_results_uc(path_simulation_folder, years,
-                                                             cum_avoided_carbon_emissions_roof_uc,
-                                                             cum_avoided_carbon_emissions_facades_uc,
-                                                             cum_avoided_carbon_emissions_total_uc,
-                                                             cum_carbon_emissions_roof_uc,
-                                                             cum_carbon_emissions_facades_uc,
-                                                             cum_carbon_emissions_total_uc)
-
-        UrbanCanopyAdditionalFunction.plot_ghe_per_kwh_uc(path_simulation_folder, years,
-                                                          cum_energy_harvested_total_uc,
-                                                          cum_carbon_emissions_total_uc)
-
-        UrbanCanopyAdditionalFunction.plot_results_eroi_uc(path_simulation_folder, years,
-                                                           cum_primary_energy_total_uc,
-                                                           cum_energy_harvested_total_uc)
+    # def plot_graphs_buildings(self, path_simulation_folder, study_duration_years, country_ghe_cost):
+    #     for building in self.building_dict.values():
+    #         if type(building) is BuildingModeled and building.is_target:
+    #             if building.results_panels["roof"] and building.results_panels["facades"] and \
+    #                     building.results_panels[
+    #                         "Total"]:
+    #                 path_simulation_folder_building = os.path.join(path_simulation_folder,
+    #                                                                name_radiation_simulation_folder,
+    #                                                                building.id)
+    #                 building.plot_panels_energy_results(path_simulation_folder_building, study_duration_years)
+    #                 building.plot_panels_ghg_results(path_simulation_folder_building, study_duration_years,
+    #                                                  country_ghe_cost)
+    #                 building.plot_panels_results_ghe_per_kwh(path_simulation_folder_building,
+    #                                                          study_duration_years)
+    #                 building.plot_panels_results_eroi(path_simulation_folder_building, study_duration_years)
+    #
+    # def plot_graphs_urban_canopy(self, path_simulation_folder, study_duration_years, country_ghe_cost):
+    #
+    #     energy_data = UrbanCanopyAdditionalFunction.get_energy_data_from_all_buildings(self.building_dict)
+    #     carbon_data = UrbanCanopyAdditionalFunction.get_carbon_data_from_all_buildings(self.building_dict,
+    #                                                                                    country_ghe_cost)
+    #
+    #     cum_energy_harvested_roof_uc, cum_energy_harvested_facades_uc, cum_energy_harvested_total_uc = \
+    #         energy_data[0], \
+    #             energy_data[1], energy_data[2]
+    #     cum_primary_energy_roof_uc, cum_primary_energy_facades_uc, cum_primary_energy_total_uc = energy_data[
+    #         3], \
+    #         energy_data[4], energy_data[5]
+    #
+    #     cum_avoided_carbon_emissions_roof_uc, cum_avoided_carbon_emissions_facades_uc, \
+    #         cum_avoided_carbon_emissions_total_uc = carbon_data[0], carbon_data[1], carbon_data[2]
+    #     cum_carbon_emissions_roof_uc, cum_carbon_emissions_facades_uc, cum_carbon_emissions_total_uc = \
+    #         carbon_data[3], \
+    #             carbon_data[4], carbon_data[5]
+    #
+    #     years = list(range(study_duration_years))
+    #
+    #     UrbanCanopyAdditionalFunction.plot_energy_results_uc(path_simulation_folder, years,
+    #                                                          cum_energy_harvested_roof_uc,
+    #                                                          cum_energy_harvested_facades_uc,
+    #                                                          cum_energy_harvested_total_uc,
+    #                                                          cum_primary_energy_roof_uc,
+    #                                                          cum_primary_energy_facades_uc,
+    #                                                          cum_primary_energy_total_uc)
+    #
+    #     UrbanCanopyAdditionalFunction.plot_carbon_results_uc(path_simulation_folder, years,
+    #                                                          cum_avoided_carbon_emissions_roof_uc,
+    #                                                          cum_avoided_carbon_emissions_facades_uc,
+    #                                                          cum_avoided_carbon_emissions_total_uc,
+    #                                                          cum_carbon_emissions_roof_uc,
+    #                                                          cum_carbon_emissions_facades_uc,
+    #                                                          cum_carbon_emissions_total_uc)
+    #
+    #     UrbanCanopyAdditionalFunction.plot_ghe_per_kwh_uc(path_simulation_folder, years,
+    #                                                       cum_energy_harvested_total_uc,
+    #                                                       cum_carbon_emissions_total_uc)
+    #
+    #     UrbanCanopyAdditionalFunction.plot_results_eroi_uc(path_simulation_folder, years,
+    #                                                        cum_primary_energy_total_uc,
+    #                                                        cum_energy_harvested_total_uc)

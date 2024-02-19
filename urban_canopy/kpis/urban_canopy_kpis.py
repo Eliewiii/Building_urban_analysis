@@ -49,11 +49,12 @@ class UrbanCanopyKPIs:
         """
 
         # Location related parameters
-        self.grid_ghg_intensity = {"roof": None, "facades": None, "total": None}
-        self.grid_energy_intensity = {"roof": None, "facades": None, "total": None}
-        self.grid_electricity_cost = {"roof": None, "facades": None, "total": None}
-        self.grid_electricity_sell_price = {"roof": None, "facades": None, "total": None}
-        self.ubes_electricity_consumption = {"roof": None, "facades": None, "total": None}
+        self.grid_ghg_intensity = None
+        self.grid_energy_intensity = None
+        # self.grid_electricity_cost = None
+        self.grid_electricity_sell_price = None
+        # UBES related parameters
+        self.ubes_electricity_consumption = None
         # Zone related parameters
         self.zone_area = None
         self.conditioned_apartment_area = None
@@ -80,9 +81,8 @@ class UrbanCanopyKPIs:
         self.economical_payback_time = {"roof": None, "facades": None, "total": None}
         self.initial_investment_per_area = None  # something like this
 
-    def set_parameters(self, grid_ghg_intensity, grid_energy_intensity, grid_electricity_cost,
-                       grid_electricity_sell_price, ubes_electricity_consumption, zone_area,
-                       conditioned_apartment_area):
+    def set_parameters(self, grid_ghg_intensity, grid_energy_intensity, grid_electricity_sell_price,
+                       ubes_electricity_consumption, zone_area, conditioned_apartment_area):
         """
         Set the parameters needed for the computation of the KPIs
         :param grid_ghg_intensity: float: the ghg intensity of the grid in kgCO2eq/kWh
@@ -96,7 +96,7 @@ class UrbanCanopyKPIs:
         # Location related parameters
         self.grid_ghg_intensity = grid_ghg_intensity
         self.grid_energy_intensity = grid_energy_intensity
-        self.grid_electricity_cost = grid_electricity_cost
+        # self.grid_electricity_cost = grid_electricity_cost
         self.grid_electricity_sell_price = grid_electricity_sell_price
         self.ubes_electricity_consumption = ubes_electricity_consumption
         # Area related parameters
@@ -105,6 +105,13 @@ class UrbanCanopyKPIs:
 
         # todo, other parameter to consider changes through year of these values, especially due to inflation
         #  and changes in the electricity mix
+
+    def to_dict(self):
+        """
+        Convert the object to a dictionary to save it in a json file.
+        :return: dict, the dictionary representing the object
+        """
+        # todo @Elie
 
     def compute_intermediate_results_dict(self, bipv_results_dict):
         """
@@ -180,9 +187,10 @@ class UrbanCanopyKPIs:
         """
         sub_bipv_uc_kpi_results_dict = deepcopy(empty_sub_bipv_uc_kpi_results_dict)
         # Electricity harvested density
-        sub_bipv_uc_kpi_results_dict["electricity_harvested_density"]["zone"]["yearly"] = [
-            electricity_harvested / self.zone_area for electricity_harvested in
-            bipv_result_dict["energy_harvested"]["zone"]["yearly"]]
+        if self.zone_area is not None:
+            sub_bipv_uc_kpi_results_dict["electricity_harvested_density"]["zone"]["yearly"] = [
+                electricity_harvested / self.zone_area for electricity_harvested in
+                bipv_result_dict["energy_harvested"]["zone"]["yearly"]]
         sub_bipv_uc_kpi_results_dict["electricity_harvested_density"]["conditioned_apartment"]["yearly"] = [
             energy_harvested / self.conditioned_apartment_area for energy_harvested in
             bipv_result_dict["energy_harvested"]["conditioned_apartment"]["yearly"]]
@@ -217,8 +225,12 @@ class UrbanCanopyKPIs:
             electricity_harvested * self.grid_energy_intensity for electricity_harvested in
             bipv_result_dict["energy_harvested"]["yearly"]]
         # Net building electricity compensation
+        if self.ubes_electricity_consumption > 0: # to avoid division by zero if UBES did not run
+            ubes_electricity_consumption = self.ubes_electricity_consumption
+        else:
+            ubes_electricity_consumption = 1.
         sub_bipv_uc_kpi_results_dict["net_building_electricity_compensation"]["yearly"] = [
-            electricity_harvested / self.ubes_electricity_consumption for electricity_harvested in
+            electricity_harvested / ubes_electricity_consumption for electricity_harvested in
             bipv_result_dict["energy_harvested"]["yearly"]]
         # Net economical benefit
         sub_bipv_uc_kpi_results_dict["net_economical_income"]["yearly"] = [
@@ -228,9 +240,10 @@ class UrbanCanopyKPIs:
             electricity_harvested * self.grid_electricity_sell_price - bipv_cost for
             electricity_harvested, bipv_cost in
             zip(bipv_result_dict["energy_harvested"]["yearly"], bipv_result_dict["cost"]["total"]["yearly"])]
-        sub_bipv_uc_kpi_results_dict["net_economical_benefit_density"]["zone"]["yearly"] = [
-            net_economical_benefit / self.zone_area for net_economical_benefit in
-            sub_bipv_uc_kpi_results_dict["net_economical_benefit"]["yearly"]]
+        if self.zone_area is not None:
+            sub_bipv_uc_kpi_results_dict["net_economical_benefit_density"]["zone"]["yearly"] = [
+                net_economical_benefit / self.zone_area for net_economical_benefit in
+                sub_bipv_uc_kpi_results_dict["net_economical_benefit"]["yearly"]]
         sub_bipv_uc_kpi_results_dict["net_economical_benefit_density"]["conditioned_apartment"]["yearly"] = [
             net_economical_benefit / self.conditioned_apartment_area for net_economical_benefit in
             sub_bipv_uc_kpi_results_dict["net_economical_benefit"]["yearly"]]

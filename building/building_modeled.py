@@ -187,6 +187,18 @@ class BuildingModeled(BuildingBasic):
             self.merged_faces_hb_model_dict = moved_merged_faces_hb_model_dict.to_dict()
         self.moved_to_origin = True
 
+
+    def get_conditionned_area(self):
+        """
+        Get the conditioned area of the building
+        :return: float: conditioned area in m2
+        """
+        conditioned_area = 0.
+        for room in self.hb_model_obj.rooms:
+            if room.is_conditioned:
+                conditioned_area += room.floor_area
+
+        return conditioned_area
     def make_merged_faces_hb_model(self, orient_roof_mesh_to_according_to_building_orientation=True,
                                    north_angle=0, overwrite=False):
         """

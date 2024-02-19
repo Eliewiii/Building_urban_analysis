@@ -16,7 +16,8 @@ from building.building_modeled import BuildingModeled
 tree_structure_urban_canopy_json_dict = {
     "name": None,
     "buildings": {},
-    "list_of_building_ids": []
+    "list_of_building_ids": [],
+    "bipv_scenario": {}
 }
 
 # Tree structure for each building
@@ -214,6 +215,10 @@ class ExportUrbanCanopyToJson:
                 urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
                     "total_result_dict"] = \
                     building_obj.solar_radiation_and_bipv_simulation_obj.bipv_results_dict["total"]
+
+        # Add the results of the BIPV scenarios
+        for scenario_id, scenario_obj in urban_canopy_obj.bipv_scenario_dict.items():
+            urban_canopy_obj.json_dict["bipv_scenarios"][scenario_id] = scenario_obj.to_dict()
 
 
 def replace_bipv_technology_obj_by_id(parameter_dict):

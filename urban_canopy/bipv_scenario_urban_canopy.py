@@ -29,11 +29,9 @@ class BipvScenario:
         self.start_year = start_year
         self.end_year = end_year
         self.bipv_results_dict = None
-        self.bes_result_dict = None
-        self.urban_canopy_kpis = UrbanCanopyKPIs()
+        self.urban_canopy_bipv_kpis_obj = UrbanCanopyKPIs()
         # Initialize the results dictionaries
         self.init_bipv_results_dict()
-        self.init_bes_results_dict()
 
     def init_bipv_results_dict(self):
         """
@@ -41,11 +39,19 @@ class BipvScenario:
         """
         self.bipv_results_dict = deepcopy(empty_bipv_results_dict)
 
-    def init_bes_results_dict(self):
+    def to_dict(self):
         """
-        Initialize the BES results
+        Convert the object to a dictionary
         """
-        self.bes_results_dict = deepcopy(empty_bes_results_dict)
+        return {
+            "id": self.id,
+            "start_year": self.start_year,
+            "end_year": self.end_year,
+            "bipv_results_dict": self.bipv_results_dict,
+            "kpis_results_dict": self.urban_canopy_bipv_kpis_obj.to_dict()
+        }
+
+
 
     def continue_simulation(self, start_year: int, end_year: int):
         """
@@ -112,18 +118,42 @@ class BipvScenario:
                             bipv_results_dict=self.bipv_results_dict, start_year=self.start_year,
                             study_duration_in_years=self.end_year - self.start_year)
 
-    def set_parameters_for_kpis_computation(self, grid_ghg_intensity, grid_energy_intensity, grid_energy_cost, other):
+    def set_parameters_for_kpis_computation(self, grid_ghg_intensity, grid_energy_intensity,
+                                            grid_electricity_sell_price,
+                                            ubes_electricity_consumption, conditioned_apartment_area,
+                                            zone_area):
         """
         Set the parameters needed for the computation of the KPIs
         todo: add the other parameters
         """
-        self.urban_canopy_kpis.set_parameters(grid_ghg_intensity=grid_ghg_intensity,
-                                              grid_energy_intensity=grid_energy_intensity,
-                                              grid_energy_cost=grid_energy_cost)
+        self.urban_canopy_bipv_kpis_obj.set_parameters(grid_ghg_intensity=grid_ghg_intensity,
+                                                       grid_energy_intensity=grid_energy_intensity,
+                                                       grid_electricity_sell_price=grid_electricity_sell_price,
+                                                       ubes_electricity_consumption=ubes_electricity_consumption,
+                                                       conditioned_apartment_area=conditioned_apartment_area,
+                                                       zone_area=zone_area)
 
-    def compute_kpis(self):
+    def compute_kpis(self, grid_ghg_intensity, grid_energy_intensity, grid_electricity_sell_price,
+                     ubes_electricity_consumption, conditioned_apartment_area, zone_area):
         """
         Compute the KPIs of the scenario
+        :param grid_ghg_intensity: float: gCO2/kWh: grid GHG intensity
+        :param grid_energy_intensity: float: kWh/m2: grid energy intensity
+        :param grid_electricity_sell_price: float: €/kWh: grid electricity sell price
+        :param ubes_electricity_consumption: float: kWh: electricity consumption of the buildings
+        :param conditioned_apartment_area: float: m2: conditioned apartment area
+        :param zone_area: float: m2: area of the zone
+
         """
-        self.urban_canopy_kpis.compute_kpis(bes_result_dict=self.bes_result_dict,
-                                            bipv_results_dict=self.bipv_results_dict)
+
+        self.set_parameters_for_kpis_computation(grid_ghg_intensity=grid_ghg_intensity,
+                                                 grid_energy_intensity=grid_energy_intensity,
+                                                 grid_electricity_sell_price=grid_electricity_sell_price,
+                                                 ubes_electricity_consumption=ubes_electricity_consumption,
+                                                 conditioned_apartment_area=conditioned_apartment_area,
+                                                 zone_area=zone_area)
+
+        kpi_results_dict = self.urban_canopy_bipv_kpis_obj.compute_kpis(
+            bipv_results_dict=self.bipv_results_dict)
+
+        return kpi_results_dict
