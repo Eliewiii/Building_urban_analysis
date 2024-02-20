@@ -2,7 +2,9 @@
 Compute the KPIs of a building.
 """
 
+import os
 import logging
+import pandas as pd
 
 from copy import deepcopy
 
@@ -12,7 +14,7 @@ from building.solar_radiation_and_bipv.solar_rad_and_BIPV import \
 user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")
 
-empty_sub_bipv_uc_kpi_results_dict = {
+empty_sub_kpi_intermediate_results_dict = {
     "electricity_harvested_density": {"zone": {"yearly": [], "cumulative": [], "total": 0.0},
                                       "conditioned_apartment": {"yearly": [], "cumulative": [],
                                                                 "total": 0.0}},
@@ -29,10 +31,10 @@ empty_sub_bipv_uc_kpi_results_dict = {
                                                                  "total": 0.0}}
 }
 
-empty_bipv_uc_kpi_results_dict = {
-    "roof": deepcopy(empty_sub_bipv_uc_kpi_results_dict),
-    "facades": deepcopy(empty_sub_bipv_uc_kpi_results_dict),
-    "total": deepcopy(empty_sub_bipv_uc_kpi_results_dict)
+empty_kpi_intermediate_results_dict = {
+    "roof": deepcopy(empty_sub_kpi_intermediate_results_dict),
+    "facades": deepcopy(empty_sub_kpi_intermediate_results_dict),
+    "total": deepcopy(empty_sub_kpi_intermediate_results_dict)
 }
 
 
@@ -61,7 +63,7 @@ class UrbanCanopyKPIs:
         # Flags
         self.has_run = False
         # Intermediate result dictionary
-        self.bipv_uc_kpi_results_dict = deepcopy(empty_bipv_uc_kpi_results_dict)
+        self.kpi_intermediate_results_dict = deepcopy(empty_kpi_intermediate_results_dict)
         # Environmental KPIs
         self.eroi = {"roof": None, "facades": None, "total": None}
         self.primary_energy_payback_time = {"roof": None, "facades": None, "total": None}
@@ -109,24 +111,63 @@ class UrbanCanopyKPIs:
     def to_dict(self):
         """
         Convert the object to a dictionary to save it in a json file.
-        :return: dict, the dictionary representing the object
+        :return kpi_result_dict: dict, the dictionary representing the object
         """
-        # todo @Elie
+        kpi_result_dict = {
+            "parameters": {
+                "grid_ghg_intensity": self.grid_ghg_intensity,
+                "grid_energy_intensity": self.grid_energy_intensity,
+                "grid_electricity_sell_price": self.grid_electricity_sell_price,
+                "ubes_electricity_consumption": self.ubes_electricity_consumption,
+                "zone_area": self.zone_area,
+                "conditioned_apartment_area": self.conditioned_apartment_area
+            },
+            "kpis": {
+                "eroi": self.eroi,
+                "primary_energy_payback_time": self.primary_energy_payback_time,
+                "ghg_emissions_intensity": self.ghg_emissions_intensity,
+                "ghg_emissions_payback_time": self.ghg_emissions_payback_time,
+                "harvested_energy_density": self.harvested_energy_density,
+                "net_energy_compensation": self.net_energy_compensation,
+                "net_economical_benefit": self.net_economical_benefit,
+                "net_economical_benefit_density": self.net_economical_benefit_density,
+                "economical_payback_time": self.economical_payback_time
+            },
+            "intermediate_results": self.kpi_intermediate_results_dict
+        }
+        return kpi_result_dict
+
+    def to_csv(self, folder_path, start_year, end_year):
+        """
+        Save the object to a csv file.
+        :param file_path: str, the path to the csv file
+        """
+        year_list= [year for year in range(start_year, end_year)]
+        nb_years = len(year_list)
+        # CSV for the intermediate results
+        file_name= "kpi_intermediate_results.csv"
+        file_path = os.path.join(folder_path, file_name)
+        flatten_intermediate_result_dict = flatten_intermediate_dict(self.kpi_intermediate_results_dict)
+        df = pd.DataFrame.from_dict(flatten_intermediate_result_dict)
+        df.insert(0, 'year', year_list)
+        df.to_csv(file_path,index=False)
+        # CSV for the KPIs
+
 
     def compute_intermediate_results_dict(self, bipv_results_dict):
         """
         Compute the intermediate results of the building.
         :param bipv_results_dict: dictionary, the results of the BIPV simulation
         """
-        self.bipv_uc_kpi_results_dict["roof"] = self.compute_intermediate_sub_results_dict(
+        self.kpi_intermediate_results_dict["roof"] = self.compute_intermediate_sub_results_dict(
             bipv_result_dict=bipv_results_dict["roof"])
-        self.bipv_uc_kpi_results_dict["facades"] = self.compute_intermediate_sub_results_dict(
+        self.kpi_intermediate_results_dict["facades"] = self.compute_intermediate_sub_results_dict(
             bipv_result_dict=bipv_results_dict["facades"])
-        self.bipv_uc_kpi_results_dict["total"] = self.compute_intermediate_sub_results_dict(
+        self.kpi_intermediate_results_dict["total"] = self.compute_intermediate_sub_results_dict(
             bipv_result_dict=bipv_results_dict["total"])
 
-        self.bipv_uc_kpi_results_dict = compute_cumulative_and_total_value_bipv_result_dict(
-            bipv_results_dict=self.bipv_uc_kpi_results_dict)
+        self.kpi_intermediate_results_dict = compute_cumulative_and_total_value_bipv_result_dict(
+            bipv_results_dict=self.kpi_intermediate_results_dict)
 
     def compute_kpis(self, bipv_results_dict):
         """
@@ -146,38 +187,39 @@ class UrbanCanopyKPIs:
         """
         # Elecitricity harvested
         self.harvested_energy_density["zone"][sub_type] = \
-            self.bipv_uc_kpi_results_dict[sub_type]["electricity_harvested_density"]["zone"][
+            self.kpi_intermediate_results_dict[sub_type]["electricity_harvested_density"]["zone"][
                 "cumulative"][-1]
         self.harvested_energy_density["conditioned_apartment"][sub_type] = \
-            self.bipv_uc_kpi_results_dict[sub_type]["electricity_harvested_density"][
+            self.kpi_intermediate_results_dict[sub_type]["electricity_harvested_density"][
                 "conditioned_apartment"]["cumulative"][-1]
         self.net_energy_compensation[sub_type] = \
-            self.bipv_uc_kpi_results_dict[sub_type]["net_energy_compensation"]["cumulative"][-1]
+            self.kpi_intermediate_results_dict[sub_type]["net_energy_compensation"]["cumulative"][-1]
         # Primary energy
         self.primary_energy_payback_time[sub_type] = self.compute_primary_energy_payback_time(
             cumulative_annual_cost_list=bipv_result_dict["primary_energy"]["total"]["cumulative"],
             cumulative_annual_offset_list=
-            self.bipv_uc_kpi_results_dict[sub_type]["primary_energy_offset_from_the_grid"][
+            self.kpi_intermediate_results_dict[sub_type]["primary_energy_offset_from_the_grid"][
                 "cumulative"])
-        self.eroi[sub_type] = self.bipv_uc_kpi_results_dict[sub_type]["eroi"]["cumulative"][-1]
+        self.eroi[sub_type] = self.kpi_intermediate_results_dict[sub_type]["eroi"]["cumulative"][-1]
         # GHG emissions
         self.ghg_emission_payback_time[sub_type] = self.compute_ghg_emission_payback_time(
             cumulative_annual_cost_list=bipv_result_dict["ghg"]["total"]["cumulative"],
             cumulative_annual_offset_list=
-            self.bipv_uc_kpi_results_dict[sub_type]["ghg_emissions_offset_from_the_grid"][
+            self.kpi_intermediate_results_dict[sub_type]["ghg_emissions_offset_from_the_grid"][
                 "cumulative"])
         self.ghg_emissions_intensity[sub_type] = \
-            self.bipv_uc_kpi_results_dict[sub_type]["ghg_emissions_intensity"][
+            self.kpi_intermediate_results_dict[sub_type]["ghg_emissions_intensity"][
                 "cumulative"][-1]
         # Economical
         self.economical_benefit[sub_type] = self.compute_net_economical_benefit(
             cumulative_annual_cost_list=bipv_result_dict["cost"]["total"]["cumulative"],
-            cumulative_annual_offset_list=self.bipv_uc_kpi_results_dict[sub_type]["net_economical_income"][
+            cumulative_annual_offset_list=
+            self.kpi_intermediate_results_dict[sub_type]["net_economical_income"][
                 "cumulative"])
         self.net_economical_benefit[sub_type] = \
-            self.bipv_uc_kpi_results_dict[sub_type]["net_economical_benefit"][
+            self.kpi_intermediate_results_dict[sub_type]["net_economical_benefit"][
                 "cumulative"][-1]
-        self.net_economical_benefit_density[sub_type] = self.bipv_uc_kpi_results_dict[sub_type][
+        self.net_economical_benefit_density[sub_type] = self.kpi_intermediate_results_dict[sub_type][
             "net_economical_benefit_density"]["cumulative"][-1]
 
     def compute_intermediate_sub_results_dict(self, bipv_result_dict):
@@ -185,70 +227,76 @@ class UrbanCanopyKPIs:
         Compute the intermediate results of the building.
         :param bipv_result_dict: dictionary, the results of the BIPV simulation
         """
-        sub_bipv_uc_kpi_results_dict = deepcopy(empty_sub_bipv_uc_kpi_results_dict)
+        sub_kpi_intermediate_results_dict = deepcopy(empty_kpi_intermediate_results_dict)
         # Electricity harvested density
         if self.zone_area is not None:
-            sub_bipv_uc_kpi_results_dict["electricity_harvested_density"]["zone"]["yearly"] = [
+            sub_kpi_intermediate_results_dict["electricity_harvested_density"]["zone"]["yearly"] = [
                 electricity_harvested / self.zone_area for electricity_harvested in
                 bipv_result_dict["energy_harvested"]["zone"]["yearly"]]
-        sub_bipv_uc_kpi_results_dict["electricity_harvested_density"]["conditioned_apartment"]["yearly"] = [
+        sub_kpi_intermediate_results_dict["electricity_harvested_density"]["conditioned_apartment"][
+            "yearly"] = [
             energy_harvested / self.conditioned_apartment_area for energy_harvested in
             bipv_result_dict["energy_harvested"]["conditioned_apartment"]["yearly"]]
         # Intensity
-        sub_bipv_uc_kpi_results_dict["eroi"]["cumulative"] = [electricity_harvested / primary_energy_cost for
-                                                              electricity_harvested, primary_energy_cost in
-                                                              zip(bipv_result_dict["energy_harvested"][
-                                                                      "cumulative"],
-                                                                  bipv_result_dict["primary_energy"]["total"][
-                                                                      "cumulative"])]
-        sub_bipv_uc_kpi_results_dict["ghg_emissions_intensity"]["cumulative"] = [
+        sub_kpi_intermediate_results_dict["eroi"]["cumulative"] = [electricity_harvested / primary_energy_cost
+                                                                   for
+                                                                   electricity_harvested, primary_energy_cost
+                                                                   in
+                                                                   zip(bipv_result_dict["energy_harvested"][
+                                                                           "cumulative"],
+                                                                       bipv_result_dict["primary_energy"][
+                                                                           "total"][
+                                                                           "cumulative"])]
+        sub_kpi_intermediate_results_dict["ghg_emissions_intensity"]["cumulative"] = [
             ghg_emissions / electricity_harvested for
             ghg_emissions, electricity_harvested in
             zip(bipv_result_dict["ghg_emissions"][
                     "cumulative"],
                 bipv_result_dict["energy_harvested"][
                     "cumulative"])]
-        sub_bipv_uc_kpi_results_dict["electricity_cost"]["cumulative"] = [bipv_cost / electricity_harvested
-                                                                          for
-                                                                          bipv_cost, electricity_harvested in
-                                                                          zip(bipv_result_dict["cost"][
-                                                                                  "total"][
-                                                                                  "cumulative"],
-                                                                              bipv_result_dict[
-                                                                                  "energy_harvested"][
-                                                                                  "cumulative"])]
+        sub_kpi_intermediate_results_dict["electricity_cost"]["cumulative"] = [
+            bipv_cost / electricity_harvested
+            for
+            bipv_cost, electricity_harvested in
+            zip(bipv_result_dict["cost"][
+                    "total"][
+                    "cumulative"],
+                bipv_result_dict[
+                    "energy_harvested"][
+                    "cumulative"])]
         # Spared ghg emissions from the grid
-        sub_bipv_uc_kpi_results_dict["ghg_emissions_offset_from_the_grid"]["yearly"] = [
+        sub_kpi_intermediate_results_dict["ghg_emissions_offset_from_the_grid"]["yearly"] = [
             electricity_harvested * self.grid_ghg_intensity for electricity_harvested in
             bipv_result_dict["energy_harvested"]["yearly"]]
-        sub_bipv_uc_kpi_results_dict["primary_energy_offset_from_the_grid"]["yearly"] = [
+        sub_kpi_intermediate_results_dict["primary_energy_offset_from_the_grid"]["yearly"] = [
             electricity_harvested * self.grid_energy_intensity for electricity_harvested in
             bipv_result_dict["energy_harvested"]["yearly"]]
         # Net building electricity compensation
-        if self.ubes_electricity_consumption > 0: # to avoid division by zero if UBES did not run
+        if self.ubes_electricity_consumption > 0:  # to avoid division by zero if UBES did not run
             ubes_electricity_consumption = self.ubes_electricity_consumption
         else:
             ubes_electricity_consumption = 1.
-        sub_bipv_uc_kpi_results_dict["net_building_electricity_compensation"]["yearly"] = [
+        sub_kpi_intermediate_results_dict["net_building_electricity_compensation"]["yearly"] = [
             electricity_harvested / ubes_electricity_consumption for electricity_harvested in
             bipv_result_dict["energy_harvested"]["yearly"]]
         # Net economical benefit
-        sub_bipv_uc_kpi_results_dict["net_economical_income"]["yearly"] = [
+        sub_kpi_intermediate_results_dict["net_economical_income"]["yearly"] = [
             electricity_harvested * self.grid_electricity_sell_price for electricity_harvested in
             bipv_result_dict["energy_harvested"]["yearly"]]
-        sub_bipv_uc_kpi_results_dict["net_economical_benefit"]["yearly"] = [
+        sub_kpi_intermediate_results_dict["net_economical_benefit"]["yearly"] = [
             electricity_harvested * self.grid_electricity_sell_price - bipv_cost for
             electricity_harvested, bipv_cost in
             zip(bipv_result_dict["energy_harvested"]["yearly"], bipv_result_dict["cost"]["total"]["yearly"])]
         if self.zone_area is not None:
-            sub_bipv_uc_kpi_results_dict["net_economical_benefit_density"]["zone"]["yearly"] = [
+            sub_kpi_intermediate_results_dict["net_economical_benefit_density"]["zone"]["yearly"] = [
                 net_economical_benefit / self.zone_area for net_economical_benefit in
-                sub_bipv_uc_kpi_results_dict["net_economical_benefit"]["yearly"]]
-        sub_bipv_uc_kpi_results_dict["net_economical_benefit_density"]["conditioned_apartment"]["yearly"] = [
+                sub_kpi_intermediate_results_dict["net_economical_benefit"]["yearly"]]
+        sub_kpi_intermediate_results_dict["net_economical_benefit_density"]["conditioned_apartment"][
+            "yearly"] = [
             net_economical_benefit / self.conditioned_apartment_area for net_economical_benefit in
-            sub_bipv_uc_kpi_results_dict["net_economical_benefit"]["yearly"]]
+            sub_kpi_intermediate_results_dict["net_economical_benefit"]["yearly"]]
 
-        return sub_bipv_uc_kpi_results_dict
+        return sub_kpi_intermediate_results_dict
 
     @staticmethod
     def compute_pay_back_time(cumulative_annual_cost_list, cumulative_annual_offset_list):
@@ -299,3 +347,28 @@ def line_intersection(line1, line2):
     x = det(d, xdiff) / div
     y = det(d, ydiff) / div
     return [x, y]
+
+
+def flatten_intermediate_dict(d, parent_key='', sep='_'):
+    items = []
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, dict):
+            items.extend(flatten_intermediate_dict(v, parent_key=new_key, sep=sep).items())
+        elif isinstance(v, float) or isinstance(v, int):
+            pass
+        else:
+            items.append((new_key, v))
+    return dict(items)
+
+def flatten_dennsity_only(d, parent_key='', sep='_'):
+    items = []
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, dict):
+            items.extend(flatten_intermediate_dict(v, parent_key=new_key, sep=sep).items())
+        elif isinstance(v, float) or isinstance(v, int):
+            items.append((new_key, v))
+        else:
+            items.append((new_key, v))
+    return dict(items)

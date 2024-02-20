@@ -69,7 +69,7 @@ class BuildingEnergySimulation:
         """
 
     def generate_idf_with_openstudio(self, path_building_bes_temp_folder, path_epw_file,
-                                     path_hbjson_simulation_parameters, hb_model_obj: Model,silent=False):
+                                     path_hbjson_simulation_parameters, hb_model_obj: Model, silent=False):
         """
         Generate the idf file using OpenStudio.
         :param path_building_bes_temp_folder: str, path to the folder where the idf file will be saved
@@ -96,7 +96,7 @@ class BuildingEnergySimulation:
         :param silent: bool, if True, the EnergyPlus output will not be printed in the console
         """
         # Get the path to the idf file and check if it exists
-        path_idf_file = os.path.join(path_building_bes_temp_folder,"run", "in.idf")
+        path_idf_file = os.path.join(path_building_bes_temp_folder, "run", "in.idf")
         if os.path.isfile(path_idf_file) is False:
             raise ValueError("The idf file does not exist. Please generate it first.")
         # Run the simulation using EnergyPlus
@@ -106,9 +106,20 @@ class BuildingEnergySimulation:
 
         self.has_run = True
 
+    def get_total_energy_consumption(self):
+        """
+        Get the total energy consumption of the building.
+        :return: float, total energy consumption of the building
+        """
+        if self.has_run is False or self.bes_results_dict["total"]["yearly"] is None:
+            user_logger.warning(
+                f"The Building Energy Simulation has not been run yet for building id:{self.building_id}.")
+            return 0.
+        return self.bes_results_dict["total"]["yearly"]
+
 
 def from_hbjson_to_idf(dir_to_write_idf_in, path_hbjson_file, path_epw_file,
-                       path_hbjson_simulation_parameters,silent=False):
+                       path_hbjson_simulation_parameters, silent=False):
     """
     Convert a hbjson file to an idf file (input for EnergyPlus)
     """

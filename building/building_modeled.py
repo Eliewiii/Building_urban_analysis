@@ -187,8 +187,7 @@ class BuildingModeled(BuildingBasic):
             self.merged_faces_hb_model_dict = moved_merged_faces_hb_model_dict.to_dict()
         self.moved_to_origin = True
 
-
-    def get_conditionned_area(self):
+    def get_conditioned_area(self):
         """
         Get the conditioned area of the building
         :return: float: conditioned area in m2
@@ -199,6 +198,14 @@ class BuildingModeled(BuildingBasic):
                 conditioned_area += room.floor_area
 
         return conditioned_area
+
+    def get_bes_energy_consumption(self):
+        """
+        Return the energy consumption of the building from the EnergyPlus simulation
+        """
+        return self.bes_object.get_total_energy_consumption()
+
+
     def make_merged_faces_hb_model(self, orient_roof_mesh_to_according_to_building_orientation=True,
                                    north_angle=0, overwrite=False):
         """

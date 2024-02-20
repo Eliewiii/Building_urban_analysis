@@ -970,13 +970,15 @@ class UrbanCanopy:
                                                                 **kwargs)
                 solar_rad_and_bipv_obj_list.append(building_obj.solar_radiation_and_bipv_simulation_obj)
 
+        # Get the list of buildings that were simualted
+        building_id_list = self.get_list_of_bipv_simulated_buildings()
+        bipv_scenario_obj.set_simulated_building_id_list(building_id_list=building_id_list)
         # Compute the results at urban scale
         bipv_scenario_obj.sum_bipv_results_at_urban_scale(
             solar_rad_and_bipv_obj_list=solar_rad_and_bipv_obj_list)
 
         # Write urban scale results to CSV file (overwrite existing file if it exists)
         bipv_scenario_obj.write_bipv_results_to_csv(path_simulation_folder=path_simulation_folder)
-        # todo: add another function to plot the graphs
 
     @staticmethod
     def does_building_fits_bipv_requirement(building_obj, building_id_list, continue_simulation):
@@ -1006,8 +1008,6 @@ class UrbanCanopy:
         return (condition_1 and condition_2) or (
                 condition_2 and condition_3 and continue_simulation)
 
-
-
     def compute_bipv_kpis_at_urban_scale(self, path_simulation_folder, bipv_scenario_identifier,
                                          grid_ghg_intensity, grid_energy_intensity,
                                          grid_electricity_sell_price, zone_area):
@@ -1025,48 +1025,56 @@ class UrbanCanopy:
 
         bipv_scenario_obj = self.bipv_scenario_dict[bipv_scenario_identifier]
 
-        ubes_electricity_consumption = 0  # kWh, todo: if not available because UBES did not run, raise flag and set value to 0
-        conditioned_apartment_area = self.get_conditioned_area_of_bipv_simulated_buildings()
+        ubes_electricity_consumption =sum(self.get_ubes_electricity_consumption_from_building_id_list(bipv_scenario_obj.bipv_simulated_building_id_list))
+
+        conditioned_apartment_area = sum(self.get_conditioned_area_from_building_id_list(bipv_scenario_obj.bipv_simulated_building_id_list))
         # Set the grid parameters
-        kpi_results_dict = bipv_scenario_obj.compute_kpis(
+        bipv_scenario_obj.compute_kpis(
             grid_ghg_intensity=grid_ghg_intensity,
             grid_energy_intensity=grid_energy_intensity,
             grid_electricity_sell_price=grid_electricity_sell_price,
             ubes_electricity_consumption=ubes_electricity_consumption,
             conditioned_apartment_area=conditioned_apartment_area,
             zone_area=zone_area)
+        # Write the results to CSV file
 
-        # Add t
-
-    def get_energy_consumption_of_bipv_simulated_buildings(self):
+    def get_list_of_bipv_simulated_buildings(self):
         """
-        Get the energy consumption of the buildings for which the BIPV simulation was run
+        Get the list of buildings for which the BIPV simulation was run
         """
-        # todo: finalize the function
-        energy_consumption = 0
-        for building_obj in self.building_dict.values():
+        building_list = []
+        for building_id, building_obj in self.building_dict.items():
             if isinstance(building_obj, BuildingModeled) and building_obj.is_target \
                     and (building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["roof"][
-                             "start_year"] is not None or \
+                             "start_year"] is not None or
                          building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["facades"][
                              "start_year"] is not None):
-                energy_consumption += building_obj.get_energy_consumption()
+                building_list.append(building_id)
+        return building_list
+
+    def get_energy_consumption_from_building_id_list(self, building_id_list):
+        """
+        Get the energy consumption of buildings (if the energy simulation was run)
+        :param building_id_list: list of building id
+        """
+        energy_consumption = []
+        for building_id in building_id_list:
+            building_obj = self.building_dict[building_id]
+            energy_consumption.append(building_obj.get_energy_consumption())
+
         return energy_consumption
 
-    def get_conditioned_area_of_bipv_simulated_buildings(self):
+    def get_conditioned_area_from_building_id_list(self, building_id_list):
         """
-        Get the conditioned area of the buildings for which the BIPV simulation was run
+        Get the total conditioned area of the buildings
+        :param building_id_list: list of building id
         """
-        conditioned_area = 0
-        for building_obj in self.building_dict.values():
-            if isinstance(building_obj, BuildingModeled) and building_obj.is_target \
-                    and (building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["roof"][
-                             "start_year"] is not None or \
-                         building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["facades"][
-                             "start_year"] is not None):
-                conditioned_area += building_obj.get_conditioned_area()
-        return conditioned_area
+        conditioned_area = []
+        for building_id in building_id_list:
+            building_obj = self.building_dict[building_id]
+            conditioned_area.append(building_obj.get_conditioned_area())
 
+        return conditioned_area
 
     # def plot_graphs_buildings(self, path_simulation_folder, study_duration_years, country_ghe_cost):
     #     for building in self.building_dict.values():

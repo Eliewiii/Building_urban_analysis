@@ -28,6 +28,7 @@ class BipvScenario:
         self.id = identifier
         self.start_year = start_year
         self.end_year = end_year
+        self.bipv_simulated_building_id_list = None
         self.bipv_results_dict = None
         self.urban_canopy_bipv_kpis_obj = UrbanCanopyKPIs()
         # Initialize the results dictionaries
@@ -38,6 +39,13 @@ class BipvScenario:
         Initialize the BIPV results
         """
         self.bipv_results_dict = deepcopy(empty_bipv_results_dict)
+
+    def set_simulated_building_id_list(self, building_id_list):
+        """
+        Set the list of the simulated building ids
+        :param simulated_building_id_list: list: list of the simulated building ids
+        """
+        self.bipv_simulated_building_id_list = building_id_list
 
     def to_dict(self):
         """
@@ -50,8 +58,6 @@ class BipvScenario:
             "bipv_results_dict": self.bipv_results_dict,
             "kpis_results_dict": self.urban_canopy_bipv_kpis_obj.to_dict()
         }
-
-
 
     def continue_simulation(self, start_year: int, end_year: int):
         """
@@ -153,7 +159,5 @@ class BipvScenario:
                                                  conditioned_apartment_area=conditioned_apartment_area,
                                                  zone_area=zone_area)
 
-        kpi_results_dict = self.urban_canopy_bipv_kpis_obj.compute_kpis(
+        self.urban_canopy_bipv_kpis_obj.compute_kpis(
             bipv_results_dict=self.bipv_results_dict)
-
-        return kpi_results_dict
