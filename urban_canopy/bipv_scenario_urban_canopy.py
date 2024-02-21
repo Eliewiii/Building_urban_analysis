@@ -1,6 +1,8 @@
 """
-
+ Object that manage bipv simulation at the urban canopy scale, enabling multiple scenarios
 """
+
+import os
 
 from copy import deepcopy
 
@@ -59,6 +61,23 @@ class BipvScenario:
             "kpis_results_dict": self.urban_canopy_bipv_kpis_obj.to_dict()
         }
 
+    def write_urban_scale_bipv_results_to_csv(self, path_results_folder):
+        """
+        Write the BIPV results to a csv file
+        :param path_results_folder: str: path folder where to write the csv file
+        """
+        bipv_results_to_csv(path_results_folder=path_results_folder,
+                            building_id_or_uc_scenario_name=self.id,
+                            bipv_results_dict=self.bipv_results_dict, start_year=self.start_year,
+                            study_duration_in_years=self.end_year - self.start_year)
+
+    def write_kpis_results_to_csv(self, path_results_folder):
+        """
+        Write the KPIs results to a csv file
+        :param path_results_folder: str: path folder where to write the csv file
+        """
+        self.urban_canopy_bipv_kpis_obj.to_csv(path_results_folder)
+
     def continue_simulation(self, start_year: int, end_year: int):
         """
         Check if the simulation can be continued
@@ -114,15 +133,7 @@ class BipvScenario:
             earliest_year=earliest_year,
             latest_year=latest_year)
 
-    def write_bipv_results_to_csv(self, path_simulation_folder):
-        """
-        Write the BIPV results to a csv file
-        :param path_to_csv: str: path to the csv file
-        """
-        bipv_results_to_csv(path_simulation_folder=path_simulation_folder,
-                            building_id_or_uc_scenario_name=self.id,
-                            bipv_results_dict=self.bipv_results_dict, start_year=self.start_year,
-                            study_duration_in_years=self.end_year - self.start_year)
+
 
     def set_parameters_for_kpis_computation(self, grid_ghg_intensity, grid_energy_intensity,
                                             grid_electricity_sell_price,
@@ -159,5 +170,7 @@ class BipvScenario:
                                                  conditioned_apartment_area=conditioned_apartment_area,
                                                  zone_area=zone_area)
 
-        self.urban_canopy_bipv_kpis_obj.compute_kpis(
+        kpi_result_dict = self.urban_canopy_bipv_kpis_obj.compute_kpis(
             bipv_results_dict=self.bipv_results_dict)
+
+        return kpi_result_dict

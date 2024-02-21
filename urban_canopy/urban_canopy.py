@@ -978,7 +978,46 @@ class UrbanCanopy:
             solar_rad_and_bipv_obj_list=solar_rad_and_bipv_obj_list)
 
         # Write urban scale results to CSV file (overwrite existing file if it exists)
-        bipv_scenario_obj.write_bipv_results_to_csv(path_simulation_folder=path_simulation_folder)
+        bipv_result_folder_path = os.path.join(path_simulation_folder, name_radiation_simulation_folder,
+                                               str(bipv_scenario_identifier))
+        bipv_scenario_obj.write_urban_scale_bipv_results_to_csv(path_results_folder=bipv_result_folder_path)
+
+    def compute_bipv_kpis_at_urban_scale(self, path_simulation_folder, bipv_scenario_identifier,
+                                         grid_ghg_intensity, grid_energy_intensity,
+                                         grid_electricity_sell_price, zone_area):
+        """
+        Post-process the BIPV results at urban scale
+        :param path_simulation_folder: string, path to the simulation folder
+        :param bipv_scenario_identifier: string, identifier of the BIPV scenario
+        :param grid_ghg_intensity: float, gCO2/kWh, grid GHG intensity
+        :param grid_energy_intensity: float, kWh/m2, grid energy intensity
+        :param grid_electricity_sell_price: float, €/kWh, grid electricity sell price
+
+        :param zone_area: float, m2, area of the zone
+
+        """
+
+        bipv_scenario_obj = self.bipv_scenario_dict[bipv_scenario_identifier]
+
+        ubes_electricity_consumption = sum(self.get_ubes_electricity_consumption_from_building_id_list(
+            bipv_scenario_obj.bipv_simulated_building_id_list))
+
+        conditioned_apartment_area = sum(self.get_conditioned_area_from_building_id_list(
+            bipv_scenario_obj.bipv_simulated_building_id_list))
+        # Set the grid parameters
+        kpi_result_dict = bipv_scenario_obj.compute_kpis(
+            grid_ghg_intensity=grid_ghg_intensity,
+            grid_energy_intensity=grid_energy_intensity,
+            grid_electricity_sell_price=grid_electricity_sell_price,
+            ubes_electricity_consumption=ubes_electricity_consumption,
+            conditioned_apartment_area=conditioned_apartment_area,
+            zone_area=zone_area)
+        # Write the results to CSV file
+        bipv_result_folder_path = os.path.join(path_simulation_folder, name_radiation_simulation_folder,
+                                               str(bipv_scenario_identifier))
+        bipv_scenario_obj.write_bipv_kpis_to_csv(folder_path=bipv_result_folder_path)
+
+        return kpi_result_dict
 
     @staticmethod
     def does_building_fits_bipv_requirement(building_obj, building_id_list, continue_simulation):
@@ -1007,36 +1046,6 @@ class UrbanCanopy:
 
         return (condition_1 and condition_2) or (
                 condition_2 and condition_3 and continue_simulation)
-
-    def compute_bipv_kpis_at_urban_scale(self, path_simulation_folder, bipv_scenario_identifier,
-                                         grid_ghg_intensity, grid_energy_intensity,
-                                         grid_electricity_sell_price, zone_area):
-        """
-        Post-process the BIPV results at urban scale
-        :param path_simulation_folder: string, path to the simulation folder
-        :param bipv_scenario_identifier: string, identifier of the BIPV scenario
-        :param grid_ghg_intensity: float, gCO2/kWh, grid GHG intensity
-        :param grid_energy_intensity: float, kWh/m2, grid energy intensity
-        :param grid_electricity_sell_price: float, €/kWh, grid electricity sell price
-
-        :param zone_area: float, m2, area of the zone
-
-        """
-
-        bipv_scenario_obj = self.bipv_scenario_dict[bipv_scenario_identifier]
-
-        ubes_electricity_consumption =sum(self.get_ubes_electricity_consumption_from_building_id_list(bipv_scenario_obj.bipv_simulated_building_id_list))
-
-        conditioned_apartment_area = sum(self.get_conditioned_area_from_building_id_list(bipv_scenario_obj.bipv_simulated_building_id_list))
-        # Set the grid parameters
-        bipv_scenario_obj.compute_kpis(
-            grid_ghg_intensity=grid_ghg_intensity,
-            grid_energy_intensity=grid_energy_intensity,
-            grid_electricity_sell_price=grid_electricity_sell_price,
-            ubes_electricity_consumption=ubes_electricity_consumption,
-            conditioned_apartment_area=conditioned_apartment_area,
-            zone_area=zone_area)
-        # Write the results to CSV file
 
     def get_list_of_bipv_simulated_buildings(self):
         """

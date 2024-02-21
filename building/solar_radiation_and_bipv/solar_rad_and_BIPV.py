@@ -708,10 +708,10 @@ class SolarRadAndBipvSimulation:
 
         return bipv_results_dict
 
-    def write_bipv_results_to_csv(self, path_simulation_folder, building_id):
+    def write_bipv_results_to_csv(self, path_results_folder, building_id):
         """
         Write the BIPV results to a csv file
-        :param path_simulation_folder: path to the simulation folder
+        :param path_results_folder: path to the simulation folder
         :param building_id: building id
         """
         # Find the earliest and latest years across all dictionaries
@@ -742,26 +742,25 @@ class SolarRadAndBipvSimulation:
             latest_year=latest_year)
 
         # empty dict with proper size
-        bipv_results_to_csv(path_simulation_folder=path_simulation_folder,
+        bipv_results_to_csv(path_results_folder=path_results_folder,
                             building_id_or_uc_scenario_name=building_id,
                             bipv_results_dict=result_dict_adjusted, start_year=earliest_year,
                             study_duration_in_years=latest_year - earliest_year)
 
 
-def bipv_results_to_csv(path_simulation_folder, building_id_or_uc_scenario_name, bipv_results_dict,
+def bipv_results_to_csv(path_results_folder, building_id_or_uc_scenario_name, bipv_results_dict,
                         start_year,
                         study_duration_in_years):
     """
     Save bipv simulation results in a csv file
-    :param: path_simulation_folder: path to the simulation folder
+    :param: path_results_folder: path to the simulation folder
     :param: building_id_or_uc_scenario_name: building id or urban canopy scenario name
     """
-    path_result_folder = os.path.join(path_simulation_folder, name_radiation_simulation_folder,
-                                      str(building_id_or_uc_scenario_name))
+
     # create the folder if it does not exist, especially for the urban canopy
-    if not os.path.isdir(path_result_folder):
-        os.makedirs(path_result_folder)
-    path_csv_file = os.path.join(path_result_folder,
+    if not os.path.isdir(path_results_folder):
+        os.makedirs(path_results_folder)
+    path_csv_file = os.path.join(path_results_folder,
                                  building_id_or_uc_scenario_name + "_" + name_results_file_csv)
     with open(path_csv_file, mode='w', newline='') as file:
         # flatten the dict to read and write the data easily

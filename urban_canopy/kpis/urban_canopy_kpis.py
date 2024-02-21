@@ -11,6 +11,8 @@ from copy import deepcopy
 from building.solar_radiation_and_bipv.solar_rad_and_BIPV import \
     compute_cumulative_and_total_value_bipv_result_dict
 
+from utils.utils_configuration import name_radiation_simulation_folder
+
 user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")
 
@@ -140,19 +142,27 @@ class UrbanCanopyKPIs:
     def to_csv(self, folder_path, start_year, end_year):
         """
         Save the object to a csv file.
-        :param file_path: str, the path to the csv file
+        :param folder_path: str, the path to the folder where the csv file will be saved
+        :param start_year: int, the start year of the simulation
+        :param end_year: int, the end year of the simulation
         """
-        year_list= [year for year in range(start_year, end_year)]
-        nb_years = len(year_list)
+        year_list = [year for year in range(start_year, end_year)]
         # CSV for the intermediate results
-        file_name= "kpi_intermediate_results.csv"
+        file_name = "kpi_intermediate_results.csv"
         file_path = os.path.join(folder_path, file_name)
         flatten_intermediate_result_dict = flatten_intermediate_dict(self.kpi_intermediate_results_dict)
         df = pd.DataFrame.from_dict(flatten_intermediate_result_dict)
         df.insert(0, 'year', year_list)
-        df.to_csv(file_path,index=False)
+        df.to_csv(file_path, index=False)
         # CSV for the KPIs
-
+        file_name = "kpi_results.csv"
+        file_path = os.path.join(folder_path, file_name)
+        kpi_dict = self.to_dict()["kpis"]
+        flatten_kpi_result_dict = flatten_kpi_dict(kpi_dict)
+        df = pd.DataFrame.from_dict(flatten_kpi_result_dict)
+        line_headers = ["roof", "facades", "total"]
+        df.insert(0, '', line_headers)
+        df.to_csv(file_path, index=False)
 
     def compute_intermediate_results_dict(self, bipv_results_dict):
         """
@@ -173,6 +183,7 @@ class UrbanCanopyKPIs:
         """
         Compute the KPIs of the building.
         :param bipv_results_dict: dictionary, the results of the BIPV simulation
+        :return kpi_result_dict: dictionary, the KPIs of the building
         """
         # Roof
         self.compute_sub_kpis(bipv_result_dict=bipv_results_dict["roof"], sub_type="roof")
@@ -180,6 +191,10 @@ class UrbanCanopyKPIs:
         self.compute_sub_kpis(bipv_result_dict=bipv_results_dict["facades"], sub_type="facades")
         # Total
         self.compute_sub_kpis(bipv_result_dict=bipv_results_dict["total"], sub_type="total")
+
+        kpi_result_dict = self.to_dict()
+
+        return kpi_result_dict
 
     def compute_sub_kpis(self, bipv_result_dict, sub_type):
         """
@@ -350,6 +365,10 @@ def line_intersection(line1, line2):
 
 
 def flatten_intermediate_dict(d, parent_key='', sep='_'):
+    """
+    Flatten the intermediate results dictionary to convert it to CSV.
+    :param d: dict, the intermediate results dictionary
+    """
     items = []
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
@@ -361,14 +380,17 @@ def flatten_intermediate_dict(d, parent_key='', sep='_'):
             items.append((new_key, v))
     return dict(items)
 
-def flatten_dennsity_only(d, parent_key='', sep='_'):
+
+def flatten_kpi_dict(d, parent_key='', sep='_'):
+    """
+    Flatten the KPI dictionary to convert it to CSV.
+    :param d: dict, the KPI dictionary
+    """
     items = []
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
-        if isinstance(v, dict):
-            items.extend(flatten_intermediate_dict(v, parent_key=new_key, sep=sep).items())
-        elif isinstance(v, float) or isinstance(v, int):
-            items.append((new_key, v))
+        if isinstance(v, dict) and isinstance(list(v.values())[0], dict):
+            items.extend(flatten_kpi_dict(v, parent_key=new_key, sep=sep).items())
         else:
-            items.append((new_key, v))
+            items.append((new_key, [value for value in v.values()]))
     return dict(items)
