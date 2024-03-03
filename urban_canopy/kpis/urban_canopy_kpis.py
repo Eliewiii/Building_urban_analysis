@@ -137,22 +137,33 @@ class UrbanCanopyKPIs:
         }
         return kpi_result_dict
 
-    def to_csv(self, folder_path, start_year, end_year):
+    def to_csv(self, folder_path, start_year, end_year, prefix=""):
         """
+        # todo @Elie to test
         Save the object to a csv file.
-        :param file_path: str, the path to the csv file
+        :param folder_path: str, the path to the folder to write the csv files in
+        :param start_year: int, the start year of the simulation
+        :param end_year: int, the end year of the simulation
+        :param prefix: str, the prefix to add to the file name
         """
-        year_list= [year for year in range(start_year, end_year)]
-        nb_years = len(year_list)
+        # Add underscore to the prefix if there is one
+        if prefix != "":
+            prefix += "_"
+        # Prepare the year list
+        year_list = [year for year in range(start_year, end_year)]
         # CSV for the intermediate results
-        file_name= "kpi_intermediate_results.csv"
+        file_name = prefix + "kpi_intermediate_results.csv"
         file_path = os.path.join(folder_path, file_name)
         flatten_intermediate_result_dict = flatten_intermediate_dict(self.kpi_intermediate_results_dict)
         df = pd.DataFrame.from_dict(flatten_intermediate_result_dict)
         df.insert(0, 'year', year_list)
-        df.to_csv(file_path,index=False)
+        df.to_csv(file_path, index=False)
         # CSV for the KPIs
-
+        file_name = prefix + "kpi_results.csv"
+        file_path = os.path.join(folder_path, file_name)
+        kpi_dict = self.to_dict()["kpis"]
+        df = pd.DataFrame.from_dict(kpi_dict)
+        df.to_csv(file_path, index=False)
 
     def compute_intermediate_results_dict(self, bipv_results_dict):
         """
@@ -360,6 +371,7 @@ def flatten_intermediate_dict(d, parent_key='', sep='_'):
         else:
             items.append((new_key, v))
     return dict(items)
+
 
 def flatten_dennsity_only(d, parent_key='', sep='_'):
     items = []

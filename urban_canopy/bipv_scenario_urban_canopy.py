@@ -2,6 +2,8 @@
 
 """
 
+import os
+
 from copy import deepcopy
 
 from building.solar_radiation_and_bipv.solar_rad_and_BIPV import empty_bipv_results_dict, \
@@ -114,12 +116,12 @@ class BipvScenario:
             earliest_year=earliest_year,
             latest_year=latest_year)
 
-    def write_bipv_results_to_csv(self, path_simulation_folder):
+    def write_bipv_results_to_csv(self, path_radiation_and_bipv_result_folder):
         """
         Write the BIPV results to a csv file
         :param path_to_csv: str: path to the csv file
         """
-        bipv_results_to_csv(path_simulation_folder=path_simulation_folder,
+        bipv_results_to_csv(path_radiation_and_bipv_result_folder=path_radiation_and_bipv_result_folder,
                             building_id_or_uc_scenario_name=self.id,
                             bipv_results_dict=self.bipv_results_dict, start_year=self.start_year,
                             study_duration_in_years=self.end_year - self.start_year)
@@ -161,3 +163,12 @@ class BipvScenario:
 
         self.urban_canopy_bipv_kpis_obj.compute_kpis(
             bipv_results_dict=self.bipv_results_dict)
+
+    def write_kpis_to_csv(self, path_radiation_and_bipv_result_folder):
+        """
+        Write the KPIs to a csv file
+        :param path_radiation_and_bipv_result_folder: str: path to the folder to save the csv files in
+        """
+        path_folder = os.path.join(path_radiation_and_bipv_result_folder, self.id)
+        self.urban_canopy_bipv_kpis_obj.to_csv(path_folder=path_folder, start_year=self.start_year,
+                                               end_year=self.end_year,prefix=self.id)
