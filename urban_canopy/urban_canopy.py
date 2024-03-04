@@ -751,15 +751,52 @@ class UrbanCanopy:
                 duration = building_obj.run_idf_with_energyplus_for_bes(
                     path_ubes_temp_sim_folder=path_ubes_temp_sim_folder,
                     path_epw_file=path_epw_file, overwrite=overwrite, silent=silent)
-                duration_dict[building_obj.id] = duration
-        # Move the sql and err (=log) file to the UBES result folder
+                if duration is not None:
+                    duration_dict[building_obj.id] = duration
+        # Make the UBES simulation result folder or overwrite it if necessary
         path_ubes_sim_result_folder = os.path.join(path_simulation_folder, name_ubes_simulation_result_folder)
+        if os.path.isdir(path_ubes_sim_result_folder):
+            if overwrite:
+                shutil.rmtree(path_ubes_sim_result_folder)
+                os.mkdir(path_ubes_sim_result_folder)
+        else:
+            os.mkdir(path_ubes_sim_result_folder)
+        # Move the sql and err (=log) file to the UBES result folder
         for building_obj in self.building_dict.values():
-            building_obj.move_bes_result_files_from_temp_to_result_folder(
-                path_ubes_temp_sim_folder=path_ubes_temp_sim_folder,
-                path_ubes_sim_result_folder= path_ubes_sim_result_folder
-            )
+            if isinstance(building_obj, BuildingModeled):  # no need for more checking
+                building_obj.move_bes_result_files_from_temp_to_result_folder(
+                    path_ubes_temp_sim_folder=path_ubes_temp_sim_folder,
+                    path_ubes_sim_result_folder=path_ubes_sim_result_folder
+                )
+
+        if duration_dict.values() != []:
+            self.ubes_obj.has_run = True
+
         return duration_dict
+
+    def extract_ubes_results(self, path_simulation_folder):
+        """
+        Read the UBES result files for the buildings in the urban canopy.
+        :param path_simulation_folder: string, path to the simulation folder
+        """
+        if not self.ubes_obj.has_run:
+            user_logger.warning("The UBES simulation has not been run yet, the result cannot be extracted")
+            return
+        path_ubes_sim_result_folder = os.path.join(path_simulation_folder, name_ubes_simulation_result_folder)
+        bes_result_dict_list = []
+        # Extract the UBES results for the buildings
+        for building_obj in self.building_dict.values():
+            if isinstance(building_obj,
+                          BuildingModeled):  # no need for more checking, the building themselves
+                # will check if they have been simulated
+                bes_result_dict = building_obj.extract_bes_result_files_and_export_to_csv(path_ubes_sim_result_folder=path_ubes_sim_result_folder)
+                if bes_result_dict is not None:
+                    bes_result_dict_list.append(bes_result_dict)
+        # Compute the results at the urban canopy level
+        self.ubes_obj.compute_ubes_results(bes_result_dict_list=bes_result_dict_list)  # todo @Elie: to be implemented
+        # Export the results to csv
+        self.ubes_obj.export_ubes_results_to_csv(path_ubes_sim_result_folder=path_ubes_sim_result_folder)
+
 
     def generate_sensor_grid_on_buildings(self, building_id_list=None, bipv_on_roof=True,
                                           bipv_on_facades=True, roof_grid_size_x=1,

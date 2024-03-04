@@ -4,12 +4,14 @@ Performs the energy simulation of a building using the EnergyPlus software and s
 
 import os
 import logging
+import shutil
 
 from time import time
 from copy import deepcopy
 
-from honeybee_energy.run import to_openstudio_osw, run_osw, run_idf
 from honeybee.model import Model
+from honeybee_energy.run import to_openstudio_osw, run_osw, run_idf
+from honeybee_energy.result.eui import eui_from_sql
 
 user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")
@@ -106,6 +108,121 @@ class BuildingEnergySimulation:
 
         self.has_run = True
 
+    def move_result_files_from_temp_to_result_folder(self, path_ubes_temp_sim_folder,
+                                                     path_ubes_sim_result_folder):
+        """
+        Move the result files from the temporary folder to the result folder.
+        :param path_ubes_temp_sim_folder: str, path to the temporary folder
+        :param path_ubes_sim_result_folder: str, path to the result folder
+        """
+        if self.has_run is False:
+            return  # No result files to move
+        # Paths to the temp and result BES folder
+        path_bes_temp_folder = os.path.join(path_ubes_temp_sim_folder, self.building_id)
+        path_bes_result_folder = os.path.join(path_ubes_sim_result_folder, self.building_id)
+        # Paths to the results files
+        path_eplusout_err = os.path.join(path_bes_temp_folder, "run", "eplusout.err")
+        path_eplusout_sql = os.path.join(path_bes_temp_folder, "run", "eplusout.sql")
+        path_idf = os.path.join(path_bes_temp_folder, "run", "in.idf")
+
+        # Check if the simulation temp folder exists (and thus if there are result files to move)
+        if not os.path.isdir(path_bes_temp_folder):
+            return
+        elif not os.path.isfile(path_eplusout_err) or not os.path.isfile(
+                path_eplusout_sql) or not os.path.isfile(path_idf):
+            user_logger.warning(
+                f"The result files of the simulation of building id:{self.building_id} are missing. "
+                f"It seems like an error occurred during  the idf generation of the simulation.")
+            dev_logger.warning(
+                f"The result files of the simulation of building id:{self.building_id} are missing. "
+                f"It seems like an error occurred during  the idf generation of the simulation.")
+            # delete the temp folder
+            shutil.rmtree(path_bes_temp_folder, ignore_errors=True)
+            return
+        else:
+            # Make the result folder if it does not exist
+            if not os.path.isdir(path_bes_result_folder):
+                os.mkdir(path_bes_result_folder)
+            # Move the result and idf files to the result folder
+            shutil.move(path_eplusout_err, path_bes_result_folder)
+            shutil.move(path_eplusout_sql, path_bes_result_folder)
+            shutil.move(path_idf, path_bes_result_folder)
+            # Delete the temp folder
+            shutil.rmtree(path_bes_temp_folder, ignore_errors=True)
+
+    def extract_total_energy_use(self, path_ubes_sim_result_folder):
+        """
+        Extract the energy use intensity at the building scale from the result files.
+        :param path_ubes_sim_result_folder: str, path to the result folder
+        """
+        if self.has_run is False:
+            return  # No result files to move
+        elif self.bes_results_dict is not None:
+            return  # The results have already been extracted
+        # Paths to the result BES folder
+        path_bes_result_folder = os.path.join(path_ubes_sim_result_folder, self.building_id)
+        # Paths to the results files
+        path_eplusout_sql = os.path.join(path_bes_result_folder, "eplusout.sql")
+
+        # Check if the BES result folder and the result files exist
+        if not os.path.isdir(path_bes_result_folder):
+            return
+        elif not os.path.isfile(path_eplusout_sql):
+            return
+        # Initialize the results dictionary
+        self.bes_results_dict = deepcopy(empty_bes_results_dict)
+        # Extract the sql file
+        eui_dict = eui_from_sql(path_eplusout_sql)
+        total_floor_area = eui_dict["total_floor_area"]
+
+        self.bes_results_dict["heating"]["yearly"] = eui_dict["end_uses"][
+                                                         "heating"] * total_floor_area / self.cop_heating
+        self.bes_results_dict["cooling"]["yearly"] = eui_dict["end_uses"][
+                                                         "cooling"] * total_floor_area / self.cop_cooling
+        self.bes_results_dict["equipment"]["yearly"] = eui_dict["end_uses"]["equipment"] * total_floor_area
+        self.bes_results_dict["lighting"]["yearly"] = eui_dict["end_uses"]["lighting"] * total_floor_area
+        # self.bes_results_dict["ventilation"]["yearly"] = eui_dict["end_uses"]["ventilation"] * total_floor_area
+        self.bes_results_dict["total"]["yearly"] = sum(self.bes_results_dict["heating"]["yearly"],
+                                                       self.bes_results_dict["cooling"]["yearly"],
+                                                       self.bes_results_dict["equipment"]["yearly"],
+                                                       # self.bes_results_dict["ventilation"]["yearly"],
+                                                       self.bes_results_dict["lighting"]["yearly"])
+
+    def export_results_to_csv(self, path_ubes_sim_result_folder):
+        """
+        Export the results to a csv file.
+        :param path_ubes_sim_result_folder: str, path to the result folder
+        """
+        if not self.has_run or self.bes_results_dict is None:
+            return
+        # Paths to the result BES folder
+        path_bes_result_folder = os.path.join(path_ubes_sim_result_folder, self.building_id)
+        # Paths to the results files
+        path_csv_file = os.path.join(path_bes_result_folder, f"{self.building_id}_results.csv")
+        # Check if the BES result folder and the result files exist
+        if not os.path.isdir(path_bes_result_folder):
+            return
+        """ Write the file even if it exist already as monthly values could have been extracted 
+        in the meantime """
+
+        # Write the results to a csv file
+        month_list = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
+                      "October", "November", "December"]
+        with open(path_csv_file, 'w') as f:
+            f.write(header + "," for header in self.bes_results_dict.keys() + "\n")
+            for index, month in enumerate(month_list):
+                f.write(f"{month},")
+                for key, value in self.bes_results_dict.items():
+                    if value['monthly'] != []:
+                        monthly_value = value['monthly'][index]
+                    else:
+                        monthly_value = None
+                    f.write(f"{monthly_value},")
+                f.write("\n")
+            f.write("Total,")
+            for key, value in self.bes_results_dict.items():
+                f.write(f"{value['yearly']},")
+
     def get_total_energy_consumption(self):
         """
         Get the total energy consumption of the building.
@@ -130,3 +247,12 @@ def from_hbjson_to_idf(dir_to_write_idf_in, path_hbjson_file, path_epw_file,
                             epw_file=path_epw_file)
     ## Run simulation in OpenStudio to generate IDF ##
     (path_osm, path_idf) = run_osw(osw, silent=silent)
+
+
+def clean_directory(path):
+    """
+
+    """
+    if os.path.exists(path):
+        shutil.rmtree(path)
+    os.mkdir(path)

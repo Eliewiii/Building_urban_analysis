@@ -74,7 +74,7 @@ class UrbanBuildingEnergySimulation:
         self.hb_simulation_parameters_obj = hb_sim_parameter_obj
         self.lb_epw_obj = lb_epw_obj
 
-        """ If the the simulation paramters and the epw should be overwritten, all the simulation that were run before
+        """ If the the simulation parameters and the epw should be overwritten, all the simulation that were run before
         have to be run again, thus the has_run attribute is set back to False and a flag is raised to re-initialize the
         bes of the buildings that run"""
         if overwrite:

@@ -400,12 +400,12 @@ class BuildingModeled(BuildingBasic):
                 f"The IDF file of the building {self.id} has not been generated yet, it cannot "
                 f"be run with EnergyPlus")
             dev_logger.warning(f"The IDF file not generated for building {self.id}")
-            return
+            return None
         elif self.bes_obj.has_run:
             if overwrite:
                 self.bes_obj.re_initialize(keep_idf=True)
             else:
-                return
+                return self.bes_obj.sim_duration
         # Run the IDF file
         self.bes_obj.run_idf_with_energyplus(path_building_bes_temp_folder=path_building_bes_temp_folder,
                                              path_epw_file=path_epw_file, silent=silent)
@@ -413,7 +413,26 @@ class BuildingModeled(BuildingBasic):
 
     def move_bes_result_files_from_temp_to_result_folder(self, path_ubes_temp_sim_folder,
                                                          path_ubes_sim_result_folder):
+        """
+        Move the BES result files from the temporary simulation folder to the result folder and delete the
+        temporary simulation folder.
+        :param path_ubes_temp_sim_folder: str: path to the temporary simulation folder
+        :param path_ubes_sim_result_folder: str: path to the result simulation folder
+        """
 
+        self.bes_obj.move_result_files_from_temp_to_result_folder(
+            path_ubes_temp_sim_folder=path_ubes_temp_sim_folder,
+            path_ubes_sim_result_folder=path_ubes_sim_result_folder)
+
+    def extract_bes_result_files_and_export_to_csv(self, path_ubes_sim_result_folder):
+        """
+        Extract the BES result files and export them to CSV files.
+        :param path_ubes_sim_result_folder: str: path to the result simulation folder
+        """
+        self.bes_obj.extract_total_energy_use(path_ubes_sim_result_folder=path_ubes_sim_result_folder)
+        self.bes_obj.export_result_to_csv(path_ubes_sim_result_folder=path_ubes_sim_result_folder)
+
+        return self.bes_obj.bes_results_dict
 
     def re_initialize_bes(self):
         """
