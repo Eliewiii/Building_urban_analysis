@@ -31,7 +31,8 @@ from bipv.bipv_transportation import BipvTransportation
 
 from utils.utils_configuration import name_urban_canopy_export_file_pkl, name_urban_canopy_export_file_json, \
     name_radiation_simulation_folder, name_temporary_files_folder, name_ubes_temp_simulation_folder, \
-    name_ubes_hbjson_simulation_parameters_file, name_ubes_epw_file, path_folder_default_bipv_parameters, \
+    name_ubes_simulation_result_folder, name_ubes_hbjson_simulation_parameters_file, name_ubes_epw_file, \
+    path_folder_default_bipv_parameters, \
     path_folder_user_bipv_parameters
 from utils.utils_constants import TOLERANCE_LBT
 
@@ -720,8 +721,6 @@ class UrbanCanopy:
         :param overwrite: bool, if True, the existing idf files will be overwritten.
         :param silent: bool, if True, the OpenStudio messages will not be printed.
         """
-        # Check if EPW and simulation parameters files are in the temporary ubes folder
-
         # Checks of the building_id_list parameter to give feedback to the user if there is an issue with an id
         if not (building_id_list is None or building_id_list is []):
             for building_id in building_id_list:
@@ -736,7 +735,7 @@ class UrbanCanopy:
                     user_logger.warning(
                         f"The building id {building_id} is not a target building or is not set to be "
                         f"simulated, thus it cannot be simulated by with EnergyPlus")
-        # Path to the temporary folder ost the ubes simulation files
+        # Path to the temporary folder of the ubes simulation files
         path_ubes_temp_sim_folder = os.path.join(path_simulation_folder, name_temporary_files_folder,
                                                  name_ubes_temp_simulation_folder)
 
@@ -753,7 +752,13 @@ class UrbanCanopy:
                     path_ubes_temp_sim_folder=path_ubes_temp_sim_folder,
                     path_epw_file=path_epw_file, overwrite=overwrite, silent=silent)
                 duration_dict[building_obj.id] = duration
-                # Move the sql file to the UBES result folder
+        # Move the sql and err (=log) file to the UBES result folder
+        path_ubes_sim_result_folder = os.path.join(path_simulation_folder, name_ubes_simulation_result_folder)
+        for building_obj in self.building_dict.values():
+            building_obj.move_bes_result_files_from_temp_to_result_folder(
+                path_ubes_temp_sim_folder=path_ubes_temp_sim_folder,
+                path_ubes_sim_result_folder= path_ubes_sim_result_folder
+            )
         return duration_dict
 
     def generate_sensor_grid_on_buildings(self, building_id_list=None, bipv_on_roof=True,
@@ -972,8 +977,10 @@ class UrbanCanopy:
             solar_rad_and_bipv_obj_list=solar_rad_and_bipv_obj_list)
 
         # Write urban scale results to CSV file (overwrite existing file if it exists)
-        path_radiation_and_bipv_result_folder = os.path.join(path_simulation_folder, name_radiation_simulation_folder)
-        bipv_scenario_obj.write_bipv_results_to_csv(path_radiation_and_bipv_result_folder=path_radiation_and_bipv_result_folder)
+        path_radiation_and_bipv_result_folder = os.path.join(path_simulation_folder,
+                                                             name_radiation_simulation_folder)
+        bipv_scenario_obj.write_bipv_results_to_csv(
+            path_radiation_and_bipv_result_folder=path_radiation_and_bipv_result_folder)
 
     @staticmethod
     def does_building_fits_bipv_requirement(building_obj, building_id_list, continue_simulation):
@@ -1024,7 +1031,8 @@ class UrbanCanopy:
             bipv_scenario_obj.bipv_simulated_building_id_list))
 
         conditioned_apartment_area = sum(
-            self.get_conditioned_area_from_building_id_list(bipv_scenario_obj.bipv_simulated_building_id_list))
+            self.get_conditioned_area_from_building_id_list(
+                bipv_scenario_obj.bipv_simulated_building_id_list))
         # Set the grid parameters
         bipv_scenario_obj.compute_kpis(
             grid_ghg_intensity=grid_ghg_intensity,
@@ -1034,8 +1042,10 @@ class UrbanCanopy:
             conditioned_apartment_area=conditioned_apartment_area,
             zone_area=zone_area)
         # Write the results to CSV file
-        path_radiation_and_bipv_result_folder = os.path.join(path_simulation_folder, name_radiation_simulation_folder)
-        bipv_scenario_obj.write_kpis_to_csv(path_radiation_and_bipv_result_folder=path_radiation_and_bipv_result_folder)
+        path_radiation_and_bipv_result_folder = os.path.join(path_simulation_folder,
+                                                             name_radiation_simulation_folder)
+        bipv_scenario_obj.write_kpis_to_csv(
+            path_radiation_and_bipv_result_folder=path_radiation_and_bipv_result_folder)
 
     def get_list_of_bipv_simulated_buildings(self):
         """

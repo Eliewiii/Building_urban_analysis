@@ -205,7 +205,6 @@ class BuildingModeled(BuildingBasic):
         """
         return self.bes_object.get_total_energy_consumption()
 
-
     def make_merged_faces_hb_model(self, orient_roof_mesh_to_according_to_building_orientation=True,
                                    north_angle=0, overwrite=False):
         """
@@ -411,6 +410,10 @@ class BuildingModeled(BuildingBasic):
         self.bes_obj.run_idf_with_energyplus(path_building_bes_temp_folder=path_building_bes_temp_folder,
                                              path_epw_file=path_epw_file, silent=silent)
         return self.bes_obj.sim_duration
+
+    def move_bes_result_files_from_temp_to_result_folder(self, path_ubes_temp_sim_folder,
+                                                         path_ubes_sim_result_folder):
+
 
     def re_initialize_bes(self):
         """

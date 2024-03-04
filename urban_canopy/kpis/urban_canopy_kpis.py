@@ -157,12 +157,13 @@ class UrbanCanopyKPIs:
         flatten_intermediate_result_dict = flatten_intermediate_dict(self.kpi_intermediate_results_dict)
         df = pd.DataFrame.from_dict(flatten_intermediate_result_dict)
         df.insert(0, 'year', year_list)
-        df.to_csv(file_path,index=False)
+        df.to_csv(file_path, index=False)
         # CSV for the KPIs
         file_name = prefix + "kpi_results.csv"
         file_path = os.path.join(folder_path, file_name)
         kpi_dict = self.to_dict()["kpis"]
-        df = pd.DataFrame.from_dict(kpi_dict)
+        flattened_kpi_dict = flatten_kpi_dict(kpi_dict)
+        df = pd.DataFrame.from_dict(flattened_kpi_dict)
         df.to_csv(file_path, index=False)
 
     def compute_intermediate_results_dict(self, bipv_results_dict):
