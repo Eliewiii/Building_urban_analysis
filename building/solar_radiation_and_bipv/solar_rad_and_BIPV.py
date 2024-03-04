@@ -433,7 +433,7 @@ class SolarRadAndBipvSimulation:
 
         elif run_bipv_on_roof:
             self.bipv_results_dict["total"] = self.bipv_results_dict["roof"]
-        elif run_bipv_on_facades: \
+        elif run_bipv_on_facades:
             self.bipv_results_dict["total"] = self.bipv_results_dict["facades"]
 
     def run_bipv_panel_simulation_on_roof_or_facades(self, roof_or_facades, on_roof_or_facades,
@@ -597,18 +597,6 @@ class SolarRadAndBipvSimulation:
 
         return simulation_has_run
 
-    @classmethod
-    def sum_bipv_results_at_urban_scale(cls, solar_rad_and_bipv_obj_list):
-        """
-        Sum the results dictionary of the BIPV simulations at the urban scale
-        :param solar_rad_and_bipv_simulation_list: list of SolarRadAndBipvSimulation objects
-        :return: dict of the results
-        """
-        bipv_results_dict = deepcopy(empty_bipv_results_dict)
-        for solar_rad_and_bipv_obj in solar_rad_and_bipv_obj_list:
-            bipv_results_dict = sum_dicts(bipv_results_dict, solar_rad_and_bipv_obj.bipv_results_dict)
-        return bipv_results_dict
-
     @staticmethod
     def add_results_to_global_results_dict(bipv_results_dict, energy_harvested_yearly_list, gtg_result_dict,
                                            transport_result_dict, maintenance_result_dict,
@@ -631,8 +619,8 @@ class SolarRadAndBipvSimulation:
         # LCA Primary energy
         bipv_results_dict["primary_energy"]["gate_to_gate"]["yearly"] += gtg_result_dict["primary_energy"]
         bipv_results_dict["primary_energy"]["transportation"]["gate_to_gate"]["yearly"] += \
-        transport_result_dict[
-            "primary_energy"]["gtg"]
+            transport_result_dict[
+                "primary_energy"]["gtg"]
         bipv_results_dict["primary_energy"]["transportation"]["recycling"]["yearly"] += transport_result_dict[
             "primary_energy"]["recycling"]
         bipv_results_dict["primary_energy"]["transportation"]["total"]["yearly"] += [sum(i) for i in zip(
@@ -667,11 +655,11 @@ class SolarRadAndBipvSimulation:
         bipv_results_dict["cost"]["investment"]["gate_to_gate"]["yearly"] += gtg_result_dict["cost"][
             "investment"]
         bipv_results_dict["cost"]["investment"]["transportation"]["gate_to_gate"]["yearly"] += \
-        transport_result_dict[
-            "cost"]["investment"]["gtg"]
+            transport_result_dict[
+                "cost"]["investment"]["gtg"]
         bipv_results_dict["cost"]["investment"]["transportation"]["recycling"]["yearly"] += \
-        transport_result_dict[
-            "cost"]["investment"]["recycling"]
+            transport_result_dict[
+                "cost"]["investment"]["recycling"]
         bipv_results_dict["cost"]["investment"]["transportation"]["total"]["yearly"] += [sum(i) for i in zip(
             transport_result_dict["cost"]["investment"]["gtg"],
             transport_result_dict["cost"]["investment"]["recycling"])]
@@ -708,10 +696,10 @@ class SolarRadAndBipvSimulation:
 
         return bipv_results_dict
 
-    def write_bipv_results_to_csv(self, path_results_folder, building_id):
+    def write_building_bipv_results_to_csv(self, path_radiation_and_bipv_result_folder, building_id):
         """
         Write the BIPV results to a csv file
-        :param path_results_folder: path to the simulation folder
+        :param path_radiation_and_bipv_result_folder: path to the simulation folder
         :param building_id: building id
         """
         # Find the earliest and latest years across all dictionaries
@@ -742,25 +730,25 @@ class SolarRadAndBipvSimulation:
             latest_year=latest_year)
 
         # empty dict with proper size
-        bipv_results_to_csv(path_results_folder=path_results_folder,
+        bipv_results_to_csv(path_radiation_and_bipv_result_folder=path_radiation_and_bipv_result_folder,
                             building_id_or_uc_scenario_name=building_id,
                             bipv_results_dict=result_dict_adjusted, start_year=earliest_year,
                             study_duration_in_years=latest_year - earliest_year)
 
 
-def bipv_results_to_csv(path_results_folder, building_id_or_uc_scenario_name, bipv_results_dict,
+def bipv_results_to_csv(path_radiation_and_bipv_result_folder, building_id_or_uc_scenario_name, bipv_results_dict,
                         start_year,
                         study_duration_in_years):
     """
     Save bipv simulation results in a csv file
-    :param: path_results_folder: path to the simulation folder
+    :param: path_simulation_folder: path to the simulation folder
     :param: building_id_or_uc_scenario_name: building id or urban canopy scenario name
     """
-
+    path_result_folder = os.path.join(path_radiation_and_bipv_result_folder, str(building_id_or_uc_scenario_name))
     # create the folder if it does not exist, especially for the urban canopy
-    if not os.path.isdir(path_results_folder):
-        os.makedirs(path_results_folder)
-    path_csv_file = os.path.join(path_results_folder,
+    if not os.path.isdir(path_result_folder):
+        os.makedirs(path_result_folder)
+    path_csv_file = os.path.join(path_result_folder,
                                  building_id_or_uc_scenario_name + "_" + name_results_file_csv)
     with open(path_csv_file, mode='w', newline='') as file:
         # flatten the dict to read and write the data easily

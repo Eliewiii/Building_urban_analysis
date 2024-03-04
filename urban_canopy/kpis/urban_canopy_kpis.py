@@ -11,8 +11,6 @@ from copy import deepcopy
 from building.solar_radiation_and_bipv.solar_rad_and_BIPV import \
     compute_cumulative_and_total_value_bipv_result_dict
 
-from utils.utils_configuration import name_radiation_simulation_folder
-
 user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")
 
@@ -139,29 +137,32 @@ class UrbanCanopyKPIs:
         }
         return kpi_result_dict
 
-    def to_csv(self, folder_path, start_year, end_year):
+    def to_csv(self, folder_path, start_year, end_year, prefix=""):
         """
+        # todo @Elie to test
         Save the object to a csv file.
-        :param folder_path: str, the path to the folder where the csv file will be saved
+        :param folder_path: str, the path to the folder to write the csv files in
         :param start_year: int, the start year of the simulation
         :param end_year: int, the end year of the simulation
+        :param prefix: str, the prefix to add to the file name
         """
+        # Add underscore to the prefix if there is one
+        if prefix != "":
+            prefix += "_"
+        # Prepare the year list
         year_list = [year for year in range(start_year, end_year)]
         # CSV for the intermediate results
-        file_name = "kpi_intermediate_results.csv"
+        file_name = prefix + "kpi_intermediate_results.csv"
         file_path = os.path.join(folder_path, file_name)
         flatten_intermediate_result_dict = flatten_intermediate_dict(self.kpi_intermediate_results_dict)
         df = pd.DataFrame.from_dict(flatten_intermediate_result_dict)
         df.insert(0, 'year', year_list)
-        df.to_csv(file_path, index=False)
+        df.to_csv(file_path,index=False)
         # CSV for the KPIs
-        file_name = "kpi_results.csv"
+        file_name = prefix + "kpi_results.csv"
         file_path = os.path.join(folder_path, file_name)
         kpi_dict = self.to_dict()["kpis"]
-        flatten_kpi_result_dict = flatten_kpi_dict(kpi_dict)
-        df = pd.DataFrame.from_dict(flatten_kpi_result_dict)
-        line_headers = ["roof", "facades", "total"]
-        df.insert(0, '', line_headers)
+        df = pd.DataFrame.from_dict(kpi_dict)
         df.to_csv(file_path, index=False)
 
     def compute_intermediate_results_dict(self, bipv_results_dict):
@@ -183,7 +184,6 @@ class UrbanCanopyKPIs:
         """
         Compute the KPIs of the building.
         :param bipv_results_dict: dictionary, the results of the BIPV simulation
-        :return kpi_result_dict: dictionary, the KPIs of the building
         """
         # Roof
         self.compute_sub_kpis(bipv_result_dict=bipv_results_dict["roof"], sub_type="roof")
@@ -191,10 +191,6 @@ class UrbanCanopyKPIs:
         self.compute_sub_kpis(bipv_result_dict=bipv_results_dict["facades"], sub_type="facades")
         # Total
         self.compute_sub_kpis(bipv_result_dict=bipv_results_dict["total"], sub_type="total")
-
-        kpi_result_dict = self.to_dict()
-
-        return kpi_result_dict
 
     def compute_sub_kpis(self, bipv_result_dict, sub_type):
         """

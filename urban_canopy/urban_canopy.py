@@ -743,7 +743,7 @@ class UrbanCanopy:
         path_epw_file = os.path.join(path_ubes_temp_sim_folder, name_ubes_epw_file)
         # Initialize the duration directory
         duration_dict = {}
-        # Generate the idf files for the buildings
+        # run the idf files for the buildings
         for building_obj in self.building_dict.values():
             if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
                     and isinstance(building_obj, BuildingModeled) and (
@@ -753,6 +753,7 @@ class UrbanCanopy:
                     path_ubes_temp_sim_folder=path_ubes_temp_sim_folder,
                     path_epw_file=path_epw_file, overwrite=overwrite, silent=silent)
                 duration_dict[building_obj.id] = duration
+                # Move the sql file to the UBES result folder
         return duration_dict
 
     def generate_sensor_grid_on_buildings(self, building_id_list=None, bipv_on_roof=True,
@@ -950,13 +951,6 @@ class UrbanCanopy:
             if self.does_building_fits_bipv_requirement(building_obj=building_obj,
                                                         building_id_list=building_id_list,
                                                         continue_simulation=continue_simulation):
-                roof_pv_tech_obj = bipv_technology_obj_dict[roof_id_pv_tech]
-                facade_pv_tech_obj = bipv_technology_obj_dict[facades_id_pv_tech]
-                roof_transport_obj = bipv_transportation_obj_dict[roof_transport_id]
-                facades_transport_obj = bipv_transportation_obj_dict[facades_transport_id]
-                roof_inverter_obj = bipv_inverter_obj_dict[roof_inverter_id]
-                facades_inverter_obj = bipv_inverter_obj_dict[facades_inverter_id]
-
                 building_obj.building_run_bipv_panel_simulation(path_simulation_folder=path_simulation_folder,
                                                                 roof_pv_tech_obj=roof_pv_tech_obj,
                                                                 facades_pv_tech_obj=facade_pv_tech_obj,
@@ -978,46 +972,8 @@ class UrbanCanopy:
             solar_rad_and_bipv_obj_list=solar_rad_and_bipv_obj_list)
 
         # Write urban scale results to CSV file (overwrite existing file if it exists)
-        bipv_result_folder_path = os.path.join(path_simulation_folder, name_radiation_simulation_folder,
-                                               str(bipv_scenario_identifier))
-        bipv_scenario_obj.write_urban_scale_bipv_results_to_csv(path_results_folder=bipv_result_folder_path)
-
-    def compute_bipv_kpis_at_urban_scale(self, path_simulation_folder, bipv_scenario_identifier,
-                                         grid_ghg_intensity, grid_energy_intensity,
-                                         grid_electricity_sell_price, zone_area):
-        """
-        Post-process the BIPV results at urban scale
-        :param path_simulation_folder: string, path to the simulation folder
-        :param bipv_scenario_identifier: string, identifier of the BIPV scenario
-        :param grid_ghg_intensity: float, gCO2/kWh, grid GHG intensity
-        :param grid_energy_intensity: float, kWh/m2, grid energy intensity
-        :param grid_electricity_sell_price: float, €/kWh, grid electricity sell price
-
-        :param zone_area: float, m2, area of the zone
-
-        """
-
-        bipv_scenario_obj = self.bipv_scenario_dict[bipv_scenario_identifier]
-
-        ubes_electricity_consumption = sum(self.get_ubes_electricity_consumption_from_building_id_list(
-            bipv_scenario_obj.bipv_simulated_building_id_list))
-
-        conditioned_apartment_area = sum(self.get_conditioned_area_from_building_id_list(
-            bipv_scenario_obj.bipv_simulated_building_id_list))
-        # Set the grid parameters
-        kpi_result_dict = bipv_scenario_obj.compute_kpis(
-            grid_ghg_intensity=grid_ghg_intensity,
-            grid_energy_intensity=grid_energy_intensity,
-            grid_electricity_sell_price=grid_electricity_sell_price,
-            ubes_electricity_consumption=ubes_electricity_consumption,
-            conditioned_apartment_area=conditioned_apartment_area,
-            zone_area=zone_area)
-        # Write the results to CSV file
-        bipv_result_folder_path = os.path.join(path_simulation_folder, name_radiation_simulation_folder,
-                                               str(bipv_scenario_identifier))
-        bipv_scenario_obj.write_bipv_kpis_to_csv(folder_path=bipv_result_folder_path)
-
-        return kpi_result_dict
+        path_radiation_and_bipv_result_folder = os.path.join(path_simulation_folder, name_radiation_simulation_folder)
+        bipv_scenario_obj.write_bipv_results_to_csv(path_radiation_and_bipv_result_folder=path_radiation_and_bipv_result_folder)
 
     @staticmethod
     def does_building_fits_bipv_requirement(building_obj, building_id_list, continue_simulation):
@@ -1046,6 +1002,40 @@ class UrbanCanopy:
 
         return (condition_1 and condition_2) or (
                 condition_2 and condition_3 and continue_simulation)
+
+    def compute_bipv_kpis_at_urban_scale(self, path_simulation_folder, bipv_scenario_identifier,
+                                         grid_ghg_intensity, grid_energy_intensity,
+                                         grid_electricity_sell_price, zone_area):
+        """
+        Post-process the BIPV results at urban scale
+        :param path_simulation_folder: string, path to the simulation folder
+        :param bipv_scenario_identifier: string, identifier of the BIPV scenario
+        :param grid_ghg_intensity: float, gCO2/kWh, grid GHG intensity
+        :param grid_energy_intensity: float, kWh/m2, grid energy intensity
+        :param grid_electricity_sell_price: float, €/kWh, grid electricity sell price
+
+        :param zone_area: float, m2, area of the zone
+
+        """
+
+        bipv_scenario_obj = self.bipv_scenario_dict[bipv_scenario_identifier]
+
+        ubes_electricity_consumption = sum(self.get_ubes_electricity_consumption_from_building_id_list(
+            bipv_scenario_obj.bipv_simulated_building_id_list))
+
+        conditioned_apartment_area = sum(
+            self.get_conditioned_area_from_building_id_list(bipv_scenario_obj.bipv_simulated_building_id_list))
+        # Set the grid parameters
+        bipv_scenario_obj.compute_kpis(
+            grid_ghg_intensity=grid_ghg_intensity,
+            grid_energy_intensity=grid_energy_intensity,
+            grid_electricity_sell_price=grid_electricity_sell_price,
+            ubes_electricity_consumption=ubes_electricity_consumption,
+            conditioned_apartment_area=conditioned_apartment_area,
+            zone_area=zone_area)
+        # Write the results to CSV file
+        path_radiation_and_bipv_result_folder = os.path.join(path_simulation_folder, name_radiation_simulation_folder)
+        bipv_scenario_obj.write_kpis_to_csv(path_radiation_and_bipv_result_folder=path_radiation_and_bipv_result_folder)
 
     def get_list_of_bipv_simulated_buildings(self):
         """

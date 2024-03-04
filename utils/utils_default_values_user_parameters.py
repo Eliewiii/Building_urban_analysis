@@ -74,3 +74,10 @@ default_replacement_frequency_in_years = 20
 default_bipv_scenario_identifier = "new_uc_scenario"
 # Default values for panel simulation - LCA
 default_country_ghe_cost = 0.57874
+
+
+# Default values for KPI computationm  todo: put proper values
+default_grid_ghg_intensity = 500
+default_grid_energy_intensity = 2
+default_grid_electricity_sell_price = 0.05
+
