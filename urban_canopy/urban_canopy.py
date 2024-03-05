@@ -688,7 +688,7 @@ class UrbanCanopy:
                     user_logger.warning(
                         f"The building id {building_id} is not a target building or is not set to be "
                         f"simulated, thus it cannot be simulated by with EnergyPlus")
-        # Generate or clean the temporary folder ost the ubes simulation files
+        # Generate or clean the temporary folder for the ubes simulation files
         path_ubes_temp_sim_folder = os.path.join(path_simulation_folder, name_temporary_files_folder,
                                                  name_ubes_temp_simulation_folder)
         if os.path.isdir(path_ubes_temp_sim_folder):
@@ -789,13 +789,18 @@ class UrbanCanopy:
             if isinstance(building_obj,
                           BuildingModeled):  # no need for more checking, the building themselves
                 # will check if they have been simulated
-                bes_result_dict = building_obj.extract_bes_result_files_and_export_to_csv(path_ubes_sim_result_folder=path_ubes_sim_result_folder)
+                bes_result_dict = building_obj.extract_bes_results(path_ubes_sim_result_folder=path_ubes_sim_result_folder)
                 if bes_result_dict is not None:
                     bes_result_dict_list.append(bes_result_dict)
         # Compute the results at the urban canopy level
         self.ubes_obj.compute_ubes_results(bes_result_dict_list=bes_result_dict_list)  # todo @Elie: to be implemented
         # Export the results to csv
+        """ The export is made at the end to make sure none of the buildings have failed to extract the results before 
+        exporting the results at the urban canopy level."""
         self.ubes_obj.export_ubes_results_to_csv(path_ubes_sim_result_folder=path_ubes_sim_result_folder)
+        for building_obj in self.building_dict.values():
+            if isinstance(building_obj, BuildingModeled):
+                building_obj.export_bes_results_to_csv(path_ubes_sim_result_folder=path_ubes_sim_result_folder)
 
 
     def generate_sensor_grid_on_buildings(self, building_id_list=None, bipv_on_roof=True,
@@ -888,6 +893,7 @@ class UrbanCanopy:
                                                building_id_list, roof_id_pv_tech, facades_id_pv_tech,
                                                roof_transport_id,
                                                facades_transport_id, roof_inverter_id, facades_inverter_id,
+                                               roof_inverter_sizing_ratio=0.9, facades_inverter_sizing_ratio=0.9,
                                                efficiency_computation_method="yearly",
                                                minimum_panel_eroi=1.2, start_year=datetime.now().year,
                                                end_year=datetime.now().year + 50,
@@ -904,6 +910,8 @@ class UrbanCanopy:
         :param facades_transport_id: string: id of the facades transportation used
         :param roof_inverter_id: string: id of the roof inverter used
         :param facades_inverter_id: string: id of the facades inverter used
+        :param roof_inverter_sizing_ratio: float: sizing ratio of the roof inverter, default = 0.9
+        :param facades_inverter_sizing_ratio: float: sizing ratio of the facades inverter, default = 0.9
         :param efficiency_computation_method: string: method used to compute the efficiency of the panels,
             default = "yearly"
         :param minimum_panel_eroi: float: minimum energy return on investment of the panels, default = 1.2
@@ -979,6 +987,7 @@ class UrbanCanopy:
                 if isinstance(building_obj, BuildingModeled) and building_obj.is_target:
                     building_obj.solar_radiation_and_bipv_simulation_obj.init_bipv_simulation()
 
+
         #
         roof_pv_tech_obj = bipv_technology_obj_dict[roof_id_pv_tech]
         facade_pv_tech_obj = bipv_technology_obj_dict[facades_id_pv_tech]
@@ -996,6 +1005,12 @@ class UrbanCanopy:
                 building_obj.building_run_bipv_panel_simulation(path_simulation_folder=path_simulation_folder,
                                                                 roof_pv_tech_obj=roof_pv_tech_obj,
                                                                 facades_pv_tech_obj=facade_pv_tech_obj,
+                                                                roof_inverter_obj=roof_inverter_obj,
+                                                                facades_inverter_obj=facades_inverter_obj,
+                                                                roof_inverter_sizing_ratio=roof_inverter_sizing_ratio,
+                                                                facades_inverter_sizing_ratio=facades_inverter_sizing_ratio,
+                                                                roof_transport_obj=roof_transport_obj,
+                                                                facades_transport_obj=facades_transport_obj,
                                                                 uc_start_year=bipv_scenario_obj.start_year,
                                                                 uc_current_year=start_year,
                                                                 uc_end_year=bipv_scenario_obj.end_year,
@@ -1005,7 +1020,10 @@ class UrbanCanopy:
                                                                 continue_simulation=continue_simulation,
                                                                 **kwargs)
                 solar_rad_and_bipv_obj_list.append(building_obj.solar_radiation_and_bipv_simulation_obj)
-
+        # Add the selected panels to the building shades
+        for building_obj in self.building_dict.values():
+            if isinstance(building_obj, BuildingModeled):
+                building_obj.add_selected_bipv_panels_to_shades()
         # Get the list of buildings that were simualted
         building_id_list = self.get_list_of_bipv_simulated_buildings()
         bipv_scenario_obj.set_simulated_building_id_list(building_id_list=building_id_list)

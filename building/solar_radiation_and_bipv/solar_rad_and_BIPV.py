@@ -11,6 +11,7 @@ from copy import deepcopy
 from datetime import datetime
 
 from honeybee_radiance.sensorgrid import SensorGrid
+from ladybug_geometry.geometry3d.face import Face3D
 
 from building.solar_radiation_and_bipv.utils_sensorgrid import generate_sensor_grid_for_hb_model
 from building.solar_radiation_and_bipv.utils_solar_radiation import \
@@ -372,6 +373,8 @@ class SolarRadAndBipvSimulation:
 
     def run_bipv_panel_simulation(self, path_simulation_folder, building_id, roof_pv_tech_obj,
                                   facades_pv_tech_obj,
+                                  roof_inverter_tech_obj,facades_inverter_tech_obj, roof_inverter_sizing_ratio,
+                                  facades_inverter_sizing_ratio,roof_transport_obj, facades_transport_obj,
                                   uc_end_year, uc_start_year, uc_current_year,
                                   efficiency_computation_method="yearly",
                                   minimum_panel_eroi=1.2,
@@ -389,6 +392,9 @@ class SolarRadAndBipvSimulation:
                                                                              path_simulation_folder=path_simulation_folder,
                                                                              building_id=building_id,
                                                                              pv_tech_obj=roof_pv_tech_obj,
+                                                                             inverter_tech_obj=roof_inverter_tech_obj,
+                                                                             inverter_sizing_ratio=roof_inverter_sizing_ratio,
+                                                                             transport_obj=roof_transport_obj,
                                                                              uc_end_year=uc_end_year,
                                                                              uc_start_year=uc_start_year,
                                                                              uc_current_year=uc_current_year,
@@ -406,6 +412,9 @@ class SolarRadAndBipvSimulation:
                                                                                 path_simulation_folder=path_simulation_folder,
                                                                                 building_id=building_id,
                                                                                 pv_tech_obj=facades_pv_tech_obj,
+                                                                                inverter_tech_obj=facades_inverter_tech_obj,
+                                                                                inverter_sizing_ratio=facades_inverter_sizing_ratio,
+                                                                                transport_obj=facades_transport_obj,
                                                                                 uc_end_year=uc_end_year,
                                                                                 uc_start_year=uc_start_year,
                                                                                 uc_current_year=uc_current_year,
@@ -735,6 +744,24 @@ class SolarRadAndBipvSimulation:
                             bipv_results_dict=result_dict_adjusted, start_year=earliest_year,
                             study_duration_in_years=latest_year - earliest_year)
 
+    def get_selected_panel_lb_face3d(self):
+        """
+        Get the selected panel lb_face3d
+        :return panel_lb_face_list: list of lb_face3d
+        """
+        panel_lb_face_list = []
+        if self.roof_panel_list is not None and self.roof_panel_list != []:
+            roof_sensorgrid = SensorGrid.from_dict(self.roof_sensorgrid_dict)
+            panel_lb_face_list += [
+                from_sensorgrid_face_index_to_lb_face3d(sensorgrid_face_index=panel.id, sensorgrid=roof_sensorgrid) for
+                panel in self.roof_panel_list]
+        if self.facades_panel_list is not None and self.facades_panel_list != []:
+            facades_sensorgrid = SensorGrid.from_dict(self.facades_sensorgrid_dict)
+            panel_lb_face_list += [
+                from_sensorgrid_face_index_to_lb_face3d(sensorgrid_face_index=panel.id, sensorgrid=facades_sensorgrid)
+                for panel in self.facades_panel_list]
+
+        return panel_lb_face_list
 
 def bipv_results_to_csv(path_radiation_and_bipv_result_folder, building_id_or_uc_scenario_name, bipv_results_dict,
                         start_year,
@@ -877,3 +904,13 @@ def flatten_dict(d):
         else:
             result[key] = value
     return result
+
+
+def from_sensorgrid_face_index_to_lb_face3d(sensorgrid_face_index, sensorgrid):
+    """
+    Convert the face index of a sensorgrid to the face index of a lb_face3d
+    """
+    face = sensorgrid.faces[sensorgrid_face_index]
+    lb_point3d_list = [sensorgrid.vertices[i] for i in face]
+
+    return Face3D(lb_point3d_list)

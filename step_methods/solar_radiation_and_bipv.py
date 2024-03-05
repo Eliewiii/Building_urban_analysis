@@ -12,7 +12,7 @@ from utils.utils_default_values_user_parameters import default_roof_grid_size_x,
     default_roof_grid_size_y, default_facades_grid_size_y, default_offset_dist
 
 from utils.utils_default_values_user_parameters import default_id_pv_tech_roof, \
-    default_id_pv_tech_facades, default_minimum_panel_eroi, default_start_year, default_end_year, \
+    default_id_pv_tech_facades, default_roof_transport_id,default_facades_transport_id, default_roof_inverter_id,default_facades_inverter_id, default_roof_inverter_sizing_ratio,default_facades_inverter_sizing_ratio, default_minimum_panel_eroi, default_start_year, default_end_year, \
     default_efficiency_computation_method, default_replacement_scenario, default_replacement_frequency_in_years, \
     default_bipv_scenario_identifier, default_grid_ghg_intensity, default_grid_energy_intensity, \
     default_grid_electricity_sell_price
@@ -90,6 +90,9 @@ class SimFunSolarRadAndBipv:
                                                bipv_scenario_identifier=default_bipv_scenario_identifier,
                                                building_id_list=None, roof_id_pv_tech=default_id_pv_tech_roof,
                                                facades_id_pv_tech=default_id_pv_tech_facades,
+                                               roof_transport_id=default_roof_transport_id, facades_transport_id=default_facades_transport_id,
+                                               roof_inverter_id=default_roof_inverter_id, facades_inverter_id=default_facades_inverter_id,
+                                               roof_inverter_sizing_ratio=default_roof_inverter_sizing_ratio, facades_inverter_sizing_ratio=default_facades_inverter_sizing_ratio,
                                                efficiency_computation_method=default_efficiency_computation_method,
                                                minimum_panel_eroi=default_minimum_panel_eroi,
                                                start_year=default_start_year,

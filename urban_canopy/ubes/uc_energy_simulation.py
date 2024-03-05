@@ -13,7 +13,8 @@ from ladybug.epw import EPW
 
 from utils.utils_configuration import name_ubes_epw_file, name_ubes_hbjson_simulation_parameters_file
 from urban_canopy.ubes.check_simulation_parameter import check_simulation_parameters
-from building.energy_simulation.building_energy_simulation import empty_bes_results_dict
+from building.energy_simulation.building_energy_simulation import empty_bes_results_dict,bes_result_dict_to_csv
+
 
 user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")
@@ -39,10 +40,22 @@ class UrbanBuildingEnergySimulation:
         # Results
         self.ubes_results_dict = deepcopy(empty_bes_results_dict)
 
-    def set_parameters(self, hb_simulation_parameter_obj, epw_name):
+    def to_csv(self, path_ubes_sim_result_folder):
+        """
+        Save the results to a csv file.
+        :param path_ubes_sim_result_folder: str, path to the folder to write the  csv file
         """
 
-        """
+        if not self.has_run or self.ubes_results_dict is None:
+            return
+        # Paths to the results files
+        path_csv_file = os.path.join(path_ubes_sim_result_folder, "urban_canopy_ubes_results.csv")
+        # Check if the BES result folder and the result files exist
+        if not os.path.isdir(path_ubes_sim_result_folder):
+            return
+        """ Write the file even if it exist already as monthly values could have been extracted 
+        in the meantime """
+        bes_result_dict_to_csv(bes_result_dict=self.ubes_results_dict, path_csv_file=path_csv_file)
 
     def load_epw_and_hb_simulation_parameters(self, path_hbjson_simulation_parameter_file, path_file_epw,
                                               ddy_file=None,
@@ -105,4 +118,80 @@ class UrbanBuildingEnergySimulation:
                 json.dump(self.hb_simulation_parameters_obj.to_dict(), fp, indent=4)
 
         return path_file_epw, path_file_simulation_parameter
+
+
+
+    def compute_ubes_results(self,bes_result_dict_list):
+        """
+        Compute the UBES results from the list of building energy simulation results.
+        """
+        # Sum the results
+        self.ubes_results_dict = sum_dicts(bes_result_dict_list)
+
+
+
+def sum_dicts(*args):
+    """
+    Sum the values dictionnaries
+    # todo: same function as in solar_rad_and_bipv.py, gather  them somewhere
+    """
+    if not args:
+        return {}
+    # Initialize with teh first dict
+    result_dict = args[0].copy()
+
+    for d in args[1:]:
+        for key in d:
+            if isinstance(d[key], dict):
+                result_dict[key] = sum_dicts(result_dict[key], d[key])
+            elif isinstance(d[key], list):
+                result_dict[key] = [x + y for x, y in zip(result_dict[key], d[key])]
+            else:  # assuming ints or floats
+                result_dict[key] += d[key]
+
+    return result_dict
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

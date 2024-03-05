@@ -352,3 +352,9 @@ class BuildingShadingContextFilter(BuildingContextFilter):
                 return False
 
         return True
+
+    def add_bipv_panel_as_shades(self,panel_lb_face3d_list):
+        """
+        Add the BIPV panels as shades to the BuildingShadingContext object
+        """
+        # todo

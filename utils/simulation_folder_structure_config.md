@@ -11,8 +11,9 @@ This folder, that can be generated and/or loaded anywhere in the computer (up to
     ├── ...         # Can have any structure, and are usually deleted after the simulation as they can be very large
 ├── UBES_simulation    # Contains shapefiles for the dataset
     ├── building_1     # One folder per Building
-        ├── building_1.log         
-        ├── building_1.sql         
+        ├── building_1.err         
+        ├── building_1.sql
+        ├── in.idf         
         ├── ...
     ├── building_2            
     ├── ...

@@ -65,6 +65,12 @@ default_offset_dist = 0.1
 # Default values for panel simulation
 default_id_pv_tech_roof = "mitrex_roof c-Si"
 default_id_pv_tech_facades = "mitrex_facades c-Si"
+default_roof_transport_id = "China_israel"
+default_facades_transport_id = "China_israel"
+default_roof_inverter_id = "inverter_1"
+default_facades_inverter_id = "inverter_1"
+default_roof_inverter_sizing_ratio = 0.9
+default_facades_inverter_sizing_ratio = 0.9
 default_minimum_panel_eroi = 1.2
 default_start_year = datetime.now().year
 default_end_year = default_start_year + 50

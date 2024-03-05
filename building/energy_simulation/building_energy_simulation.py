@@ -188,7 +188,7 @@ class BuildingEnergySimulation:
                                                        # self.bes_results_dict["ventilation"]["yearly"],
                                                        self.bes_results_dict["lighting"]["yearly"])
 
-    def export_results_to_csv(self, path_ubes_sim_result_folder):
+    def to_csv(self, path_ubes_sim_result_folder):
         """
         Export the results to a csv file.
         :param path_ubes_sim_result_folder: str, path to the result folder
@@ -204,24 +204,7 @@ class BuildingEnergySimulation:
             return
         """ Write the file even if it exist already as monthly values could have been extracted 
         in the meantime """
-
-        # Write the results to a csv file
-        month_list = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
-                      "October", "November", "December"]
-        with open(path_csv_file, 'w') as f:
-            f.write(header + "," for header in self.bes_results_dict.keys() + "\n")
-            for index, month in enumerate(month_list):
-                f.write(f"{month},")
-                for key, value in self.bes_results_dict.items():
-                    if value['monthly'] != []:
-                        monthly_value = value['monthly'][index]
-                    else:
-                        monthly_value = None
-                    f.write(f"{monthly_value},")
-                f.write("\n")
-            f.write("Total,")
-            for key, value in self.bes_results_dict.items():
-                f.write(f"{value['yearly']},")
+        bes_result_dict_to_csv(bes_result_dict=self.bes_results_dict, path_csv_file=path_csv_file)
 
     def get_total_energy_consumption(self):
         """
@@ -248,6 +231,31 @@ def from_hbjson_to_idf(dir_to_write_idf_in, path_hbjson_file, path_epw_file,
     ## Run simulation in OpenStudio to generate IDF ##
     (path_osm, path_idf) = run_osw(osw, silent=silent)
 
+
+def bes_result_dict_to_csv(bes_results_dict, path_csv_file):
+    """
+    Export the results to a csv file.
+    :param bes_results_dict: dict, results of the building energy simulation
+    :param path_csv_file: str, path to the csv file
+    :return: bool, True if the file was written
+    """
+    # Write the results to a csv file
+    month_list = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
+                  "October", "November", "December"]
+    with open(path_csv_file, 'w') as f:
+        f.write(header + "," for header in bes_results_dict.keys() + "\n")
+        for index, month in enumerate(month_list):
+            f.write(f"{month},")
+            for key, value in bes_results_dict.items():
+                if value['monthly'] != []:
+                    monthly_value = value['monthly'][index]
+                else:
+                    monthly_value = None
+                f.write(f"{monthly_value},")
+            f.write("\n")
+        f.write("Total,")
+        for key, value in bes_results_dict.items():
+            f.write(f"{value['yearly']},")
 
 def clean_directory(path):
     """

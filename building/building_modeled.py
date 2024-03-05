@@ -345,6 +345,15 @@ class BuildingModeled(BuildingBasic):
         nb_context_faces = len(self.shading_context_obj.context_shading_hb_shade_list)
         return nb_context_faces, self.shading_context_obj.second_pass_duration, flag_use_envelop
 
+    def add_selected_bipv_panels_to_shades(self):
+        """
+        Add the selected panels from the BIPV simulation to the context shading object
+        """
+        panel_lb_face3d_list = self.solar_radiation_and_bipv_simulation_obj.get_selected_panel_lb_face3d()
+        self.shading_context_obj.add_bipv_panel_as_shades(panel_lb_face3d_list)
+        # todo : not implemented yet, would create very complex couplingss among buildings
+
+
     def generate_idf_for_bes_with_openstudio(self, path_ubes_temp_sim_folder, path_epw_file,
                                              path_hbjson_simulation_parameters, overwrite=False,
                                              silent=False):
@@ -374,7 +383,7 @@ class BuildingModeled(BuildingBasic):
         hb_model_with_shades = self.hb_model_obj.duplicate()
         # Make the list of shades to add to the model
         hb_shade_list = self.shading_context_obj.forced_hb_shades_from_user_list + self.shading_context_obj.context_shading_hb_shade_list \
-                        + self.shading_context_obj.context_shading_hb_shade_list
+                        + self.shading_context_obj.solar_panels_hb_shade_list
         # Add the shades to the model
         hb_model_with_shades.add_shades(hb_shade_list)
         # Generate the IDF file
@@ -424,15 +433,24 @@ class BuildingModeled(BuildingBasic):
             path_ubes_temp_sim_folder=path_ubes_temp_sim_folder,
             path_ubes_sim_result_folder=path_ubes_sim_result_folder)
 
-    def extract_bes_result_files_and_export_to_csv(self, path_ubes_sim_result_folder):
+    def extract_bes_results(self, path_ubes_sim_result_folder):
         """
         Extract the BES result files and export them to CSV files.
+        NOTE: for now only the annual energy uses are extracted for the computed period, monthly results will ba added
+        later.
         :param path_ubes_sim_result_folder: str: path to the result simulation folder
         """
         self.bes_obj.extract_total_energy_use(path_ubes_sim_result_folder=path_ubes_sim_result_folder)
-        self.bes_obj.export_result_to_csv(path_ubes_sim_result_folder=path_ubes_sim_result_folder)
+        # todo : add the monthly results later
 
         return self.bes_obj.bes_results_dict
+
+    def export_bes_result_to_csv(self, path_ubes_sim_result_folder):
+        """
+        Export the BES result to a CSV file.
+        :param path_ubes_sim_result_folder: str: path to the result simulation folder
+        """
+        self.bes_obj.export_result_to_csv(path_ubes_sim_result_folder=path_ubes_sim_result_folder)
 
     def re_initialize_bes(self):
         """
