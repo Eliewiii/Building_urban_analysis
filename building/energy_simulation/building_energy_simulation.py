@@ -65,10 +65,30 @@ class BuildingEnergySimulation:
         # Results
         self.bes_results_dict = None
 
-    def set_parameters(self, hb_simulation_parameter_obj, epw_name, cop_heating, cop_cooling):
+    def set_cop(self, cop_heating, cop_cooling):
         """
+        Set the coefficient of performance of the heating and cooling systems.
+        :param cop_heating: float, coefficient of performance of the heating system
+        :param cop_cooling: float, coefficient of performance of the cooling system
+        """
+        self.cop_heating = cop_heating
+        self.cop_cooling = cop_cooling
 
+    def to_dict(self):
         """
+        Export the BuildingEnergySimulation object to a dictionary.
+        :return: dict, BuildingEnergySimulation object as a dictionary
+        """
+        # todo check, make one for UC and make the UC add it to dict
+        return {
+            "building_id": self.building_id,
+            "cop_heating": self.cop_heating,
+            "cop_cooling": self.cop_cooling,
+            "idf_generated": self.idf_generated,
+            "has_run": self.has_run,
+            "bes_results_dict": self.bes_results_dict,
+            "sim_duration": self.sim_duration
+        }
 
     def generate_idf_with_openstudio(self, path_building_bes_temp_folder, path_epw_file,
                                      path_hbjson_simulation_parameters, hb_model_obj: Model, silent=False):

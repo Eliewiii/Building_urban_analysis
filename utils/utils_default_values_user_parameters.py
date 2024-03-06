@@ -35,6 +35,8 @@ default_path_weather_file = os.path.join(path_tool, "Libraries", "EPW", "IS_5280
 # Building Energy Simulation
 default_path_hbjson_simulation_parameter_file = os.path.join(path_libraries_tool_folder, "Simulation_parameters",
                                                         "default_hb_sim_paramters.json")  # todo: check the link and update the file
+default_cop_heating = 1.0
+default_cop_cooling = 3.0
 
 # Creation of BuildingModeled objects
 default_automatic_floor_subdivision_for_new_BuildingModeled = False
@@ -86,4 +88,6 @@ default_country_ghe_cost = 0.57874
 default_grid_ghg_intensity = 500
 default_grid_energy_intensity = 2
 default_grid_electricity_sell_price = 0.05
+
+
 

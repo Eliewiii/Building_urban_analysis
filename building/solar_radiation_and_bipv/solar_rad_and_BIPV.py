@@ -276,14 +276,13 @@ class SolarRadAndBipvSimulation:
                                      grid_size_y=facades_grid_size_y,
                                      offset_dist=offset_dist)
 
-    def run_annual_solar_irradiance_simulation(self, path_simulation_folder, building_id, hb_model_obj,
+    def run_annual_solar_irradiance_simulation(self, path_simulation_folder, hb_model_obj,
                                                context_shading_hb_shade_list, path_weather_file,
                                                overwrite=False,
                                                north_angle=0, silent=False):
         """
         Run the annual solar radiation simulation for the roof and/or the facades
         :param path_simulation_folder: str : the path to the simulation folder
-        :param building_id: int : the id of the building
         :param hb_model_obj: Honeybee Model object
         :param context_shading_hb_shade_list: list of Honeybee Shades objects for the context shading
         :param path_weather_file: str : the path to the epw file
@@ -292,9 +291,9 @@ class SolarRadAndBipvSimulation:
         :param silent: bool : whether to print the logs or not
         """
         path_folder_run_radiation_temp = os.path.join(path_simulation_folder, name_temporary_files_folder,
-                                                      str(building_id))
+                                                      str(self.building_id))
         path_result_folder = os.path.join(path_simulation_folder, name_radiation_simulation_folder,
-                                          str(building_id))
+                                          str(self.building_id))
 
         # Distinguish between roof and facades
         if self.roof_sensorgrid_dict is not None:
@@ -371,7 +370,7 @@ class SolarRadAndBipvSimulation:
         if os.path.isdir(path_folder_run_radiation_temp):
             shutil.rmtree(path_folder_run_radiation_temp)
 
-    def run_bipv_panel_simulation(self, path_simulation_folder, building_id, roof_pv_tech_obj,
+    def run_bipv_panel_simulation(self, path_simulation_folder, roof_pv_tech_obj,
                                   facades_pv_tech_obj,
                                   roof_inverter_tech_obj,facades_inverter_tech_obj, roof_inverter_sizing_ratio,
                                   facades_inverter_sizing_ratio,roof_transport_obj, facades_transport_obj,
@@ -390,7 +389,6 @@ class SolarRadAndBipvSimulation:
                                                                              annual_panel_irradiance_list=self.roof_annual_panel_irradiance_list,
                                                                              panel_list=self.roof_panel_list,
                                                                              path_simulation_folder=path_simulation_folder,
-                                                                             building_id=building_id,
                                                                              pv_tech_obj=roof_pv_tech_obj,
                                                                              inverter_tech_obj=roof_inverter_tech_obj,
                                                                              inverter_sizing_ratio=roof_inverter_sizing_ratio,
@@ -410,7 +408,6 @@ class SolarRadAndBipvSimulation:
                                                                                 annual_panel_irradiance_list=self.facades_annual_panel_irradiance_list,
                                                                                 panel_list=self.facades_panel_list,
                                                                                 path_simulation_folder=path_simulation_folder,
-                                                                                building_id=building_id,
                                                                                 pv_tech_obj=facades_pv_tech_obj,
                                                                                 inverter_tech_obj=facades_inverter_tech_obj,
                                                                                 inverter_sizing_ratio=facades_inverter_sizing_ratio,
@@ -449,7 +446,7 @@ class SolarRadAndBipvSimulation:
                                                      sensorgrid_dict,
                                                      annual_panel_irradiance_list, panel_list,
                                                      path_simulation_folder,
-                                                     building_id, pv_tech_obj, inverter_tech_obj,
+                                                     pv_tech_obj, inverter_tech_obj,
                                                      inverter_sizing_ratio,
                                                      transport_obj,
                                                      uc_end_year, uc_start_year,
@@ -500,7 +497,7 @@ class SolarRadAndBipvSimulation:
                 if self.parameter_dict[roof_or_facades]["start_year"] + self.parameter_dict[roof_or_facades][
                     "study_duration_in_years"] >= uc_end_year:
                     user_logger.info(
-                        f"The bipv simulation was already run for building {building_id} during the input time"
+                        f"The bipv simulation was already run for building {self.building_id} during the input time"
                         f" period, the simulation was not run for this building")
 
                     simulation_has_run = False  # run flag
@@ -529,7 +526,7 @@ class SolarRadAndBipvSimulation:
 
             # Run the simulation
             path_result_folder = os.path.join(path_simulation_folder, name_radiation_simulation_folder,
-                                              str(building_id))
+                                              str(self.building_id))
             if roof_or_facades == "roof":
                 path_ill_file = os.path.join(path_result_folder, name_roof_ill_file)
                 path_sun_up_hours_file = os.path.join(path_result_folder, name_roof_sun_up_hours_file)
@@ -705,11 +702,10 @@ class SolarRadAndBipvSimulation:
 
         return bipv_results_dict
 
-    def write_building_bipv_results_to_csv(self, path_radiation_and_bipv_result_folder, building_id):
+    def write_building_bipv_results_to_csv(self, path_radiation_and_bipv_result_folder):
         """
         Write the BIPV results to a csv file
         :param path_radiation_and_bipv_result_folder: path to the simulation folder
-        :param building_id: building id
         """
         # Find the earliest and latest years across all dictionaries
         earliest_year = min(
@@ -740,7 +736,7 @@ class SolarRadAndBipvSimulation:
 
         # empty dict with proper size
         bipv_results_to_csv(path_radiation_and_bipv_result_folder=path_radiation_and_bipv_result_folder,
-                            building_id_or_uc_scenario_name=building_id,
+                            building_id_or_uc_scenario_name=self.building_id,
                             bipv_results_dict=result_dict_adjusted, start_year=earliest_year,
                             study_duration_in_years=latest_year - earliest_year)
 

@@ -774,10 +774,12 @@ class UrbanCanopy:
 
         return duration_dict
 
-    def extract_ubes_results(self, path_simulation_folder):
+    def extract_ubes_results(self, path_simulation_folder, cop_heating, cop_cooling):
         """
         Read the UBES result files for the buildings in the urban canopy.
         :param path_simulation_folder: string, path to the simulation folder
+        :param cop_heating: float, coefficient of performance for heating
+        :param cop_cooling: float, coefficient of performance for cooling
         """
         if not self.ubes_obj.has_run:
             user_logger.warning("The UBES simulation has not been run yet, the result cannot be extracted")
@@ -789,19 +791,22 @@ class UrbanCanopy:
             if isinstance(building_obj,
                           BuildingModeled):  # no need for more checking, the building themselves
                 # will check if they have been simulated
-                bes_result_dict = building_obj.extract_bes_results(path_ubes_sim_result_folder=path_ubes_sim_result_folder)
+                bes_result_dict = building_obj.extract_bes_results(
+                    path_ubes_sim_result_folder=path_ubes_sim_result_folder, cop_heating=cop_heating,
+                    cop_cooling=cop_cooling)
                 if bes_result_dict is not None:
                     bes_result_dict_list.append(bes_result_dict)
         # Compute the results at the urban canopy level
-        self.ubes_obj.compute_ubes_results(bes_result_dict_list=bes_result_dict_list)  # todo @Elie: to be implemented
+        self.ubes_obj.compute_ubes_results(
+            bes_result_dict_list=bes_result_dict_list)  # todo @Elie: to be implemented
         # Export the results to csv
         """ The export is made at the end to make sure none of the buildings have failed to extract the results before 
         exporting the results at the urban canopy level."""
         self.ubes_obj.export_ubes_results_to_csv(path_ubes_sim_result_folder=path_ubes_sim_result_folder)
         for building_obj in self.building_dict.values():
             if isinstance(building_obj, BuildingModeled):
-                building_obj.export_bes_results_to_csv(path_ubes_sim_result_folder=path_ubes_sim_result_folder)
-
+                building_obj.export_bes_results_to_csv(
+                    path_ubes_sim_result_folder=path_ubes_sim_result_folder)
 
     def generate_sensor_grid_on_buildings(self, building_id_list=None, bipv_on_roof=True,
                                           bipv_on_facades=True, roof_grid_size_x=1,
@@ -893,7 +898,8 @@ class UrbanCanopy:
                                                building_id_list, roof_id_pv_tech, facades_id_pv_tech,
                                                roof_transport_id,
                                                facades_transport_id, roof_inverter_id, facades_inverter_id,
-                                               roof_inverter_sizing_ratio=0.9, facades_inverter_sizing_ratio=0.9,
+                                               roof_inverter_sizing_ratio=0.9,
+                                               facades_inverter_sizing_ratio=0.9,
                                                efficiency_computation_method="yearly",
                                                minimum_panel_eroi=1.2, start_year=datetime.now().year,
                                                end_year=datetime.now().year + 50,
@@ -986,7 +992,6 @@ class UrbanCanopy:
             for building_obj in self.building_dict.values():
                 if isinstance(building_obj, BuildingModeled) and building_obj.is_target:
                     building_obj.solar_radiation_and_bipv_simulation_obj.init_bipv_simulation()
-
 
         #
         roof_pv_tech_obj = bipv_technology_obj_dict[roof_id_pv_tech]

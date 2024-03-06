@@ -52,7 +52,7 @@ class BuildingModeled(BuildingBasic):
         # Building Energy Simulation
         self.bes_obj = BuildingEnergySimulation(self.id)
         # Solar and panel radiation
-        self.solar_radiation_and_bipv_simulation_obj = SolarRadAndBipvSimulation()
+        self.solar_radiation_and_bipv_simulation_obj = SolarRadAndBipvSimulation(self.id)
 
         self.sensor_grid_dict = {'roof': None, 'facades': None}
         self.panels = {"roof": None, "facades": None}
@@ -433,13 +433,17 @@ class BuildingModeled(BuildingBasic):
             path_ubes_temp_sim_folder=path_ubes_temp_sim_folder,
             path_ubes_sim_result_folder=path_ubes_sim_result_folder)
 
-    def extract_bes_results(self, path_ubes_sim_result_folder):
+    def extract_bes_results(self, path_ubes_sim_result_folder, cop_heating, cop_cooling):
         """
         Extract the BES result files and export them to CSV files.
         NOTE: for now only the annual energy uses are extracted for the computed period, monthly results will ba added
         later.
         :param path_ubes_sim_result_folder: str: path to the result simulation folder
+        :param cop_heating: float: coefficient of performance for heating
+        :param cop_cooling: float: coefficient of performance for cooling
+        :return: dict: dictionary of the BES results
         """
+        self.bes_obj.set_cop(cop_heating=cop_heating, cop_cooling=cop_cooling)
         self.bes_obj.extract_total_energy_use(path_ubes_sim_result_folder=path_ubes_sim_result_folder)
         # todo : add the monthly results later
 
@@ -534,7 +538,7 @@ class BuildingModeled(BuildingBasic):
 
         # run the annual solar radiation simulation
         self.solar_radiation_and_bipv_simulation_obj.run_annual_solar_irradiance_simulation(
-            path_simulation_folder=path_simulation_folder, building_id=self.id,
+            path_simulation_folder=path_simulation_folder,
             hb_model_obj=self.hb_model_obj,
             context_shading_hb_shade_list=hb_shades_list,
             path_weather_file=path_weather_file, overwrite=overwrite,

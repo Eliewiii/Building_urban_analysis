@@ -12,8 +12,11 @@ from utils.utils_default_values_user_parameters import default_roof_grid_size_x,
     default_roof_grid_size_y, default_facades_grid_size_y, default_offset_dist
 
 from utils.utils_default_values_user_parameters import default_id_pv_tech_roof, \
-    default_id_pv_tech_facades, default_roof_transport_id,default_facades_transport_id, default_roof_inverter_id,default_facades_inverter_id, default_roof_inverter_sizing_ratio,default_facades_inverter_sizing_ratio, default_minimum_panel_eroi, default_start_year, default_end_year, \
-    default_efficiency_computation_method, default_replacement_scenario, default_replacement_frequency_in_years, \
+    default_id_pv_tech_facades, default_roof_transport_id, default_facades_transport_id, \
+    default_roof_inverter_id, default_facades_inverter_id, default_roof_inverter_sizing_ratio, \
+    default_facades_inverter_sizing_ratio, default_minimum_panel_eroi, default_start_year, default_end_year, \
+    default_efficiency_computation_method, default_replacement_scenario, \
+    default_replacement_frequency_in_years, \
     default_bipv_scenario_identifier, default_grid_ghg_intensity, default_grid_energy_intensity, \
     default_grid_electricity_sell_price
 
@@ -90,9 +93,12 @@ class SimFunSolarRadAndBipv:
                                                bipv_scenario_identifier=default_bipv_scenario_identifier,
                                                building_id_list=None, roof_id_pv_tech=default_id_pv_tech_roof,
                                                facades_id_pv_tech=default_id_pv_tech_facades,
-                                               roof_transport_id=default_roof_transport_id, facades_transport_id=default_facades_transport_id,
-                                               roof_inverter_id=default_roof_inverter_id, facades_inverter_id=default_facades_inverter_id,
-                                               roof_inverter_sizing_ratio=default_roof_inverter_sizing_ratio, facades_inverter_sizing_ratio=default_facades_inverter_sizing_ratio,
+                                               roof_transport_id=default_roof_transport_id,
+                                               facades_transport_id=default_facades_transport_id,
+                                               roof_inverter_id=default_roof_inverter_id,
+                                               facades_inverter_id=default_facades_inverter_id,
+                                               roof_inverter_sizing_ratio=default_roof_inverter_sizing_ratio,
+                                               facades_inverter_sizing_ratio=default_facades_inverter_sizing_ratio,
                                                efficiency_computation_method=default_efficiency_computation_method,
                                                minimum_panel_eroi=default_minimum_panel_eroi,
                                                start_year=default_start_year,
@@ -116,23 +122,31 @@ class SimFunSolarRadAndBipv:
         :param kwargs: dict: other parameters
         """
 
-        urban_canopy_object.run_bipv_panel_simulation_on_buildings(path_simulation_folder=path_simulation_folder,
-                                                                   bipv_scenario_identifier=bipv_scenario_identifier,
-                                                                   building_id_list=building_id_list,
-                                                                   roof_id_pv_tech=roof_id_pv_tech,
-                                                                   facades_id_pv_tech=facades_id_pv_tech,
-                                                                   efficiency_computation_method=efficiency_computation_method,
-                                                                   minimum_panel_eroi=minimum_panel_eroi,
-                                                                   start_year=start_year,
-                                                                   end_year=end_year,
-                                                                   replacement_scenario=replacement_scenario,
-                                                                   continue_simulation=continue_simulation, **kwargs)
+        urban_canopy_object.run_bipv_panel_simulation_on_buildings(
+            path_simulation_folder=path_simulation_folder,
+            bipv_scenario_identifier=bipv_scenario_identifier,
+            building_id_list=building_id_list,
+            roof_id_pv_tech=roof_id_pv_tech,
+            facades_id_pv_tech=facades_id_pv_tech,
+            roof_transport_id=roof_transport_id,
+            facades_transport_id=facades_transport_id,
+            roof_inverter_id=roof_inverter_id,
+            facades_inverter_id=facades_inverter_id,
+            roof_inverter_sizing_ratio=roof_inverter_sizing_ratio,
+            facades_inverter_sizing_ratio=facades_inverter_sizing_ratio,
+            efficiency_computation_method=efficiency_computation_method,
+            minimum_panel_eroi=minimum_panel_eroi,
+            start_year=start_year,
+            end_year=end_year,
+            replacement_scenario=replacement_scenario,
+            continue_simulation=continue_simulation, **kwargs)
 
         user_logger.info("The BIPV simulation have been performed successfully")
         dev_logger.info("The BIPV simulation have been performed successfully")
 
     @staticmethod
-    def run_kpi_simulation(urban_canopy_object: UrbanCanopy, path_simulation_folder=default_path_simulation_folder,
+    def run_kpi_simulation(urban_canopy_object: UrbanCanopy,
+                           path_simulation_folder=default_path_simulation_folder,
                            bipv_scenario_identifier=default_bipv_scenario_identifier,
                            grid_ghg_intensity=default_grid_ghg_intensity,
                            grid_energy_intensity=default_grid_energy_intensity,
