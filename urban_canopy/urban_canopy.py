@@ -802,7 +802,7 @@ class UrbanCanopy:
         # Export the results to csv
         """ The export is made at the end to make sure none of the buildings have failed to extract the results before 
         exporting the results at the urban canopy level."""
-        self.ubes_obj.export_ubes_results_to_csv(path_ubes_sim_result_folder=path_ubes_sim_result_folder)
+        self.ubes_obj.to_csv(path_ubes_sim_result_folder=path_ubes_sim_result_folder)
         for building_obj in self.building_dict.values():
             if isinstance(building_obj, BuildingModeled):
                 building_obj.export_bes_results_to_csv(
@@ -972,20 +972,16 @@ class UrbanCanopy:
                                         f"{building_id}, the BIPV simulation will not be run for this building.")
 
         # Read the files in the defauly and library and extract the BIPV technologies, transportation and inverter objects
-        json_file_path_list = [os.path.joint(path_folder_default_bipv_parameters, file) for file in
-                               os.listdir(path_folder_default_bipv_parameters) if file.endswith(".json")]
-        json_file_path_list.extend([os.path.joint(path_folder_user_bipv_parameters, file) for file in
-                                    os.listdir(path_folder_user_bipv_parameters) if file.endswith(".json")])
         bipv_technology_obj_dict = {}
         bipv_transportation_obj_dict = {}
         bipv_inverter_obj_dict = {}
-        for file_path in json_file_path_list:
+        for path_folder in [path_folder_default_bipv_parameters, path_folder_user_bipv_parameters]:
             bipv_technology_obj_dict = BipvTechnology.load_pv_technologies_from_json_to_dictionary(
-                bipv_technology_obj_dict=bipv_technology_obj_dict, path_json_folder=file_path)
-            bipv_transportation_obj_dict = BipvTransportation.load_bipv_transportation_from_json_to_dictionary(
-                transportation_obj_dict=bipv_transportation_obj_dict, path_json_folder=file_path)
-            bipv_inverter_obj_dict = BipvInverter.load_bipv_inverter_from_json_to_dictionary(
-                inverter_obj_dict=bipv_inverter_obj_dict, path_json_folder=file_path)
+                bipv_technology_obj_dict=bipv_technology_obj_dict, path_json_folder=path_folder)
+            bipv_transportation_obj_dict = BipvTransportation.load_bipv_transportation_obj_from_json_to_dictionary(
+                transportation_obj_dict=bipv_transportation_obj_dict, path_json_folder=path_folder)
+            bipv_inverter_obj_dict = BipvInverter.load_bipv_inverter_obj_from_json_to_dictionary(
+                inverter_obj_dict=bipv_inverter_obj_dict, path_json_folder=path_folder)
 
         # Reinitialize the simulation for the all the buildings if the simulation is not continued
         if not continue_simulation:

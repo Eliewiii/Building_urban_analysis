@@ -113,6 +113,12 @@ class SimFunSolarRadAndBipv:
         :param building_id_list: list of building id to be considered
         :param roof_id_pv_tech: str: identifier of the PV technology to be used on the roof
         :param facades_id_pv_tech: str: identifier of the PV technology to be used on the facades
+        :param roof_transport_id: str: identifier of the transport technology to be used on the roof
+        :param facades_transport_id: str: identifier of the transport technology to be used on the facades
+        :param roof_inverter_id: str: identifier of the inverter technology to be used on the roof
+        :param facades_inverter_id: str: identifier of the inverter technology to be used on the facades
+        :param roof_inverter_sizing_ratio: float: default=1.1: sizing ratio of the inverter on the roof
+        :param facades_inverter_sizing_ratio: float: default=1.1: sizing ratio of the inverter on the facades
         :param efficiency_computation_method: str: default="yearly": method to compute the efficiency of the panels
         :param minimum_panel_eroi: float: default=1.2: minimum energy return on investment of the panels
         :param start_year: int: default=datetime.now().year: year when the scenario starts

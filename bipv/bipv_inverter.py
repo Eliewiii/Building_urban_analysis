@@ -51,7 +51,7 @@ class BipvInverter:
         self.primary_energy_offset = None  # in kWh
 
     @classmethod
-    def load_inverter_from_json_to_dictionary(cls, inverter_obj_dict, path_json_folder):
+    def load_bipv_inverter_obj_from_json_to_dictionary(cls, inverter_obj_dict, path_json_folder):
         """
         Create the BipvInverter objects from json file and save them in a dictionary.
         :param inverter_obj_dict: dictionary of the inverters
@@ -63,7 +63,7 @@ class BipvInverter:
                 with open(os.path.join(path_json_folder, file), "r") as f:
                     data = json.load(f)
                     for key, value in data.items():
-                        if value.type != "inverter":
+                        if value["type"] != "inverter":
                             continue  # skip to the next element
                         inverter_obj = cls(value["id"])
                         inverter_obj.replacement_frequency = int(value["replacement_frequency_in_year"])
@@ -89,7 +89,7 @@ class BipvInverter:
 
                         # Add the inverter object to the dictionary if it does not exist already
                         if inverter_obj.identifier not in inverter_obj_dict:
-                            inverter_obj_dict[key] = inverter_obj
+                            inverter_obj_dict[inverter_obj.identifier] = inverter_obj
                         else:
                             raise ValueError(f"The inverter object{inverter_obj.identifier} already exists, "
                                              f"it must have been duplicated in the json file")

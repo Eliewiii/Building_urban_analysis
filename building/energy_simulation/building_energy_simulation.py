@@ -21,7 +21,7 @@ empty_bes_results_dict = {
     "cooling": {"monthly": [], "monthly_cumulative": [], "yearly": None},
     "equipment": {"monthly": [], "monthly_cumulative": [], "yearly": None},
     "lighting": {"monthly": [], "monthly_cumulative": [], "yearly": None},
-    "ventilation": {"monthly": [], "monthly_cumulative": [], "yearly": None},  # Unused for now
+    # "ventilation": {"monthly": [], "monthly_cumulative": [], "yearly": None},  # Unused for now
     "total": {"monthly": [], "monthly_cumulative": [], "yearly": None}
 }
 
@@ -196,17 +196,17 @@ class BuildingEnergySimulation:
         total_floor_area = eui_dict["total_floor_area"]
 
         self.bes_results_dict["heating"]["yearly"] = eui_dict["end_uses"][
-                                                         "heating"] * total_floor_area / self.cop_heating
+                                                         "Heating"] * total_floor_area / self.cop_heating
         self.bes_results_dict["cooling"]["yearly"] = eui_dict["end_uses"][
-                                                         "cooling"] * total_floor_area / self.cop_cooling
-        self.bes_results_dict["equipment"]["yearly"] = eui_dict["end_uses"]["equipment"] * total_floor_area
-        self.bes_results_dict["lighting"]["yearly"] = eui_dict["end_uses"]["lighting"] * total_floor_area
+                                                         "Cooling"] * total_floor_area / self.cop_cooling
+        self.bes_results_dict["equipment"]["yearly"] = eui_dict["end_uses"]["Electric Equipment"] * total_floor_area
+        self.bes_results_dict["lighting"]["yearly"] = eui_dict["end_uses"]["Interior Lighting"] * total_floor_area
         # self.bes_results_dict["ventilation"]["yearly"] = eui_dict["end_uses"]["ventilation"] * total_floor_area
-        self.bes_results_dict["total"]["yearly"] = sum(self.bes_results_dict["heating"]["yearly"],
-                                                       self.bes_results_dict["cooling"]["yearly"],
-                                                       self.bes_results_dict["equipment"]["yearly"],
-                                                       # self.bes_results_dict["ventilation"]["yearly"],
-                                                       self.bes_results_dict["lighting"]["yearly"])
+        self.bes_results_dict["total"]["yearly"] = sum([self.bes_results_dict["heating"]["yearly"],
+                                                        self.bes_results_dict["cooling"]["yearly"],
+                                                        self.bes_results_dict["equipment"]["yearly"],
+                                                        # self.bes_results_dict["ventilation"]["yearly"],
+                                                        self.bes_results_dict["lighting"]["yearly"]])
 
     def to_csv(self, path_ubes_sim_result_folder):
         """
@@ -224,7 +224,7 @@ class BuildingEnergySimulation:
             return
         """ Write the file even if it exist already as monthly values could have been extracted 
         in the meantime """
-        bes_result_dict_to_csv(bes_result_dict=self.bes_results_dict, path_csv_file=path_csv_file)
+        bes_result_dict_to_csv(bes_results_dict=self.bes_results_dict, path_csv_file=path_csv_file)
 
     def get_total_energy_consumption(self):
         """
@@ -263,7 +263,10 @@ def bes_result_dict_to_csv(bes_results_dict, path_csv_file):
     month_list = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
                   "October", "November", "December"]
     with open(path_csv_file, 'w') as f:
-        f.write(header + "," for header in bes_results_dict.keys() + "\n")
+        f.write(" ,")  # Empty cell for the first column
+        for header in bes_results_dict.keys():
+            f.write(header + ",")
+        f.write("\n")
         for index, month in enumerate(month_list):
             f.write(f"{month},")
             for key, value in bes_results_dict.items():
@@ -276,6 +279,7 @@ def bes_result_dict_to_csv(bes_results_dict, path_csv_file):
         f.write("Total,")
         for key, value in bes_results_dict.items():
             f.write(f"{value['yearly']},")
+
 
 def clean_directory(path):
     """

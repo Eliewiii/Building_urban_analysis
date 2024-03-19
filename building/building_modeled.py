@@ -449,12 +449,12 @@ class BuildingModeled(BuildingBasic):
 
         return self.bes_obj.bes_results_dict
 
-    def export_bes_result_to_csv(self, path_ubes_sim_result_folder):
+    def export_bes_results_to_csv(self, path_ubes_sim_result_folder):
         """
         Export the BES result to a CSV file.
         :param path_ubes_sim_result_folder: str: path to the result simulation folder
         """
-        self.bes_obj.export_result_to_csv(path_ubes_sim_result_folder=path_ubes_sim_result_folder)
+        self.bes_obj.to_csv(path_ubes_sim_result_folder=path_ubes_sim_result_folder)
 
     def re_initialize_bes(self):
         """
@@ -544,40 +544,57 @@ class BuildingModeled(BuildingBasic):
             path_weather_file=path_weather_file, overwrite=overwrite,
             north_angle=north_angle, silent=silent)
 
-    # def building_run_bipv_panel_simulation(self, path_simulation_folder, roof_pv_tech_obj, facades_pv_tech_obj,
-    #                                        uc_start_year,
-    #                                        uc_current_year, uc_end_year, efficiency_computation_method="yearly",
-    #                                        minimum_panel_eroi=1.2,
-    #                                        replacement_scenario="replace_failed_panels_every_X_years",
-    #                                        continue_simulation=False, **kwargs):
-    #     """
-    #     Run the BIPV simulation for the building on the roof and/or on the facades of the buildings.
-    #     :param path_simulation_folder: Path to the simulation folder
-    #     :param roof_pv_tech_obj: PVTechnology object: PV technology for the roof
-    #     :param facades_pv_tech_obj: PVTechnology object: PV technology for the facades
-    #     :param uc_start_year: int: start year of the use phase
-    #     :param uc_current_year: int: current year of the use phase
-    #     :param uc_end_year: int: end year of the use phase
-    #     :param efficiency_computation_method: str: default="yearly", method to compute the efficiency of the panels
-    #         during the use phase. Can be "yearly" or "cumulative"
-    #     :param minimum_panel_eroi: float: default=1.2, minimum EROI of the panels to be considered as efficient
-    #     :param replacement_scenario: str: default="replace_failed_panels_every_X_years", scenario for the replacement
-    #         of the panels. Can be "replace_failed_panels_every_X_years" or "replace_all_panels_every_X_years"
-    #     :param continue_simulation: bool: default=False, if True, continue the simulation from the last year
-    #     :param kwargs: dict: other arguments for the simulation
-    #     """
-    #
-    #     # Run the simulation
-    #     self.solar_radiation_and_bipv_simulation_obj.run_bipv_panel_simulation(
-    #         path_simulation_folder=path_simulation_folder, building_id=self.id, roof_pv_tech_obj=roof_pv_tech_obj,
-    #         facades_pv_tech_obj=facades_pv_tech_obj, uc_end_year=uc_end_year, uc_start_year=uc_start_year,
-    #         uc_current_year=uc_current_year, efficiency_computation_method=efficiency_computation_method,
-    #         minimum_panel_eroi=minimum_panel_eroi, replacement_scenario=replacement_scenario,
-    #         continue_simulation=continue_simulation, **kwargs)
-    #     # Write the results in a csv file
-    #     self.solar_radiation_and_bipv_simulation_obj.write_bipv_results_to_csv(
-    #         path_simulation_folder=path_simulation_folder,
-    #         building_id=self.id)
+    def building_run_bipv_panel_simulation(self, path_simulation_folder, roof_pv_tech_obj, facades_pv_tech_obj,
+                                           roof_transport_obj,
+                                           facades_transport_obj, roof_inverter_obj, facades_inverter_obj,
+                                           roof_inverter_sizing_ratio,
+                                           facades_inverter_sizing_ratio,
+                                           uc_start_year,
+                                           uc_current_year, uc_end_year, efficiency_computation_method="yearly",
+                                           minimum_panel_eroi=1.2,
+                                           replacement_scenario="replace_failed_panels_every_X_years",
+                                           continue_simulation=False, **kwargs):
+        """
+        Run the BIPV simulation for the building on the roof and/or on the facades of the buildings.
+        :param path_simulation_folder: Path to the simulation folder
+        :param roof_pv_tech_obj: PVTechnology object: PV technology for the roof
+        :param facades_pv_tech_obj: PVTechnology object: PV technology for the facades
+        :param roof_transport_obj:BipvTransportation: transportation object for the roof panels
+        :param facades_transport_obj: BipvTransportation: transportation object for the facades panels
+        :param roof_inverter_obj: BipvInverter: inverter object for the roof panels
+        :param facades_inverter_obj: BipvInverter: inverter object for the facades panels
+        :param roof_inverter_sizing_ratio: float: sizing ratio of the roof inverter, default = 0.9
+        :param facades_inverter_sizing_ratio: float: sizing ratio of the facades inverter, default = 0.9
+        :param uc_start_year: int: start year of the use phase
+        :param uc_current_year: int: current year of the use phase
+        :param uc_end_year: int: end year of the use phase
+        :param efficiency_computation_method: str: default="yearly", method to compute the efficiency of the panels
+            during the use phase. Can be "yearly" or "cumulative"
+        :param minimum_panel_eroi: float: default=1.2, minimum EROI of the panels to be considered as efficient
+        :param replacement_scenario: str: default="replace_failed_panels_every_X_years", scenario for the replacement
+            of the panels. Can be "replace_failed_panels_every_X_years" or "replace_all_panels_every_X_years"
+        :param continue_simulation: bool: default=False, if True, continue the simulation from the last year
+        :param kwargs: dict: other arguments for the simulation
+        """
+
+        # Run the simulation
+        self.solar_radiation_and_bipv_simulation_obj.run_bipv_panel_simulation(
+            path_simulation_folder=path_simulation_folder, building_id=self.id, roof_pv_tech_obj=roof_pv_tech_obj,
+            facades_pv_tech_obj=facades_pv_tech_obj,
+            roof_inverter_tech_obj=roof_inverter_obj,
+            facades_inverter_tech_obj=facades_inverter_obj,
+            roof_inverter_sizing_ratio=roof_inverter_sizing_ratio,
+            facades_inverter_sizing_ratio=facades_inverter_sizing_ratio,
+            roof_transport_obj=roof_transport_obj,
+            facades_transport_obj=facades_transport_obj,
+            uc_end_year=uc_end_year, uc_start_year=uc_start_year,
+            uc_current_year=uc_current_year, efficiency_computation_method=efficiency_computation_method,
+            minimum_panel_eroi=minimum_panel_eroi, replacement_scenario=replacement_scenario,
+            continue_simulation=continue_simulation, **kwargs)
+        # Write the results in a csv file
+        self.solar_radiation_and_bipv_simulation_obj.write_bipv_results_to_csv(
+            path_simulation_folder=path_simulation_folder,
+            building_id=self.id)
     #
     # def plot_panels_energy_results(self, path_simulation_folder_building, study_duration_years):
     #     """

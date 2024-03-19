@@ -111,7 +111,7 @@ class UrbanBuildingEnergySimulationFunctions:
                                            path_simulation_folder=default_path_simulation_folder,
                                            cop_heating=default_cop_heating, cop_cooling=default_cop_cooling):
 
-        urban_canopy_obj.extract_results_from_ep_simulation(path_simulation_folder=path_simulation_folder,
+        urban_canopy_obj.extract_ubes_results(path_simulation_folder=path_simulation_folder,
                                                             cop_heating=cop_heating, cop_cooling=cop_cooling)
 
         user_logger.info("UBES results were extracted")

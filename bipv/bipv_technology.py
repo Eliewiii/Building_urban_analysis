@@ -147,7 +147,7 @@ class BipvTechnology:
                 with open(path_json_file) as f:  # open and load the json file
                     data = json.load(f)
                     for key, value in data.items():  # for every technology in the json, we create and load the
-                        if value.type != "pv_technology":
+                        if value["type"] != "pv_technology":
                             continue  # skip to the next element
                         # Load general information and Initialize the object
                         identifier = value["id"]
@@ -194,7 +194,7 @@ class BipvTechnology:
                         pv_tech_obj.revenue_material_recovery_factor = value["economic_parameters"]["revenues"][
                             "material_recovery_in_USD_per_panel"]
                         # Annual maintenance
-                        pv_tech_obj.primary_energy_annual_maintenance = value["Annual maintenance"][
+                        pv_tech_obj.primary_energy_annual_maintenance = value["annual_maintenance"][
                             "primary_energy_use_in_kWh_per_panel"]
                         pv_tech_obj.ghg_annual_maintenance = value["annual_maintenance"][
                             "ghg_emission_in_kgCO2eq_per_panel"]
@@ -237,7 +237,7 @@ class BipvTechnology:
         :return recycling_recycling_dict: dictionary of the recycling transportation
         """
         gtg_transportation_dict = {"ghg": 0, "primary_energy": 0, "cost": 0}
-        recycling_recycling_dict = {"ghg": 0, "primary_energy": 0, "cost": 0}
+        recycling_dict = {"ghg": 0, "primary_energy": 0, "cost": 0}
         if not self.gtg_transportation["ghg_included"]:
             gtg_transportation_dict["ghg"] = bipv_transportation_obj.gate_to_gate["ghg_emission"]
         if not self.gtg_transportation["primary_energy_included"]:
@@ -245,13 +245,13 @@ class BipvTechnology:
         if not self.gtg_transportation["cost_included"]:
             gtg_transportation_dict["cost"] = bipv_transportation_obj.gate_to_gate["cost"]
         if not self.recycling_transportation["ghg_included"]:
-            recycling_recycling_dict["ghg"] = bipv_transportation_obj.recycling["ghg_emission"]
+            recycling_dict["ghg"] = bipv_transportation_obj.recycling["ghg_emission"]
         if not self.recycling_transportation["primary_energy_included"]:
-            recycling_recycling_dict["primary_energy"] = bipv_transportation_obj.recycling["pe_consumption"]
+            recycling_dict["primary_energy"] = bipv_transportation_obj.recycling["pe_consumption"]
         if not self.recycling_transportation["cost_included"]:
-            recycling_recycling_dict["cost"] = bipv_transportation_obj.recycling["cost"]
+            recycling_dict["cost"] = bipv_transportation_obj.recycling["cost"]
 
-        return gtg_transportation_dict, recycling_recycling_dict
+        return gtg_transportation_dict, recycling_dict
 
     def get_life_expectancy_of_a_panel(self):
         """
@@ -266,6 +266,32 @@ class BipvTechnology:
         # Quantile function for the Weibull distribution
         life_expectancy = ceil(lifetime * (-log(1 - y)) ** (1 / shape))
         return life_expectancy
+
+    def estimate_yearly_energy_harvested_by_panel_not_considering_inverter(self, irradiance, age, **kwargs):
+        """
+        Get the energy harvested by a panel in Watt
+        :param irradiance: irradiance on the panel
+        :param age: age of the panel
+        :param kwargs: kwargs
+
+
+        :return: energy_harvested: energy harvested by the panel
+        """
+
+        # Check if the efficiency function is defined in the kwargs
+        if "efficiency_function" in kwargs and kwargs["efficiency_function"] in [
+            getattr(self, method_name) for method_name in dir(self) if callable(getattr(self, method_name))]:
+            """ The efficiency function can be defined in the kwargs. If it is not defined, the default efficiency function
+                    is used. If it is defined, the efficiency function is used. The efficiency function must be a method of the
+                    class."""
+            efficiency_function = kwargs["efficiency_function"]
+            efficiency = efficiency_function(age=age, irradiance=irradiance, **kwargs)
+        else:
+            efficiency = self.efficiency_function(age=age, irradiance=irradiance, **kwargs)
+
+        energy_harvested = efficiency * irradiance * self.infrastructure_performance_ratio * self.panel_area
+
+        return energy_harvested
 
     def get_hourly_power_generation_over_a_year_by_panel(self, hourly_irradiance_list, age, **kwargs):
         """

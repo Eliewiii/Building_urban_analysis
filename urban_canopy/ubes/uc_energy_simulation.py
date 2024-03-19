@@ -55,7 +55,7 @@ class UrbanBuildingEnergySimulation:
             return
         """ Write the file even if it exist already as monthly values could have been extracted 
         in the meantime """
-        bes_result_dict_to_csv(bes_result_dict=self.ubes_results_dict, path_csv_file=path_csv_file)
+        bes_result_dict_to_csv(bes_results_dict=self.ubes_results_dict, path_csv_file=path_csv_file)
 
     def load_epw_and_hb_simulation_parameters(self, path_hbjson_simulation_parameter_file, path_file_epw,
                                               ddy_file=None,
@@ -130,24 +130,26 @@ class UrbanBuildingEnergySimulation:
 
 
 
-def sum_dicts(*args):
+def sum_dicts(dict_list):
     """
     Sum the values dictionnaries
     # todo: same function as in solar_rad_and_bipv.py, gather  them somewhere
     """
-    if not args:
+    if not dict_list:
         return {}
     # Initialize with teh first dict
-    result_dict = args[0].copy()
+    result_dict = dict_list[0].copy()
 
-    for d in args[1:]:
+    for d in dict_list[1:]:
         for key in d:
             if isinstance(d[key], dict):
-                result_dict[key] = sum_dicts(result_dict[key], d[key])
+                result_dict[key] = sum_dicts([result_dict[key], d[key]])
             elif isinstance(d[key], list):
                 result_dict[key] = [x + y for x, y in zip(result_dict[key], d[key])]
-            else:  # assuming ints or floats
+            elif isinstance(d[key], float) or isinstance(d[key],int):  # assuming ints or floats
                 result_dict[key] += d[key]
+            else:  # If there are other types put None
+                result_dict[key] = None
 
     return result_dict
 

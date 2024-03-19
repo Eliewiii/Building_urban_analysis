@@ -1,5 +1,11 @@
 from unit_tests.utils_main_import_scripts import *
 
+path_gis = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\BUA\Context_filter\Samples\Sample GIS\sample_gis_context_filter_1"
+
+path_hbjson_file_1 = r"D:\OneDrive - Technion\Ministry of Energy Research\Papers\IBPSA US conference\Full paper\Simulation\TA_Neighborhood_27.9.2023\HBJSON_Models\Low_Density_Context\Buil_TA_1.hbjson"
+path_hbjson_file_2 = r"D:\OneDrive - Technion\Ministry of Energy Research\Papers\IBPSA US conference\Full paper\Simulation\TA_Neighborhood_27.9.2023\HBJSON_Models\Low_Density_Context\Buil_TA_2.hbjson"
+
+
 # Clear simulation temp folder
 SimulationCommonMethods.clear_simulation_temp_folder()
 # Create simulation folder
@@ -8,25 +14,16 @@ SimulationCommonMethods.make_simulation_folder()
 urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object(
     path_simulation_folder=default_path_simulation_folder)
 
-#
 # # add GIS
 # SimulationLoadBuildingOrGeometry.add_2D_GIS_to_urban_canopy(urban_canopy=urban_canopy_object,
 #                                                             path_gis=default_path_gis,
 #                                                             path_additional_gis_attribute_key_dict=
 #                                                             None,
 #                                                             unit="m")
-
+#
 # # Move building to origin
 # SimulationBuildingManipulationFunctions.move_buildings_to_origin(urban_canopy_object=urban_canopy_object)
 
-
-# Load Buildings from json
-
-# path_folder_json = None
-path_hbjson_file_1 = r"D:\OneDrive - Technion\Ministry of Energy Research\Papers\IBPSA US conference\Full paper\Simulation\TA_Neighborhood_27.9.2023\HBJSON_Models\Low_Density_Context\Buil_TA_1.hbjson"
-path_hbjson_file_2 = r"D:\OneDrive - Technion\Ministry of Energy Research\Papers\IBPSA US conference\Full paper\Simulation\TA_Neighborhood_27.9.2023\HBJSON_Models\Low_Density_Context\Buil_TA_2.hbjson"
-
-path_folder_json=None
 # Load Buildings from json
 SimulationLoadBuildingOrGeometry.add_buildings_from_hbjson_to_urban_canopy(
     urban_canopy_object=urban_canopy_object,
@@ -39,10 +36,40 @@ SimulationLoadBuildingOrGeometry.add_buildings_from_hbjson_to_urban_canopy(
     path_file_hbjson=path_hbjson_file_2,
     are_buildings_targets=True)
 
-SimulationBuildingManipulationFunctions.make_merged_face_of_buildings_in_urban_canopy(urban_canopy_object=urban_canopy_object)
+
+# Make merged faces hb models of buildings
+SimulationBuildingManipulationFunctions.make_merged_face_of_buildings_in_urban_canopy(
+    urban_canopy_object=urban_canopy_object,
+    overwrite=False)
+
+# Make bounding boxes
+SimulationBuildingManipulationFunctions.make_oriented_bounding_boxes_of_buildings_in_urban_canopy(
+    urban_canopy_object=urban_canopy_object, overwrite=False)
+
+# # 1st pass context filter
+# mvfc = 0.01
+# context_building_id_list, tot_duration, sim_duration_dict = SimulationContextFiltering.perform_first_pass_of_context_filtering_on_buildings(
+#     urban_canopy_object,
+#     building_id_list=None,
+#     on_building_to_simulate=False,
+#     min_vf_criterion=mvfc,
+#     overwrite=False)
+# print(f"mvfc: {mvfc}, nb_build :{len(context_building_id_list)}, dur: {sim_duration_dict}")
 #
-SimFunSolarRadAndBipv.generate_sensor_grid(urban_canopy_object=urban_canopy_object)
+# # 2nd pass context filter
+# tot_duration, result_summary_dict = SimulationContextFiltering.perform_second_pass_of_context_filtering_on_buildings(
+#     urban_canopy_object,
+#     building_id_list=None,
+#     on_building_to_simulate=False,
+#     consider_windows=True,
+#     keep_shades_from_user=False,
+#     no_ray_tracing=False,
+#     overwrite=False,
+#     keep_discarded_faces=True)
 #
+# print(f"tot_dur :{tot_duration}")
+# print(result_summary_dict)
+
 
 # Export urban_canopy to pickle
 SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,
@@ -50,4 +77,3 @@ SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=u
 # Export urban_canopy to json
 SimulationCommonMethods.save_urban_canopy_to_json(urban_canopy_object=urban_canopy_object,
                                                   path_simulation_folder=default_path_simulation_folder)
-

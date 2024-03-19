@@ -59,7 +59,7 @@ class BipvTransportation:
         self.recycling = {"ghg_emission": None, "pe_consumption": None, "cost": None}
 
     @classmethod
-    def load_transportation_obj_from_json_to_dictionary(cls, transportation_obj_dict,path_json_folder):
+    def load_bipv_transportation_obj_from_json_to_dictionary(cls, transportation_obj_dict,path_json_folder):
         """
         Create the BipvTransportation objects from json file and save them in a dictionary.
         :param transportation_obj_dict: dictionary of the transportation objects
@@ -71,7 +71,7 @@ class BipvTransportation:
                 with open(os.path.join(path_json_folder, file), "r") as f:
                     data = json.load(f)
                     for key, value in data.items():
-                        if value.type != "transportation":
+                        if value["type"] != "transportation":
                             continue  # skip to the next element
                         transportation_obj = cls(value["id"])
                         transportation_obj.source = value["source"]
@@ -92,8 +92,7 @@ class BipvTransportation:
                             value["from_construction_site_to_recycling_factory"]["cost_in_USD_per_panel"]
                         if (transportation_obj.source, transportation_obj.destination) \
                                 not in transportation_obj_dict:
-                            transportation_obj_dict[(transportation_obj.source,
-                                                 transportation_obj.destination)] = transportation_obj
+                            transportation_obj_dict[transportation_obj.identifier] = transportation_obj
                         else:
                             raise ValueError(
                                 f"The transportation object{transportation_obj.identifier} already exists, "

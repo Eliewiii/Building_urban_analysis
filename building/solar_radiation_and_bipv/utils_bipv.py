@@ -13,7 +13,8 @@ user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")
 
 
-def init_bipv_on_sensor_grid(sensor_grid: SensorGrid, pv_technology_obj, annual_panel_irradiance_list,
+def init_bipv_on_sensor_grid(sensor_grid: SensorGrid, pv_technology_obj, bipv_transportation_obj,
+                             annual_panel_irradiance_list,
                              minimum_panel_eroi):
     """
     Initialize the bipvs on the sensor_grid and return a list of the bipvs.
@@ -45,19 +46,26 @@ def init_bipv_on_sensor_grid(sensor_grid: SensorGrid, pv_technology_obj, annual_
         if pv_technology_obj.efficiency_function == BipvTechnology.constant_efficiency or \
                 pv_technology_obj.efficiency_function == BipvTechnology.degrading_rate_efficiency_loss:
             energy_harvested = sum(
-                [pv_technology_obj.get_energy_harvested_by_panel(irradiance=annual_panel_irradiance_list[
-                    face_index], age=year) for year in
-                 range(pv_technology_obj.weibull_law_failure_parameters["lifetime"])])
+                [pv_technology_obj.estimate_yearly_energy_harvested_by_panel_not_considering_inverter(
+                    irradiance=annual_panel_irradiance_list[face_index], age=year) for year in
+                    range(pv_technology_obj.weibull_law_failure_parameters["lifetime"])])
         else:
             """ If the efficiency function is not constant_efficiency of"""
             energy_harvested = sum(
-                [pv_technology_obj.get_energy_harvested_by_panel(irradiance=annual_panel_irradiance_list[
-                    face_index], age=year, efficiency_function=BipvTechnology.constant_efficiency) for
-                 year in range(pv_technology_obj.weibull_law_failure_parameters["lifetime"])])
+                [pv_technology_obj.estimate_yearly_energy_harvested_by_panel_not_considering_inverter(
+                    irradiance=annual_panel_irradiance_list[face_index], age=year,
+                    efficiency_function=BipvTechnology.constant_efficiency) for
+                    year in range(pv_technology_obj.weibull_law_failure_parameters["lifetime"])])
+
+        gtg_transportation_dict, recycling_dict = pv_technology_obj.compute_transportation_lca_and_cost(
+            bipv_transportation_obj=bipv_transportation_obj)
+        primary_energy_transportation = gtg_transportation_dict["primary_energy"]
+        primary_energy_recycling = recycling_dict["primary_energy"]
+        primary_energy_inverter_estimated = pv_technology_obj.estimated_primary_energy_inverter
 
         primary_energy = \
-            pv_technology_obj.primary_energy_manufacturing + pv_technology_obj.primary_energy_recycling + \
-            pv_technology_obj.primary_energy_transport
+            pv_technology_obj.primary_energy_manufacturing + primary_energy_transportation + primary_energy_recycling + \
+            primary_energy_inverter_estimated
         panel_eroi = energy_harvested / primary_energy
         """
         Note that it is not exactly the reql eroi thqt is computed here, we assume that the panel will last for 
@@ -201,7 +209,6 @@ def compute_lca_and_cost_for_gtg(nb_of_panels_installed_yearly_list, pv_tech_obj
     carbon_material_extraction_and_manufacturing_yearly_list = [i * pv_tech_obj.carbon_manufacturing for i in
                                                                 nb_of_panels_installed_yearly_list]
 
-
     # Economic cost
     cost_investement_yearly_list = [i * pv_tech_obj.cost_investment for i in
                                     nb_of_panels_installed_yearly_list]
@@ -306,7 +313,7 @@ def compute_lca_and_cost_for_transportation(nb_of_panels_installed_yearly_list, 
     :return transport_result_dict: dictionary of the transportation results
     """
     # Transportation values
-    gtg_transportation_dict, recycling_dict = pv_tech_obj.get_transportation_values(
+    gtg_transportation_dict, recycling_dict = pv_tech_obj.compute_transportation_lca_and_cost(
         bipv_transportation_obj=transportation_obj)
     # Primary energy
     primary_energy_transport_gtg_yearly_list = [i * gtg_transportation_dict["primary_energy"] for i in
