@@ -185,6 +185,8 @@ def simulate_bipv_yearly_energy_harvesting(pv_panel_obj_list,
                     total_power = inverter_capacity
                 # Energy in kWh/h is power in kW * 1h
                 annual_energy_harvested += total_power
+            for panel_obj in pv_panel_obj_list:
+                panel_obj.increment_age_by_one_year()
 
             energy_production_per_year_list.append(annual_energy_harvested)
             nb_of_panels_installed_per_year_list.append(nb_of_new_panels)

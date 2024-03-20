@@ -12,10 +12,9 @@ SimFunSolarRadAndBipv.run_bipv_harvesting_and_lca_simulation(
     start_year=2024,
     end_year=2080,
     replacement_scenario="replace_failed_panels_every_X_years",
-    default_replacement_frequency_in_years = 30,
     continue_simulation=False,
     update_panel_technology=False,
-    replacement_frequency_in_years=default_replacement_frequency_in_years)
+    replacement_frequency_in_years=30)
 
 # # Export urban_canopy to pickle
 # SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,
