@@ -17,7 +17,7 @@ tree_structure_urban_canopy_json_dict = {
     "name": None,
     "buildings": {},
     "list_of_building_ids": [],
-    "bipv_scenario": {}
+    "bipv_scenarios": {}
 }
 
 # Tree structure for each building
@@ -47,18 +47,7 @@ tree_structure_per_building_urban_canopy_json_dict = {
         "discarded_face3d_second_pass_list": None,
         "forced_shades_from_user": None
     },
-    "solar_radiation_and_bipv": {
-        "parameters": None,
-        "roof_sensorgrid": None,
-        "facades_sensorgrid": None,
-        "roof_annual_panel_irradiance_list": None,
-        "facades_annual_panel_irradiance_list": None,
-        "roof_panel_mesh_index_list": None,
-        "facades_panel_mesh_index_list": None,
-        "roof_result_dict": None,
-        "facades_result_dict": None,
-        "total_result_dict": None
-    }
+    "solar_radiation_and_bipv": None
 }
 
 
@@ -177,44 +166,8 @@ class ExportUrbanCanopyToJson:
             if isinstance(building_obj, BuildingModeled) \
                     and building_obj.solar_radiation_and_bipv_simulation_obj is not None:
                 # Paramters
-                urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
-                    "parameters"] = \
-                    replace_bipv_technology_obj_by_id(
-                        building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict)
-
-                # Mesh/Sensorgrid
-                urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
-                    "roof_sensorgrid"] = \
-                    building_obj.solar_radiation_and_bipv_simulation_obj.roof_sensorgrid_dict
-                urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
-                    "facades_sensorgrid"] = \
-                    building_obj.solar_radiation_and_bipv_simulation_obj.facades_sensorgrid_dict
-                # Results solar irradiance
-                urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
-                    "roof_annual_panel_irradiance_list"] = \
-                    building_obj.solar_radiation_and_bipv_simulation_obj.roof_annual_panel_irradiance_list
-                urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
-                    "facades_annual_panel_irradiance_list"] = \
-                    building_obj.solar_radiation_and_bipv_simulation_obj.facades_annual_panel_irradiance_list
-                # Index of panels kept in the mesh
-                if building_obj.solar_radiation_and_bipv_simulation_obj.roof_panel_list is not None:
-                    urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
-                        "roof_panel_mesh_index_list"] = [panel.index for panel in
-                                                         building_obj.solar_radiation_and_bipv_simulation_obj.roof_panel_list]
-                if building_obj.solar_radiation_and_bipv_simulation_obj.facades_panel_list is not None:
-                    urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
-                        "facades_panel_mesh_index_list"] = [panel.index for panel in
-                                                            building_obj.solar_radiation_and_bipv_simulation_obj.facades_panel_list]
-                # Results BIPV
-                urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
-                    "roof_result_dict"] = \
-                    building_obj.solar_radiation_and_bipv_simulation_obj.bipv_results_dict["roof"]
-                urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
-                    "facades_result_dict"] = \
-                    building_obj.solar_radiation_and_bipv_simulation_obj.bipv_results_dict["facades"]
-                urban_canopy_obj.json_dict["buildings"][building_id]["solar_radiation_and_bipv"][
-                    "total_result_dict"] = \
-                    building_obj.solar_radiation_and_bipv_simulation_obj.bipv_results_dict["total"]
+                urban_canopy_obj.json_dict["buildings"][building_id][
+                    "solar_radiation_and_bipv"] = building_obj.solar_radiation_and_bipv_simulation_obj.to_json_dict()
 
         # Add the results of the BIPV scenarios
         for scenario_id, scenario_obj in urban_canopy_obj.bipv_scenario_dict.items():

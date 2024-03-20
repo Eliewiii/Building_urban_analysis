@@ -1123,7 +1123,7 @@ class UrbanCanopy:
                 building_list.append(building_id)
         return building_list
 
-    def get_energy_consumption_from_building_id_list(self, building_id_list):
+    def get_ubes_electricity_consumption_from_building_id_list(self, building_id_list):
         """
         Get the energy consumption of buildings (if the energy simulation was run)
         :param building_id_list: list of building id
@@ -1131,7 +1131,7 @@ class UrbanCanopy:
         energy_consumption = []
         for building_id in building_id_list:
             building_obj = self.building_dict[building_id]
-            energy_consumption.append(building_obj.get_energy_consumption())
+            energy_consumption.append(building_obj.get_bes_energy_consumption())
 
         return energy_consumption
 

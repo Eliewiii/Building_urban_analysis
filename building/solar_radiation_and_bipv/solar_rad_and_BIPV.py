@@ -226,6 +226,37 @@ class SolarRadAndBipvSimulation:
         else:
             self.bipv_results_dict["facades"] = deepcopy(empty_sub_bipv_results_dict)
 
+    def to_json_dict(self):
+        """
+        Return the dictionary representation of that object to export it to json
+        """
+        json_dict = {
+            "parameters": deepcopy(self.parameter_dict),
+            "roof_sensorgrid": self.roof_sensorgrid_dict,
+            "facades_sensorgrid": self.facades_sensorgrid_dict,
+            "roof_annual_panel_irradiance_list": self.roof_annual_panel_irradiance_list,
+            "facades_annual_panel_irradiance_list": self.facades_annual_panel_irradiance_list,
+            "roof_panel_mesh_index_list": None,
+            "facades_panel_mesh_index_list": None,
+            "roof_result_dict": self.bipv_results_dict["roof"],
+            "facades_result_dict": self.bipv_results_dict["facades"],
+            "total_result_dict": self.bipv_results_dict["total"]
+        }
+        # Add the mesh index list to plot on GH the location of the kept panels
+        if self.roof_panel_list is not None:
+            json_dict["roof_panel_mesh_index_list"] = [panel.index for panel in self.roof_panel_list]
+        if self.facades_panel_list is not None:
+            json_dict["facades_panel_mesh_index_list"] = [panel.index for panel in self.facades_panel_list]
+        # Adjust the parameter dict to make it json serializable
+        json_dict["parameters"]["roof"]["panel_technology"] = json_dict["parameters"]["roof"]["panel_technology"].identifier
+        json_dict["parameters"]["roof"]["inverter"]["technology"] = json_dict["parameters"]["roof"]["inverter"]["technology"].identifier
+
+        json_dict["parameters"]["facades"]["panel_technology"] = json_dict["parameters"]["facades"]["panel_technology"].identifier
+        json_dict["parameters"]["facades"]["inverter"]["technology"] = json_dict["parameters"]["facades"]["inverter"]["technology"].identifier
+
+
+        return json_dict
+
     def generate_sensor_grid(self, hb_model_obj, bipv_on_roof=True, bipv_on_facades=True, roof_grid_size_x=1,
                              facades_grid_size_x=1, roof_grid_size_y=1, facades_grid_size_y=1,
                              offset_dist=0.1, overwrite=False):
@@ -690,11 +721,11 @@ class SolarRadAndBipvSimulation:
             recycling_result_dict["cost"]["revenue"]["material_recovery"])]
         # Economical net cost
         bipv_results_dict["cost"]["net_profit"]["yearly"] = [investment - revenue for [investment, revenue] in
-                                                            zip(
-                                                                bipv_results_dict["cost"]["investment"][
-                                                                    "total"]["yearly"],
-                                                                bipv_results_dict["cost"]["revenue"]["total"][
-                                                                    "yearly"])]
+                                                             zip(
+                                                                 bipv_results_dict["cost"]["investment"][
+                                                                     "total"]["yearly"],
+                                                                 bipv_results_dict["cost"]["revenue"]["total"][
+                                                                     "yearly"])]
 
         # Compute cumulative and total values
         bipv_results_dict = compute_cumulative_and_total_value_bipv_result_dict(bipv_results_dict)
@@ -856,7 +887,7 @@ def compute_cumulative_and_total_value_bipv_result_dict(bipv_results_dict):
         if isinstance(bipv_results_dict[key], dict):
             bipv_results_dict[key] = compute_cumulative_and_total_value_bipv_result_dict(
                 bipv_results_dict[key])
-        elif isinstance(bipv_results_dict[key], list) and key == "yearly":
+        elif isinstance(bipv_results_dict[key], list) and key == "yearly" and bipv_results_dict["yearly"] != []:
             if "cumulative" in bipv_results_dict:
                 bipv_results_dict["cumulative"] = [sum(bipv_results_dict["yearly"][0:i]) for i in
                                                    range(1, len(bipv_results_dict["yearly"]) + 1)]

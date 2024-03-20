@@ -194,7 +194,7 @@ class BuildingModeled(BuildingBasic):
         """
         conditioned_area = 0.
         for room in self.hb_model_obj.rooms:
-            if room.is_conditioned:
+            if room.properties.energy.is_conditioned:
                 conditioned_area += room.floor_area
 
         return conditioned_area
@@ -203,7 +203,7 @@ class BuildingModeled(BuildingBasic):
         """
         Return the energy consumption of the building from the EnergyPlus simulation
         """
-        return self.bes_object.get_total_energy_consumption()
+        return self.bes_obj.get_total_energy_consumption()
 
     def make_merged_faces_hb_model(self, orient_roof_mesh_to_according_to_building_orientation=True,
                                    north_angle=0, overwrite=False):
