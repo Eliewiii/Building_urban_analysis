@@ -40,7 +40,7 @@ class BipvInverter:
         self.identifier = identifier
         # Characteristics
         self.replacement_frequency = None  # in years
-        self.capacity_vs_cost = {}  # capacity in kWp and cost in USD
+        self.capacity_vs_cost = {}  # capacity in Wp and cost in USD
         # ghg emission
         self.ghg_function = None  # linear for now
         self.ghg_coefficient = None  # in kgCO2eq per kWp
@@ -97,10 +97,10 @@ class BipvInverter:
     def linear_ghg_emission(self, capacity):
         """
         Calculate the ghg emission using a linear function
-        :param capacity: capacity in kWp
+        :param capacity: capacity in Wp
         :return ghg: ghg emission in kgCO2eq
         """
-        ghg = self.ghg_coefficient * capacity + self.ghg_offset
+        ghg = self.ghg_coefficient * capacity/1000. + self.ghg_offset
         return ghg
 
     def linear_primary_energy(self, capacity):
@@ -109,7 +109,7 @@ class BipvInverter:
         :param capacity: capacity in kWp
         :return ghg: ghg emission in kgCO2eq
         """
-        primary_energy = self.primary_energy_coefficient * capacity + self.primary_energy_offset
+        primary_energy = self.primary_energy_coefficient * capacity/1000. + self.primary_energy_offset
         return primary_energy
 
     def get_primary_energy_ghg_and_cost_for_capacity_list(self, capacity_list):
@@ -128,10 +128,10 @@ class BipvInverter:
     def size_inverter(self, peak_power, sizing_ratio):
         """
         Calculate the size of the inverter according to the peak power of the panels and a sizing ratio
-        :param peak_power: float: peak power of the panels in kWp
+        :param peak_power: float: peak power of the panels in Wp
         :param sizing_ratio: float: ratio to size the inverter
-        :return total_capacity: float: size of the inverter in kWp
-        :return sub_capacities_list: list of float: list of the individual sizes of the inverters used if necessary in kWp
+        :return total_capacity: float: size of the inverter in Wp
+        :return sub_capacities_list: list of float: list of the individual sizes of the inverters used if necessary in Wp
         """
         # Ideal size of the inverter according to the peak power of the panels and a sizing ratio
         ideal_capacity = peak_power * sizing_ratio

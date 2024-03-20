@@ -188,7 +188,7 @@ def simulate_bipv_yearly_energy_harvesting(pv_panel_obj_list,
             for panel_obj in pv_panel_obj_list:
                 panel_obj.increment_age_by_one_year()
 
-            energy_production_per_year_list.append(annual_energy_harvested)
+            energy_production_per_year_list.append(annual_energy_harvested/1000) # convert Wh to kWh
             nb_of_panels_installed_per_year_list.append(nb_of_new_panels)
 
     return energy_production_per_year_list, nb_of_panels_installed_per_year_list

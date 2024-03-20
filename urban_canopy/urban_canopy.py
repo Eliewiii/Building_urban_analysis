@@ -1096,7 +1096,7 @@ class UrbanCanopy:
             self.get_conditioned_area_from_building_id_list(
                 bipv_scenario_obj.bipv_simulated_building_id_list))
         # Set the grid parameters
-        bipv_scenario_obj.compute_kpis(
+        bipv_scenario_obj.compute_scenario_kpis(
             grid_ghg_intensity=grid_ghg_intensity,
             grid_energy_intensity=grid_energy_intensity,
             grid_electricity_sell_price=grid_electricity_sell_price,

@@ -141,7 +141,7 @@ class BipvScenario:
                                                        conditioned_apartment_area=conditioned_apartment_area,
                                                        zone_area=zone_area)
 
-    def compute_kpis(self, grid_ghg_intensity, grid_energy_intensity, grid_electricity_sell_price,
+    def compute_scenario_kpis(self, grid_ghg_intensity, grid_energy_intensity, grid_electricity_sell_price,
                      ubes_electricity_consumption, conditioned_apartment_area, zone_area):
         """
         Compute the KPIs of the scenario
