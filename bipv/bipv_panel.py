@@ -62,19 +62,19 @@ class BipvPanel:
         self.age = None
         self.life_expectancy = None
 
-    def get_hourly_power_generation_over_a_year(self, hourly_irradiance, **kwargs):
+    def get_hourly_power_generation_over_a_year(self, hourly_irradiance_list, **kwargs):
         """
         Return the hourly power generation of a panel over a year.
         The hourly irradiance covers only the sun hours, thus it does not contain the usual 8760 hours of a year.
-        :param hourly_irradiance: float: hourly radiation received by a panel during a year or a timestep  in Wh/m2
+        :param hourly_irradiance_list: float: hourly radiation received by a panel during a year or a timestep  in Wh/m2
         :return energy_harvested: float: energy harvested by the panel during the year, in Wh/panel
         """
         if self.is_panel_working():
             hourly_power_generation_list = self.panel_technology_object.get_hourly_power_generation_over_a_year_by_panel(
-                hourly_irradiance=hourly_irradiance,
+                hourly_irradiance_list=hourly_irradiance_list,
                 age=self.age, **kwargs)
         else:
-            hourly_power_generation_list = [0. for i in hourly_irradiance]
+            hourly_power_generation_list = [0. for i in hourly_irradiance_list]
         return hourly_power_generation_list
 
     def increment_age_by_one_year(self):

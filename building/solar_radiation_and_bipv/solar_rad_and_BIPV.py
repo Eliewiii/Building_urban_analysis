@@ -81,8 +81,8 @@ empty_sub_bipv_results_dict = {
             "gate_to_gate": {"yearly": [], "cumulative": [], "total": 0.0},
             "transportation": {
                 "gate_to_gate": {"yearly": [], "cumulative": [], "total": 0.0},
-                "recycling": {"yearly": [], "cumulative": [], "total": 0.0
-                              }
+                "recycling": {"yearly": [], "cumulative": [], "total": 0.0},
+                "total": {"yearly": [], "cumulative": [], "total": 0.0}
             },
             "maintenance": {"yearly": [], "cumulative": [], "total": 0.0},
             "inverter": {"yearly": [], "cumulative": [], "total": 0.0},
@@ -95,7 +95,7 @@ empty_sub_bipv_results_dict = {
             "total": {"yearly": [], "cumulative": [], "total": 0.0}
 
         },
-        "total": {"yearly": [], "cumulative": [], "total": 0.0}
+        "net_profit": {"yearly": [], "cumulative": [], "total": 0.0}
     },
     "dmfa": {"yearly": [], "cumulative": [], "total": 0.0}
 }
@@ -372,8 +372,8 @@ class SolarRadAndBipvSimulation:
 
     def run_bipv_panel_simulation(self, path_simulation_folder, roof_pv_tech_obj,
                                   facades_pv_tech_obj,
-                                  roof_inverter_tech_obj,facades_inverter_tech_obj, roof_inverter_sizing_ratio,
-                                  facades_inverter_sizing_ratio,roof_transport_obj, facades_transport_obj,
+                                  roof_inverter_tech_obj, facades_inverter_tech_obj, roof_inverter_sizing_ratio,
+                                  facades_inverter_sizing_ratio, roof_transport_obj, facades_transport_obj,
                                   uc_end_year, uc_start_year, uc_current_year,
                                   efficiency_computation_method="yearly",
                                   minimum_panel_eroi=1.2,
@@ -473,14 +473,16 @@ class SolarRadAndBipvSimulation:
                                          minimum_panel_eroi=minimum_panel_eroi,
                                          start_year=uc_current_year,
                                          replacement_scenario=replacement_scenario, **kwargs)
+                # todo: add the additional transport and inverter parameters
 
                 panel_list = init_bipv_on_sensor_grid(sensor_grid=SensorGrid.from_dict(sensorgrid_dict),
                                                       pv_technology_obj=pv_tech_obj,
+                                                      bipv_transportation_obj=transport_obj,
                                                       annual_panel_irradiance_list=annual_panel_irradiance_list,
                                                       minimum_panel_eroi=minimum_panel_eroi)
 
                 # Size the inverters capacity
-                peak_power = sum([panel.peak_power for panel in panel_list])
+                peak_power = pv_tech_obj.max_power_output * len(panel_list)
                 total_capacity, sub_capacities_list = inverter_tech_obj.size_inverter(peak_power=peak_power,
                                                                                       sizing_ratio=inverter_sizing_ratio)
                 self.parameter_dict[roof_or_facades]["inverter"]["technology"] = inverter_tech_obj
@@ -535,7 +537,7 @@ class SolarRadAndBipvSimulation:
                 path_sun_up_hours_file = os.path.join(path_result_folder, name_facades_sun_up_hours_file)
 
             # Get the hourly irradiance table
-            hourly_irradiance_table = get_hourly_irradiance_table(path_ill_file, path_sun_up_hours_file)
+            hourly_irradiance_table = get_hourly_irradiance_table(path_ill_file)
 
             energy_harvested_yearly_list, nb_of_panels_installed_yearly_list = simulate_bipv_yearly_energy_harvesting(
                 pv_panel_obj_list=panel_list,
@@ -557,7 +559,7 @@ class SolarRadAndBipvSimulation:
             transport_result_dict = compute_lca_and_cost_for_transportation(
                 nb_of_panels_installed_yearly_list=nb_of_panels_installed_yearly_list,
                 pv_tech_obj=pv_tech_obj,
-                transport_obj=transport_obj)
+                transportation_obj=transport_obj)
             # LCA and economic for maintenance
             maintenance_result_dict = compute_lca_and_cost_for_maintenance(
                 panel_list=panel_list,
@@ -662,24 +664,22 @@ class SolarRadAndBipvSimulation:
             "investment"]
         bipv_results_dict["cost"]["investment"]["transportation"]["gate_to_gate"]["yearly"] += \
             transport_result_dict[
-                "cost"]["investment"]["gtg"]
+                "cost"]["gtg"]
         bipv_results_dict["cost"]["investment"]["transportation"]["recycling"]["yearly"] += \
             transport_result_dict[
-                "cost"]["investment"]["recycling"]
+                "cost"]["recycling"]
         bipv_results_dict["cost"]["investment"]["transportation"]["total"]["yearly"] += [sum(i) for i in zip(
-            transport_result_dict["cost"]["investment"]["gtg"],
-            transport_result_dict["cost"]["investment"]["recycling"])]
-        bipv_results_dict["cost"]["investment"]["maintenance"]["yearly"] += maintenance_result_dict["cost"][
-            "investment"]
-        bipv_results_dict["cost"]["investment"]["inverter"]["yearly"] += inverter_result_dict["cost"][
-            "investment"]
+            transport_result_dict["cost"]["gtg"],
+            transport_result_dict["cost"]["recycling"])]
+        bipv_results_dict["cost"]["investment"]["maintenance"]["yearly"] += maintenance_result_dict["cost"]
+        bipv_results_dict["cost"]["investment"]["inverter"]["yearly"] += inverter_result_dict["cost"]
         bipv_results_dict["cost"]["investment"]["recycling"]["yearly"] += recycling_result_dict["cost"][
             "investment"]
         bipv_results_dict["cost"]["investment"]["total"]["yearly"] += [sum(i) for i in zip(
-            gtg_result_dict["cost"]["investment"], transport_result_dict["cost"]["investment"]["gtg"],
-            transport_result_dict["cost"]["investment"]["recycling"],
-            maintenance_result_dict["cost"]["investment"],
-            inverter_result_dict["cost"]["investment"], recycling_result_dict["cost"]["investment"])]
+            gtg_result_dict["cost"]["investment"], transport_result_dict["cost"]["gtg"],
+            transport_result_dict["cost"]["recycling"],
+            maintenance_result_dict["cost"],
+            inverter_result_dict["cost"], recycling_result_dict["cost"]["investment"])]
         # Economical revenue
         bipv_results_dict["cost"]["revenue"]["substituted_construction_material"]["yearly"] += \
             gtg_result_dict["cost"]["revenue"]["substituted_construction_material"]
@@ -689,7 +689,7 @@ class SolarRadAndBipvSimulation:
             gtg_result_dict["cost"]["revenue"]["substituted_construction_material"],
             recycling_result_dict["cost"]["revenue"]["material_recovery"])]
         # Economical net cost
-        bipv_results_dict["cost"]["net_cost"]["yearly"] += [investment - revenue for [investment, revenue] in
+        bipv_results_dict["cost"]["net_profit"]["yearly"] = [investment - revenue for [investment, revenue] in
                                                             zip(
                                                                 bipv_results_dict["cost"]["investment"][
                                                                     "total"]["yearly"],
@@ -758,6 +758,7 @@ class SolarRadAndBipvSimulation:
                 for panel in self.facades_panel_list]
 
         return panel_lb_face_list
+
 
 def bipv_results_to_csv(path_radiation_and_bipv_result_folder, building_id_or_uc_scenario_name, bipv_results_dict,
                         start_year,
@@ -860,8 +861,7 @@ def compute_cumulative_and_total_value_bipv_result_dict(bipv_results_dict):
                 bipv_results_dict["cumulative"] = [sum(bipv_results_dict["yearly"][0:i]) for i in
                                                    range(1, len(bipv_results_dict["yearly"]) + 1)]
             if "total" in bipv_results_dict:
-                bipv_results_dict["total"] = [sum(bipv_results_dict["yearly"][i]) for i in
-                                              range(len(bipv_results_dict["yearly"]))]
+                bipv_results_dict["total"] = bipv_results_dict["cumulative"][-1]
 
     return bipv_results_dict
 

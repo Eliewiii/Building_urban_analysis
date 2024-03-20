@@ -353,7 +353,6 @@ class BuildingModeled(BuildingBasic):
         self.shading_context_obj.add_bipv_panel_as_shades(panel_lb_face3d_list)
         # todo : not implemented yet, would create very complex couplingss among buildings
 
-
     def generate_idf_for_bes_with_openstudio(self, path_ubes_temp_sim_folder, path_epw_file,
                                              path_hbjson_simulation_parameters, overwrite=False,
                                              silent=False):
@@ -544,7 +543,8 @@ class BuildingModeled(BuildingBasic):
             path_weather_file=path_weather_file, overwrite=overwrite,
             north_angle=north_angle, silent=silent)
 
-    def building_run_bipv_panel_simulation(self, path_simulation_folder, roof_pv_tech_obj, facades_pv_tech_obj,
+    def building_run_bipv_panel_simulation(self, path_simulation_folder, path_radiation_and_bipv_result_folder,
+                                           roof_pv_tech_obj, facades_pv_tech_obj,
                                            roof_transport_obj,
                                            facades_transport_obj, roof_inverter_obj, facades_inverter_obj,
                                            roof_inverter_sizing_ratio,
@@ -557,6 +557,7 @@ class BuildingModeled(BuildingBasic):
         """
         Run the BIPV simulation for the building on the roof and/or on the facades of the buildings.
         :param path_simulation_folder: Path to the simulation folder
+        :param path_radiation_and_bipv_result_folder: Path to the result folder
         :param roof_pv_tech_obj: PVTechnology object: PV technology for the roof
         :param facades_pv_tech_obj: PVTechnology object: PV technology for the facades
         :param roof_transport_obj:BipvTransportation: transportation object for the roof panels
@@ -577,6 +578,7 @@ class BuildingModeled(BuildingBasic):
         :param kwargs: dict: other arguments for the simulation
         """
 
+        # todo, replace simulation folder by radiation and BIPV result folder
         # Run the simulation
         self.solar_radiation_and_bipv_simulation_obj.run_bipv_panel_simulation(
             path_simulation_folder=path_simulation_folder, building_id=self.id, roof_pv_tech_obj=roof_pv_tech_obj,
@@ -592,9 +594,8 @@ class BuildingModeled(BuildingBasic):
             minimum_panel_eroi=minimum_panel_eroi, replacement_scenario=replacement_scenario,
             continue_simulation=continue_simulation, **kwargs)
         # Write the results in a csv file
-        self.solar_radiation_and_bipv_simulation_obj.write_bipv_results_to_csv(
-            path_simulation_folder=path_simulation_folder,
-            building_id=self.id)
+        self.solar_radiation_and_bipv_simulation_obj.write_building_bipv_results_to_csv(
+            path_radiation_and_bipv_result_folder=path_radiation_and_bipv_result_folder)
     #
     # def plot_panels_energy_results(self, path_simulation_folder_building, study_duration_years):
     #     """

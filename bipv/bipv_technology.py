@@ -96,7 +96,7 @@ class BipvTechnology:
         self.identifier = identifier
         self.pv_type = None  # Roof or facade
         # Peak power generation (nominal power)
-        self.max_power_output = None  # Nominal power of the panel in Watt
+        self.max_power_output = None  # Nominal power of the panel in W
         # Physical properties
         self.panel_area = None  # In square meter
         self.weight = None  # In kg per module meter
@@ -119,7 +119,7 @@ class BipvTechnology:
         self.cost_investment = None  # In USD per panel
         self.cost_recycling = None  # In USD per kg
         self.revenue_substituted_construction_material_roof = None  # In USD per panel
-        self.revenue_substituted_construction_material_facade = None  # In USD per panel
+        self.revenue_substituted_construction_material_facades = None  # In USD per panel
         self.revenue_material_recovery = None  # In USD per panel
         # Annual maintenance
         self.primary_energy_annual_maintenance = None  # In kWh per panel per year
@@ -188,10 +188,10 @@ class BipvTechnology:
                         pv_tech_obj.revenue_substituted_construction_material_roof = \
                             value["economic_parameters"]["revenues"][
                                 "substituted_construction_material_roof_in_USD_per_panel"]
-                        pv_tech_obj.revenue_substituted_construction_material_facade = \
+                        pv_tech_obj.revenue_substituted_construction_material_facades = \
                             value["economic_parameters"]["revenues"][
                                 "substituted_construction_material_facade_in_USD_per_panel"]
-                        pv_tech_obj.revenue_material_recovery_factor = value["economic_parameters"]["revenues"][
+                        pv_tech_obj.revenue_material_recovery = value["economic_parameters"]["revenues"][
                             "material_recovery_in_USD_per_panel"]
                         # Annual maintenance
                         pv_tech_obj.primary_energy_annual_maintenance = value["annual_maintenance"][
@@ -316,14 +316,15 @@ class BipvTechnology:
             efficiency = self.efficiency_function(age=age, hourly_irradiance_list=hourly_irradiance_list, **kwargs)
 
         # Compute the irradiance that would generate the maximum output power of the panel
-        max_irradiance = self.max_power_output / self.panel_area / efficiency
+        max_irradiance = self.max_power_output / self.panel_area / efficiency / self.infrastructure_performance_ratio
         # Initialize energy harvested
-        hourly_power_generation_list = 0
+        hourly_power_generation_list = []
         for hourly_irradiance in hourly_irradiance_list:
             # cap the irradiance to the maximum output power of the panel if necessary (in case of over irradiance)
-            if hourly_irradiance / self.panel_area > max_irradiance:
+            if hourly_irradiance > max_irradiance:
                 hourly_irradiance = max_irradiance
-            hourly_power_generation_list += hourly_irradiance * efficiency * self.panel_area * self.infrastructure_performance_ratio
+            hourly_power_generation_list.append(
+                hourly_irradiance * efficiency * self.panel_area * self.infrastructure_performance_ratio)
 
         return hourly_power_generation_list
 

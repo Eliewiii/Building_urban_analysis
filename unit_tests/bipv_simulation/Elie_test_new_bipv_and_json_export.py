@@ -10,7 +10,9 @@ SimFunSolarRadAndBipv.run_bipv_harvesting_and_lca_simulation(
     efficiency_computation_method=default_efficiency_computation_method,
     minimum_panel_eroi=default_minimum_panel_eroi,
     start_year=2024,
-    end_year=2054,
+    end_year=2080,
+    replacement_scenario="replace_failed_panels_every_X_years",
+    default_replacement_frequency_in_years = 30,
     continue_simulation=False,
     update_panel_technology=False,
     replacement_frequency_in_years=default_replacement_frequency_in_years)

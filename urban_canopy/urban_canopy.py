@@ -997,6 +997,10 @@ class UrbanCanopy:
         roof_inverter_obj = bipv_inverter_obj_dict[roof_inverter_id]
         facades_inverter_obj = bipv_inverter_obj_dict[facades_inverter_id]
 
+        # Folder to store the results
+        path_radiation_and_bipv_result_folder = os.path.join(path_simulation_folder,
+                                                             name_radiation_simulation_folder)
+
         # Run the simulation for the buildings
         solar_rad_and_bipv_obj_list = []
         for building_obj in self.building_dict.values():
@@ -1019,12 +1023,16 @@ class UrbanCanopy:
                                                                 minimum_panel_eroi=minimum_panel_eroi,
                                                                 replacement_scenario=replacement_scenario,
                                                                 continue_simulation=continue_simulation,
+                                                                path_radiation_and_bipv_result_folder=path_radiation_and_bipv_result_folder,
                                                                 **kwargs)
                 solar_rad_and_bipv_obj_list.append(building_obj.solar_radiation_and_bipv_simulation_obj)
-        # Add the selected panels to the building shades
-        for building_obj in self.building_dict.values():
-            if isinstance(building_obj, BuildingModeled):
-                building_obj.add_selected_bipv_panels_to_shades()
+
+        """ to be implemented potentially, but not likely to be """
+        # # Add the selected panels to the building shades
+        # for building_obj in self.building_dict.values():
+        #     if isinstance(building_obj, BuildingModeled):
+        #         building_obj.add_selected_bipv_panels_to_shades()
+
         # Get the list of buildings that were simualted
         building_id_list = self.get_list_of_bipv_simulated_buildings()
         bipv_scenario_obj.set_simulated_building_id_list(building_id_list=building_id_list)
@@ -1033,8 +1041,6 @@ class UrbanCanopy:
             solar_rad_and_bipv_obj_list=solar_rad_and_bipv_obj_list)
 
         # Write urban scale results to CSV file (overwrite existing file if it exists)
-        path_radiation_and_bipv_result_folder = os.path.join(path_simulation_folder,
-                                                             name_radiation_simulation_folder)
         bipv_scenario_obj.write_bipv_results_to_csv(
             path_radiation_and_bipv_result_folder=path_radiation_and_bipv_result_folder)
 

@@ -176,7 +176,7 @@ def simulate_bipv_yearly_energy_harvesting(pv_panel_obj_list,
             nb_of_sun_hours = len(
                 hourly_solar_irradiance_table[0])  # Number of sun hours in the year, same for all faces
             hourly_power_generation_by_panels_table = [panel_obj.get_hourly_power_generation_over_a_year(
-                hourly_irradiance=hourly_solar_irradiance_table[panel_obj.index], **kwargs) for panel_obj in
+                hourly_irradiance_list=hourly_solar_irradiance_table[panel_obj.index], **kwargs) for panel_obj in
                 pv_panel_obj_list]
             for i in range(nb_of_sun_hours):
                 total_power = sum(
@@ -206,7 +206,7 @@ def compute_lca_and_cost_for_gtg(nb_of_panels_installed_yearly_list, pv_tech_obj
         i in nb_of_panels_installed_yearly_list]
 
     # Carbon footprint
-    carbon_material_extraction_and_manufacturing_yearly_list = [i * pv_tech_obj.carbon_manufacturing for i in
+    carbon_material_extraction_and_manufacturing_yearly_list = [i * pv_tech_obj.ghg_manufacturing for i in
                                                                 nb_of_panels_installed_yearly_list]
 
     # Economic cost
@@ -228,7 +228,7 @@ def compute_lca_and_cost_for_gtg(nb_of_panels_installed_yearly_list, pv_tech_obj
         "ghg": carbon_material_extraction_and_manufacturing_yearly_list,
         "cost": {
             "investment": cost_investement_yearly_list,
-            "revenue": revenue_substituted_construction_material_yearly_list
+            "revenue": {"substituted_construction_material": revenue_substituted_construction_material_yearly_list}
         }
     }
 
@@ -246,7 +246,7 @@ def compute_lca_cost_and_dmfa_for_recycling(nb_of_panels_installed_yearly_list, 
     primary_energy_recycling_yearly_list = [i * pv_tech_obj.primary_energy_recycling for i in
                                             nb_of_panels_installed_yearly_list]
     # Carbon footprint
-    carbon_recycling_yearly_list = [i * pv_tech_obj.carbon_recycling for i in
+    carbon_recycling_yearly_list = [i * pv_tech_obj.ghg_recycling for i in
                                     nb_of_panels_installed_yearly_list]
     # Compute DMFA waste in kg for each year
     dmfa_waste_yearly_list = [i * pv_tech_obj.weight for i in
@@ -264,7 +264,7 @@ def compute_lca_cost_and_dmfa_for_recycling(nb_of_panels_installed_yearly_list, 
         "ghg": carbon_recycling_yearly_list,
         "cost": {
             "investment": cost_recycling_yearly_list,
-            "revenue": revenue_material_recovery_yearly_list
+            "revenue": {"material_recovery": revenue_material_recovery_yearly_list}
         },
         "dmfa": dmfa_waste_yearly_list
     }
@@ -289,11 +289,11 @@ def compute_lca_and_cost_for_maintenance(panel_list, start_year, current_study_d
     if iteration_start_year < uc_end_year:
         for year in range(iteration_start_year, uc_end_year):
             primary_energy_maintenance_yearly_list.append(
-                sum([panel_obj.primary_energy_annual_maintenance for panel_obj in panel_list]))
+                sum([panel_obj.panel_technology_object.primary_energy_annual_maintenance for panel_obj in panel_list]))
             ghg_maintenance_yearly_list.append(
-                sum([panel_obj.carbon_annual_maintenance for panel_obj in panel_list]))
+                sum([panel_obj.panel_technology_object.ghg_annual_maintenance for panel_obj in panel_list]))
             cost_maintenance_yearly_list.append(
-                sum([panel_obj.cost_annual_maintenance for panel_obj in panel_list]))
+                sum([panel_obj.panel_technology_object.cost_annual_maintenance for panel_obj in panel_list]))
 
     maintenance_result_dict = {
         "primary_energy": primary_energy_maintenance_yearly_list,
@@ -321,9 +321,9 @@ def compute_lca_and_cost_for_transportation(nb_of_panels_installed_yearly_list, 
     primary_energy_transport_recycling_yearly_list = [i * recycling_dict["primary_energy"] for i in
                                                       nb_of_panels_installed_yearly_list]
     # Carbon footprint
-    carbon_transport_gtg_yearly_list = [i * gtg_transportation_dict["carbon"] for i in
+    carbon_transport_gtg_yearly_list = [i * gtg_transportation_dict["ghg"] for i in
                                         nb_of_panels_installed_yearly_list]
-    carbon_transport_recycling_yearly_list = [i * recycling_dict["carbon"] for i in
+    carbon_transport_recycling_yearly_list = [i * recycling_dict["ghg"] for i in
                                               nb_of_panels_installed_yearly_list]
     # Economic cost
     cost_transport_gtg_yearly_list = [i * gtg_transportation_dict["cost"] for i in

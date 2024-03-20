@@ -68,10 +68,9 @@ class BipvInverter:
                         inverter_obj = cls(value["id"])
                         inverter_obj.replacement_frequency = int(value["replacement_frequency_in_year"])
                         for k, v in value["capacity_in_kW_vs_cost_in_USD"].items():
-                            inverter_obj.capacity_vs_cost[int(k)] = float(v)
+                            inverter_obj.capacity_vs_cost[float(k) * 1000] = float(v)
                         if value["environmental_impact"]["function"] == "linear":
                             inverter_obj.ghg_function = inverter_obj.linear_ghg_emission
-                            inverter_obj.ghg_function = value["environmental_impact"]["function"]
                             inverter_obj.ghg_coefficient = value["environmental_impact"][
                                 "coefficient_ghg_emission_in_kgCO2eq_per_kWp"]
                             inverter_obj.ghg_offset = value["environmental_impact"][
@@ -121,12 +120,10 @@ class BipvInverter:
         :return ghg_emission: float: ghg emission of all the inverters in kgCO2eq
         :return cost: float: cost of all the inverters in USD
         """
-        primary_energy_list = sum([self.primary_energy_function(capacity) for capacity in capacity_list])
-        ghg_emission_list = sum([self.ghg_function(capacity) for capacity in capacity_list])
-        cost_list = [self.capacity_vs_cost[capacity] for capacity in capacity_list]
-        return primary_energy_list, ghg_emission_list, cost_list
-
-
+        primary_energy = sum([self.primary_energy_function(capacity) for capacity in capacity_list])
+        ghg_emission = sum([self.ghg_function(capacity) for capacity in capacity_list])
+        cost = sum([self.capacity_vs_cost[capacity] for capacity in capacity_list])
+        return primary_energy, ghg_emission, cost
 
     def size_inverter(self, peak_power, sizing_ratio):
         """
