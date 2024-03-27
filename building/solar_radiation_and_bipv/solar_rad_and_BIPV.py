@@ -9,6 +9,7 @@ import csv
 
 from copy import deepcopy
 from datetime import datetime
+from time import time
 
 from honeybee_radiance.sensorgrid import SensorGrid
 from ladybug_geometry.geometry3d.face import Face3D
@@ -135,6 +136,7 @@ class SolarRadAndBipvSimulation:
         # Solar irradiance on each of the face of the mesh
         self.roof_annual_panel_irradiance_list = None
         self.facades_annual_panel_irradiance_list = None
+        self.irradiance_simulation_duration = {"roof": None, "facades": None}
         # bipv results
         self.bipv_results_dict = None
         self.init_bipv_results_dict()
@@ -236,6 +238,7 @@ class SolarRadAndBipvSimulation:
             "facades_sensorgrid": self.facades_sensorgrid_dict,
             "roof_annual_panel_irradiance_list": self.roof_annual_panel_irradiance_list,
             "facades_annual_panel_irradiance_list": self.facades_annual_panel_irradiance_list,
+            "irradiance_simulation_duration": self.irradiance_simulation_duration,
             "roof_panel_mesh_index_list": None,
             "facades_panel_mesh_index_list": None,
             "roof_result_dict": self.bipv_results_dict["roof"],
@@ -248,11 +251,11 @@ class SolarRadAndBipvSimulation:
         if self.facades_panel_list is not None:
             json_dict["facades_panel_mesh_index_list"] = [panel.index for panel in self.facades_panel_list]
         # Adjust the parameter dict to make it json serializable
-        json_dict["parameters"]["roof"]["panel_technology"] = json_dict["parameters"]["roof"]["panel_technology"].identifier
-        json_dict["parameters"]["roof"]["inverter"]["technology"] = json_dict["parameters"]["roof"]["inverter"]["technology"].identifier
+        json_dict["parameters"]["roof"]["panel_technology"] = json_dict["parameters"]["roof"]["panel_technology"].identifier if json_dict["parameters"]["roof"]["panel_technology"] is not None else None
+        json_dict["parameters"]["roof"]["inverter"]["technology"] = json_dict["parameters"]["roof"]["inverter"]["technology"].identifier if json_dict["parameters"]["roof"]["inverter"]["technology"] is not None else None
 
-        json_dict["parameters"]["facades"]["panel_technology"] = json_dict["parameters"]["facades"]["panel_technology"].identifier
-        json_dict["parameters"]["facades"]["inverter"]["technology"] = json_dict["parameters"]["facades"]["inverter"]["technology"].identifier
+        json_dict["parameters"]["facades"]["panel_technology"] = json_dict["parameters"]["facades"]["panel_technology"].identifier if json_dict["parameters"]["facades"]["panel_technology"] is not None else None
+        json_dict["parameters"]["facades"]["inverter"]["technology"] = json_dict["parameters"]["facades"]["inverter"]["technology"].identifier if json_dict["parameters"]["facades"]["inverter"]["technology"] is not None else None
 
 
         return json_dict
@@ -337,6 +340,7 @@ class SolarRadAndBipvSimulation:
                 hb_model_copy_roof.add_shades(context_shading_hb_shade_list)
                 # run in the temporary folder
                 path_folder_run_radiation_temp_roof = os.path.join(path_folder_run_radiation_temp, "roof")
+                duration = time()
                 self.roof_annual_panel_irradiance_list = run_hb_model_annual_irradiance_simulation(
                     hb_model_obj=hb_model_copy_roof,
                     path_folder_run=path_folder_run_radiation_temp_roof,
@@ -345,6 +349,8 @@ class SolarRadAndBipvSimulation:
                     visible=False, north=north_angle,
                     radiance_parameters='-ab 2 -ad 5000 -lw 2e-05',
                     silent=silent)
+                duration = time() - duration
+                self.irradiance_simulation_duration["roof"] = duration
                 # Delete the useless results files and move the results to the right folder
                 path_folder_result_run_radiation_temp_roof = os.path.join(path_folder_run_radiation_temp_roof,
                                                                           "annual_irradiance",
@@ -373,6 +379,7 @@ class SolarRadAndBipvSimulation:
                 # run in the temporary folder
                 path_folder_run_radiation_temp_facades = os.path.join(path_folder_run_radiation_temp,
                                                                       "facades")
+                duration = time()
                 self.facades_annual_panel_irradiance_list = run_hb_model_annual_irradiance_simulation(
                     hb_model_obj=hb_model_copy_facades,
                     path_folder_run=path_folder_run_radiation_temp_facades,
@@ -381,6 +388,8 @@ class SolarRadAndBipvSimulation:
                     visible=False, north=north_angle,
                     radiance_parameters='-ab 2 -ad 5000 -lw 2e-05',
                     silent=silent)
+                duration = time() - duration
+                self.irradiance_simulation_duration["facades"] = duration
                 # Delete the useless results files and mov ethe results to the right folder
                 path_folder_result_run_radiation_temp_facades = os.path.join(
                     path_folder_run_radiation_temp_facades,

@@ -19,12 +19,12 @@ SimFunSolarRadAndBipv.run_kpi_simulation(urban_canopy_object=urban_canopy_object
 
 
 
-# # Export urban_canopy to pickle
-# SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,
-#                                                            path_simulation_folder=default_path_simulation_folder)
-# # Export urban_canopy to json
-# SimulationCommonMethods.save_urban_canopy_to_json(urban_canopy_object=urban_canopy_object,
-#                                                   path_simulation_folder=default_path_simulation_folder)
+# Export urban_canopy to pickle
+SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,
+                                                           path_simulation_folder=default_path_simulation_folder)
+# Export urban_canopy to json
+SimulationCommonMethods.save_urban_canopy_to_json(urban_canopy_object=urban_canopy_object,
+                                                  path_simulation_folder=default_path_simulation_folder)
 
 
 print("End of the script")

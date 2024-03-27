@@ -1,7 +1,6 @@
 from unit_tests.utils_main_import_scripts import *
 
-# Clear simulation temp folder
-# SimulationCommonMethods.clear_simulation_temp_folder()
+
 # Create simulation folder
 SimulationCommonMethods.make_simulation_folder()
 # Create urban_canopy

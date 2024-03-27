@@ -165,6 +165,16 @@ class BuildingModeled(BuildingBasic):
 
         return building_modeled_obj, identifier
 
+    def to_dict(self):
+        """
+        Export the BuildingModeled object to a dictionary
+        :return: building_dict : dict
+        """
+
+        # Todo : instead of doing it in the urban canopy
+
+
+
     def move(self, vector):
         """
         Move the building

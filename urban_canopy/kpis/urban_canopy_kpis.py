@@ -105,6 +105,8 @@ class UrbanCanopyKPIs:
         self.zone_area = zone_area
         self.conditioned_apartment_area = conditioned_apartment_area
 
+
+
         # todo, other parameter to consider changes through year of these values, especially due to inflation
         #  and changes in the electricity mix
 
@@ -124,14 +126,14 @@ class UrbanCanopyKPIs:
             },
             "kpis": {
                 "eroi": self.eroi,
-                "primary_energy_payback_time": self.primary_energy_payback_time,
-                "ghg_emissions_intensity": self.ghg_emissions_intensity,
-                "ghg_emissions_payback_time": self.ghg_emissions_payback_time,
-                "harvested_energy_density": self.harvested_energy_density,
-                "net_energy_compensation": self.net_energy_compensation,
-                "net_economical_benefit": self.net_economical_benefit,
-                "net_economical_benefit_density": self.net_economical_benefit_density,
-                "economical_payback_time": self.economical_payback_time
+                "primary energy payback time [year]": self.primary_energy_payback_time,
+                "ghg emissions intensity [kgCo2eq/kWh]": self.ghg_emissions_intensity,
+                "ghg emissions payback time [year]": self.ghg_emissions_payback_time,
+                "harvested energy density [Kwh/m2]": self.harvested_energy_density,
+                "net energy compensation": self.net_energy_compensation,
+                "net economical benefit [$]": self.net_economical_benefit,
+                "net economical benefit density [$/m2]": self.net_economical_benefit_density,
+                "economical payback time [year]": self.economical_payback_time
             },
             "intermediate_results": self.kpi_intermediate_results_dict
         }
@@ -210,7 +212,7 @@ class UrbanCanopyKPIs:
             self.kpi_intermediate_results_dict[sub_type]["electricity_harvested_density"][
                 "conditioned_apartment"]["cumulative"][-1]
         self.net_energy_compensation[sub_type] = bipv_result_dict["energy_harvested"][
-                                                     "total"] / self.ubes_electricity_consumption * len(
+                                                     "total"] / self.ubes_electricity_consumption / len(
             bipv_result_dict["energy_harvested"]["yearly"])
         # Primary energy
         self.primary_energy_payback_time[sub_type] = self.compute_pay_back_time(
@@ -326,7 +328,7 @@ class UrbanCanopyKPIs:
             return False
         for year in range(len(cumulative_annual_cost_list) - 2, -1,
                           -1):  # from the last year to the first year
-            if cumulative_annual_cost_list[year] < cumulative_annual_offset_list[year]:
+            if cumulative_annual_cost_list[year] > cumulative_annual_offset_list[year]:
                 """
                 We need to shift the years by 1 because the indexes refer to what is produced/generated 
                 during the year, and thus cumulated values are obtained at the end of each year.
@@ -338,7 +340,7 @@ class UrbanCanopyKPIs:
                          (year + 2, cumulative_annual_offset_list[year + 1]))
                 [pay_back_time, cost] = line_intersection(line1, line2)
                 return pay_back_time
-        # If the payback time is not found it means the values were compensated at he begining
+        # If the payback time is not found it means the values were compensated at the beginning
         return 0
 
 

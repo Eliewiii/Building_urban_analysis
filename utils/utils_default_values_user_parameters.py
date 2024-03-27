@@ -85,8 +85,8 @@ default_country_ghe_cost = 0.57874
 
 
 # Default values for KPI computationm  todo: put proper values
-default_grid_ghg_intensity = 500
-default_grid_energy_intensity = 2
+default_grid_ghg_intensity = 0.500  # kgCO2/kWh
+default_grid_energy_intensity = 2  # kWh/kWh
 default_grid_electricity_sell_price = 0.1
 
 
