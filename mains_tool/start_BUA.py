@@ -8,7 +8,7 @@ from step_methods.load_bat_file_arguments import LoadArguments
 from step_methods.load_building_or_geometry import SimulationLoadBuildingOrGeometry
 from step_methods.post_processing_and_plots import SimulationPostProcessingAndPlots
 from step_methods.context_filtering import SimulationContextFiltering
-from step_methods.run_simulations import SolarOrPanelSimulation
+from step_methods.urban_building_energy_simulation_functions import UrbanBuildingEnergySimulationFunctions
 from step_methods.solar_radiation_and_bipv import SimFunSolarRadAndBipv
 
 from utils.utils_configuration import name_gh_components_logs_folder, path_scripts_tool_folder
@@ -137,6 +137,37 @@ def main():
     # Perform all steps of context filtering
     # todo @Elie
 
+
+
+    # Urban Building Energy Simulation
+    if simulation_step_dictionary["run_ubes_with_openstudio"]:
+        # Load and check simulation parameters and epw file
+        UrbanBuildingEnergySimulationFunctions.load_epw_and_hb_simulation_parameters_for_ubes_in_urban_canopy(
+            urban_canopy_obj=urban_canopy_object,
+            path_simulation_folder=arguments_dictionary["path_simulation_folder"],
+            path_hbjson_simulation_parameter_file=arguments_dictionary["path_hbjson_simulation_parameter_file"],
+            path_weather_file=arguments_dictionary["path_weather_file"],
+            ddy_file=arguments_dictionary["path_ddy_file"],
+            overwrite=arguments_dictionary["overwrite"])
+        UrbanBuildingEnergySimulationFunctions.generate_idf_files_for_ubes_with_openstudio_in_urban_canopy(
+            urban_canopy_obj=urban_canopy_object,
+            path_simulation_folder=arguments_dictionary["path_simulation_folder"],
+            building_id_list=arguments_dictionary["building_id_list"],
+            overwrite=arguments_dictionary["overwrite"],
+            silent=arguments_dictionary["silent"])
+        UrbanBuildingEnergySimulationFunctions.run_idf_files_with_energyplus_for_ubes_in_urban_canopy(
+            urban_canopy_obj=urban_canopy_object,
+            path_simulation_folder=arguments_dictionary["path_simulation_folder"],
+            building_id_list=arguments_dictionary["building_id_list"],
+            overwrite=arguments_dictionary["overwrite"],
+            silent=arguments_dictionary["silent"],
+            run_in_parallel=arguments_dictionary["run_in_parallel"])
+        UrbanBuildingEnergySimulationFunctions.extract_results_from_ep_simulation(
+            urban_canopy_obj=urban_canopy_object,
+            path_simulation_folder=arguments_dictionary["path_simulation_folder"],
+            cop_cooling=arguments_dictionary["cop_cooling"],
+            cop_heating=arguments_dictionary["cop_heating"])
+
     # Solar radiations and BIPV simulations
     # Generate sensor grids
     if simulation_step_dictionary["run_generate_sensorgrids_on_buildings"]:
@@ -196,7 +227,6 @@ def main():
 
     # Preprocessing Longwave radiation #
 
-    # Building Energy Simulation #
 
     # Exports #
     # Export Urban canopy to pickle
@@ -211,22 +241,22 @@ def main():
                                                           path_simulation_folder=arguments_dictionary[
                                                               "path_simulation_folder"])
 
-    # Post-processing panels
-    if simulation_step_dictionary["generate_panels_results_in_csv"]:
-        SimulationPostProcessingAndPlots.generate_csv_panels_simulation_results(
-            urban_canopy_object=urban_canopy_object,
-            path_simulation_folder=
-            arguments_dictionary[
-                "path_simulation_folder"])
-
-    if simulation_step_dictionary["plot_graph_results_building_panel_simulation"]:
-        SimulationPostProcessingAndPlots.plot_graphs(urban_canopy_object=urban_canopy_object,
-                                                     path_simulation_folder=arguments_dictionary[
-                                                         "path_simulation_folder"],
-                                                     study_duration_years=arguments_dictionary[
-                                                         "study_duration_years"],
-                                                     country_ghe_cost=arguments_dictionary[
-                                                         "country_ghe_cost"])
+    # # Post-processing panels
+    # if simulation_step_dictionary["generate_panels_results_in_csv"]:
+    #     SimulationPostProcessingAndPlots.generate_csv_panels_simulation_results(
+    #         urban_canopy_object=urban_canopy_object,
+    #         path_simulation_folder=
+    #         arguments_dictionary[
+    #             "path_simulation_folder"])
+    #
+    # if simulation_step_dictionary["plot_graph_results_building_panel_simulation"]:
+    #     SimulationPostProcessingAndPlots.plot_graphs(urban_canopy_object=urban_canopy_object,
+    #                                                  path_simulation_folder=arguments_dictionary[
+    #                                                      "path_simulation_folder"],
+    #                                                  study_duration_years=arguments_dictionary[
+    #                                                      "study_duration_years"],
+    #                                                  country_ghe_cost=arguments_dictionary[
+    #                                                      "country_ghe_cost"])
 
 
 if __name__ == "__main__":

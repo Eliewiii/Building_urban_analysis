@@ -32,7 +32,7 @@ class UrbanBuildingEnergySimulationFunctions:
         :param urban_canopy_obj: UrbanCanopy object
         :param path_simulation_folder: str, path to the simulation folder
         :param path_hbjson_simulation_parameter_file: str, path to the simulation parameter file
-        :param path_file_epw: str, path to the epw file
+        :param path_weather_file: str, path to the weather file
         :param ddy_file: str, path to the ddy file
         :param overwrite: bool, if True, overwrite the existing simulation parameter file
         """

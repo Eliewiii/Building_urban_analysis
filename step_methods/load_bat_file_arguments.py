@@ -36,6 +36,8 @@ class LoadArguments:
                             nargs='?', default=False)
         parser.add_argument("--overwrite", help="if True overwrite the previous simulation",
                             nargs='?', default=False)
+        parser.add_argument("--run_in_parallel", help="if, True run the simulation in parallel",
+                            nargs='?', default=False)
         # Building manipulation
         parser.add_argument("-t", "--are_buildings_target",
                             help="boolean (here '0' or '1') telling if the buildings inputed in the component are "
@@ -52,7 +54,7 @@ class LoadArguments:
         parser.add_argument("-d", "--path_dic_additional_gis_attribute_keys",
                             help="path to the additional key dictionary of the attributes in the GIS file",
                             nargs='?', default=None)
-        # Extract Geometry frpm json
+        # Typology
         parser.add_argument("--typology",
                             help="name of the typology of that should be applied to the buildings",
                             nargs='?', default=None)
@@ -100,6 +102,14 @@ class LoadArguments:
                             default=default_path_weather_file)
         parser.add_argument("--north_angle",
                             help="angle of the north in degree", default=0)
+        # Urban Building Energy Simulation
+        parser.add_argument("--path_hbjson_simulation_parameters", help="path to the json file containing the HB"
+                                                                        " simulation parameters", default=None)
+        parser.add_argument("--path_ddy_file", help="path to the ddy file", default=None)
+        parser.add_argument("--cop_cooling", help="COP cooling", default=default_cop_cooling)
+        parser.add_argument("--cop_heating", help="COP heating", default=default_cop_heating)
+
+
         # Sensorgrid
         parser.add_argument("--on_roof", help="True if the simulation is to be run on the roof, else False",
                             default=default_on_roof)
@@ -157,8 +167,7 @@ class LoadArguments:
         parser.add_argument("--country_ghe_cost",
                             help="Cost in gCO2eq per kWh depending on the country energy mix",
                             default=default_country_ghe_cost)
-
-    @staticmethod
+    @ staticmethod
     def add_user_simulation_features_to_parser(parser):
         """
         Get the simulation steps to run from the command line
@@ -213,6 +222,11 @@ class LoadArguments:
         parser.add_argument("--run_second_pass_context_filtering",
                             help="Perform teh second pass of the context filtering for buildings",
                             nargs='?', default=False)
+
+        # Urban Building Energy Simulation
+        parser.add_argument("--run_ubes_with-openstudio", help="Run the Urban Building Energy Simulation with Openstudio",
+                            nargs='?', default=False)
+
         # Generate objects for visualization
         parser.add_argument("--generate_model_with_building_envelop",
                             help="Make a HB model containing the envelop of all the buildings in the urban canopy "
@@ -260,6 +274,7 @@ class LoadArguments:
             "building_id_list": buildings_id_list,
             "silent": bool(int(args.silent)),
             "overwrite": bool(int(args.overwrite)),
+            "run_in_parallel": bool(int(args.run_in_parallel)),
             # Building manipulation
             "are_buildings_target": bool(int(args.are_buildings_target)),
             "on_building_to_simulate": bool(int(args.on_building_to_simulate)),
@@ -284,6 +299,11 @@ class LoadArguments:
             # Simulation general
             "path_weather_file": args.path_weather_file,
             "north_angle": float(args.north_angle),
+            # Urban Building Energy Simulation
+            "path_hbjson_simulation_parameters": args.path_hbjson_simulation_parameters,
+            "path_ddy_file": args.path_ddy_file,
+            "cop_cooling": float(args.cop_cooling),
+            "cop_heating": float(args.cop_heating),
             # Sensorgrid
             "on_roof": bool(int(args.on_roof)),
             "on_facades": bool(int(args.on_facades)),
@@ -328,6 +348,8 @@ class LoadArguments:
             "run_context_filtering": bool(int(args.run_full_context_filtering)),
             "run_first_pass_context_filtering": bool(int(args.run_first_pass_context_filtering)),
             "run_second_pass_context_filtering": bool(int(args.run_second_pass_context_filtering)),
+            # Urban Building Energy Simulation
+            "run_ubes_with_openstudio": bool(int(args.run_ubes_with_openstudio)),
             # Solar and BIPV simulation
             "run_generate_sensorgrids_on_buildings": bool(int(args.generate_sensorgrids_on_buildings)),
             "run_annual_solar_irradiance_simulation": bool(int(args.run_annual_solar_irradiance_simulation)),

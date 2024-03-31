@@ -35,7 +35,7 @@ default_path_weather_file = os.path.join(path_tool, "Libraries", "EPW", "IS_5280
 # Building Energy Simulation
 default_path_hbjson_simulation_parameter_file = os.path.join(path_libraries_tool_folder, "Simulation_parameters",
                                                         "default_hb_sim_paramters.json")  # todo: check the link and update the file
-default_cop_heating = 1.0
+default_cop_heating = 3.0
 default_cop_cooling = 3.0
 
 # Creation of BuildingModeled objects
