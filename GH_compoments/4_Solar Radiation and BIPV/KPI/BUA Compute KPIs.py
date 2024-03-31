@@ -1,17 +1,11 @@
-""" Run the Energy simulation with Openstudio and EnergyPlus at the urban scale.
+""" Compute the KPIs of the simulated buildings.
     Inputs:
         path_simulation_folder_: Path to the folder. Default = Appdata\Local\Building_urban_analysis\Simulation_temp
         building_id_list_: list of buildings we want to run the simulation on. If set to None, it will be run on the
         buildings to simulate.
-        _path_weather_file: Path to the epw or wea (not sure wea compatible) weather file. Default =
-        path_ddy_file_: Path to the ddy file. If no file is provided the design days will be set automatically by Honeybee
-         Default = None
-        _hb_simulation_parameters : Honeybee simulation parameter object from the Honeybee parameter or a path to
-        a Honeybee parameter hbjson file.
-        _cop_cooling_: float: Coefficient of performance of the cooling system. Default = 3.
-        _cop_heating_: float: Coefficient of performance of the heating system. Default = 3.
-        _overwrite_: bool: Put to True if the existing simulation should be overwritten. (Default: True)
-        run_in_parallel_: bool: True if the simulations should be run in parallel. (not implemented yet) (Default: False)
+        _bipv_simulation_identifier_: Identifier of the simulation that should be simulated. The results of each
+            simulation saved in a separate folder. (Default = "new_uc_scenario")
+        _grid_parameters
         _run: Plug in a button to run the component
     Output:
         report: logs
@@ -21,7 +15,7 @@
         """
 
 
-__author__ = "Eliewiii"
+__author__ = "elie-medioni"
 __version__ = "2024.31.03"
 
 ghenv.Component.Name = "BUA Run UBES with Openstudio"
@@ -63,38 +57,13 @@ path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 name_temporary_files_folder = "temporary_files"
 path_bat_file = os.path.join(path_tool, "Scripts", "mains_tool", "run_BUA.bat")
 
-# Check the Honeybee simulation parameters
-if _hb_simulation_parameters is None:
-    # Don't do anything, the default simulation parameters will be used
-    pass
-elif isinstance(_hb_simulation_parameters,SimulationParameter):
-    # Save the simulation parameter to a file
-    path_hbjson_simulation_parameter_file = os.path.join(path_simulation_folder_,name_temporary_files_folder, "simulation_parameters.json")
-    _hb_simulation_parameters.to_dict(path_hbjson_simulation_parameter_file)
-elif isinstance(_hb_simulation_parameters,str) :
-    # Check if the file exists
-    if not os.path.isfile(_hb_simulation_parameters):
-        raise FileNotFoundError("The simulation parameter file inputed does not exist.")
-    # Check if the file contains a valid Honeybee simulation parameters object
-    try:
-        with open(_hb_simulation_parameters, 'r') as f:
-            json_dic = json.load(f)
-        SimulationParameter.from_dict(json_dic)
-    except:
-        raise ValueError("The simulation parameter file is not valid, it cannot be loaded.")
 
-    path_hbjson_simulation_parameter_file = _hb_simulation_parameters
+# Check _bipv_parameters
+if _bipv_parameters is not None:
+    try:  # try to load the json
+        bipv_parameters_dict = json.loads(_bipv_parameters)
 
-# Check if the weather file exists
-if _path_weather_file is not None and not os.path.isfile(_path_weather_file):
-    raise FileNotFoundError("The weather file does not exist, enter a valid path")
-# Check if the ddy file exists
-if path_ddy_file_ is not None and not os.path.isfile(path_ddy_file_):
-    raise FileNotFoundError("The ddy file does not exist, enter a valid path")
 
-# Check the COPs
-if (_cop_cooling_ is not None and _cop_cooling_ <= 0) or (_cop_heating_ is not None and _cop_heating_ <= 0):
-    raise ValueError("The COP should be greater than 0")
 
 if _run:
     # Convert the simulation parameters to hbjson if it is not already

@@ -1079,7 +1079,7 @@ class UrbanCanopy:
         Post-process the BIPV results at urban scale
         :param path_simulation_folder: string, path to the simulation folder
         :param bipv_scenario_identifier: string, identifier of the BIPV scenario
-        :param grid_ghg_intensity: float, gCO2/kWh, grid GHG intensity
+        :param grid_ghg_intensity: float, kgCO2/kWh, grid GHG intensity
         :param grid_energy_intensity: float, kWh/m2, grid energy intensity
         :param grid_electricity_sell_price: float, €/kWh, grid electricity sell price
 

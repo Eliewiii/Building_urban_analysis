@@ -145,7 +145,7 @@ class BipvScenario:
                      ubes_electricity_consumption, conditioned_apartment_area, zone_area):
         """
         Compute the KPIs of the scenario
-        :param grid_ghg_intensity: float: gCO2/kWh: grid GHG intensity
+        :param grid_ghg_intensity: float: kgCO2/kWh: grid GHG intensity
         :param grid_energy_intensity: float: kWh/m2: grid energy intensity
         :param grid_electricity_sell_price: float: €/kWh: grid electricity sell price
         :param ubes_electricity_consumption: float: kWh: electricity consumption of the buildings

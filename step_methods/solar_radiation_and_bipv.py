@@ -152,17 +152,18 @@ class SimFunSolarRadAndBipv:
 
     @staticmethod
     def run_kpi_simulation(urban_canopy_object: UrbanCanopy,
-                           path_simulation_folder: object = default_path_simulation_folder,
-                           bipv_scenario_identifier: object = default_bipv_scenario_identifier,
-                           grid_ghg_intensity: object = default_grid_ghg_intensity,
-                           grid_energy_intensity: object = default_grid_energy_intensity,
-                           grid_electricity_sell_price: object = default_grid_electricity_sell_price, zone_area: object = None) -> object:
+                           path_simulation_folder=default_path_simulation_folder,
+                           bipv_scenario_identifier=default_bipv_scenario_identifier,
+                           grid_ghg_intensity=default_grid_ghg_intensity,
+                           grid_energy_intensity=default_grid_energy_intensity,
+                           grid_electricity_sell_price=default_grid_electricity_sell_price,
+                           zone_area=None):
         """
         Compute the KPIs at the urban scale. It includes BIPV and UBES KPIs.
         :param urban_canopy_object: UrbanCanopy: urban canopy object
         :param path_simulation_folder: str: path to the simulation folder
         :param bipv_scenario_identifier: str: identifier of the BIPV scenario
-        :param grid_ghg_intensity: float: grid GHG intensity in gCO2/kWh
+        :param grid_ghg_intensity: float: grid GHG intensity in kgCO2/kWh
         :param grid_energy_intensity: float: grid energy intensity in kWh/kWh
         :param grid_electricity_sell_price: float: grid electricity sell price in $/kWh
         :param zone_area: float: m2: area of the zone of the studied area.
