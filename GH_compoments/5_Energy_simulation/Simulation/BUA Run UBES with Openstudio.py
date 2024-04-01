@@ -15,10 +15,7 @@
         _run: Plug in a button to run the component
     Output:
         report: logs
-        path_simulation_folder_: Path to the folder.
-        path_idf_list: list of paths to the idf files of the simulated buildings
-        path_sql_list: list of paths to the sql results files of the simulated buildings
-        """
+"""
 
 
 __author__ = "Eliewiii"
@@ -68,9 +65,10 @@ if _hb_simulation_parameters is None:
     # Don't do anything, the default simulation parameters will be used
     pass
 elif isinstance(_hb_simulation_parameters,SimulationParameter):
+    if path_simulation_folder_ is None:
+        path_simulation_folder = os.path.join(path_tool, "Simulation_temp")
     # Save the simulation parameter to a file
-    path_hbjson_simulation_parameter_file = os.path.join(path_simulation_folder_,name_temporary_files_folder, "simulation_parameters.json")
-    _hb_simulation_parameters.to_dict(path_hbjson_simulation_parameter_file)
+    path_hbjson_simulation_parameter_file = os.path.join(path_simulation_folder,name_temporary_files_folder, "simulation_parameters.json")
 elif isinstance(_hb_simulation_parameters,str) :
     # Check if the file exists
     if not os.path.isfile(_hb_simulation_parameters):
@@ -84,6 +82,8 @@ elif isinstance(_hb_simulation_parameters,str) :
         raise ValueError("The simulation parameter file is not valid, it cannot be loaded.")
 
     path_hbjson_simulation_parameter_file = _hb_simulation_parameters
+else:
+    raise ValueError("The simulation parameter is not valid. Please input the path to a Honeybee simulation parameter file or a Honeybee simulation parameter object")
 
 # Check if the weather file exists
 if _path_weather_file is not None and not os.path.isfile(_path_weather_file):
@@ -126,8 +126,8 @@ if _run:
         argument = argument + " --cop_heating {}".format(float(_cop_heating_))
     if _overwrite_ is not None:
         argument = argument + " --overwrite {}".format(int(_overwrite_))
-    if run_in_parallel_ is not None:
-        argument = argument + " --run_in_parallel {}".format(int(_run_in_parallel_))
+    # if run_in_parallel_ is not None:
+    #     argument = argument + " --run_in_parallel {}".format(int(run_in_parallel_))
 
     # Add the name of the component to the argument
     argument = argument + " -c {}".format(ghenv.Component.NickName)

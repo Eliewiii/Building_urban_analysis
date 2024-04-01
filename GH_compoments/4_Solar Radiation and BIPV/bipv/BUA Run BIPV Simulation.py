@@ -12,13 +12,14 @@
         _start_year: Year from which the simulation should start. (Default: current year)
         _end_year: Year from which the simulation should end. For instance, if the start year is 2023 and the end year
          2026, the simulation will be run for 3 years: 2023,2024 and 2025 (Default: current year+50)
+        _overwrite_: bool: True if the existing simulation should be overwritten. (Default: True)
         _run: Plug in a button to run the component
     Output:
         report: report
         path_simulation_folder_: Path to the folder."""
 
 __author__ = "Eliewiii"
-__version__ = "2023.08.21"
+__version__ = "2024.04.01"
 
 ghenv.Component.Name = "BUA Run BIPV Simulation"
 ghenv.Component.NickName = 'RunBIPVSimulation'
@@ -67,8 +68,8 @@ if _bipv_panels_parameters is not None:
             or "facade_pv_tech_id" not in bipv_panel_parameters_dict.keys()
             or "roof_pv_transport_id" not in bipv_panel_parameters_dict.keys()
             or "facade_pv_transport_id" not in bipv_panel_parameters_dict.keys()
-            or "roof_pv_inverter" not in bipv_panel_parameters_dict.keys()
-            or "facade_pv_inverter" not in bipv_panel_parameters_dict.keys()
+            or "roof_pv_inverter_id" not in bipv_panel_parameters_dict.keys()
+            or "facade_pv_inverter_id" not in bipv_panel_parameters_dict.keys()
             or "roof_inverter_sizing_ratio" not in bipv_panel_parameters_dict.keys()
             or "facade_inverter_sizing_ratio" not in bipv_panel_parameters_dict.keys()
             or "minimum_panel_eroi" not in bipv_panel_parameters_dict.keys()):
@@ -78,8 +79,8 @@ if _bipv_panels_parameters is not None:
         facade_pv_tech_id = bipv_panel_parameters_dict["facade_pv_tech_id"]
         roof_pv_transport_id = bipv_panel_parameters_dict["roof_pv_transport_id"]
         facade_pv_transport_id = bipv_panel_parameters_dict["facade_pv_transport_id"]
-        roof_pv_inverter = bipv_panel_parameters_dict["roof_pv_inverter"]
-        facade_pv_inverter = bipv_panel_parameters_dict["facade_pv_inverter"]
+        roof_pv_inverter_id = bipv_panel_parameters_dict["roof_pv_inverter_id"]
+        facade_pv_inverter_id = bipv_panel_parameters_dict["facade_pv_inverter_id"]
         roof_inverter_sizing_ratio = bipv_panel_parameters_dict["roof_inverter_sizing_ratio"]
         facade_inverter_sizing_ratio = bipv_panel_parameters_dict["facade_inverter_sizing_ratio"]
         minimum_panel_eroi = bipv_panel_parameters_dict["minimum_panel_eroi"]
@@ -88,8 +89,8 @@ else:
     facade_pv_tech_id = None
     roof_pv_transport_id = None
     facade_pv_transport_id = None
-    roof_pv_inverter = None
-    facade_pv_inverter = None
+    roof_pv_inverter_id = None
+    facade_pv_inverter_id = None
     roof_inverter_sizing_ratio = None
     facade_inverter_sizing_ratio = None
     minimum_panel_eroi = None
@@ -112,6 +113,10 @@ else:
     replacement_scenario_id = None
     replacement_frequency = None
     minimal_panel_age = None
+
+# Set _overwrite_ to True if it is not provided
+if _overwrite_ is None:
+    _overwrite_ = True
 
 # Check _start_year and _end_year
 if _start_year is None and _end_year is None:
@@ -142,10 +147,10 @@ if _run:
         argument = argument + ' --roof_transport_id "{}"'.format(roof_pv_transport_id)
     if facade_pv_transport_id is not None:
         argument = argument + ' --facades_transport_id "{}"'.format(facade_pv_transport_id)
-    if roof_pv_inverter is not None:
-        argument = argument + ' --roof_inverter_id "{}"'.format(roof_pv_inverter)
-    if facade_pv_inverter is not None:
-        argument = argument + ' --facades_inverter_id "{}"'.format(facade_pv_inverter)
+    if roof_pv_inverter_id is not None:
+        argument = argument + ' --roof_inverter_id "{}"'.format(roof_pv_inverter_id)
+    if facade_pv_inverter_id is not None:
+        argument = argument + ' --facades_inverter_id "{}"'.format(facade_pv_inverter_id)
     if roof_inverter_sizing_ratio is not None:
         argument = argument + " --roof_inverter_sizing_ratio {}".format(roof_inverter_sizing_ratio)
     if facade_inverter_sizing_ratio is not None:
@@ -162,6 +167,8 @@ if _run:
         argument = argument + " --start_year {}".format(_start_year)
     if _end_year is not None:
         argument = argument + " --end_year {}".format(_end_year)
+    if _overwrite_ is not None:
+        argument = argument + " --overwrite {}".format(int(_overwrite_))
 
     # Add the name of the component to the argument
     argument = argument + " -c {}".format(ghenv.Component.NickName)

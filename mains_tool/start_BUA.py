@@ -137,8 +137,6 @@ def main():
     # Perform all steps of context filtering
     # todo @Elie
 
-
-
     # Urban Building Energy Simulation
     if simulation_step_dictionary["run_ubes_with_openstudio"]:
         # Load and check simulation parameters and epw file
@@ -207,8 +205,18 @@ def main():
                                                                          "roof_id_pv_tech"],
                                                                      facades_id_pv_tech=arguments_dictionary[
                                                                          "facades_id_pv_tech"],
-                                                                     efficiency_computation_method=arguments_dictionary[
-                                                                         "efficiency_computation_method"],
+                                                                     roof_transport_id=arguments_dictionary[
+                                                                         "roof_transport_id"],
+                                                                     facades_transport_id=arguments_dictionary[
+                                                                         "facades_transport_id"],
+                                                                     roof_inverter_id=arguments_dictionary[
+                                                                         "roof_inverter_id"],
+                                                                     facades_inverter_id=arguments_dictionary[
+                                                                         "facades_inverter_id"],
+                                                                     roof_inverter_sizing_ratio=arguments_dictionary[
+                                                                         "roof_inverter_sizing_ratio"],
+                                                                     facades_inverter_sizing_ratio=arguments_dictionary[
+                                                                         "facades_inverter_sizing_ratio"],
                                                                      minimum_panel_eroi=arguments_dictionary[
                                                                          "minimum_panel_eroi"],
                                                                      start_year=arguments_dictionary["start_year"],
@@ -226,7 +234,6 @@ def main():
     # Microclimate weather files
 
     # Preprocessing Longwave radiation #
-
 
     # Exports #
     # Export Urban canopy to pickle

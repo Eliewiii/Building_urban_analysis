@@ -66,6 +66,10 @@ if _electricity_grid_parameters is not None:
         grid_ghg_intensity = electricity_grid_parameters_dict["grid_ghg_intensity"]
         grid_energy_intensity = electricity_grid_parameters_dict["grid_energy_intensity"]
         grid_electricity_sell_price = electricity_grid_parameters_dict["grid_electricity_sell_price"]
+else:
+    grid_ghg_intensity = None
+    grid_energy_intensity = None
+    grid_electricity_sell_price = None
 
 # Check the _bipv_simulation_identifier_
 if _bipv_simulation_identifier_ is not None:
