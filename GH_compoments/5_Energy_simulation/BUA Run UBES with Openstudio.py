@@ -22,7 +22,7 @@
 
 
 __author__ = "Eliewiii"
-__version__ = "2024.31.03"
+__version__ = "2024.03.31"
 
 ghenv.Component.Name = "BUA Run UBES with Openstudio"
 ghenv.Component.NickName = 'RunUBESwithOpenstudio'
@@ -96,6 +96,10 @@ if path_ddy_file_ is not None and not os.path.isfile(path_ddy_file_):
 if (_cop_cooling_ is not None and _cop_cooling_ <= 0) or (_cop_heating_ is not None and _cop_heating_ <= 0):
     raise ValueError("The COP should be greater than 0")
 
+# Set _overwrite_ to True if it is not provided
+if _overwrite_ is None:
+    _overwrite_ = True
+
 if _run:
     # Convert the simulation parameters to hbjson if it is not already
     if isinstance(_hb_simulation_parameters, SimulationParameter):
@@ -122,8 +126,6 @@ if _run:
         argument = argument + " --cop_heating {}".format(float(_cop_heating_))
     if _overwrite_ is not None:
         argument = argument + " --overwrite {}".format(int(_overwrite_))
-    else:
-        argument = argument + " --overwrite 1"
     if run_in_parallel_ is not None:
         argument = argument + " --run_in_parallel {}".format(int(_run_in_parallel_))
 

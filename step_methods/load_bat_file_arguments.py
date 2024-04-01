@@ -109,7 +109,6 @@ class LoadArguments:
         parser.add_argument("--cop_cooling", help="COP cooling", default=default_cop_cooling)
         parser.add_argument("--cop_heating", help="COP heating", default=default_cop_heating)
 
-
         # Sensorgrid
         parser.add_argument("--on_roof", help="True if the simulation is to be run on the roof, else False",
                             default=default_on_roof)
@@ -142,10 +141,18 @@ class LoadArguments:
         # BIPV
         parser.add_argument("--bipv_scenario_identifier",
                             help="Identifier of the BIPV scenario", default=default_bipv_scenario_identifier)
-        parser.add_argument("--id_pv_tech_roof", help="name of the pv tech used on the roof",
+        parser.add_argument("--id_pv_tech_roof", help="id of the pv tech used on the roof",
                             default=default_id_pv_tech_roof)
-        parser.add_argument("--id_pv_tech_facades", help="name of the pv tech used on the facades",
+        parser.add_argument("--id_pv_tech_facades", help="id of the pv tech used on the facades",
                             default=default_id_pv_tech_facades)
+        parser.add_argument("--roof_transport_id", help="id of the transport used for the roof",
+                            default=default_roof_transport_id)
+        parser.add_argument("--facades_transport_id", help="id of the transport used for the facades",
+                            default=default_facades_transport_id)
+        parser.add_argument("--roof_inverter_id", help="id of the inverter used for the roof",
+                            default=default_roof_inverter_id)
+        parser.add_argument("--facades_inverter_id", help="id of the inverter used for the facades",
+                            default=default_facades_inverter_id)
         parser.add_argument("--start_year", help="Start year of the simulation",
                             default=default_start_year)
         parser.add_argument("--end_year", help="End year of the simulation",
@@ -167,7 +174,19 @@ class LoadArguments:
         parser.add_argument("--country_ghe_cost",
                             help="Cost in gCO2eq per kWh depending on the country energy mix",
                             default=default_country_ghe_cost)
-    @ staticmethod
+        # KPIs
+        parser.add_argument("--zone_area", help="Area in m2 of the terrain the urban canopy/group of buildings is built on, to compute the KPIs per m2 of land use",
+                            default=None)
+        parser.add_argument("--grid_ghg_intensity", help="GHG intensity of the grid in kgCO2eq/kWh",
+                            default=default_grid_ghg_intensity)
+        parser.add_argument("--grid_energy_intensity", help="Energy intensity of the grid in kWh/kWh",
+                            default=default_grid_energy_intensity)
+        parser.add_argument("--grid_electricity_sell_price", help="Sell price of the electricity in $/kWh",
+                            default=default_grid_electricity_sell_price)
+
+
+
+    @staticmethod
     def add_user_simulation_features_to_parser(parser):
         """
         Get the simulation steps to run from the command line
@@ -224,7 +243,8 @@ class LoadArguments:
                             nargs='?', default=False)
 
         # Urban Building Energy Simulation
-        parser.add_argument("--run_ubes_with-openstudio", help="Run the Urban Building Energy Simulation with Openstudio",
+        parser.add_argument("--run_ubes_with-openstudio",
+                            help="Run the Urban Building Energy Simulation with Openstudio",
                             nargs='?', default=False)
 
         # Generate objects for visualization
@@ -236,11 +256,15 @@ class LoadArguments:
         parser.add_argument("--generate_sensorgrids_on_buildings",
                             help="Perform the generation of the mesh on the buildings", default=False)
         parser.add_argument("--run_annual_solar_irradiance_simulation",
-                            help="Perform the generation of the mesh on the buildings", default=False)
+                            help="Perform the solar irradiance simulation on the buildings", default=False)
         parser.add_argument("--run_bipv_harvesting_and_lca_simulation",
-                            help="Perform the generation of the mesh on the buildings", default=False)
+                            help="Perform the BIPV simulation on the buildings", default=False)
+
+        # KPIs simulation
+        parser.add_argument("--run_kpi_simulation", help="Computes the KPIs", default=False)
 
         # Post-processing
+        # todo: outdated, to delete
         parser.add_argument("--generate_panels_results_in_csv",
                             help="Generate the csv file containing all the useful "
                                  "data calculated by the simulation", default=False)
@@ -316,6 +340,7 @@ class LoadArguments:
             "bipv_scenario_identifier": args.bipv_scenario_identifier,
             "roof_id_pv_tech": args.id_pv_tech_roof,
             "facades_id_pv_tech": args.id_pv_tech_facades,
+
             "start_year": int(args.start_year),
             "end_year": int(args.end_year),
             "minimum_panel_eroi": float(args.minimum_panel_eroi),
@@ -323,7 +348,12 @@ class LoadArguments:
             "replacement_scenario": args.replacement_scenario,
             "replacement_frequency_in_years": int(args.replacement_frequency_in_years),
             "update_panel_technology": bool(int(args.update_panel_technology)),
-            "country_ghe_cost": float(args.country_ghe_cost),
+            "country_ghe_cost": float(args.country_ghe_cost), # todo: outdated, to delete
+            # KPIs
+            "zone_area": float(args.zone_area),
+            "grid_ghg_intensity": float(args.grid_ghg_intensity),
+            "grid_energy_intensity": float(args.grid_energy_intensity),
+            "grid_electricity_sell_price": float(args.grid_electricity_sell_price)
         }
 
         # Create a dictionary with the arguments and the name of their variable that will be imported in the main script
@@ -354,7 +384,10 @@ class LoadArguments:
             "run_generate_sensorgrids_on_buildings": bool(int(args.generate_sensorgrids_on_buildings)),
             "run_annual_solar_irradiance_simulation": bool(int(args.run_annual_solar_irradiance_simulation)),
             "run_bipv_harvesting_and_lca_simulation": bool(int(args.run_bipv_harvesting_and_lca_simulation)),
-            "generate_panels_results_in_csv": bool(int(args.generate_panels_results_in_csv)),
+            # KPIs simulation
+            "run_kpi_simulation": bool(int(args.run_kpi_simulation)),
+            # Post-processing
+            "generate_panels_results_in_csv": bool(int(args.generate_panels_results_in_csv)), # todo: outdated, to delete
             "plot_graph_results_building_panel_simulation": bool(
                 int(args.plot_graph_results_building_panel_simulation)),  # todo outdated
             "plot_graph_results_urban_canopy": bool(int(args.plot_graph_results_urban_canopy))  # todo outdated

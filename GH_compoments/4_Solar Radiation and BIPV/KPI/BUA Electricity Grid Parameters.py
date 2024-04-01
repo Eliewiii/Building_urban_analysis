@@ -45,4 +45,4 @@ if _grid_electricity_sell_price is not None:
     else:
         electricity_grid_parameters_dict["grid_electricity_sell_price"] = _grid_electricity_sell_price
 
-replacement_scenario_parameters = json.dumps(electricity_grid_parameters_dict)
+electricity_grid_parameters = json.dumps(electricity_grid_parameters_dict)

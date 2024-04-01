@@ -1,35 +1,30 @@
-""" Compute the KPIs of the simulated buildings.
+""" Compute the KPIs of the urban canopy scenario based on the results of the UBES and BIPV simulations.
     Inputs:
         path_simulation_folder_: Path to the folder. Default = Appdata\Local\Building_urban_analysis\Simulation_temp
-        building_id_list_: list of buildings we want to run the simulation on. If set to None, it will be run on the
-        buildings to simulate.
         _bipv_simulation_identifier_: Identifier of the simulation that should be simulated. The results of each
             simulation saved in a separate folder. (Default = "new_uc_scenario")
-        _grid_parameters
+        _electricity_grid_parameters : Parameters of the electricity grid. to be defined from the ElectricityGridParameters component.
+        zone_area_: Area in m2 of the terrain the urban canopy/group of buildings is built on, to compute the KPIs per
+            m2 of land use. (Optional)
         _run: Plug in a button to run the component
     Output:
         report: logs
         path_simulation_folder_: Path to the folder.
-        path_idf_list: list of paths to the idf files of the simulated buildings
-        path_sql_list: list of paths to the sql results files of the simulated buildings
         """
 
-
 __author__ = "elie-medioni"
-__version__ = "2024.31.03"
+__version__ = "2024.04.01"
 
-ghenv.Component.Name = "BUA Run UBES with Openstudio"
-ghenv.Component.NickName = 'RunUBESwithOpenstudio'
+ghenv.Component.Name = "BUA Compute KPIs"
+ghenv.Component.NickName = 'ComputeKPIs'
 ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
-ghenv.Component.SubCategory = '5 :: Energy Simulation'
+ghenv.Component.SubCategory = '4 :: Solar Radiation and BIPV'
 ghenv.Component.AdditionalHelpFromDocStrings = "1"
-
 
 import os
 import json
 
-from honeybee_energy.simulation.parameter import SimulationParameter
 
 def clean_path(path):
     path = path.replace("\\", "/")
@@ -54,48 +49,68 @@ if path_simulation_folder_ is not None and os.path.isdir(path_simulation_folder_
 # Get Appdata\local folder
 local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
-name_temporary_files_folder = "temporary_files"
 path_bat_file = os.path.join(path_tool, "Scripts", "mains_tool", "run_BUA.bat")
 
-
 # Check _bipv_parameters
-if _bipv_parameters is not None:
+if _electricity_grid_parameters is not None:
     try:  # try to load the json
-        bipv_parameters_dict = json.loads(_bipv_parameters)
+        electricity_grid_parameters_dict = json.loads(_electricity_grid_parameters)
+    except:
+        raise ValueError(
+            "The _electricity_grid_parameters input is not correct, use the Electricity Grid parameters component as input")
+    if isinstance(electricity_grid_parameters_dict,
+                  dict) is False or "grid_ghg_intensity" not in electricity_grid_parameters_dict.keys() or "grid_energy_intensity" not in electricity_grid_parameters_dict.keys() or "grid_electricity_sell_price" not in electricity_grid_parameters_dict.keys():
+        raise ValueError(
+            "The _electricity_grid_parameters input is not correct, use the Electricity Grid parameters component as input")
+    else:
+        grid_ghg_intensity = electricity_grid_parameters_dict["grid_ghg_intensity"]
+        grid_energy_intensity = electricity_grid_parameters_dict["grid_energy_intensity"]
+        grid_electricity_sell_price = electricity_grid_parameters_dict["grid_electricity_sell_price"]
 
+# Check the _bipv_simulation_identifier_
 
+if _bipv_simulation_identifier_ is not None:
+    # set default value for the simulation folder if not provided
+    if path_simulation_folder_ is None:
+        path_simulation_folder = os.path.join(path_tool, "Simulation_temp")
+    else:
+        path_simulation_folder = path_simulation_folder_
+    # Path to the urban canopy json file
+    path_uc_json = os.path.join(path_simulation_folder, "urban_canopy.json")
+    if os.path.isfile(path_uc_json):
+        with open(path_uc_json, 'r') as json_file:
+            urban_canopy_dict = json.load(json_file)
+        if _bipv_simulation_identifier_ not in urban_canopy_dict["bipv_scenarios"].keys():
+            raise ValueError(
+                "The simulation identifier is not valid, please check the identifier of the bipv simulation"
+                "that were run with the adequate component")
+    else:
+        raise ValueError("The urban canopy json file does not exist, run the previous steps need to be run first")
+
+# Check the zone_area_
+if zone_area_ is not None:
+    if zone_area_ <= 0:
+        raise ValueError("The zone area must be greater than 0")
 
 if _run:
-    # Convert the simulation parameters to hbjson if it is not already
-    if isinstance(_hb_simulation_parameters, SimulationParameter):
-        _hb_simulation_parameters.to_dict(path_hbjson_simulation_parameter_file)
     # Write the command
     command = path_bat_file
     # Steps to execute
     argument = " "
-    argument = argument + "--make_simulation_folder 1 " + "--create_or_load_urban_canopy_object 1 " + "--save_urban_canopy_object_to_pickle 1 " + "--save_urban_canopy_object_to_json 1 " + "--run_ubes_with_openstudio 1 "
+    argument = argument + "--make_simulation_folder 1 " + "--create_or_load_urban_canopy_object 1 " + "--save_urban_canopy_object_to_pickle 1 " + "--save_urban_canopy_object_to_json 1 " + "--run_kpi_simulation 1 "
     # OPtionnal argument of the bat file/Python script
     if path_simulation_folder_ is not None:
         argument = argument + ' -f "{}"'.format(path_simulation_folder_)
-    if building_id_list_ is not None and building_id_list_ != []:
-        argument = argument + ' --building_id_list "{}"'.format(building_id_list_)
-    if _path_weather_file is not None:
-        argument = argument + ' --path_weather_file "{}"'.format(_path_weather_file)
-    if path_ddy_file_ is not None:
-        argument = argument + ' --ddy_file "{}"'.format(ddy_file_)
-    if _hb_simulation_parameters is not None:
-        argument = argument + ' --path_hbjson_simulation_parameters "{}"'.format(path_hbjson_simulation_parameter_file)
-    if _cop_cooling_ is not None:
-        argument = argument + " --cop_cooling {}".format(float(_cop_cooling_))
-    if _cop_heating_ is not None:
-        argument = argument + " --cop_heating {}".format(float(_cop_heating_))
-    if _overwrite_ is not None:
-        argument = argument + " --overwrite {}".format(int(_overwrite_))
-    else:
-        argument = argument + " --overwrite 1"
-    if run_in_parallel_ is not None:
-        argument = argument + " --run_in_parallel {}".format(int(_run_in_parallel_))
-
+    if _bipv_simulation_identifier_ is not None:
+        argument = argument + ' -b "{}"'.format(_bipv_simulation_identifier_)
+    if grid_ghg_intensity is not None:
+        argument = argument + ' --grid_ghg_intensity "{}"'.format(grid_ghg_intensity)
+    if grid_energy_intensity is not None:
+        argument = argument + ' --grid_energy_intensity "{}"'.format(grid_energy_intensity)
+    if grid_electricity_sell_price is not None:
+        argument = argument + ' --grid_electricity_sell_price "{}"'.format(grid_electricity_sell_price)
+    if zone_area_ is not None:
+        argument = argument + ' --zone_area "{}"'.format(zone_area_)
     # Add the name of the component to the argument
     argument = argument + " -c {}".format(ghenv.Component.NickName)
     # Run the bat file

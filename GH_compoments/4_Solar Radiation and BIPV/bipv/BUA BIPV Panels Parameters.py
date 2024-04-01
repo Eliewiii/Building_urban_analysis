@@ -1,7 +1,11 @@
 """Parameters for the BIPV panels.
     Inputs:
         _roof_pv_tech_id: Identifier of the PV technology to use for the roof
+        _roof_pv_transport_id: Identifier of the transport to use for the roof
+        _roof_pv_inverter: Identifier of the inverter to use for the roof
         _facades_pv_tech_id: Identifier of the PV technology to use for the facades
+        _facades_pv_transport_id: Identifier of the transport to use for the facades
+        _facades_pv_inverter: Identifier of the inverter to use for the facades
         _minimum_panel_eroi_: Minimum EROI of the PV panels to be installed (Default: 1.2)
         _efficiency_computation_method_: Method to compute the efficiency of the panels, either "yearly" or "hourly"
             for now only "yearly" is implemented (Default: "yearly")
@@ -33,7 +37,11 @@ path_pv_technology_folder = os.path.join(path_data_libraries, "BIPV_technologies
 
 bipv_panel_parameters_dict = {
         "roof_pv_tech_id": None,
+        "roof_pv_transport_id": None,
+        "roof_pv_inverter": None,
         "facade_pv_tech_id": None,
+        "facade_pv_transport_id": None,
+        "facade_pv_inverter": None,
         "minimum_panel_eroi": None,
         "efficiency_computation_method": None
     }
