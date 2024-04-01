@@ -340,7 +340,10 @@ class LoadArguments:
             "bipv_scenario_identifier": args.bipv_scenario_identifier,
             "roof_id_pv_tech": args.id_pv_tech_roof,
             "facades_id_pv_tech": args.id_pv_tech_facades,
-
+            "roof_transport_id": args.roof_transport_id,
+            "facades_transport_id": args.facades_transport_id,
+            "roof_inverter_id": args.roof_inverter_id,
+            "facades_inverter_id": args.facades_inverter_id,
             "start_year": int(args.start_year),
             "end_year": int(args.end_year),
             "minimum_panel_eroi": float(args.minimum_panel_eroi),

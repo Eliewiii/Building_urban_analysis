@@ -51,7 +51,7 @@ local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 path_bat_file = os.path.join(path_tool, "Scripts", "mains_tool", "run_BUA.bat")
 
-# Check _bipv_parameters
+# Check electricity grid parameters
 if _electricity_grid_parameters is not None:
     try:  # try to load the json
         electricity_grid_parameters_dict = json.loads(_electricity_grid_parameters)
@@ -68,7 +68,6 @@ if _electricity_grid_parameters is not None:
         grid_electricity_sell_price = electricity_grid_parameters_dict["grid_electricity_sell_price"]
 
 # Check the _bipv_simulation_identifier_
-
 if _bipv_simulation_identifier_ is not None:
     # set default value for the simulation folder if not provided
     if path_simulation_folder_ is None:
