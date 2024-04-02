@@ -40,6 +40,17 @@ class UrbanBuildingEnergySimulation:
         # Results
         self.ubes_results_dict = deepcopy(empty_bes_results_dict)
 
+    def to_dict(self):
+        """
+        Export the object to a dictionary.
+        """
+        return {
+            "hb_simulation_parameters_obj": self.hb_simulation_parameters_obj.to_dict() if self.hb_simulation_parameters_obj is not None else None,
+            "lb_epw_obj": self.lb_epw_obj.to_dict() if self.lb_epw_obj is not None else None,
+            "has_run": self.has_run,
+            "ubes_results_dict": self.ubes_results_dict
+        }
+
     def to_csv(self, path_ubes_sim_result_folder):
         """
         Save the results to a csv file.
