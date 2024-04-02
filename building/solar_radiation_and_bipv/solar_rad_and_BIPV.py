@@ -228,7 +228,7 @@ class SolarRadAndBipvSimulation:
         else:
             self.bipv_results_dict["facades"] = deepcopy(empty_sub_bipv_results_dict)
 
-    def to_json_dict(self):
+    def to_dict(self):
         """
         Return the dictionary representation of that object to export it to json
         """

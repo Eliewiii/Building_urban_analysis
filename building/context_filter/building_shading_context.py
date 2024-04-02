@@ -62,7 +62,6 @@ class BuildingShadingContextFilter(BuildingContextFilter):
         self.context_shading_hb_shade_list = [Shade.from_dict(hb_shade) for hb_shade in
                                               self.context_shading_hb_shade_list]
 
-
     def to_dict(self):
         """
         Convert the BuildingShadingContext object to a dictionary
@@ -78,7 +77,7 @@ class BuildingShadingContextFilter(BuildingContextFilter):
             "consider_windows": self.consider_windows,
             "forced_hb_shades_from_user_list": self.forced_hb_shades_from_user_list,  # Already converted to dict for pkl
             "context_shading_hb_shade_list": self.context_shading_hb_shade_list,  # Already converted to dict for pkl
-            "discarded_lb_face3d_context_shading_second_pass_list": [lb_face3d.to_dict for lb_face3d in self.discarded_lb_face3d_context_shading_second_pass_list],
+            "discarded_lb_face3d_context_shading_second_pass_list": [lb_face3d.to_dict() for lb_face3d in self.discarded_lb_face3d_context_shading_second_pass_list],
             "second_pass_duration": self.second_pass_duration,
             "second_pass_done": self.second_pass_done
         }
