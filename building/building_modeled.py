@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 
 from ladybug_geometry.geometry3d import Vector3D
 from honeybee.model import Model
+from honeybee.room import Room
 
 from building.building_basic import BuildingBasic
 
@@ -168,11 +169,40 @@ class BuildingModeled(BuildingBasic):
     def to_dict(self):
         """
         Export the BuildingModeled object to a dictionary
-        :return: building_dict : dict
         """
 
-        # Todo : instead of doing it in the urban canopy
+        # Pre-processessing
+        self.make_lb_polyface3d_extruded_footprint()
 
+        building_dict = {
+            "type": "BuildingModeled",
+            # BuildingBasic attributes
+            "index_in_gis": self.index_in_gis,
+            "name": self.name,
+            "group": self.group,
+            "age": self.age,
+            "typology": self.typology,
+            "height": self.height,
+            "num_floor": self.num_floor,
+            "elevation": self.elevation,
+            "floor_height": self.floor_height,
+            "lb_face_footprint": self.lb_face_footprint.to_dict(),
+            "lb_polyface3d_oriented_bounding_box": self.lb_polyface3d_oriented_bounding_box.to_dict() if self.lb_polyface3d_oriented_bounding_box else None,
+            "lb_polyface3d_extruded_footprint": self.lb_polyface3d_extruded_footprint.to_dict(),
+            "hb_room_envelope": Room.from_polyface3d(identifier=self.id,
+                                                     polyface=self.lb_polyface3d_extruded_footprint).to_dict(),
+            "moved_to_origin": self.moved_to_origin,
+            # BuildingModeled attributes
+            "is_building_to_simulate": self.to_simulate,
+            "is_target_building": self.is_target,
+            "hb_model": self.hb_model_dict,
+            "merged_faces_hb_model": self.merged_faces_hb_model_dict,
+            "shading_context": self.shading_context_obj.to_dict(),
+            "bes": self.bes_obj.to_dict(),
+            "solar_radiation_and_bipv": self.solar_radiation_and_bipv_simulation_obj.to_dict()
+        }
+
+        return building_dict
 
 
     def move(self, vector):

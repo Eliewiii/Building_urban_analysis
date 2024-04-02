@@ -8,6 +8,7 @@ from math import isnan
 
 from ladybug_geometry.geometry3d.pointvector import Vector3D
 from ladybug_geometry.geometry3d.polyface import Polyface3D
+from honeybee.room import Room
 
 from libraries_addons.lb_face_addons import make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint, \
     LB_face_footprint_to_lB_polyface3D_extruded_footprint
@@ -157,6 +158,34 @@ class BuildingBasic:
                         building_obj_list.append(building_obj)
 
         return building_id_list, building_obj_list
+
+    def to_dict(self):
+        """
+        Export the building to a dictionary.
+        :return: building_dict, a dictionary with the properties of the building
+        """
+        # Pre-processessing
+        self.make_lb_polyface3d_extruded_footprint()
+        building_dict = {
+            "type": "BuildingBasic",
+            "index_in_gis": self.index_in_gis,
+            "name": self.name,
+            "group": self.group,
+            "age": self.age,
+            "typology": self.typology,
+            "height": self.height,
+            "num_floor": self.num_floor,
+            "elevation": self.elevation,
+            "floor_height": self.floor_height,
+            "lb_face_footprint": self.lb_face_footprint.to_dict(),
+            "lb_polyface3d_oriented_bounding_box": self.lb_polyface3d_oriented_bounding_box.to_dict() if self.lb_polyface3d_oriented_bounding_box else None,
+            "lb_polyface3d_extruded_footprint": self.lb_polyface3d_extruded_footprint.to_dict(),
+            "hb_room_envelope": Room.from_polyface3d(identifier=self.id,
+                                                     polyface=self.lb_polyface3d_extruded_footprint).to_dict(),
+            "moved_to_origin": self.moved_to_origin
+        }
+
+        return building_dict
 
     def extract_building_attributes_from_GIS(self, GIS_file, additional_gis_attribute_key_dict=None):
         """
