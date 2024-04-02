@@ -82,10 +82,9 @@ class ExportUrbanCanopyToJson:
         """
         Initialize the buildings in the json dictionary of the urban canopy object.
         """
-        for building_id in urban_canopy_obj.building_dict.keys():
+        for building_id, building_obj in urban_canopy_obj.building_dict.items():
             urban_canopy_obj.json_dict["list_of_building_ids"].append(building_id)
-            urban_canopy_obj.json_dict["buildings"][building_id] = copy.deepcopy(
-                tree_structure_per_building_urban_canopy_json_dict)
+            urban_canopy_obj.json_dict["buildings"][building_id] = building_obj.to_dict()
 
     @staticmethod
     def add_building_attributes_to_json_dict(urban_canopy_obj):
@@ -173,21 +172,32 @@ class ExportUrbanCanopyToJson:
         for scenario_id, scenario_obj in urban_canopy_obj.bipv_scenario_dict.items():
             urban_canopy_obj.json_dict["bipv_scenarios"][scenario_id] = scenario_obj.to_dict()
 
+    @staticmethod
+    def add_urban_canopy_bipv_scenarios(urban_canopy_obj):
+        """ Add the BIPV scenarios of the urban canopy object to the json dictionary. """
+        for scenario_id, scenario_obj in urban_canopy_obj.bipv_scenario_dict.items():
+            urban_canopy_obj.json_dict["bipv_scenarios"][scenario_id] = scenario_obj.to_dict()
 
-def replace_bipv_technology_obj_by_id(parameter_dict):
-    """
-    Replace the technology object by its id
-    :param parameter_dict: dict of the parameters
-    :return: dict of the parameters
-    """
-    for key, value in parameter_dict.items():
-        if isinstance(value, dict):
-            parameter_dict[key] = replace_bipv_technology_obj_by_id(value)
-        elif isinstance(value, list):
-            for i, v in enumerate(value):
-                if isinstance(v, dict):
-                    value[i] = replace_bipv_technology_obj_by_id(v)
-        elif isinstance(value, BipvTechnology):
-            parameter_dict[key] = value.identifier
+    @staticmethod
+    def add_urban_canopy_ubes_obj_to_json_dict(urban_canopy_obj):
+        """ Add the UBES object of the urban canopy object to the json dictionary. """
+        urban_canopy_obj.json_dict["ubes"] = urban_canopy_obj.ubes_obj.to_dict()
 
-    return parameter_dict
+#
+# def replace_bipv_technology_obj_by_id(parameter_dict):
+#     """
+#     Replace the technology object by its id
+#     :param parameter_dict: dict of the parameters
+#     :return: dict of the parameters
+#     """
+#     for key, value in parameter_dict.items():
+#         if isinstance(value, dict):
+#             parameter_dict[key] = replace_bipv_technology_obj_by_id(value)
+#         elif isinstance(value, list):
+#             for i, v in enumerate(value):
+#                 if isinstance(v, dict):
+#                     value[i] = replace_bipv_technology_obj_by_id(v)
+#         elif isinstance(value, BipvTechnology):
+#             parameter_dict[key] = value.identifier
+#
+#     return parameter_dict
