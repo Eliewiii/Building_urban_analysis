@@ -17,39 +17,39 @@ tree_structure_urban_canopy_json_dict = {
     "name": None,
     "buildings": {},
     "list_of_building_ids": [],
-    "bipv_scenarios": {}
+    "bipv_scenarios": {},
     "ubes": None
 }
 
-# Tree structure for each building
-tree_structure_per_building_urban_canopy_json_dict = {
-    # General attributes
-    "index_in_gis": None,
-    "height": None,
-    "age": None,
-    "typology": None,
-    "hb_room_envelope": None,
-    # BuildingModeled specific attributes
-    "is_target_building": False,
-    "is_building_to_simulate": False,
-    "hb_model": None,
-    "merged_faces_hb_model": None,
-    "lb_polyface3d_oriented_bounding_box": None,
-    "context_surfaces": {
-        "parameters": {
-            "first_pass_done": False,
-            "second_pass_done": False,
-            "min_vf_criterion": None,
-            "number_of_rays": None,
-            "consider_windows": None
-        },
-        "first_pass_selected_building_id_list": None,
-        "second_pass_selected_hb_shade_list": None,
-        "discarded_face3d_second_pass_list": None,
-        "forced_shades_from_user": None
-    },
-    "solar_radiation_and_bipv": None
-}
+# # Tree structure for each building
+# tree_structure_per_building_urban_canopy_json_dict = {
+#     # General attributes
+#     "index_in_gis": None,
+#     "height": None,
+#     "age": None,
+#     "typology": None,
+#     "hb_room_envelope": None,
+#     # BuildingModeled specific attributes
+#     "is_target_building": False,
+#     "is_building_to_simulate": False,
+#     "hb_model": None,
+#     "merged_faces_hb_model": None,
+#     "lb_polyface3d_oriented_bounding_box": None,
+#     "context_surfaces": {
+#         "parameters": {
+#             "first_pass_done": False,
+#             "second_pass_done": False,
+#             "min_vf_criterion": None,
+#             "number_of_rays": None,
+#             "consider_windows": None
+#         },
+#         "first_pass_selected_building_id_list": None,
+#         "second_pass_selected_hb_shade_list": None,
+#         "discarded_face3d_second_pass_list": None,
+#         "forced_shades_from_user": None
+#     },
+#     "solar_radiation_and_bipv": None
+# }
 
 
 class ExportUrbanCanopyToJson:
