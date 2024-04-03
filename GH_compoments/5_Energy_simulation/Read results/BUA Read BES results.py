@@ -7,7 +7,7 @@
     Output:
         read_building_id_list : List of the ids of the buildings that were read
         end_uses_energy_label : list of the eend energy use categories shown in the results
-        end_uses_energy_consumption_tree : Tree of the list of energy consumption for each read building.
+        end_uses_energy_consumption_tree : Tree of the list of the yearly energy consumption for each read building.
 """
 
 __author__ = "Elie"
@@ -85,10 +85,13 @@ if _run :
 
 
     for building_id in _building_id_list:
+        for label in end_uses_energy_label:
+            end_uses_energy_consumption_tree.append(urban_canopy_dict["buildings"][building_id]["bes"][
+                                                        "bes_results_dict"][label]["yearly"])
         # Check if the building has forced shades and add the list of forced HB Shades
         if urban_canopy_dict["buildings"][building_id]["context_surfaces"][
             "forced_shades_from_user"] is not None:
-            forced_shade_from_user_tree.append([Shade.from_dict(shade) for shade in
+            end_uses_energy_consumption_tree.append([Shade.from_dict(shade) for shade in
                                                 urban_canopy_dict["buildings"][building_id][
                                                     "context_surfaces"][
                                                     "forced_shades_from_user"]])
