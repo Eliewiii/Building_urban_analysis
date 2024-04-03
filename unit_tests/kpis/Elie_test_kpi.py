@@ -7,9 +7,7 @@ SimulationCommonMethods.make_simulation_folder()
 urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object(
     path_simulation_folder=default_path_simulation_folder)
 
-
-
-# Extract results
+# Run KPI computation
 SimFunSolarRadAndBipv.run_kpi_simulation(urban_canopy_object=urban_canopy_object,
                            grid_ghg_intensity=default_grid_ghg_intensity,
                            grid_energy_intensity=default_grid_energy_intensity,
