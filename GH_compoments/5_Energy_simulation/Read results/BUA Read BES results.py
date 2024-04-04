@@ -13,11 +13,11 @@
 __author__ = "Elie"
 __version__ = "2023.08.21"
 
-ghenv.Component.Name = "BUA Read Context Filtering Results"
-ghenv.Component.NickName = 'ReadContextFilteringResults'
+ghenv.Component.Name = "BUA Read BES Results"
+ghenv.Component.NickName = 'ReadBESResults'
 ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
-ghenv.Component.SubCategory = '3 :: Context filtering'
+ghenv.Component.SubCategory = '5 :: Energy Simulation'
 ghenv.Component.AdditionalHelpFromDocStrings = "1"
 
 import json
@@ -35,6 +35,26 @@ def clean_path(path):
     return (path)
 
 
+def extract_sorted_bes_keys(dictionary):
+    # Specific order of keys
+    order = ["heating", "cooling", "lighting", "equipment", "ventilation", "total"]
+
+    # Initialize a list to hold the keys in the desired order
+    ordered_keys = []
+
+    # Iterate through the specific order and add the keys if they exist in the dictionary
+    for key in order:
+        if key in dictionary:
+            ordered_keys.append(key)
+
+    # Add any additional keys that are not in the specific order
+    for key in dictionary:
+        if key not in ordered_keys:
+            ordered_keys.append(key)
+
+    return ordered_keys
+
+
 # Get Appdata\local folder
 local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
@@ -46,7 +66,7 @@ if path_simulation_folder_ is None:
 path_json = os.path.join(path_simulation_folder_, "urban_canopy.json")
 
 # Run the code if the _run input is set to True
-if _run :
+if _run:
     # Check if the json file exists
     if not os.path.isfile(path_json):
         raise ValueError("The json file of the urban canopy does not exist, it means that the simulation was not run.")
@@ -56,14 +76,14 @@ if _run :
         urban_canopy_dict = json.load(json_file)
 
     # Get the list of the building ids to display
-    if _building_id_list == [] or _building_id_list is None:
+    if building_id_list_ == [] or building_id_list_ is None:
         # add the id of the buildings that have been run if no list is provided
-        _building_id_list = [building_id for building_id in urban_canopy_dict["buildings"].keys() if
+        building_id_list_ = [building_id for building_id in urban_canopy_dict["buildings"].keys() if
                              (urban_canopy_dict["buildings"][building_id]["type"] == "BuildingModeled" and
                               urban_canopy_dict["buildings"][building_id]["bes"]["has_run"])]
 
     else:  # Check if the building ids are in the json file
-        for building_id in _building_id_list:
+        for building_id in building_id_list_:
             try:
                 urban_canopy_dict["buildings"][building_id]
             except KeyError:
@@ -78,68 +98,22 @@ if _run :
 
     # Init
     end_uses_energy_consumption_tree = []
-    read_building_id_list = _building_id_list
+    read_building_id_list = building_id_list_
 
     # Collect the labels of the end uses
-    end_uses_energy_label = list(urban_canopy_dict["buildings"][_building_id_list[0]]["bes"]["bes_results_dict"].keys())
+    end_uses_energy_label = extract_sorted_bes_keys(
+        urban_canopy_dict["buildings"][building_id_list_[0]]["bes"]["bes_results_dict"])
 
-
-    for building_id in _building_id_list:
+    for building_id in building_id_list_:
+        # Collect the energy consumption for each end use
+        building_end_uses_energy_consumption = []
         for label in end_uses_energy_label:
-            end_uses_energy_consumption_tree.append(urban_canopy_dict["buildings"][building_id]["bes"][
-                                                        "bes_results_dict"][label]["yearly"])
-        # Check if the building has forced shades and add the list of forced HB Shades
-        if urban_canopy_dict["buildings"][building_id]["context_surfaces"][
-            "forced_shades_from_user"] is not None:
-            end_uses_energy_consumption_tree.append([Shade.from_dict(shade) for shade in
-                                                urban_canopy_dict["buildings"][building_id][
-                                                    "context_surfaces"][
-                                                    "forced_shades_from_user"]])
-        else:
-            forced_shade_from_user_tree.append([])
-        # Check if the building first pass of the context filtering was done and add the selected building ids
-        if urban_canopy_dict["buildings"][building_id]["context_surfaces"]["parameters"]["first_pass_done"]:
-            first_pass_selected_building_id_tree.append(
-                urban_canopy_dict["buildings"][building_id]["context_surfaces"][
-                    "first_pass_selected_building_id_list"])
-            # make a list of discarded building ids
-            first_pass_discarded_building_id_tree.append(
-                [id for id in list(urban_canopy_dict["buildings"].keys()) if
-                 (id not in first_pass_selected_building_id_tree[-1] and id != building_id)])
-        else:
-            first_pass_selected_building_id_tree.append([])
-            print(
-                "The first pass of the context filtering was not done for the building with id {}".format(
-                    building_id))
-        # Check if the building second pass of the context filtering was done and add the selected HB shades
-        if urban_canopy_dict["buildings"][building_id]["context_surfaces"]["parameters"]["second_pass_done"]:
-            second_pass_selected_hb_shade_tree.append([Shade.from_dict(shade) for shade in
-                                                       urban_canopy_dict["buildings"][building_id][
-                                                           "context_surfaces"][
-                                                           "second_pass_selected_hb_shade_list"]])
-            if urban_canopy_dict["buildings"][building_id]["context_surfaces"][
-                "discarded_face3d_second_pass_list"] is not None:
-                second_pass_discarded_surface_tree.append([from_face3d(Face3D.from_dict(face)) for face in
-                                                           urban_canopy_dict["buildings"][building_id][
-                                                               "context_surfaces"][
-                                                               "discarded_face3d_second_pass_list"]])
-            else:
-                second_pass_discarded_surface_tree.append([])
-                print(
-                    "The the option to keep the discarded surfaces for the second pass of the context filtering was " \
-                    "not done for the building with id {}".format(building_id))
-        else:
-            second_pass_selected_hb_shade_tree.append([])
-            print(
-                "The second pass of the context filtering was not done for the building with id {}".format(
-                    building_id))
+            building_end_uses_energy_consumption.append(urban_canopy_dict["buildings"][building_id]["bes"][
+                                                            "bes_results_dict"][label]["yearly"])
+        end_uses_energy_consumption_tree.append([building_end_uses_energy_consumption])
 
     # Convert to tree
-    forced_shade_from_user_tree = th.list_to_tree(forced_shade_from_user_tree)
-    first_pass_selected_building_id_tree = th.list_to_tree(first_pass_selected_building_id_tree)
-    first_pass_discarded_building_id_tree = th.list_to_tree(first_pass_discarded_building_id_tree)
-    second_pass_selected_hb_shade_tree = th.list_to_tree(second_pass_selected_hb_shade_tree)
-    second_pass_discarded_surface_tree = th.list_to_tree(second_pass_discarded_surface_tree)
+    end_uses_energy_consumption_tree = th.list_to_tree(end_uses_energy_consumption_tree)
 
 if not os.path.isfile(path_json):
     print("the json file of the urban canopy does not exist")
