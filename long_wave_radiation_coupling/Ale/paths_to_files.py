@@ -26,6 +26,25 @@ path_temp_dir = r"C:\Users\eliem\Documents\Technion\Temp"
 path_to_fmus = os.path.join(path_temp_dir, 'fmus')
 path_to_run_temp_fmus = os.path.join(path_temp_dir, 'run_fmu')
 
+# Ale
+path_ep_folder = r"C:\EnergyPlusV23-2-0"
+path_ep = os.path.join(path_ep_folder,"energyplus.exe")  # TODO @Ale, add the path to your version of EnergyPlus
+path_simulation_parameter = r"C:\Users\eliem\AppData\Local\Building_urban_analysis\Scripts\long_wave_radiation_coupling\Ale\data\simulation_parameters.json"
+
+#path_hbjson_file_onebuildingonly = "C:\\Users\\alejandro.s\\AppData\\Local\\Building_urban_analysis\\Scripts\\long_wave_radiation_coupling\\Ale\\data\\model_no_shade_win_not_el.hbjson"
+path_hbjson_file_twobuildingsfirst = r"C:\Users\alejandro\Downloads\LWR\LWR\Samples\Cubes\building_1.hbjson"
+path_hbjson_file_twobuildingssecond = r"C:\Users\eliem\OneDrive - Technion\BUA\LWR\Experiments\Samples\Cubes\building_2.hbjson"
+path_hbjson_file_twobuildingsthird = r"C:\Users\eliem\OneDrive - Technion\BUA\LWR\Experiments\Samples\Cubes\building_3.hbjson"
+
+path_fmu_conversion_dot_py = r"C:\Users\eliem\Documents\Technion\EnergyPlusToFMU-v3.1.0\Scripts\EnergyPlusToFMU.py"
+path_idd = r"C:\EnergyPlusV23-2-0\Energy+.idd"
+fmi_version = 2
+
+path_temp_dir = r"C:\Users\eliem\Documents\Technion\Temp"
+
+path_to_fmus = os.path.join(path_temp_dir, 'fmus')
+path_to_run_temp_fmus = os.path.join(path_temp_dir, 'run_fmu')
+
 # # Ale
 
 # path_ep = "C:\\EnergyPlusV23-1-0\\energyplus.exe"  # TODO @Ale, add the path to your version of EnergyPlus
