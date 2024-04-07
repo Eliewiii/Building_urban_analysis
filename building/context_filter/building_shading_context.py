@@ -62,6 +62,26 @@ class BuildingShadingContextFilter(BuildingContextFilter):
         self.context_shading_hb_shade_list = [Shade.from_dict(hb_shade) for hb_shade in
                                               self.context_shading_hb_shade_list]
 
+    def to_dict(self):
+        """
+        Convert the BuildingShadingContext object to a dictionary
+        """
+        return {
+            # First pass
+            "min_vf_criterion": self.min_vf_criterion,
+            "selected_context_building_id_list": self.selected_context_building_id_list,
+            "first_pass_duration": self.first_pass_duration,
+            "first_pass_done": self.first_pass_done,
+            # Second pass
+            "number_of_rays": self.number_of_rays,
+            "consider_windows": self.consider_windows,
+            "forced_hb_shades_from_user_list": self.forced_hb_shades_from_user_list,  # Already converted to dict for pkl
+            "context_shading_hb_shade_list": self.context_shading_hb_shade_list,  # Already converted to dict for pkl
+            "discarded_lb_face3d_context_shading_second_pass_list": [lb_face3d.to_dict() for lb_face3d in self.discarded_lb_face3d_context_shading_second_pass_list],
+            "second_pass_duration": self.second_pass_duration,
+            "second_pass_done": self.second_pass_done
+        }
+
     def overwrite_filtering(self, overwrite_first_pass=False, overwrite_second_pass=False):
         """
         Overwrite the filtering of the BuildingShadingContext object
@@ -352,3 +372,9 @@ class BuildingShadingContextFilter(BuildingContextFilter):
                 return False
 
         return True
+
+    def add_bipv_panel_as_shades(self,panel_lb_face3d_list):
+        """
+        Add the BIPV panels as shades to the BuildingShadingContext object
+        """
+        # todo

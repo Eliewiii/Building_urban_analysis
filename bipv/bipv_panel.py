@@ -2,16 +2,14 @@
 Panel class, modeling solar panels, to track the age and energy production of panels on buildings
 """
 
-# todo @Julius and Elie, make a small documentation to explain how we compute the time of failure
-#  plus all the hypothesis
-
 from libraries_addons.solar_panels.pv_efficiency_functions import get_efficiency_loss_function_from_string
+from bipv.bipv_technology import BipvTechnology
 
 
 class BipvPanel:
     """ """
 
-    def __init__(self, index, pv_technology_object):
+    def __init__(self, index, pv_technology_object: BipvTechnology):
         """
         initialize a panel
         index : identifies the panel
@@ -64,18 +62,20 @@ class BipvPanel:
         self.age = None
         self.life_expectancy = None
 
-    def energy_harvested_in_one_year(self, irradiance, **kwargs):
+    def get_hourly_power_generation_over_a_year(self, hourly_irradiance_list, **kwargs):
         """
-        Return the energy harvested in one year by a functioning panel
-        :param irradiance: float: radiation received by a panel during a year or a timestep  in Wh/m2
+        Return the hourly power generation of a panel over a year.
+        The hourly irradiance covers only the sun hours, thus it does not contain the usual 8760 hours of a year.
+        :param hourly_irradiance_list: float: hourly radiation received by a panel during a year or a timestep  in Wh/m2
         :return energy_harvested: float: energy harvested by the panel during the year, in Wh/panel
         """
         if self.is_panel_working():
-            energy_harvested = self.panel_technology_object.get_energy_harvested_by_panel(irradiance=irradiance,
-                                                                                      age=self.age, **kwargs)
+            hourly_power_generation_list = self.panel_technology_object.get_hourly_power_generation_over_a_year_by_panel(
+                hourly_irradiance_list=hourly_irradiance_list,
+                age=self.age, **kwargs)
         else:
-            energy_harvested = 0.
-        return energy_harvested
+            hourly_power_generation_list = [0. for i in hourly_irradiance_list]
+        return hourly_power_generation_list
 
     def increment_age_by_one_year(self):
         """

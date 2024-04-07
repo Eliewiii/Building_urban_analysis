@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 
 from ladybug_geometry.geometry3d import Vector3D
 from honeybee.model import Model
+from honeybee.room import Room
 
 from building.building_basic import BuildingBasic
 
@@ -52,7 +53,7 @@ class BuildingModeled(BuildingBasic):
         # Building Energy Simulation
         self.bes_obj = BuildingEnergySimulation(self.id)
         # Solar and panel radiation
-        self.solar_radiation_and_bipv_simulation_obj = SolarRadAndBipvSimulation()
+        self.solar_radiation_and_bipv_simulation_obj = SolarRadAndBipvSimulation(self.id)
 
         self.sensor_grid_dict = {'roof': None, 'facades': None}
         self.panels = {"roof": None, "facades": None}
@@ -165,6 +166,45 @@ class BuildingModeled(BuildingBasic):
 
         return building_modeled_obj, identifier
 
+    def to_dict(self):
+        """
+        Export the BuildingModeled object to a dictionary
+        """
+
+        # Pre-processessing
+        self.make_lb_polyface3d_extruded_footprint()
+
+        building_dict = {
+            "type": "BuildingModeled",
+            # BuildingBasic attributes
+            "index_in_gis": self.index_in_gis,
+            "name": self.name,
+            "group": self.group,
+            "age": self.age,
+            "typology": self.typology,
+            "height": self.height,
+            "num_floor": self.num_floor,
+            "elevation": self.elevation,
+            "floor_height": self.floor_height,
+            "lb_face_footprint": self.lb_face_footprint.to_dict(),
+            "lb_polyface3d_oriented_bounding_box": self.lb_polyface3d_oriented_bounding_box.to_dict() if self.lb_polyface3d_oriented_bounding_box else None,
+            "lb_polyface3d_extruded_footprint": self.lb_polyface3d_extruded_footprint.to_dict(),
+            "hb_room_envelope": Room.from_polyface3d(identifier=self.id,
+                                                     polyface=self.lb_polyface3d_extruded_footprint).to_dict(),
+            "moved_to_origin": self.moved_to_origin,
+            # BuildingModeled attributes
+            "is_building_to_simulate": self.to_simulate,
+            "is_target_building": self.is_target,
+            "hb_model": self.hb_model_dict,
+            "merged_faces_hb_model": self.merged_faces_hb_model_dict,
+            "shading_context": self.shading_context_obj.to_dict(),
+            "bes": self.bes_obj.to_dict(),
+            "solar_radiation_and_bipv": self.solar_radiation_and_bipv_simulation_obj.to_dict()
+        }
+
+        return building_dict
+
+
     def move(self, vector):
         """
         Move the building
@@ -186,6 +226,24 @@ class BuildingModeled(BuildingBasic):
             moved_merged_faces_hb_model_dict.move(moving_vector)
             self.merged_faces_hb_model_dict = moved_merged_faces_hb_model_dict.to_dict()
         self.moved_to_origin = True
+
+    def get_conditioned_area(self):
+        """
+        Get the conditioned area of the building
+        :return: float: conditioned area in m2
+        """
+        conditioned_area = 0.
+        for room in self.hb_model_obj.rooms:
+            if room.properties.energy.is_conditioned:
+                conditioned_area += room.floor_area
+
+        return conditioned_area
+
+    def get_bes_energy_consumption(self):
+        """
+        Return the energy consumption of the building from the EnergyPlus simulation
+        """
+        return self.bes_obj.get_total_energy_consumption()
 
     def make_merged_faces_hb_model(self, orient_roof_mesh_to_according_to_building_orientation=True,
                                    north_angle=0, overwrite=False):
@@ -327,6 +385,14 @@ class BuildingModeled(BuildingBasic):
         nb_context_faces = len(self.shading_context_obj.context_shading_hb_shade_list)
         return nb_context_faces, self.shading_context_obj.second_pass_duration, flag_use_envelop
 
+    def add_selected_bipv_panels_to_shades(self):
+        """
+        Add the selected panels from the BIPV simulation to the context shading object
+        """
+        panel_lb_face3d_list = self.solar_radiation_and_bipv_simulation_obj.get_selected_panel_lb_face3d()
+        self.shading_context_obj.add_bipv_panel_as_shades(panel_lb_face3d_list)
+        # todo : not implemented yet, would create very complex couplingss among buildings
+
     def generate_idf_for_bes_with_openstudio(self, path_ubes_temp_sim_folder, path_epw_file,
                                              path_hbjson_simulation_parameters, overwrite=False,
                                              silent=False):
@@ -356,7 +422,7 @@ class BuildingModeled(BuildingBasic):
         hb_model_with_shades = self.hb_model_obj.duplicate()
         # Make the list of shades to add to the model
         hb_shade_list = self.shading_context_obj.forced_hb_shades_from_user_list + self.shading_context_obj.context_shading_hb_shade_list \
-                        + self.shading_context_obj.context_shading_hb_shade_list
+                        + self.shading_context_obj.solar_panels_hb_shade_list
         # Add the shades to the model
         hb_model_with_shades.add_shades(hb_shade_list)
         # Generate the IDF file
@@ -382,16 +448,52 @@ class BuildingModeled(BuildingBasic):
                 f"The IDF file of the building {self.id} has not been generated yet, it cannot "
                 f"be run with EnergyPlus")
             dev_logger.warning(f"The IDF file not generated for building {self.id}")
-            return
+            return None
         elif self.bes_obj.has_run:
             if overwrite:
                 self.bes_obj.re_initialize(keep_idf=True)
             else:
-                return
+                return self.bes_obj.sim_duration
         # Run the IDF file
         self.bes_obj.run_idf_with_energyplus(path_building_bes_temp_folder=path_building_bes_temp_folder,
                                              path_epw_file=path_epw_file, silent=silent)
         return self.bes_obj.sim_duration
+
+    def move_bes_result_files_from_temp_to_result_folder(self, path_ubes_temp_sim_folder,
+                                                         path_ubes_sim_result_folder):
+        """
+        Move the BES result files from the temporary simulation folder to the result folder and delete the
+        temporary simulation folder.
+        :param path_ubes_temp_sim_folder: str: path to the temporary simulation folder
+        :param path_ubes_sim_result_folder: str: path to the result simulation folder
+        """
+
+        self.bes_obj.move_result_files_from_temp_to_result_folder(
+            path_ubes_temp_sim_folder=path_ubes_temp_sim_folder,
+            path_ubes_sim_result_folder=path_ubes_sim_result_folder)
+
+    def extract_bes_results(self, path_ubes_sim_result_folder, cop_heating, cop_cooling):
+        """
+        Extract the BES result files and export them to CSV files.
+        NOTE: for now only the annual energy uses are extracted for the computed period, monthly results will ba added
+        later.
+        :param path_ubes_sim_result_folder: str: path to the result simulation folder
+        :param cop_heating: float: coefficient of performance for heating
+        :param cop_cooling: float: coefficient of performance for cooling
+        :return: dict: dictionary of the BES results
+        """
+        self.bes_obj.set_cop(cop_heating=cop_heating, cop_cooling=cop_cooling)
+        self.bes_obj.extract_total_energy_use(path_ubes_sim_result_folder=path_ubes_sim_result_folder)
+        # todo : add the monthly results later
+
+        return self.bes_obj.bes_results_dict
+
+    def export_bes_results_to_csv(self, path_ubes_sim_result_folder):
+        """
+        Export the BES result to a CSV file.
+        :param path_ubes_sim_result_folder: str: path to the result simulation folder
+        """
+        self.bes_obj.to_csv(path_ubes_sim_result_folder=path_ubes_sim_result_folder)
 
     def re_initialize_bes(self):
         """
@@ -475,46 +577,65 @@ class BuildingModeled(BuildingBasic):
 
         # run the annual solar radiation simulation
         self.solar_radiation_and_bipv_simulation_obj.run_annual_solar_irradiance_simulation(
-            path_simulation_folder=path_simulation_folder, building_id=self.id,
+            path_simulation_folder=path_simulation_folder,
             hb_model_obj=self.hb_model_obj,
             context_shading_hb_shade_list=hb_shades_list,
             path_weather_file=path_weather_file, overwrite=overwrite,
             north_angle=north_angle, silent=silent)
 
-    # def building_run_bipv_panel_simulation(self, path_simulation_folder, roof_pv_tech_obj, facades_pv_tech_obj,
-    #                                        uc_start_year,
-    #                                        uc_current_year, uc_end_year, efficiency_computation_method="yearly",
-    #                                        minimum_panel_eroi=1.2,
-    #                                        replacement_scenario="replace_failed_panels_every_X_years",
-    #                                        continue_simulation=False, **kwargs):
-    #     """
-    #     Run the BIPV simulation for the building on the roof and/or on the facades of the buildings.
-    #     :param path_simulation_folder: Path to the simulation folder
-    #     :param roof_pv_tech_obj: PVTechnology object: PV technology for the roof
-    #     :param facades_pv_tech_obj: PVTechnology object: PV technology for the facades
-    #     :param uc_start_year: int: start year of the use phase
-    #     :param uc_current_year: int: current year of the use phase
-    #     :param uc_end_year: int: end year of the use phase
-    #     :param efficiency_computation_method: str: default="yearly", method to compute the efficiency of the panels
-    #         during the use phase. Can be "yearly" or "cumulative"
-    #     :param minimum_panel_eroi: float: default=1.2, minimum EROI of the panels to be considered as efficient
-    #     :param replacement_scenario: str: default="replace_failed_panels_every_X_years", scenario for the replacement
-    #         of the panels. Can be "replace_failed_panels_every_X_years" or "replace_all_panels_every_X_years"
-    #     :param continue_simulation: bool: default=False, if True, continue the simulation from the last year
-    #     :param kwargs: dict: other arguments for the simulation
-    #     """
-    #
-    #     # Run the simulation
-    #     self.solar_radiation_and_bipv_simulation_obj.run_bipv_panel_simulation(
-    #         path_simulation_folder=path_simulation_folder, building_id=self.id, roof_pv_tech_obj=roof_pv_tech_obj,
-    #         facades_pv_tech_obj=facades_pv_tech_obj, uc_end_year=uc_end_year, uc_start_year=uc_start_year,
-    #         uc_current_year=uc_current_year, efficiency_computation_method=efficiency_computation_method,
-    #         minimum_panel_eroi=minimum_panel_eroi, replacement_scenario=replacement_scenario,
-    #         continue_simulation=continue_simulation, **kwargs)
-    #     # Write the results in a csv file
-    #     self.solar_radiation_and_bipv_simulation_obj.write_bipv_results_to_csv(
-    #         path_simulation_folder=path_simulation_folder,
-    #         building_id=self.id)
+    def building_run_bipv_panel_simulation(self, path_simulation_folder, path_radiation_and_bipv_result_folder,
+                                           roof_pv_tech_obj, facades_pv_tech_obj,
+                                           roof_transport_obj,
+                                           facades_transport_obj, roof_inverter_obj, facades_inverter_obj,
+                                           roof_inverter_sizing_ratio,
+                                           facades_inverter_sizing_ratio,
+                                           uc_start_year,
+                                           uc_current_year, uc_end_year, efficiency_computation_method="yearly",
+                                           minimum_panel_eroi=1.2,
+                                           replacement_scenario="replace_failed_panels_every_X_years",
+                                           continue_simulation=False, **kwargs):
+        """
+        Run the BIPV simulation for the building on the roof and/or on the facades of the buildings.
+        :param path_simulation_folder: Path to the simulation folder
+        :param path_radiation_and_bipv_result_folder: Path to the result folder
+        :param roof_pv_tech_obj: PVTechnology object: PV technology for the roof
+        :param facades_pv_tech_obj: PVTechnology object: PV technology for the facades
+        :param roof_transport_obj:BipvTransportation: transportation object for the roof panels
+        :param facades_transport_obj: BipvTransportation: transportation object for the facades panels
+        :param roof_inverter_obj: BipvInverter: inverter object for the roof panels
+        :param facades_inverter_obj: BipvInverter: inverter object for the facades panels
+        :param roof_inverter_sizing_ratio: float: sizing ratio of the roof inverter, default = 0.9
+        :param facades_inverter_sizing_ratio: float: sizing ratio of the facades inverter, default = 0.9
+        :param uc_start_year: int: start year of the use phase
+        :param uc_current_year: int: current year of the use phase
+        :param uc_end_year: int: end year of the use phase
+        :param efficiency_computation_method: str: default="yearly", method to compute the efficiency of the panels
+            during the use phase. Can be "yearly" or "cumulative"
+        :param minimum_panel_eroi: float: default=1.2, minimum EROI of the panels to be considered as efficient
+        :param replacement_scenario: str: default="replace_failed_panels_every_X_years", scenario for the replacement
+            of the panels. Can be "replace_failed_panels_every_X_years" or "replace_all_panels_every_X_years"
+        :param continue_simulation: bool: default=False, if True, continue the simulation from the last year
+        :param kwargs: dict: other arguments for the simulation
+        """
+
+        # todo, replace simulation folder by radiation and BIPV result folder
+        # Run the simulation
+        self.solar_radiation_and_bipv_simulation_obj.run_bipv_panel_simulation(
+            path_simulation_folder=path_simulation_folder, building_id=self.id, roof_pv_tech_obj=roof_pv_tech_obj,
+            facades_pv_tech_obj=facades_pv_tech_obj,
+            roof_inverter_tech_obj=roof_inverter_obj,
+            facades_inverter_tech_obj=facades_inverter_obj,
+            roof_inverter_sizing_ratio=roof_inverter_sizing_ratio,
+            facades_inverter_sizing_ratio=facades_inverter_sizing_ratio,
+            roof_transport_obj=roof_transport_obj,
+            facades_transport_obj=facades_transport_obj,
+            uc_end_year=uc_end_year, uc_start_year=uc_start_year,
+            uc_current_year=uc_current_year, efficiency_computation_method=efficiency_computation_method,
+            minimum_panel_eroi=minimum_panel_eroi, replacement_scenario=replacement_scenario,
+            continue_simulation=continue_simulation, **kwargs)
+        # Write the results in a csv file
+        self.solar_radiation_and_bipv_simulation_obj.write_building_bipv_results_to_csv(
+            path_radiation_and_bipv_result_folder=path_radiation_and_bipv_result_folder)
     #
     # def plot_panels_energy_results(self, path_simulation_folder_building, study_duration_years):
     #     """

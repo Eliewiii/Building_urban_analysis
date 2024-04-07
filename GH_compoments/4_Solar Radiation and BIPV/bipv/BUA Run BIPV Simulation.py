@@ -6,19 +6,20 @@
             need to be target buildings to be simulated (Default = "all")
         _bipv_simulation_identifier_: Identifier of the simulation that should be simulated. The results of each
             simulation saved in a separate folder. (Default = "new_uc_scenario")
-        _bipv_parameters : Parameters of the BIPV simulation. to be defined from the BIPVParameters component.
+        _bipv_panels_parameters : Parameters of the BIPV simulation. to be defined from the BIPVParameters component.
         _replacement_scenario_parameters: Parameters of the replacement scenario. to be defined from the
             ReplacementScenarioParameters component.
         _start_year: Year from which the simulation should start. (Default: current year)
         _end_year: Year from which the simulation should end. For instance, if the start year is 2023 and the end year
          2026, the simulation will be run for 3 years: 2023,2024 and 2025 (Default: current year+50)
+        _overwrite_: bool: True if the existing simulation should be overwritten. (Default: True)
         _run: Plug in a button to run the component
     Output:
         report: report
         path_simulation_folder_: Path to the folder."""
 
 __author__ = "Eliewiii"
-__version__ = "2023.08.21"
+__version__ = "2024.04.01"
 
 ghenv.Component.Name = "BUA Run BIPV Simulation"
 ghenv.Component.NickName = 'RunBIPVSimulation'
@@ -56,25 +57,43 @@ path_bat_file = os.path.join(path_tool, "Scripts", "mains_tool", "run_BUA.bat")
 if path_simulation_folder_ is not None and os.path.isdir(path_simulation_folder_) is False:
     raise ValueError("The simulation folder does not exist, enter a valid path")
 
-# Check _bipv_parameters
-if _bipv_parameters is not None:
+# Check _bipv_panels_parameters
+if _bipv_panels_parameters is not None:
     try:  # try to load the json
-        bipv_parameters_dict = json.loads(_bipv_parameters)
+        bipv_panel_parameters_dict = json.loads(_bipv_panels_parameters)
     except:
         raise ValueError("The BIPV parameters are not valid, use the BIPV Parameters component as input")
-    if isinstance(bipv_parameters_dict,
-                  dict) is False or "roof_pv_tech_id" not in bipv_parameters_dict.keys() or "facade_pv_tech_id" not in bipv_parameters_dict.keys() or "minimum_panel_eroi" not in bipv_parameters_dict.keys() or "efficiency_computation_method" not in bipv_parameters_dict.keys():
+    if (isinstance(bipv_panel_parameters_dict, dict) is False
+            or "roof_pv_tech_id" not in bipv_panel_parameters_dict.keys()
+            or "facade_pv_tech_id" not in bipv_panel_parameters_dict.keys()
+            or "roof_pv_transport_id" not in bipv_panel_parameters_dict.keys()
+            or "facade_pv_transport_id" not in bipv_panel_parameters_dict.keys()
+            or "roof_pv_inverter_id" not in bipv_panel_parameters_dict.keys()
+            or "facade_pv_inverter_id" not in bipv_panel_parameters_dict.keys()
+            or "roof_inverter_sizing_ratio" not in bipv_panel_parameters_dict.keys()
+            or "facade_inverter_sizing_ratio" not in bipv_panel_parameters_dict.keys()
+            or "minimum_panel_eroi" not in bipv_panel_parameters_dict.keys()):
         raise ValueError("The BIPV parameters are not valid, use the BIPV Parameters component as input")
     else:
-        roof_pv_tech_id = bipv_parameters_dict["roof_pv_tech_id"]
-        facade_pv_tech_id = bipv_parameters_dict["facade_pv_tech_id"]
-        minimum_panel_eroi = bipv_parameters_dict["minimum_panel_eroi"]
-        efficiency_computation_method = bipv_parameters_dict["efficiency_computation_method"]
+        roof_pv_tech_id = bipv_panel_parameters_dict["roof_pv_tech_id"]
+        facade_pv_tech_id = bipv_panel_parameters_dict["facade_pv_tech_id"]
+        roof_pv_transport_id = bipv_panel_parameters_dict["roof_pv_transport_id"]
+        facade_pv_transport_id = bipv_panel_parameters_dict["facade_pv_transport_id"]
+        roof_pv_inverter_id = bipv_panel_parameters_dict["roof_pv_inverter_id"]
+        facade_pv_inverter_id = bipv_panel_parameters_dict["facade_pv_inverter_id"]
+        roof_inverter_sizing_ratio = bipv_panel_parameters_dict["roof_inverter_sizing_ratio"]
+        facade_inverter_sizing_ratio = bipv_panel_parameters_dict["facade_inverter_sizing_ratio"]
+        minimum_panel_eroi = bipv_panel_parameters_dict["minimum_panel_eroi"]
 else:
     roof_pv_tech_id = None
     facade_pv_tech_id = None
+    roof_pv_transport_id = None
+    facade_pv_transport_id = None
+    roof_pv_inverter_id = None
+    facade_pv_inverter_id = None
+    roof_inverter_sizing_ratio = None
+    facade_inverter_sizing_ratio = None
     minimum_panel_eroi = None
-    efficiency_computation_method = None
 
 # Check _replacement_scenario_parameters
 if _replacement_scenario_parameters is not None:
@@ -95,6 +114,10 @@ else:
     replacement_frequency = None
     minimal_panel_age = None
 
+# Set _overwrite_ to True if it is not provided
+if _overwrite_ is None:
+    _overwrite_ = True
+
 # Check _start_year and _end_year
 if _start_year is None and _end_year is None:
     pass
@@ -102,7 +125,6 @@ elif _start_year is None:
     raise ValueError("The start year and the end year must be defined")
 elif _start_year is not None and _end_year is not None and _start_year >= _end_year:
     raise ValueError("The start year must be lower than the end year")
-
 
 if _run:
     # Write the command
@@ -121,10 +143,20 @@ if _run:
         argument = argument + ' --id_pv_tech_roof "{}"'.format(roof_pv_tech_id)
     if facade_pv_tech_id is not None:
         argument = argument + ' --id_pv_tech_facade "{}"'.format(facade_pv_tech_id)
+    if roof_pv_transport_id is not None:
+        argument = argument + ' --roof_transport_id "{}"'.format(roof_pv_transport_id)
+    if facade_pv_transport_id is not None:
+        argument = argument + ' --facades_transport_id "{}"'.format(facade_pv_transport_id)
+    if roof_pv_inverter_id is not None:
+        argument = argument + ' --roof_inverter_id "{}"'.format(roof_pv_inverter_id)
+    if facade_pv_inverter_id is not None:
+        argument = argument + ' --facades_inverter_id "{}"'.format(facade_pv_inverter_id)
+    if roof_inverter_sizing_ratio is not None:
+        argument = argument + " --roof_inverter_sizing_ratio {}".format(roof_inverter_sizing_ratio)
+    if facade_inverter_sizing_ratio is not None:
+        argument = argument + " --facades_inverter_sizing_ratio {}".format(facade_inverter_sizing_ratio)
     if minimum_panel_eroi is not None:
         argument = argument + " --minimum_panel_eroi {}".format(minimum_panel_eroi)
-    if efficiency_computation_method is not None:
-        argument = argument + " --efficiency_computation_method {}".format(efficiency_computation_method)
     if replacement_scenario_id is not None:
         argument = argument + ' --replacement_scenario "{}"'.format(replacement_scenario_id)
     if replacement_frequency is not None:
@@ -135,6 +167,8 @@ if _run:
         argument = argument + " --start_year {}".format(_start_year)
     if _end_year is not None:
         argument = argument + " --end_year {}".format(_end_year)
+    if _overwrite_ is not None:
+        argument = argument + " --overwrite {}".format(int(_overwrite_))
 
     # Add the name of the component to the argument
     argument = argument + " -c {}".format(ghenv.Component.NickName)

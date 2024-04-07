@@ -13,7 +13,7 @@ from honeybee.model import Model
 
 from urban_canopy.urban_canopy_additional_functions import UrbanCanopyAdditionalFunction
 from urban_canopy.export_to_json import ExportUrbanCanopyToJson
-from urban_canopy.bipv_urban_canopy import BipvScenario
+from urban_canopy.bipv_scenario_urban_canopy import BipvScenario
 from urban_canopy.uc_context_filter.shade_manager import ShadeManager
 from urban_canopy.ubes.uc_energy_simulation import UrbanBuildingEnergySimulation
 
@@ -24,11 +24,16 @@ from building.context_filter.utils_functions_context_filter import \
     make_pyvista_polydata_from_list_of_hb_model_and_lb_polyface3d
 from libraries_addons.extract_gis_files import extract_gis
 from typology.typology import Typology
+
 from bipv.bipv_technology import BipvTechnology
+from bipv.bipv_inverter import BipvInverter
+from bipv.bipv_transportation import BipvTransportation
 
 from utils.utils_configuration import name_urban_canopy_export_file_pkl, name_urban_canopy_export_file_json, \
     name_radiation_simulation_folder, name_temporary_files_folder, name_ubes_temp_simulation_folder, \
-    name_ubes_hbjson_simulation_parameters_file, name_ubes_epw_file
+    name_ubes_simulation_result_folder, name_ubes_hbjson_simulation_parameters_file, name_ubes_epw_file, \
+    path_folder_default_bipv_parameters, \
+    path_folder_user_bipv_parameters
 from utils.utils_constants import TOLERANCE_LBT
 
 from utils.utils_default_values_user_parameters import default_path_weather_file
@@ -659,7 +664,7 @@ class UrbanCanopy:
                     building_obj.re_initialize_bes()
 
     def generate_idf_files_for_ubes_with_openstudio(self, path_simulation_folder, building_id_list=None,
-                                                    overwrite=False, silent=False,run_in_parallel=False):
+                                                    overwrite=False, silent=False, run_in_parallel=False):
         """
         Generate the idf files for the buildings in the urban canopy.
         :param path_simulation_folder: string, path to the folder where the simulation will be performed.
@@ -683,9 +688,9 @@ class UrbanCanopy:
                     user_logger.warning(
                         f"The building id {building_id} is not a target building or is not set to be "
                         f"simulated, thus it cannot be simulated by with EnergyPlus")
-        # Generate or clean the temporary folder ost the ubes simulation files
+        # Generate or clean the temporary folder for the ubes simulation files
         path_ubes_temp_sim_folder = os.path.join(path_simulation_folder, name_temporary_files_folder,
-                                             name_ubes_temp_simulation_folder)
+                                                 name_ubes_temp_simulation_folder)
         if os.path.isdir(path_ubes_temp_sim_folder):
             if overwrite:
                 shutil.rmtree(path_ubes_temp_sim_folder)
@@ -716,8 +721,6 @@ class UrbanCanopy:
         :param overwrite: bool, if True, the existing idf files will be overwritten.
         :param silent: bool, if True, the OpenStudio messages will not be printed.
         """
-        # Check if EPW and simulation parameters files are in the temporary ubes folder
-
         # Checks of the building_id_list parameter to give feedback to the user if there is an issue with an id
         if not (building_id_list is None or building_id_list is []):
             for building_id in building_id_list:
@@ -732,14 +735,14 @@ class UrbanCanopy:
                     user_logger.warning(
                         f"The building id {building_id} is not a target building or is not set to be "
                         f"simulated, thus it cannot be simulated by with EnergyPlus")
-        # Path to the temporary folder ost the ubes simulation files
+        # Path to the temporary folder of the ubes simulation files
         path_ubes_temp_sim_folder = os.path.join(path_simulation_folder, name_temporary_files_folder,
-                                             name_ubes_temp_simulation_folder)
+                                                 name_ubes_temp_simulation_folder)
 
         path_epw_file = os.path.join(path_ubes_temp_sim_folder, name_ubes_epw_file)
         # Initialize the duration directory
         duration_dict = {}
-        # Generate the idf files for the buildings
+        # run the idf files for the buildings
         for building_obj in self.building_dict.values():
             if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
                     and isinstance(building_obj, BuildingModeled) and (
@@ -748,8 +751,62 @@ class UrbanCanopy:
                 duration = building_obj.run_idf_with_energyplus_for_bes(
                     path_ubes_temp_sim_folder=path_ubes_temp_sim_folder,
                     path_epw_file=path_epw_file, overwrite=overwrite, silent=silent)
-                duration_dict[building_obj.id] = duration
+                if duration is not None:
+                    duration_dict[building_obj.id] = duration
+        # Make the UBES simulation result folder or overwrite it if necessary
+        path_ubes_sim_result_folder = os.path.join(path_simulation_folder, name_ubes_simulation_result_folder)
+        if os.path.isdir(path_ubes_sim_result_folder):
+            if overwrite:
+                shutil.rmtree(path_ubes_sim_result_folder)
+                os.mkdir(path_ubes_sim_result_folder)
+        else:
+            os.mkdir(path_ubes_sim_result_folder)
+        # Move the sql and err (=log) file to the UBES result folder
+        for building_obj in self.building_dict.values():
+            if isinstance(building_obj, BuildingModeled):  # no need for more checking
+                building_obj.move_bes_result_files_from_temp_to_result_folder(
+                    path_ubes_temp_sim_folder=path_ubes_temp_sim_folder,
+                    path_ubes_sim_result_folder=path_ubes_sim_result_folder
+                )
+
+        if duration_dict.values() != []:
+            self.ubes_obj.has_run = True
+
         return duration_dict
+
+    def extract_ubes_results(self, path_simulation_folder, cop_heating, cop_cooling):
+        """
+        Read the UBES result files for the buildings in the urban canopy.
+        :param path_simulation_folder: string, path to the simulation folder
+        :param cop_heating: float, coefficient of performance for heating
+        :param cop_cooling: float, coefficient of performance for cooling
+        """
+        if not self.ubes_obj.has_run:
+            user_logger.warning("The UBES simulation has not been run yet, the result cannot be extracted")
+            return
+        path_ubes_sim_result_folder = os.path.join(path_simulation_folder, name_ubes_simulation_result_folder)
+        bes_result_dict_list = []
+        # Extract the UBES results for the buildings
+        for building_obj in self.building_dict.values():
+            if isinstance(building_obj,
+                          BuildingModeled):  # no need for more checking, the building themselves
+                # will check if they have been simulated
+                bes_result_dict = building_obj.extract_bes_results(
+                    path_ubes_sim_result_folder=path_ubes_sim_result_folder, cop_heating=cop_heating,
+                    cop_cooling=cop_cooling)
+                if bes_result_dict is not None:
+                    bes_result_dict_list.append(bes_result_dict)
+        # Compute the results at the urban canopy level
+        self.ubes_obj.compute_ubes_results(
+            bes_result_dict_list=bes_result_dict_list)  # todo @Elie: to be implemented
+        # Export the results to csv
+        """ The export is made at the end to make sure none of the buildings have failed to extract the results before 
+        exporting the results at the urban canopy level."""
+        self.ubes_obj.to_csv(path_ubes_sim_result_folder=path_ubes_sim_result_folder)
+        for building_obj in self.building_dict.values():
+            if isinstance(building_obj, BuildingModeled):
+                building_obj.export_bes_results_to_csv(
+                    path_ubes_sim_result_folder=path_ubes_sim_result_folder)
 
     def generate_sensor_grid_on_buildings(self, building_id_list=None, bipv_on_roof=True,
                                           bipv_on_facades=True, roof_grid_size_x=1,
@@ -838,9 +895,12 @@ class UrbanCanopy:
                     north_angle=north_angle, silent=silent)
 
     def run_bipv_panel_simulation_on_buildings(self, path_simulation_folder, bipv_scenario_identifier,
-                                               path_folder_pv_tech_dictionary_json, building_id_list,
-                                               roof_id_pv_tech,
-                                               facades_id_pv_tech, efficiency_computation_method="yearly",
+                                               building_id_list, roof_id_pv_tech, facades_id_pv_tech,
+                                               roof_transport_id,
+                                               facades_transport_id, roof_inverter_id, facades_inverter_id,
+                                               roof_inverter_sizing_ratio=0.9,
+                                               facades_inverter_sizing_ratio=0.9,
+                                               efficiency_computation_method="yearly",
                                                minimum_panel_eroi=1.2, start_year=datetime.now().year,
                                                end_year=datetime.now().year + 50,
                                                replacement_scenario="replace_failed_panels_every_X_years",
@@ -849,10 +909,15 @@ class UrbanCanopy:
         Run the panels simulation on the urban canopy
         :param path_simulation_folder: path to the simulation folder
         :param bipv_scenario_identifier: string: identifier of the BIPV scenario
-        :param path_folder_pv_tech_dictionary_json: string: path to the folder containing the pv tech dictionary json
         :param building_id_list: list of string: list of the building id to run the simulation on
-        :param roof_id_pv_tech: string: id of the roof technology used, default = "mitrex_roof c-Si"
-        :param facades_id_pv_tech: string: id of the facades technology used, default = "metsolar_facades c-Si"
+        :param roof_id_pv_tech: string: id of the roof technology used
+        :param facades_id_pv_tech: string: id of the facades technology used
+        :param roof_transport_id: string: id of the roof transportation used
+        :param facades_transport_id: string: id of the facades transportation used
+        :param roof_inverter_id: string: id of the roof inverter used
+        :param facades_inverter_id: string: id of the facades inverter used
+        :param roof_inverter_sizing_ratio: float: sizing ratio of the roof inverter, default = 0.9
+        :param facades_inverter_sizing_ratio: float: sizing ratio of the facades inverter, default = 0.9
         :param efficiency_computation_method: string: method used to compute the efficiency of the panels,
             default = "yearly"
         :param minimum_panel_eroi: float: minimum energy return on investment of the panels, default = 1.2
@@ -906,9 +971,17 @@ class UrbanCanopy:
                     user_logger.warning(f"No irradiance simulation was run for The building id "
                                         f"{building_id}, the BIPV simulation will not be run for this building.")
 
-        # todo: check ifg the file exist and put a default value
-        pv_technologies_dictionary = BipvTechnology.load_pv_technologies_from_json_to_dictionary(
-            path_json_folder=path_folder_pv_tech_dictionary_json)
+        # Read the files in the defauly and library and extract the BIPV technologies, transportation and inverter objects
+        bipv_technology_obj_dict = {}
+        bipv_transportation_obj_dict = {}
+        bipv_inverter_obj_dict = {}
+        for path_folder in [path_folder_default_bipv_parameters, path_folder_user_bipv_parameters]:
+            bipv_technology_obj_dict = BipvTechnology.load_pv_technologies_from_json_to_dictionary(
+                bipv_technology_obj_dict=bipv_technology_obj_dict, path_json_folder=path_folder)
+            bipv_transportation_obj_dict = BipvTransportation.load_bipv_transportation_obj_from_json_to_dictionary(
+                transportation_obj_dict=bipv_transportation_obj_dict, path_json_folder=path_folder)
+            bipv_inverter_obj_dict = BipvInverter.load_bipv_inverter_obj_from_json_to_dictionary(
+                inverter_obj_dict=bipv_inverter_obj_dict, path_json_folder=path_folder)
 
         # Reinitialize the simulation for the all the buildings if the simulation is not continued
         if not continue_simulation:
@@ -916,17 +989,33 @@ class UrbanCanopy:
                 if isinstance(building_obj, BuildingModeled) and building_obj.is_target:
                     building_obj.solar_radiation_and_bipv_simulation_obj.init_bipv_simulation()
 
+        #
+        roof_pv_tech_obj = bipv_technology_obj_dict[roof_id_pv_tech]
+        facade_pv_tech_obj = bipv_technology_obj_dict[facades_id_pv_tech]
+        roof_transport_obj = bipv_transportation_obj_dict[roof_transport_id]
+        facades_transport_obj = bipv_transportation_obj_dict[facades_transport_id]
+        roof_inverter_obj = bipv_inverter_obj_dict[roof_inverter_id]
+        facades_inverter_obj = bipv_inverter_obj_dict[facades_inverter_id]
+
+        # Folder to store the results
+        path_radiation_and_bipv_result_folder = os.path.join(path_simulation_folder,
+                                                             name_radiation_simulation_folder)
+
         # Run the simulation for the buildings
         solar_rad_and_bipv_obj_list = []
         for building_obj in self.building_dict.values():
             if self.does_building_fits_bipv_requirement(building_obj=building_obj,
                                                         building_id_list=building_id_list,
                                                         continue_simulation=continue_simulation):
-                roof_pv_tech_obj = pv_technologies_dictionary[roof_id_pv_tech]
-                facade_pv_tech_obj = pv_technologies_dictionary[facades_id_pv_tech]
                 building_obj.building_run_bipv_panel_simulation(path_simulation_folder=path_simulation_folder,
                                                                 roof_pv_tech_obj=roof_pv_tech_obj,
                                                                 facades_pv_tech_obj=facade_pv_tech_obj,
+                                                                roof_inverter_obj=roof_inverter_obj,
+                                                                facades_inverter_obj=facades_inverter_obj,
+                                                                roof_inverter_sizing_ratio=roof_inverter_sizing_ratio,
+                                                                facades_inverter_sizing_ratio=facades_inverter_sizing_ratio,
+                                                                roof_transport_obj=roof_transport_obj,
+                                                                facades_transport_obj=facades_transport_obj,
                                                                 uc_start_year=bipv_scenario_obj.start_year,
                                                                 uc_current_year=start_year,
                                                                 uc_end_year=bipv_scenario_obj.end_year,
@@ -934,15 +1023,26 @@ class UrbanCanopy:
                                                                 minimum_panel_eroi=minimum_panel_eroi,
                                                                 replacement_scenario=replacement_scenario,
                                                                 continue_simulation=continue_simulation,
+                                                                path_radiation_and_bipv_result_folder=path_radiation_and_bipv_result_folder,
                                                                 **kwargs)
                 solar_rad_and_bipv_obj_list.append(building_obj.solar_radiation_and_bipv_simulation_obj)
 
+        """ to be implemented potentially, but not likely to be """
+        # # Add the selected panels to the building shades
+        # for building_obj in self.building_dict.values():
+        #     if isinstance(building_obj, BuildingModeled):
+        #         building_obj.add_selected_bipv_panels_to_shades()
+
+        # Get the list of buildings that were simualted
+        building_id_list = self.get_list_of_bipv_simulated_buildings()
+        bipv_scenario_obj.set_simulated_building_id_list(building_id_list=building_id_list)
         # Compute the results at urban scale
         bipv_scenario_obj.sum_bipv_results_at_urban_scale(
             solar_rad_and_bipv_obj_list=solar_rad_and_bipv_obj_list)
+
         # Write urban scale results to CSV file (overwrite existing file if it exists)
-        bipv_scenario_obj.write_bipv_results_to_csv(path_simulation_folder=path_simulation_folder)
-        # todo: add another function to plot the graphs
+        bipv_scenario_obj.write_bipv_results_to_csv(
+            path_radiation_and_bipv_result_folder=path_radiation_and_bipv_result_folder)
 
     @staticmethod
     def does_building_fits_bipv_requirement(building_obj, building_id_list, continue_simulation):
@@ -972,68 +1072,138 @@ class UrbanCanopy:
         return (condition_1 and condition_2) or (
                 condition_2 and condition_3 and continue_simulation)
 
-    def post_process_bipv_results_at_urban_scale(self, path_simulation_folder, building_id_list):
+    def compute_bipv_kpis_at_urban_scale(self, path_simulation_folder, bipv_scenario_identifier,
+                                         grid_ghg_intensity, grid_energy_intensity,
+                                         grid_electricity_sell_price, zone_area):
+        """
+        Post-process the BIPV results at urban scale
+        :param path_simulation_folder: string, path to the simulation folder
+        :param bipv_scenario_identifier: string, identifier of the BIPV scenario
+        :param grid_ghg_intensity: float, kgCO2/kWh, grid GHG intensity
+        :param grid_energy_intensity: float, kWh/m2, grid energy intensity
+        :param grid_electricity_sell_price: float, €/kWh, grid electricity sell price
+
+        :param zone_area: float, m2, area of the zone
+
         """
 
+        bipv_scenario_obj = self.bipv_scenario_dict[bipv_scenario_identifier]
+
+        ubes_electricity_consumption = sum(self.get_ubes_electricity_consumption_from_building_id_list(
+            bipv_scenario_obj.bipv_simulated_building_id_list))
+
+        conditioned_apartment_area = sum(
+            self.get_conditioned_area_from_building_id_list(
+                bipv_scenario_obj.bipv_simulated_building_id_list))
+        # Set the grid parameters
+        bipv_scenario_obj.compute_scenario_kpis(
+            grid_ghg_intensity=grid_ghg_intensity,
+            grid_energy_intensity=grid_energy_intensity,
+            grid_electricity_sell_price=grid_electricity_sell_price,
+            ubes_electricity_consumption=ubes_electricity_consumption,
+            conditioned_apartment_area=conditioned_apartment_area,
+            zone_area=zone_area)
+        # Write the results to CSV file
+        path_radiation_and_bipv_result_folder = os.path.join(path_simulation_folder,
+                                                             name_radiation_simulation_folder)
+        bipv_scenario_obj.write_kpis_to_csv(
+            path_radiation_and_bipv_result_folder=path_radiation_and_bipv_result_folder)
+
+    def get_list_of_bipv_simulated_buildings(self):
         """
+        Get the list of buildings for which the BIPV simulation was run
+        """
+        building_list = []
+        for building_id, building_obj in self.building_dict.items():
+            if isinstance(building_obj, BuildingModeled) and building_obj.is_target \
+                    and (building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["roof"][
+                             "start_year"] is not None or
+                         building_obj.solar_radiation_and_bipv_simulation_obj.parameter_dict["facades"][
+                             "start_year"] is not None):
+                building_list.append(building_id)
+        return building_list
 
-    def plot_graphs_buildings(self, path_simulation_folder, study_duration_years, country_ghe_cost):
-        for building in self.building_dict.values():
-            if type(building) is BuildingModeled and building.is_target:
-                if building.results_panels["roof"] and building.results_panels["facades"] and \
-                        building.results_panels[
-                            "Total"]:
-                    path_simulation_folder_building = os.path.join(path_simulation_folder,
-                                                                   name_radiation_simulation_folder,
-                                                                   building.id)
-                    building.plot_panels_energy_results(path_simulation_folder_building, study_duration_years)
-                    building.plot_panels_ghg_results(path_simulation_folder_building, study_duration_years,
-                                                     country_ghe_cost)
-                    building.plot_panels_results_ghe_per_kwh(path_simulation_folder_building,
-                                                             study_duration_years)
-                    building.plot_panels_results_eroi(path_simulation_folder_building, study_duration_years)
+    def get_ubes_electricity_consumption_from_building_id_list(self, building_id_list):
+        """
+        Get the energy consumption of buildings (if the energy simulation was run)
+        :param building_id_list: list of building id
+        """
+        energy_consumption = []
+        for building_id in building_id_list:
+            building_obj = self.building_dict[building_id]
+            energy_consumption.append(building_obj.get_bes_energy_consumption())
 
-    def plot_graphs_urban_canopy(self, path_simulation_folder, study_duration_years, country_ghe_cost):
+        return energy_consumption
 
-        energy_data = UrbanCanopyAdditionalFunction.get_energy_data_from_all_buildings(self.building_dict)
-        carbon_data = UrbanCanopyAdditionalFunction.get_carbon_data_from_all_buildings(self.building_dict,
-                                                                                       country_ghe_cost)
+    def get_conditioned_area_from_building_id_list(self, building_id_list):
+        """
+        Get the total conditioned area of the buildings
+        :param building_id_list: list of building id
+        """
+        conditioned_area = []
+        for building_id in building_id_list:
+            building_obj = self.building_dict[building_id]
+            conditioned_area.append(building_obj.get_conditioned_area())
 
-        cum_energy_harvested_roof_uc, cum_energy_harvested_facades_uc, cum_energy_harvested_total_uc = \
-            energy_data[0], \
-                energy_data[1], energy_data[2]
-        cum_primary_energy_roof_uc, cum_primary_energy_facades_uc, cum_primary_energy_total_uc = energy_data[
-            3], \
-            energy_data[4], energy_data[5]
+        return conditioned_area
 
-        cum_avoided_carbon_emissions_roof_uc, cum_avoided_carbon_emissions_facades_uc, \
-            cum_avoided_carbon_emissions_total_uc = carbon_data[0], carbon_data[1], carbon_data[2]
-        cum_carbon_emissions_roof_uc, cum_carbon_emissions_facades_uc, cum_carbon_emissions_total_uc = \
-            carbon_data[3], \
-                carbon_data[4], carbon_data[5]
-
-        years = list(range(study_duration_years))
-
-        UrbanCanopyAdditionalFunction.plot_energy_results_uc(path_simulation_folder, years,
-                                                             cum_energy_harvested_roof_uc,
-                                                             cum_energy_harvested_facades_uc,
-                                                             cum_energy_harvested_total_uc,
-                                                             cum_primary_energy_roof_uc,
-                                                             cum_primary_energy_facades_uc,
-                                                             cum_primary_energy_total_uc)
-
-        UrbanCanopyAdditionalFunction.plot_carbon_results_uc(path_simulation_folder, years,
-                                                             cum_avoided_carbon_emissions_roof_uc,
-                                                             cum_avoided_carbon_emissions_facades_uc,
-                                                             cum_avoided_carbon_emissions_total_uc,
-                                                             cum_carbon_emissions_roof_uc,
-                                                             cum_carbon_emissions_facades_uc,
-                                                             cum_carbon_emissions_total_uc)
-
-        UrbanCanopyAdditionalFunction.plot_ghe_per_kwh_uc(path_simulation_folder, years,
-                                                          cum_energy_harvested_total_uc,
-                                                          cum_carbon_emissions_total_uc)
-
-        UrbanCanopyAdditionalFunction.plot_results_eroi_uc(path_simulation_folder, years,
-                                                           cum_primary_energy_total_uc,
-                                                           cum_energy_harvested_total_uc)
+    # def plot_graphs_buildings(self, path_simulation_folder, study_duration_years, country_ghe_cost):
+    #     for building in self.building_dict.values():
+    #         if type(building) is BuildingModeled and building.is_target:
+    #             if building.results_panels["roof"] and building.results_panels["facades"] and \
+    #                     building.results_panels[
+    #                         "Total"]:
+    #                 path_simulation_folder_building = os.path.join(path_simulation_folder,
+    #                                                                name_radiation_simulation_folder,
+    #                                                                building.id)
+    #                 building.plot_panels_energy_results(path_simulation_folder_building, study_duration_years)
+    #                 building.plot_panels_ghg_results(path_simulation_folder_building, study_duration_years,
+    #                                                  country_ghe_cost)
+    #                 building.plot_panels_results_ghe_per_kwh(path_simulation_folder_building,
+    #                                                          study_duration_years)
+    #                 building.plot_panels_results_eroi(path_simulation_folder_building, study_duration_years)
+    #
+    # def plot_graphs_urban_canopy(self, path_simulation_folder, study_duration_years, country_ghe_cost):
+    #
+    #     energy_data = UrbanCanopyAdditionalFunction.get_energy_data_from_all_buildings(self.building_dict)
+    #     carbon_data = UrbanCanopyAdditionalFunction.get_carbon_data_from_all_buildings(self.building_dict,
+    #                                                                                    country_ghe_cost)
+    #
+    #     cum_energy_harvested_roof_uc, cum_energy_harvested_facades_uc, cum_energy_harvested_total_uc = \
+    #         energy_data[0], \
+    #             energy_data[1], energy_data[2]
+    #     cum_primary_energy_roof_uc, cum_primary_energy_facades_uc, cum_primary_energy_total_uc = energy_data[
+    #         3], \
+    #         energy_data[4], energy_data[5]
+    #
+    #     cum_avoided_carbon_emissions_roof_uc, cum_avoided_carbon_emissions_facades_uc, \
+    #         cum_avoided_carbon_emissions_total_uc = carbon_data[0], carbon_data[1], carbon_data[2]
+    #     cum_carbon_emissions_roof_uc, cum_carbon_emissions_facades_uc, cum_carbon_emissions_total_uc = \
+    #         carbon_data[3], \
+    #             carbon_data[4], carbon_data[5]
+    #
+    #     years = list(range(study_duration_years))
+    #
+    #     UrbanCanopyAdditionalFunction.plot_energy_results_uc(path_simulation_folder, years,
+    #                                                          cum_energy_harvested_roof_uc,
+    #                                                          cum_energy_harvested_facades_uc,
+    #                                                          cum_energy_harvested_total_uc,
+    #                                                          cum_primary_energy_roof_uc,
+    #                                                          cum_primary_energy_facades_uc,
+    #                                                          cum_primary_energy_total_uc)
+    #
+    #     UrbanCanopyAdditionalFunction.plot_carbon_results_uc(path_simulation_folder, years,
+    #                                                          cum_avoided_carbon_emissions_roof_uc,
+    #                                                          cum_avoided_carbon_emissions_facades_uc,
+    #                                                          cum_avoided_carbon_emissions_total_uc,
+    #                                                          cum_carbon_emissions_roof_uc,
+    #                                                          cum_carbon_emissions_facades_uc,
+    #                                                          cum_carbon_emissions_total_uc)
+    #
+    #     UrbanCanopyAdditionalFunction.plot_ghe_per_kwh_uc(path_simulation_folder, years,
+    #                                                       cum_energy_harvested_total_uc,
+    #                                                       cum_carbon_emissions_total_uc)
+    #
+    #     UrbanCanopyAdditionalFunction.plot_results_eroi_uc(path_simulation_folder, years,
+    #                                                        cum_primary_energy_total_uc,
+    #                                                        cum_energy_harvested_total_uc)

@@ -35,6 +35,8 @@ default_path_weather_file = os.path.join(path_tool, "Libraries", "EPW", "IS_5280
 # Building Energy Simulation
 default_path_hbjson_simulation_parameter_file = os.path.join(path_libraries_tool_folder, "Simulation_parameters",
                                                         "default_hb_sim_paramters.json")  # todo: check the link and update the file
+default_cop_heating = 3.0
+default_cop_cooling = 3.0
 
 # Creation of BuildingModeled objects
 default_automatic_floor_subdivision_for_new_BuildingModeled = False
@@ -63,9 +65,14 @@ default_facades_grid_size_y = 1.5
 default_offset_dist = 0.1
 
 # Default values for panel simulation
-default_path_pv_tech_dictionary_folder = os.path.join(path_libraries_tool_folder, "BIPV_technologies")
-default_id_pv_tech_roof = "mitrex_roof c-Si"
-default_id_pv_tech_facades = "mitrex_facades c-Si"
+default_id_pv_tech_roof = "mitrex_roof c-Si Solar Siding 350W - Dove Grey china"
+default_id_pv_tech_facades = "mitrex_facades c-Si Solar Siding 350W - Dove Grey china"
+default_roof_transport_id = "China-Israel"
+default_facades_transport_id = "China-Israel"
+default_roof_inverter_id = "inverter_default"
+default_facades_inverter_id = "inverter_default"
+default_roof_inverter_sizing_ratio = 0.9
+default_facades_inverter_sizing_ratio = 0.9
 default_minimum_panel_eroi = 1.2
 default_start_year = datetime.now().year
 default_end_year = default_start_year + 50
@@ -75,3 +82,12 @@ default_replacement_frequency_in_years = 20
 default_bipv_scenario_identifier = "new_uc_scenario"
 # Default values for panel simulation - LCA
 default_country_ghe_cost = 0.57874
+
+
+# Default values for KPI computationm  todo: put proper values
+default_grid_ghg_intensity = 0.500  # kgCO2/kWh
+default_grid_energy_intensity = 2  # kWh/kWh
+default_grid_electricity_sell_price = 0.1  # $/kWh
+
+
+

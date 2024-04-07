@@ -13,7 +13,8 @@ user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")
 
 
-def init_bipv_on_sensor_grid(sensor_grid: SensorGrid, pv_technology_obj, annual_panel_irradiance_list,
+def init_bipv_on_sensor_grid(sensor_grid: SensorGrid, pv_technology_obj, bipv_transportation_obj,
+                             annual_panel_irradiance_list,
                              minimum_panel_eroi):
     """
     Initialize the bipvs on the sensor_grid and return a list of the bipvs.
@@ -24,7 +25,6 @@ def init_bipv_on_sensor_grid(sensor_grid: SensorGrid, pv_technology_obj, annual_
     :param pv_technology_obj: PVPanelTechnology object
     :param annual_panel_irradiance_list: list of floats: annual irradiance on each face of the sensor_grid
     :param minimum_panel_eroi: float: minimum energy return on investment of the PV, (Default=1.2)
-    :param electricity_primary_energy_gird_factor: float: factor of the primary energy needed to produce 1 kWh of
     electricity for the grid (Default=1.)
 
     :return panel_obj_list
@@ -46,19 +46,26 @@ def init_bipv_on_sensor_grid(sensor_grid: SensorGrid, pv_technology_obj, annual_
         if pv_technology_obj.efficiency_function == BipvTechnology.constant_efficiency or \
                 pv_technology_obj.efficiency_function == BipvTechnology.degrading_rate_efficiency_loss:
             energy_harvested = sum(
-                [pv_technology_obj.get_energy_harvested_by_panel(irradiance=annual_panel_irradiance_list[
-                    face_index], age=year) for year in
-                 range(pv_technology_obj.weibull_law_failure_parameters["lifetime"])])
+                [pv_technology_obj.estimate_yearly_energy_harvested_by_panel_not_considering_inverter(
+                    irradiance=annual_panel_irradiance_list[face_index], age=year) for year in
+                    range(pv_technology_obj.weibull_law_failure_parameters["lifetime"])])
         else:
             """ If the efficiency function is not constant_efficiency of"""
             energy_harvested = sum(
-                [pv_technology_obj.get_energy_harvested_by_panel(irradiance=annual_panel_irradiance_list[
-                    face_index], age=year, efficiency_function=BipvTechnology.constant_efficiency) for
-                 year in range(pv_technology_obj.weibull_law_failure_parameters["lifetime"])])
+                [pv_technology_obj.estimate_yearly_energy_harvested_by_panel_not_considering_inverter(
+                    irradiance=annual_panel_irradiance_list[face_index], age=year,
+                    efficiency_function=BipvTechnology.constant_efficiency) for
+                    year in range(pv_technology_obj.weibull_law_failure_parameters["lifetime"])])
+
+        gtg_transportation_dict, recycling_dict = pv_technology_obj.compute_transportation_lca_and_cost(
+            bipv_transportation_obj=bipv_transportation_obj)
+        primary_energy_transportation = gtg_transportation_dict["primary_energy"]
+        primary_energy_recycling = recycling_dict["primary_energy"]
+        primary_energy_inverter_estimated = pv_technology_obj.estimated_primary_energy_inverter
 
         primary_energy = \
-            pv_technology_obj.primary_energy_manufacturing + pv_technology_obj.primary_energy_recycling + \
-            pv_technology_obj.primary_energy_transport
+            pv_technology_obj.primary_energy_manufacturing + primary_energy_transportation + primary_energy_recycling + \
+            primary_energy_inverter_estimated
         panel_eroi = energy_harvested / primary_energy
         """
         Note that it is not exactly the reql eroi thqt is computed here, we assume that the panel will last for 
@@ -89,33 +96,25 @@ def init_bipv_on_sensor_grid(sensor_grid: SensorGrid, pv_technology_obj, annual_
     return panel_obj_list
 
 
-def bipv_energy_harvesting_simulation_hourly_annual_irradiance(pv_panel_obj_list,
-                                                               path_time_step_illuminance_file,
-                                                               start_year, current_study_duration_in_years,
-                                                               uc_start_year,
-                                                               uc_end_year, replacement_scenario,
-                                                               pv_tech_obj=None, **kwargs):
-    """
-
-    """
-
-    # todo : add test to check if the type of efficiency function and if the inputs are ok,
-    #  (need epw if the efficiency is a fnction of outdorr temperature)
-
-
-def bipv_energy_harvesting_simulation_yearly_annual_irradiance(pv_panel_obj_list,
-                                                               annual_solar_irradiance_value,
-                                                               start_year, current_study_duration_in_years,
-                                                               uc_start_year,
-                                                               uc_end_year, replacement_scenario,
-                                                               pv_tech_obj=None, **kwargs):
+def simulate_bipv_yearly_energy_harvesting(pv_panel_obj_list,
+                                           hourly_solar_irradiance_table,
+                                           inverter_capacity,
+                                           start_year, current_study_duration_in_years,
+                                           uc_start_year,
+                                           uc_end_year, replacement_scenario,
+                                           pv_tech_obj=None, **kwargs):
     """
     Loop over every year of the study duration to get the energy harvested, the energy used and the dmfa waste harvested
     every year
     :param pv_panel_obj_list: list of panel objects
-    :param annual_solar_irradiance_value: list of floats: list of the yearly cumulative solar radiation got by the solar
-    radiation simulation in Wh/panel/year
-    :param iteration_duration_in_years: int: Number of year during which the simulation is run
+    :param hourly_solar_irradiance_table: list of floats: table (list of list) with the hourly solar irradiance
+    in Wh/m2, of all the faces of the sensor grid
+    :param inverter_capacity: float: capacity of the inverter in kW
+    :param start_year: int: year when the simulation starts
+    :param current_study_duration_in_years: int: duration of the study in years
+    :param uc_start_year: int: year when the uc starts
+    :param uc_end_year: int: year when the uc ends
+    :param pv_tech_obj: PVPanelTechnology object
     :param replacement_scenario: string: replacement scenario chosen between
     "replace_failed_panels_every_X_year" and "replace_all_panels_every_X_year",
     Default="replace_failed_panels_every_X_year"
@@ -133,7 +132,7 @@ def bipv_energy_harvesting_simulation_yearly_annual_irradiance(pv_panel_obj_list
     if iteration_start_year < uc_end_year:
         for year in range(iteration_start_year, uc_end_year):
             # initialize
-            energy_harvested = 0.
+            annual_energy_harvested = 0.
             nb_of_new_panels = 0
             # Initialize panels for the first year they are installed
             if (start_year - year) == 0:
@@ -173,49 +172,219 @@ def bipv_energy_harvesting_simulation_yearly_annual_irradiance(pv_panel_obj_list
             elif replacement_scenario == "no_replacement":
                 pass
 
-            # Get the energy harvesting and increment the age of panel by 1 year
+            # Loop over all the sun hours
+            nb_of_sun_hours = len(
+                hourly_solar_irradiance_table[0])  # Number of sun hours in the year, same for all faces
+            hourly_power_generation_by_panels_table = [panel_obj.get_hourly_power_generation_over_a_year(
+                hourly_irradiance_list=hourly_solar_irradiance_table[panel_obj.index], **kwargs) for panel_obj in
+                pv_panel_obj_list]
+            for i in range(nb_of_sun_hours):
+                total_power = sum(
+                    [hourly_power_generation_by_panels_table[j][i] for j in range(len(pv_panel_obj_list))])
+                if total_power > inverter_capacity:
+                    total_power = inverter_capacity
+                # Energy in kWh/h is power in kW * 1h
+                annual_energy_harvested += total_power
             for panel_obj in pv_panel_obj_list:
-                energy_harvested_panel = panel_obj.energy_harvested_in_one_year(
-                    irradiance=annual_solar_irradiance_value[panel_obj.index], **kwargs)
                 panel_obj.increment_age_by_one_year()
-                energy_harvested += energy_harvested_panel
-                # Eventually the energy harvested by the panel could be stored in a list for each panel, but heavy
 
-            energy_production_per_year_list.append(energy_harvested)
+            energy_production_per_year_list.append(annual_energy_harvested/1000) # convert Wh to kWh
             nb_of_panels_installed_per_year_list.append(nb_of_new_panels)
 
     return energy_production_per_year_list, nb_of_panels_installed_per_year_list
 
 
-def bipv_lca_dmfa_eol_computation(nb_of_panels_installed_yearly_list, pv_tech_obj):
+def compute_lca_and_cost_for_gtg(nb_of_panels_installed_yearly_list, pv_tech_obj, roof_or_facades):
     """
     Take the results from function loop_over_the_years_for_solar_panels and use the pv_tech_obj info to transform it to data
     :param nb_of_panels_installed_yearly_list: list of int: list of the number of panels installed each year
     :param pv_tech_obj: PVPanelTechnology object
-    :return primary_energy_transportation_yearly_list: list of floats: list of the primary energy needed for the
-    transportation of the panels each year in Wh/year
-    :return primary_energy_material_extraction_and_manufacturing_yearly_list: list of floats: list of the primary
-
+    :param roof_or_facades: string: "roof" or "facades"
+    :return gtg_result_dict: dictionary of the gtg results
     """
-    # Compute LCA primary energy and carbon footprint each year
+    # Primary energy
     primary_energy_material_extraction_and_manufacturing_yearly_list = [
         i * pv_tech_obj.primary_energy_manufacturing for
         i in nb_of_panels_installed_yearly_list]
-    primary_energy_transportation_yearly_list = [i * pv_tech_obj.primary_energy_transport for i in
-                                                 nb_of_panels_installed_yearly_list]
+
+    # Carbon footprint
+    carbon_material_extraction_and_manufacturing_yearly_list = [i * pv_tech_obj.ghg_manufacturing for i in
+                                                                nb_of_panels_installed_yearly_list]
+
+    # Economic cost
+    cost_investement_yearly_list = [i * pv_tech_obj.cost_investment for i in
+                                    nb_of_panels_installed_yearly_list]
+
+    # Economic revenues
+    if roof_or_facades == "roof":
+        revenue_substituted_construction_material_yearly_list = [
+            i * pv_tech_obj.revenue_substituted_construction_material_roof for i in
+            nb_of_panels_installed_yearly_list]
+    else:
+        revenue_substituted_construction_material_yearly_list = [
+            i * pv_tech_obj.revenue_substituted_construction_material_facades for i in
+            nb_of_panels_installed_yearly_list]
+
+    gtg_result_dict = {
+        "primary_energy": primary_energy_material_extraction_and_manufacturing_yearly_list,
+        "ghg": carbon_material_extraction_and_manufacturing_yearly_list,
+        "cost": {
+            "investment": cost_investement_yearly_list,
+            "revenue": {"substituted_construction_material": revenue_substituted_construction_material_yearly_list}
+        }
+    }
+
+    return gtg_result_dict
+
+
+def compute_lca_cost_and_dmfa_for_recycling(nb_of_panels_installed_yearly_list, pv_tech_obj):
+    """
+    Take the results from function loop_over_the_years_for_solar_panels and use the pv_tech_obj info to transform it to data
+    :param nb_of_panels_installed_yearly_list: list of int: list of the number of panels installed each year
+    :param pv_tech_obj: PVPanelTechnology object
+    :return recycling_dict: dictionary of the recycling results
+    """
+    # Primary energy
     primary_energy_recycling_yearly_list = [i * pv_tech_obj.primary_energy_recycling for i in
                                             nb_of_panels_installed_yearly_list]
-    carbon_material_extraction_and_manufacturing_yearly_list = [i * pv_tech_obj.carbon_manufacturing for i in
-                                                                nb_of_panels_installed_yearly_list]
-    carbon_transportation_yearly_list = [i * pv_tech_obj.carbon_transport for i in
-                                         nb_of_panels_installed_yearly_list]
-    carbon_recycling_yearly_list = [i * pv_tech_obj.carbon_recycling for i in
+    # Carbon footprint
+    carbon_recycling_yearly_list = [i * pv_tech_obj.ghg_recycling for i in
                                     nb_of_panels_installed_yearly_list]
     # Compute DMFA waste in kg for each year
     dmfa_waste_yearly_list = [i * pv_tech_obj.weight for i in
                               nb_of_panels_installed_yearly_list]
 
-    return primary_energy_material_extraction_and_manufacturing_yearly_list, primary_energy_transportation_yearly_list, \
-        primary_energy_recycling_yearly_list, \
-        carbon_material_extraction_and_manufacturing_yearly_list, carbon_transportation_yearly_list, \
-        carbon_recycling_yearly_list, dmfa_waste_yearly_list
+    # Economic cost
+    cost_recycling_yearly_list = [i * pv_tech_obj.cost_recycling for i in
+                                  nb_of_panels_installed_yearly_list]
+    # Economic revenues
+    revenue_material_recovery_yearly_list = [i * pv_tech_obj.revenue_material_recovery for i in
+                                             nb_of_panels_installed_yearly_list]
+
+    recycling_dict = {
+        "primary_energy": primary_energy_recycling_yearly_list,
+        "ghg": carbon_recycling_yearly_list,
+        "cost": {
+            "investment": cost_recycling_yearly_list,
+            "revenue": {"material_recovery": revenue_material_recovery_yearly_list}
+        },
+        "dmfa": dmfa_waste_yearly_list
+    }
+
+    return recycling_dict
+
+
+def compute_lca_and_cost_for_maintenance(panel_list, start_year, current_study_duration_in_years, uc_end_year):
+    """
+    Compute the LCA and cost of the maintenance of the panels over the simulated years
+    :param panel_list: list of BipvPanel objects
+    :param start_year: int: year when the simulation starts
+    :param current_study_duration_in_years: int: duration of the study in years
+    :param uc_end_year: int: year when the uc ends
+    :return maintenance_result_dict: dictionary of the maintenance results
+    """
+    primary_energy_maintenance_yearly_list = []
+    ghg_maintenance_yearly_list = []
+    cost_maintenance_yearly_list = []
+    # Loop over the years
+    iteration_start_year = start_year + current_study_duration_in_years
+    if iteration_start_year < uc_end_year:
+        for year in range(iteration_start_year, uc_end_year):
+            primary_energy_maintenance_yearly_list.append(
+                sum([panel_obj.panel_technology_object.primary_energy_annual_maintenance for panel_obj in panel_list]))
+            ghg_maintenance_yearly_list.append(
+                sum([panel_obj.panel_technology_object.ghg_annual_maintenance for panel_obj in panel_list]))
+            cost_maintenance_yearly_list.append(
+                sum([panel_obj.panel_technology_object.cost_annual_maintenance for panel_obj in panel_list]))
+
+    maintenance_result_dict = {
+        "primary_energy": primary_energy_maintenance_yearly_list,
+        "ghg": ghg_maintenance_yearly_list,
+        "cost": cost_maintenance_yearly_list
+    }
+
+    return maintenance_result_dict
+
+
+def compute_lca_and_cost_for_transportation(nb_of_panels_installed_yearly_list, pv_tech_obj, transportation_obj):
+    """
+    Take the results from function loop_over_the_years_for_solar_panels and use the pv_tech_obj info to transform it to data
+    :param nb_of_panels_installed_yearly_list: list of int: list of the number of panels installed each year
+    :param pv_tech_obj: PVPanelTechnology object
+    :param transportation_obj: BipvTransportation object
+    :return transport_result_dict: dictionary of the transportation results
+    """
+    # Transportation values
+    gtg_transportation_dict, recycling_dict = pv_tech_obj.compute_transportation_lca_and_cost(
+        bipv_transportation_obj=transportation_obj)
+    # Primary energy
+    primary_energy_transport_gtg_yearly_list = [i * gtg_transportation_dict["primary_energy"] for i in
+                                                nb_of_panels_installed_yearly_list]
+    primary_energy_transport_recycling_yearly_list = [i * recycling_dict["primary_energy"] for i in
+                                                      nb_of_panels_installed_yearly_list]
+    # Carbon footprint
+    carbon_transport_gtg_yearly_list = [i * gtg_transportation_dict["ghg"] for i in
+                                        nb_of_panels_installed_yearly_list]
+    carbon_transport_recycling_yearly_list = [i * recycling_dict["ghg"] for i in
+                                              nb_of_panels_installed_yearly_list]
+    # Economic cost
+    cost_transport_gtg_yearly_list = [i * gtg_transportation_dict["cost"] for i in
+                                      nb_of_panels_installed_yearly_list]
+    cost_transport_recycling_yearly_list = [i * recycling_dict["cost"] for i in
+                                            nb_of_panels_installed_yearly_list]
+
+    transport_result_dict = {
+        "primary_energy": {
+            "gtg": primary_energy_transport_gtg_yearly_list,
+            "recycling": primary_energy_transport_recycling_yearly_list
+        },
+        "ghg": {
+            "gtg": carbon_transport_gtg_yearly_list,
+            "recycling": carbon_transport_recycling_yearly_list
+        },
+        "cost": {
+            "gtg": cost_transport_gtg_yearly_list,
+            "recycling": cost_transport_recycling_yearly_list
+        }
+    }
+
+    return transport_result_dict
+
+
+def compute_lca_and_cost_for_inverter(inverter_obj, inverter_sub_capacities, start_year,
+                                      current_study_duration_in_years, uc_end_year):
+    """
+    Compute the LCA and cost of the inverter(s) over the simulated years
+    :param inverter_obj: BipvInverter object
+    :param inverter_sub_capacities: list of float: list of the individual sizes of the inverters used if necessary in kWp
+    :param start_year: int: year when the simulation starts
+    :param current_study_duration_in_years: int: duration of the study in years
+    :param uc_end_year: int: year when the uc ends
+    :return inverter_result_dict: dictionary of the inverter results
+    """
+    inverter_primary_energy_yearly_list = []
+    inverter_ghg_yearly_list = []
+    inverter_cost_yearly_list = []
+
+    # Loop over the years
+    iteration_start_year = start_year + current_study_duration_in_years
+    if iteration_start_year < uc_end_year:
+        for year in range(iteration_start_year, uc_end_year):
+            if (year - start_year) % inverter_obj.replacement_frequency == 0:
+                primary_energy_list, ghg_emission_list, cost_list = inverter_obj.get_primary_energy_ghg_and_cost_for_capacity_list(
+                    inverter_sub_capacities)
+                inverter_primary_energy_yearly_list.append(primary_energy_list)
+                inverter_ghg_yearly_list.append(ghg_emission_list)
+                inverter_cost_yearly_list.append(cost_list)
+            else:
+                inverter_primary_energy_yearly_list.append(0.)
+                inverter_ghg_yearly_list.append(0.)
+                inverter_cost_yearly_list.append(0.)
+
+    inverter_result_dict = {
+        "primary_energy": inverter_primary_energy_yearly_list,
+        "ghg": inverter_ghg_yearly_list,
+        "cost": inverter_cost_yearly_list
+    }
+
+    return inverter_result_dict

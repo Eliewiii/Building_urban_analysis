@@ -12,7 +12,7 @@ from urban_canopy.urban_canopy import UrbanCanopy
 
 from utils.utils_default_values_user_parameters import default_path_simulation_folder, \
     default_path_weather_file, \
-    default_path_hbjson_simulation_parameter_file
+    default_path_hbjson_simulation_parameter_file, default_cop_heating, default_cop_cooling
 
 user_logger = logging.getLogger("user")  # f"{__name__} user"
 dev_logger = logging.getLogger("dev")  # f"{__name__} dev"
@@ -32,7 +32,7 @@ class UrbanBuildingEnergySimulationFunctions:
         :param urban_canopy_obj: UrbanCanopy object
         :param path_simulation_folder: str, path to the simulation folder
         :param path_hbjson_simulation_parameter_file: str, path to the simulation parameter file
-        :param path_file_epw: str, path to the epw file
+        :param path_weather_file: str, path to the weather file
         :param ddy_file: str, path to the ddy file
         :param overwrite: bool, if True, overwrite the existing simulation parameter file
         """
@@ -42,12 +42,12 @@ class UrbanBuildingEnergySimulationFunctions:
             path_hbjson_simulation_parameter_file=path_hbjson_simulation_parameter_file,
             path_file_epw=path_file_epw, ddy_file=ddy_file, overwrite=overwrite)
 
-        user_logger.info("New urban canopy object was created")
-        dev_logger.info("New urban canopy object was created")
+        # user_logger.info("")
+        dev_logger.info("EPW file and HB simulation parameters loaded")
         return
 
     @staticmethod
-    def generate_idf_files_for_ubes_with_openstudio_in_urban_canopy(urban_canopy_obj,
+    def generate_idf_files_for_ubes_with_openstudio_in_urban_canopy(urban_canopy_obj: UrbanCanopy,
                                                                     path_simulation_folder=default_path_simulation_folder,
                                                                     building_id_list=None,
                                                                     overwrite=False,
@@ -67,18 +67,18 @@ class UrbanBuildingEnergySimulationFunctions:
             overwrite=overwrite,
             silent=silent)
 
-        user_logger.info("New urban canopy object was created")
-        dev_logger.info("New urban canopy object was created")
+        user_logger.info("The idf files for the UBES were generated")
+        dev_logger.info("The idf files for the UBES were generated")
 
         return
 
     @staticmethod
-    def run_idf_files_with_energyplus_for_ubes_in_urban_canopy(urban_canopy_obj,
-                                                                path_simulation_folder=default_path_simulation_folder,
-                                                                building_id_list=None,
-                                                                overwrite=False,
-                                                                silent=False,
-                                                                run_in_parallel=False):
+    def run_idf_files_with_energyplus_for_ubes_in_urban_canopy(urban_canopy_obj: UrbanCanopy,
+                                                               path_simulation_folder=default_path_simulation_folder,
+                                                               building_id_list=None,
+                                                               overwrite=False,
+                                                               silent=False,
+                                                               run_in_parallel=False):
         """
         Run idf files of buildings in the Urban Canopy through EnergyPlus
         :param urban_canopy_obj: UrbanCanopy object
@@ -101,15 +101,19 @@ class UrbanBuildingEnergySimulationFunctions:
 
         tot_duration = time() - timer
 
-        user_logger.info("New urban canopy object was created")
-        dev_logger.info("New urban canopy object was created")
+        user_logger.info("EnergyPlus simulation was run")
+        dev_logger.info("EnergyPlus simulation was run")
 
         return tot_duration, duration_dict
 
     @staticmethod
-    def extract_results_from_ep_simulation(urban_canopy_obj,
+    def extract_results_from_ep_simulation(urban_canopy_obj: UrbanCanopy,
                                            path_simulation_folder=default_path_simulation_folder,
-                                           cop_heating=None, cop_cooling=None):
-        user_logger.info("New urban canopy object was created")
-        dev_logger.info("New urban canopy object was created")
+                                           cop_heating=default_cop_heating, cop_cooling=default_cop_cooling):
+
+        urban_canopy_obj.extract_ubes_results(path_simulation_folder=path_simulation_folder,
+                                                            cop_heating=cop_heating, cop_cooling=cop_cooling)
+
+        user_logger.info("UBES results were extracted")
+        dev_logger.info("UBES results were extracted")
         return
