@@ -30,6 +30,7 @@ class BipvScenario:
         self.id = identifier
         self.start_year = start_year
         self.end_year = end_year
+        self.bipv_simulation.has_run = False
         self.bipv_simulated_building_id_list = None
         self.bipv_results_dict = None
         self.urban_canopy_bipv_kpis_obj = UrbanCanopyKPIs()
@@ -57,7 +58,9 @@ class BipvScenario:
             "id": self.id,
             "start_year": self.start_year,
             "end_year": self.end_year,
+
             "bipv_results_dict": self.bipv_results_dict,
+            "bipv_simulated_building_id_list": self.bipv_simulated_building_id_list,
             "kpis_results_dict": self.urban_canopy_bipv_kpis_obj.to_dict()
         }
 

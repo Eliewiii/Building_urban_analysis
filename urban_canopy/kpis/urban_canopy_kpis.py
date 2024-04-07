@@ -105,8 +105,6 @@ class UrbanCanopyKPIs:
         self.zone_area = zone_area
         self.conditioned_apartment_area = conditioned_apartment_area
 
-
-
         # todo, other parameter to consider changes through year of these values, especially due to inflation
         #  and changes in the electricity mix
 
@@ -135,7 +133,8 @@ class UrbanCanopyKPIs:
                 "net economical benefit density [$/m2]": self.net_economical_benefit_density,
                 "economical payback time [year]": self.economical_payback_time
             },
-            "intermediate_results": self.kpi_intermediate_results_dict
+            "intermediate_results": self.kpi_intermediate_results_dict,
+            "has_run": self.has_run
         }
         return kpi_result_dict
 
@@ -198,6 +197,8 @@ class UrbanCanopyKPIs:
         self.compute_sub_kpis(bipv_result_dict=bipv_results_dict["facades"], sub_type="facades")
         # Total
         self.compute_sub_kpis(bipv_result_dict=bipv_results_dict["total"], sub_type="total")
+        # Set the flag to True
+        self.has_run = True
 
     def compute_sub_kpis(self, bipv_result_dict, sub_type):
         """

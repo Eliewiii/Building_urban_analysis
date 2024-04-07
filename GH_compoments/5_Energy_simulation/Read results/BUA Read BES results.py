@@ -11,7 +11,7 @@
 """
 
 __author__ = "Elie"
-__version__ = "2023.08.21"
+__version__ = "2024.04.07"
 
 ghenv.Component.Name = "BUA Read BES Results"
 ghenv.Component.NickName = 'ReadBESResults'
@@ -24,10 +24,6 @@ import json
 import os
 
 import ghpythonlib.treehelpers as th
-from ladybug_rhino.fromgeometry import from_face3d
-from ladybug_geometry.geometry3d.face import Face3D
-
-from honeybee.shade import Shade
 
 
 def clean_path(path):
@@ -115,5 +111,3 @@ if _run:
     # Convert to tree
     end_uses_energy_consumption_tree = th.list_to_tree(end_uses_energy_consumption_tree)
 
-if not os.path.isfile(path_json):
-    print("the json file of the urban canopy does not exist")
