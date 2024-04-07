@@ -19,7 +19,7 @@ urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object
 # SimulationBuildingManipulationFunctions.move_buildings_to_origin(urban_canopy_object=urban_canopy_object)
 
 # Load Buildings from json
-path_file_json = r"C:\Users\eliem\OneDrive - Technion\Ministry of Energy Research\IBPSA US conference\TA_Neighborhood_27.9.2023\HBJSON_Models\Buil_TA_4.hbjson"
+path_file_json = r"C:\Users\eliem\OneDrive - Technion\BUA\Context_filter\Samples\Sample hbjsons\Buil_TA_9.hbjson"
 path_folder_json = None
 
 SimulationLoadBuildingOrGeometry.add_buildings_from_hbjson_to_urban_canopy(

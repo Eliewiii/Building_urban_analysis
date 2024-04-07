@@ -167,8 +167,7 @@ class BipvTechnology:
         if age == 0:
             return self.initial_efficiency
         else:
-            return self.initial_efficiency * (1 - self.first_year_degrading_rate) * (
-                    1 - self.degrading_rate) ** (age - 1)
+            return self.initial_efficiency * (1 - self.first_year_degrading_rate - self.degrading_rate * (age - 1))
 
     def irradiance_dependent_efficiency(self, irradiance, **kwargs):
         """ todo: this one is just an example, to be changed"""

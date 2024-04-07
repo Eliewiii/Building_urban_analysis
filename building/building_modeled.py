@@ -5,28 +5,24 @@ as they will be simulated
 
 import os
 import logging
+import shutil
 import matplotlib.pyplot as plt
 
 from ladybug_geometry.geometry3d import Vector3D
 from honeybee.model import Model
-from honeybee_radiance.sensorgrid import SensorGrid
 
 from building.building_basic import BuildingBasic
-from building.context_filter.building_shading_context import BuildingShadingContext
+
+from building.context_filter.building_shading_context import BuildingShadingContextFilter
 # from building.context_filter.building_lwr_context import BuildingLWRContext  # Useful later
+from building.merge_hb_model_faces.merge_hb_model_faces import merge_facades_and_roof_faces_in_hb_model
+from building.energy_simulation.building_energy_simulation import BuildingEnergySimulation
 from building.solar_radiation_and_bipv.solar_rad_and_BIPV import SolarRadAndBipvSimulation
-from building.merg_hb_model_faces.merge_hb_model_faces import merge_facades_and_roof_faces_in_hb_model
 
 from libraries_addons.hb_model_addons import HbAddons
-from libraries_addons.solar_radiations.add_sensorgrid_hb_model import get_hb_faces_facades, get_hb_faces_roof, \
-    get_lb_mesh, get_lb_mesh_BUA, create_sensor_grid_from_mesh
-from libraries_addons.solar_radiations.hb_recipe_settings import hb_recipe_settings
-from libraries_addons.solar_radiations.annual_irradiance_simulation import hb_ann_irr_sim
-from libraries_addons.solar_radiations.annual_cumulative_value import hb_ann_cum_values
-from libraries_addons.solar_panels.useful_functions_solar_panel import load_panels_on_sensor_grid, \
-    loop_over_the_years_for_solar_panels, beginning_end_of_life_lca_results_in_lists, \
-    results_from_lists_to_dict, \
-    get_cumul_values, add_elements_of_two_lists, transform_to_linear_function, find_intersection_functions, \
+from libraries_addons.solar_panels.useful_functions_solar_panel import get_cumul_values, \
+    add_elements_of_two_lists, \
+    transform_to_linear_function, find_intersection_functions, \
     generate_step_function
 
 user_logger = logging.getLogger("user")
@@ -52,10 +48,9 @@ class BuildingModeled(BuildingBasic):
         self.to_simulate = False
         self.is_target = False
         # Shading computation
-        self.shading_context_obj = BuildingShadingContext()
-
-        self.first_pass_context_building_id_list = []  # todo @Elie delete
-
+        self.shading_context_obj = BuildingShadingContextFilter()
+        # Building Energy Simulation
+        self.bes_obj = BuildingEnergySimulation(self.id)
         # Solar and panel radiation
         self.solar_radiation_and_bipv_simulation_obj = SolarRadAndBipvSimulation()
 
@@ -70,6 +65,8 @@ class BuildingModeled(BuildingBasic):
         # Convert the hb_model_dict to hb_model_obj
         self.hb_model_obj = Model.from_dict(self.hb_model_dict)  # todo: test if it works
         self.hb_model_dict = None
+        # Load attributes in the context filter object after pickling
+        self.shading_context_obj.load_from_pkl()
 
     def pickle_HB_attributes(self):
         """
@@ -78,6 +75,9 @@ class BuildingModeled(BuildingBasic):
         # Convert the hb_model_obj to hb_model_dict
         self.hb_model_dict = self.hb_model_obj.to_dict()  # todo: test if it works
         self.hb_model_obj = None
+        # Prepare attributes in the context filter objects
+        self.shading_context_obj.prepare_for_pkl()
+
         # todo : maybe add more properties to modify before pickling to avoid locked class issue
 
     @classmethod
@@ -114,7 +114,8 @@ class BuildingModeled(BuildingBasic):
             # todo : change if needed where the dictionary of the urban canopy is pointing, to point to the new object
 
     @classmethod
-    def make_buildingmodeled_from_hbjson(cls, path_hbjson, is_target=False, keep_context=False, urban_canopy=None):
+    def make_buildingmodeled_from_hbjson(cls, path_hbjson, is_target=False, keep_context=False,
+                                         urban_canopy=None):
         """
         Create a BuildingModeled object from a HBJSON file
         :return: building_hb_model : BuildingModeled object
@@ -134,6 +135,10 @@ class BuildingModeled(BuildingBasic):
             user_logger.error(err_message)
             dev_logger.error(err_message, exc_info=True)
             raise AttributeError(err_message)
+        # Add a prefix to the identifier of all the HB objects (Rooms, Faces, Apertures, Shades) in the model to make
+        # sure that they are unique
+        hb_model.add_prefix(identifier + "_")
+
         # Keep the context of the building
         if keep_context and (hb_model.shades != [] and hb_model.shades is not None):
             building_modeled_obj.shading_context_obj.get_hb_shades_from_hb_model(hb_model)
@@ -145,11 +150,10 @@ class BuildingModeled(BuildingBasic):
         building_modeled_obj.height = height
         building_modeled_obj.is_target = is_target
 
-
         try:
             # todo @Elie : make the lb_face_footprint from the hb_model
             building_modeled_obj.lb_face_footprint = HbAddons.make_LB_face_footprint_from_HB_model(
-                HB_model=hb_model)
+                HB_model=hb_model, elevation=elevation)
         except:
             # todo @Elie: Check if this is the correct message.
             err_message = "Cannot make the Ladybug face footprint from the Honeybee model."
@@ -177,53 +181,227 @@ class BuildingModeled(BuildingBasic):
         # make it moved
         moving_vector = Vector3D(vector[0], vector[1], vector[2])
         self.hb_model_obj.move(moving_vector)  # the model is moved fully
-        self.merged_faces_hb_model_dict = Model.from_dict(self.merged_faces_hb_model_dict).move(
-            moving_vector).to_dict()  # todo check
+        if self.merged_faces_hb_model_dict is not None:
+            moved_merged_faces_hb_model_dict = Model.from_dict(self.merged_faces_hb_model_dict)
+            moved_merged_faces_hb_model_dict.move(moving_vector)
+            self.merged_faces_hb_model_dict = moved_merged_faces_hb_model_dict.to_dict()
         self.moved_to_origin = True
 
     def make_merged_faces_hb_model(self, orient_roof_mesh_to_according_to_building_orientation=True,
-                                   north_angle=0):
+                                   north_angle=0, overwrite=False):
         """
         Make a HB model with the faces merged. Useful for mesh generation and to simplify the geometry of the model
         for context shading computation.
         :param orient_roof_mesh_to_according_to_building_orientation: bool: default=True, if True, the roof mesh
             will be oriented according to the orientation of the building
         :param north_angle: float: default=0, angle of the north in degree
+        :param overwrite: bool: default=False, if True, overwrite the merged faces HB model if it already exists
         """
-        merged_faces_hb_model_obj = merge_facades_and_roof_faces_in_hb_model(hb_model_obj=self.hb_model_obj,
-                                                                             orient_roof_mesh_to_according_to_building_orientation=orient_roof_mesh_to_according_to_building_orientation,
-                                                                             north_angle=north_angle)
-        self.merged_faces_hb_model_dict = merged_faces_hb_model_obj.to_dict()
+        if self.merged_faces_hb_model_dict is None or overwrite:
+            merged_faces_hb_model_obj = merge_facades_and_roof_faces_in_hb_model(
+                hb_model_obj=self.hb_model_obj,
+                orient_roof_mesh_to_according_to_building_orientation=orient_roof_mesh_to_according_to_building_orientation,
+                north_angle=north_angle)
+            self.merged_faces_hb_model_dict = merged_faces_hb_model_obj.to_dict()
 
-    def init_shading_context_obj(self, min_vf_criterion, number_of_rays):
+    def perform_first_pass_context_filtering(self, uc_building_id_list, uc_building_bounding_box_list,
+                                             min_vf_criterion=0.01, overwrite=True):
         """
-        todo @Elie
-        todo @Elie
-        :return:
+        Perform the first pass of the context filtering algorithm on the building.
+        :param uc_building_id_list: list of str: list of the building IDs in the urban canopy
+        :param uc_building_bounding_box_list: list of Ladybug Polyface3D: list of the bounding boxes of the buildings
+            in the urban canopy
+        :param min_vf_criterion: float: default=0.01, minimum view factor criterion for the first pass of the
+            context filtering algorithm
+        :param overwrite: bool: default=False, if True, overwrite the context building list of the building
+        if it already exists
+        :return context_building_id_list: list of str: list of the IDs of the buildings that are context for the
+            current building
+        :return duration: float: duration of the simulation in seconds
         """
+        # overwrite context filtering object if needed
+        if overwrite:
+            self.shading_context_obj.overwrite_filtering(overwrite_first_pass=True)
+        # check if the first pass was already done and run it (if it was overwritten, it will be run again)
+        if not self.shading_context_obj.first_pass_done:
+            # Set the min VF criterion
+            self.shading_context_obj.set_mvfc(min_vf_criterion=min_vf_criterion)
+            # Convert HB model to LB Polyface3D, keeping only the faces with outdoor boundary condition
+            target_lb_polyface3d_of_outdoor_faces = self.shading_context_obj. \
+                get_lb_polyface3d_of_outdoor_faces_from_hb_model(hb_model=self.hb_model_obj)
 
-        self.shading_context_obj.set_min_vf_criterion(min_vf_criterion=min_vf_criterion)
-        self.shading_context_obj.set_number_of_rays(number_of_rays=number_of_rays)
+            # Perform the first pass of the context filtering algorithm
+            selected_context_building_id_list, duration = self.shading_context_obj. \
+                select_context_building_using_the_mvfc(
+                target_lb_polyface3d_of_outdoor_faces=target_lb_polyface3d_of_outdoor_faces,
+                target_building_id=self.id,
+                uc_building_id_list=uc_building_id_list,
+                uc_building_bounding_box_list=uc_building_bounding_box_list)
 
-    def select_shading_context_buildings(self, building_dictionary):
+        # Return the list of context buildings
+        return self.shading_context_obj.selected_context_building_id_list, self.shading_context_obj.first_pass_duration
+
+    def perform_second_pass_context_filtering(self, uc_shade_manager, uc_building_dictionary,
+                                              full_urban_canopy_pyvista_mesh, number_of_rays=3,
+                                              consider_windows=False,
+                                              keep_shades_from_user=False, no_ray_tracing=False,
+                                              use_merged_face_hb_model=True, overwrite=True,
+                                              flag_use_envelop=False, keep_discarded_faces=False):
         """
-        todo @Elie
-        :param building_dictionary: todo @Elie
-        :return:
+        Perform the second pass of the context filtering for the shading computation. It selects the context surfaces
+        for the shading computation using the ray tracing method.
+        :param uc_shade_manager: ShadeManager object: ShadeManager object of the urban canopy
+        :param uc_building_dictionary: dict: dictionary of the buildings in the urban canopy
+        :param full_urban_canopy_pyvista_mesh: Pyvista mesh: Pyvista mesh of the full urban canopy
+        :param number_of_rays: int: default=3, number of rays to use for the ray tracing method
+        :param consider_windows: bool: default=False, if True, the windows will be considered for the ray tracing
+            method
+        :param keep_shades_from_user: bool: default=False, if True, the shades from the user will be kept
+        :param no_ray_tracing: bool: default=False, if True, the ray tracing method will not be used
+        :param use_merged_face_hb_model: bool: default=True, if True, the merged faces HB model will be used for the
+            ray tracing method
+        :param overwrite: bool: default=False, if True, overwrite the context building list of the building
+        if it already exists
+        :param flag_use_envelop: bool: default=False, if True, the envelope of the context buildings will be used
+            instead of the HB models
+        :param keep_discarded_faces: bool: default=False, if True, the discarded faces will be kept in the context
+            shading object
         """
+        # Check if the first pass was done, if not second pass cannot be performed
+        if not self.shading_context_obj.first_pass_done:
+            dev_logger.info(
+                f"The first pass of the context filtering was not done for the building {self.id}, it will be ignored")
+            user_logger.info(
+                f"The first pass of the context filtering was not done for the building {self.id}, it will be ignored")
+            return
+            # overwrite context filtering object if needed
 
-        for i, (building_id, building_obj) in enumerate(building_dictionary.items()):
-            if building_id != self.id:
-                self.shading_context_obj.select_context_building_using_the_mvfc(
-                    target_LB_polyface3d_extruded_footprint=self.lb_polyface3d_extruded_footprint,
-                    context_LB_polyface3d_oriented_bounding_box=building_obj.lb_polyface3d_oriented_bounding_box,
-                    context_building_id=building_id)
+        # Check if the context building selected with the first pass have are BuildingModeled, if not send a warning
+        if not flag_use_envelop:
+            for context_building_id in self.shading_context_obj.selected_context_building_id_list:
+                if not isinstance(uc_building_dictionary[context_building_id], BuildingModeled):
+                    user_logger.warning(
+                        f"At least one context building is not a BuildingModeled, and thus doesn't have a "
+                        f"Honeybee Model. Thus, their envelops will be used instead for the context shading computation with"
+                        f" default reflective properties, ignoring the windows as the nevelop does not have any")
+                    flag_use_envelop = True
+                    break
 
-        return self.shading_context_obj.context_building_list
+        if overwrite:
+            self.shading_context_obj.overwrite_filtering(overwrite_second_pass=True)
+        # check if the first pass was already done and run it (if it was overwritten, it will be run again)
+        if not self.shading_context_obj.second_pass_done:
+            # Set the min VF criterion
+            self.shading_context_obj.set_number_of_rays(number_of_rays=number_of_rays,
+                                                        no_ray_tracing=no_ray_tracing)
+            self.shading_context_obj.set_consider_windows(consider_windows=consider_windows)
+            # Get the list of the HB models or LB Polyface3d of the context buildings
+            context_hb_model_or_lb_polyface3d_list_to_test = []
+            for building_id in self.shading_context_obj.selected_context_building_id_list:
+                building_obj = uc_building_dictionary[building_id]
+                if isinstance(building_obj, BuildingModeled):
+                    # use the merged faces HB model if it exists, otherwise use the original HB model
+                    if building_obj.merged_faces_hb_model_dict is not None and use_merged_face_hb_model:
+                        context_hb_model_or_lb_polyface3d_list_to_test.append(
+                            Model.from_dict(building_obj.merged_faces_hb_model_dict))
+                    else:
+                        context_hb_model_or_lb_polyface3d_list_to_test.append(building_obj.hb_model_obj)
+                elif isinstance(building_obj, BuildingBasic):
+                    context_hb_model_or_lb_polyface3d_list_to_test.append(
+                        building_obj.lb_polyface3d_extruded_footprint)
+                else:
+                    raise ValueError(
+                        f"The building {building_obj.id} is not a BuildingModeled or a BuildingBasic, it cannot be "
+                        f"handled by the context filter")
+
+            # Perform the first pass of the context filtering algorithm
+            nb_context_faces, duration = self.shading_context_obj.select_non_obstructed_context_faces_with_ray_tracing(
+                uc_shade_manager=uc_shade_manager,
+                target_lb_polyface3d_extruded_footprint=self.lb_polyface3d_extruded_footprint,
+                context_hb_model_or_lb_polyface3d_list_to_test=context_hb_model_or_lb_polyface3d_list_to_test,
+                full_urban_canopy_pyvista_mesh=full_urban_canopy_pyvista_mesh,
+                keep_shades_from_user=keep_shades_from_user, no_ray_tracing=no_ray_tracing,
+                keep_discarded_faces=keep_discarded_faces)
+
+        # Return the list of context buildings
+        nb_context_faces = len(self.shading_context_obj.context_shading_hb_shade_list)
+        return nb_context_faces, self.shading_context_obj.second_pass_duration, flag_use_envelop
+
+    def generate_idf_for_bes_with_openstudio(self, path_ubes_temp_sim_folder, path_epw_file,
+                                             path_hbjson_simulation_parameters, overwrite=False,
+                                             silent=False):
+        """
+        Generate the IDF file of the building with OpenStudio.
+        :param path_ubes_temp_sim_folder: str: path to the temporary folder where the IDF file will be generated
+        :param path_epw_file: str: path to the EPW file
+        :param path_hbjson_simulation_parameters: str: path to the HBJSON file containing the simulation parameters
+        :param overwrite: bool: default=False, if True, the IDF file will be overwritten if it already exists
+        :param silent: bool: default=False, if True, the OpenStudio messages will not be printed
+        """
+        # Check if the building sub-folder exist in the temporary folder, if not create it
+        path_building_bes_temp_folder = os.path.join(path_ubes_temp_sim_folder, self.id)
+        if os.path.isdir(path_building_bes_temp_folder):
+            if overwrite:
+                shutil.rmtree(path_building_bes_temp_folder)
+                os.mkdir(path_building_bes_temp_folder)
+
+            elif self.bes_obj.idf_generated:
+                return  # todo : make a proper condition to check if the IDF file already exists
+        else:
+            os.mkdir(path_building_bes_temp_folder)
+        # Re-initialize the BES object if needed
+        if overwrite:
+            self.bes_obj.re_initialize()
+        # Make a copy of the hb_model attribute and add the shading surfaces
+        hb_model_with_shades = self.hb_model_obj.duplicate()
+        # Make the list of shades to add to the model
+        hb_shade_list = self.shading_context_obj.forced_hb_shades_from_user_list + self.shading_context_obj.context_shading_hb_shade_list \
+                        + self.shading_context_obj.context_shading_hb_shade_list
+        # Add the shades to the model
+        hb_model_with_shades.add_shades(hb_shade_list)
+        # Generate the IDF file
+        self.bes_obj.generate_idf_with_openstudio(path_building_bes_temp_folder=path_building_bes_temp_folder,
+                                                  path_epw_file=path_epw_file,
+                                                  path_hbjson_simulation_parameters=path_hbjson_simulation_parameters,
+                                                  hb_model_obj=hb_model_with_shades,
+                                                  silent=silent)
+
+    def run_idf_with_energyplus_for_bes(self, path_ubes_temp_sim_folder, path_epw_file, overwrite=False,
+                                        silent=False):
+        """
+        Run the IDF file of teh building with EnergyPlus.
+        :param path_ubes_temp_sim_folder: str: path to the temporary folder where the IDF file will be generated
+        :param path_epw_file: str: path to the EPW file
+        :param overwrite: bool: default=False, if True, the IDF file will be overwritten if it already exists
+        :param silent: bool: default=False, if True, the EnergyPlus output will not be printed in the console
+        """
+        # Check if the building sub-folder exist in the temporary folder, if not create it
+        path_building_bes_temp_folder = os.path.join(path_ubes_temp_sim_folder, self.id)
+        if not self.bes_obj.idf_generated:
+            user_logger.warning(
+                f"The IDF file of the building {self.id} has not been generated yet, it cannot "
+                f"be run with EnergyPlus")
+            dev_logger.warning(f"The IDF file not generated for building {self.id}")
+            return
+        elif self.bes_obj.has_run:
+            if overwrite:
+                self.bes_obj.re_initialize(keep_idf=True)
+            else:
+                return
+        # Run the IDF file
+        self.bes_obj.run_idf_with_energyplus(path_building_bes_temp_folder=path_building_bes_temp_folder,
+                                             path_epw_file=path_epw_file, silent=silent)
+        return self.bes_obj.sim_duration
+
+    def re_initialize_bes(self):
+        """
+        Re-initialize the values of the attributes of the BuildingEnergySimulation object if it had run.
+        """
+        self.bes_obj.re_initialize()
 
     def generate_sensor_grid(self, bipv_on_roof=True, bipv_on_facades=True,
                              roof_grid_size_x=1, facades_grid_size_x=1, roof_grid_size_y=1,
-                             facades_grid_size_y=1, offset_dist=0.1,overwrite=False):
+                             facades_grid_size_y=1, offset_dist=0.1, overwrite=False):
         """
         Generate Honeybee SensorGrid on the roof and/or on the facades for the building.
         It does not add the SendorgGrid to the HB model.
@@ -234,6 +412,7 @@ class BuildingModeled(BuildingBasic):
         :param roof_grid_size_y: Number for the size of the test grid on the roof in the y direction
         :param facades_grid_size_y: Number for the size of the test grid on the facades in the y direction
         :param offset_dist: Number for the distance to move points from the surfaces of the geometry of the model.
+        :param overwrite: Boolean to indicate if the existing SensorGrid should be overwritten
         """
         # Do not generate the SensorGrid if the building is not a target
         if not self.is_target:
@@ -258,7 +437,8 @@ class BuildingModeled(BuildingBasic):
                                                                           offset_dist=offset_dist,
                                                                           overwrite=overwrite)
 
-    def run_annual_solar_irradiance_simulation(self, path_simulation_folder, path_weather_file, overwrite=False,
+    def run_annual_solar_irradiance_simulation(self, path_simulation_folder, path_weather_file,
+                                               overwrite=False,
                                                north_angle=0, silent=False):
         """
         Run the annual solar radiation simulation for the building on the roof and/or on the facades if a Honeybee SensorGrid
@@ -278,7 +458,8 @@ class BuildingModeled(BuildingBasic):
             return
         # check if the epw file exists (should be check in the components in Grasshopper as well)
         if not os.path.isfile(path_weather_file):
-            dev_logger.info(f"The epw file {path_weather_file} does not exist, the simulation will be ignored")
+            dev_logger.info(
+                f"The epw file {path_weather_file} does not exist, the simulation will be ignored")
             user_logger.info(
                 f"The building {self.id} was not simulated for the annual solar radiation simulation no mesh for the PVs was generated")
             return
@@ -289,233 +470,254 @@ class BuildingModeled(BuildingBasic):
             user_logger.info(
                 f"The building {self.id} does not have shades. consider running the shading simulation first or add your shades manually")
 
+        # Create list of shading surfaces
+        hb_shades_list = self.shading_context_obj.context_shading_hb_shade_list + self.shading_context_obj.forced_hb_shades_from_user_list
+
         # run the annual solar radiation simulation
         self.solar_radiation_and_bipv_simulation_obj.run_annual_solar_irradiance_simulation(
-            path_simulation_folder=path_simulation_folder, building_id=self.id, hb_model_obj=self.hb_model_obj,
-            context_shading_hb_shade_list=self.shading_context_obj.context_shading_hb_shade_list,
+            path_simulation_folder=path_simulation_folder, building_id=self.id,
+            hb_model_obj=self.hb_model_obj,
+            context_shading_hb_shade_list=hb_shades_list,
             path_weather_file=path_weather_file, overwrite=overwrite,
             north_angle=north_angle, silent=silent)
 
-    def building_run_bipv_panel_simulation(self, path_simulation_folder, roof_pv_tech_obj, facades_pv_tech_obj, uc_start_year,
-                                  uc_current_year, uc_end_year, efficiency_computation_method="yearly",
-                                  minimum_panel_eroi=1.2, replacement_scenario="replace_failed_panels_every_X_years",
-                                  continue_simulation=False, **kwargs):
-        """
-
-        """
-
-        # Run the simulation
-        self.solar_radiation_and_bipv_simulation_obj.run_bipv_panel_simulation(
-            path_simulation_folder=path_simulation_folder, building_id=self.id, roof_pv_tech_obj=roof_pv_tech_obj,
-            facades_pv_tech_obj=facades_pv_tech_obj, uc_end_year=uc_end_year, uc_start_year=uc_start_year,
-            uc_current_year=uc_current_year, efficiency_computation_method=efficiency_computation_method,
-            minimum_panel_eroi=minimum_panel_eroi, replacement_scenario=replacement_scenario,
-            continue_simulation=continue_simulation, **kwargs)
-        # Write the results in a csv file
-        self.solar_radiation_and_bipv_simulation_obj.write_bipv_results_to_csv(
-            path_simulation_folder=path_simulation_folder,
-            building_id=self.id)
-
-    def plot_panels_energy_results(self, path_simulation_folder_building, study_duration_years):
-
-        # plot energy
-        cum_energy_harvested_roof = get_cumul_values(self.results_panels["roof"]["energy_harvested"]["list"])
-        cum_energy_harvested_roof = [i / 1000 for i in cum_energy_harvested_roof]
-
-        cum_primary_energy_roof = add_elements_of_two_lists(
-            get_cumul_values(
-                self.results_panels["roof"]["lca_cradle_to_installation_primary_energy"]["list"]),
-            get_cumul_values(self.results_panels["roof"]["lca_recycling_primary_energy"]["list"]))
-        cum_primary_energy_roof = [i / 1000 for i in cum_primary_energy_roof]
-
-        cum_energy_harvested_facades = get_cumul_values(
-            self.results_panels["facades"]["energy_harvested"]["list"])
-        cum_energy_harvested_facades = [i / 1000 for i in cum_energy_harvested_facades]
-
-        cum_primary_energy_facades = add_elements_of_two_lists(
-            get_cumul_values(
-                self.results_panels["facades"]["lca_cradle_to_installation_primary_energy"]["list"]),
-            get_cumul_values(self.results_panels["facades"]["lca_recycling_primary_energy"]["list"]))
-        cum_primary_energy_facades = [i / 1000 for i in cum_primary_energy_facades]
-
-        cum_energy_harvested_total = get_cumul_values(
-            self.results_panels["Total"]["energy_harvested"]["list"])
-        cum_energy_harvested_total = [i / 1000 for i in cum_energy_harvested_total]
-
-        cum_primary_energy_total = add_elements_of_two_lists(
-            get_cumul_values(
-                self.results_panels["Total"]["lca_cradle_to_installation_primary_energy"]["list"]),
-            get_cumul_values(self.results_panels["Total"]["lca_recycling_primary_energy"]["list"]))
-        cum_primary_energy_total = [i / 1000 for i in cum_primary_energy_total]
-
-        years = list(range(study_duration_years))
-        fig = plt.figure()
-        plt.plot(years, cum_energy_harvested_roof, 'gd', markersize=4,
-                 label="Cumulative energy harvested on the roof")
-        plt.plot(years, cum_energy_harvested_facades, 'g.',
-                 label="Cumulative energy harvested on the facades")
-        plt.plot(years, cum_energy_harvested_total, 'g', label="Total cumulative energy harvested")
-        plt.plot(years, cum_primary_energy_roof, 'rd', markersize=4, label="Cumulative primary energy, roof")
-        plt.plot(years, cum_primary_energy_facades, 'r.', label="Cumulative primary energy, facades")
-        plt.plot(years, cum_primary_energy_total, 'r', label="Total cumulative primary energy")
-
-        # get the intersection when energy harvested becomes higher thant primary energy
-        slope, intercept = transform_to_linear_function(years, cum_energy_harvested_total)
-
-        def cum_energy_harvested_eq(x):
-            return slope * x + intercept
-
-        cum_primary_energy_total_fun = generate_step_function(years, cum_primary_energy_total)
-
-        intersection = find_intersection_functions(cum_energy_harvested_eq, cum_primary_energy_total_fun,
-                                                   years[0],
-                                                   years[-1])
-        plt.axhline(round(intersection[1]), color='k')
-        plt.axvline(intersection[0], color='k')
-        plt.text(-2, round(intersection[1]), f'y={round(intersection[1])}', va='bottom', ha='left')
-        plt.text(round(intersection[0], 1), 0, f'x={round(intersection[0], 1)}', va='bottom', ha='left')
-
-        # get the intersection point when all the energy used has been reimbursed
-        asymptote_value = round(cum_primary_energy_total[-1])
-
-        def asymptote_eq(x):
-            return asymptote_value
-
-        interp_point = find_intersection_functions(cum_energy_harvested_eq, asymptote_eq, years[0], years[-1])
-        plt.axvline(x=round(interp_point[0], 1), color='k')
-        plt.text(round(interp_point[0], 1) - 3, -80000, f'x={round(interp_point[0], 1)}', va='bottom',
-                 ha='left')
-        plt.axhline(asymptote_value, color='k')
-        plt.text(round(interp_point[0]), asymptote_value, f'y={asymptote_value}', va='bottom', ha='left')
-
-        plt.xlabel('Time (years)')
-        plt.ylabel('Energy (MWh)')
-        plt.title('Cumulative harvested energy and primary energy used during the study')
-        plt.grid(True)
-        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=2)
-        file_name = 'cumulative_energy_harvested_and_primary_energy.pdf'
-        fig.savefig(f'{path_simulation_folder_building}/{file_name}', bbox_inches='tight')
-        plt.show()
-
-    def plot_panels_ghg_results(self, path_simulation_folder_building, study_duration_years,
-                                country_ghe_cost):
-
-        # get the data we need to plot the graphs
-        cum_carbon_emissions_roof = add_elements_of_two_lists(
-            get_cumul_values(self.results_panels["roof"]["lca_cradle_to_installation_carbon"]["list"]),
-            get_cumul_values(self.results_panels["roof"]["lca_recycling_carbon"]["list"]))
-        cum_carbon_emissions_roof = [i / 1000 for i in cum_carbon_emissions_roof]
-
-        avoided_carbon_emissions_list_roof = [i * country_ghe_cost for i in self.results_panels["roof"][
-            "energy_harvested"]["list"]]
-        avoided_carbon_emissions_list_roof = [i / 1000 for i in avoided_carbon_emissions_list_roof]
-
-        cum_avoided_carbon_emissions_roof = get_cumul_values(avoided_carbon_emissions_list_roof)
-
-        cum_carbon_emissions_facades = add_elements_of_two_lists(
-            get_cumul_values(self.results_panels["facades"]["lca_cradle_to_installation_carbon"]["list"]),
-            get_cumul_values(self.results_panels["facades"]["lca_recycling_carbon"]["list"]))
-        cum_carbon_emissions_facades = [i / 1000 for i in cum_carbon_emissions_facades]
-
-        avoided_carbon_emissions_list_facades = [i * country_ghe_cost for i in self.results_panels["facades"][
-            "energy_harvested"]["list"]]
-        avoided_carbon_emissions_list_facades = [i / 1000 for i in avoided_carbon_emissions_list_facades]
-
-        cum_avoided_carbon_emissions_facades = get_cumul_values(avoided_carbon_emissions_list_facades)
-
-        cum_carbon_emissions_total = add_elements_of_two_lists(
-            get_cumul_values(self.results_panels["Total"]["lca_cradle_to_installation_carbon"]["list"]),
-            get_cumul_values(self.results_panels["Total"]["lca_recycling_carbon"]["list"]))
-        cum_carbon_emissions_total = [i / 1000 for i in cum_carbon_emissions_total]
-
-        avoided_carbon_emissions_list_total = [i * country_ghe_cost for i in self.results_panels["Total"][
-            "energy_harvested"]["list"]]
-        avoided_carbon_emissions_list_total = [i / 1000 for i in avoided_carbon_emissions_list_total]
-
-        cum_avoided_carbon_emissions_total = get_cumul_values(avoided_carbon_emissions_list_total)
-
-        # plot the data
-        years = list(range(study_duration_years))
-        fig = plt.figure(figsize=(8, 6))
-        plt.plot(years, cum_avoided_carbon_emissions_roof, 'gd', markersize=4,
-                 label="Cumulative avoided GHG emissions, roof")
-        plt.plot(years, cum_avoided_carbon_emissions_facades, 'go', markersize=4,
-                 label="Cumulative avoided GHG emissions, facades")
-        plt.plot(years, cum_avoided_carbon_emissions_total, 'g',
-                 label="Total cumulative avoided GHG emissions")
-        plt.plot(years, cum_carbon_emissions_roof, 'rd', markersize=4,
-                 label="Cumulative GHG emissions, roof")
-        plt.plot(years, cum_carbon_emissions_facades, 'ro', markersize=4,
-                 label="Cumulative GHG emissions, facades")
-        plt.plot(years, cum_carbon_emissions_total, 'r',
-                 label="Total cumulative GHG emissions")
-
-        slope, intercept = transform_to_linear_function(years, cum_avoided_carbon_emissions_total)
-
-        def cum_avoided_carbon_emissions_eq(x):
-            return slope * x + intercept
-
-        # get the intersection point when all the energy used has been reimbursed
-        asymptote_value = round(cum_carbon_emissions_total[-1])
-
-        def asymptote_eq(x):
-            return asymptote_value
-
-        interp_point = find_intersection_functions(cum_avoided_carbon_emissions_eq, asymptote_eq, years[0],
-                                                   years[-1])
-        plt.axvline(x=round(interp_point[0], 1), color='k')
-        plt.text(round(interp_point[0], 1) - 2, -60000, f'x={round(interp_point[0], 1)}', va='bottom',
-                 ha='left')
-        plt.axhline(asymptote_value, color='k')
-        plt.text(round(interp_point[0]) - 6, asymptote_value, f'y={asymptote_value}', va='bottom', ha='left')
-
-        plt.xlabel('Time (years)')
-        plt.ylabel('GHE emissions (tCO2eq)')
-        plt.title('Cumulative GHG emissions during the study ')
-        plt.grid(True)
-        plt.subplots_adjust(bottom=0.5)
-        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=2)
-        file_name = 'cumulative_ghg_emissions.pdf'
-        fig.savefig(f'{path_simulation_folder_building}/{file_name}', bbox_inches='tight')
-        plt.show()
-
-    def plot_panels_results_ghe_per_kwh(self, path_simulation_folder_building, study_duration_years):
-        # plot price in GHG emissions by kWh harvested
-
-        cum_energy_harvested_total = get_cumul_values(
-            self.results_panels["Total"]["energy_harvested"]["list"])
-        cum_carbon_emissions_total = add_elements_of_two_lists(
-            get_cumul_values(self.results_panels["Total"]["lca_cradle_to_installation_carbon"]["list"]),
-            get_cumul_values(self.results_panels["Total"]["lca_recycling_carbon"]["list"]))
-
-        ghg_per_kWh = [(x / y) * 1000 for x, y in zip(cum_carbon_emissions_total, cum_energy_harvested_total)]
-
-        years = list(range(study_duration_years))
-        fig = plt.figure()
-        plt.plot(years, ghg_per_kWh)
-        plt.xlabel('Time (years)')
-        plt.ylabel('GHE emissions (gCO2eq/kWh)')
-        plt.title("Evolution of the cost in GHG emissions for each kWh harvested during the study")
-        plt.grid(True)
-        file_name = 'ghg_per_kWh_plot.pdf'
-        fig.savefig(f'{path_simulation_folder_building}/{file_name}', bbox_inches='tight')
-
-    def plot_panels_results_eroi(self, path_simulation_folder_building, study_duration_years):
-        # plot EROI
-        cum_primary_energy_total = add_elements_of_two_lists(
-            get_cumul_values(
-                self.results_panels["Total"]["lca_cradle_to_installation_primary_energy"]["list"]),
-            get_cumul_values(self.results_panels["Total"]["lca_recycling_primary_energy"]["list"]))
-        cum_energy_harvested_total = get_cumul_values(
-            self.results_panels["Total"]["energy_harvested"]["list"])
-        eroi = [x / y for x, y in zip(cum_energy_harvested_total, cum_primary_energy_total)]
-
-        years = list(range(study_duration_years))
-        fig = plt.figure()
-        plt.plot(years, eroi)
-        plt.xlabel('Time (years)')
-        plt.ylabel('EROI')
-        plt.title("Evolution of the EROI during the study")
-        plt.grid(True)
-        file_name = 'eroi.pdf'
-        fig.savefig(f'{path_simulation_folder_building}/{file_name}', bbox_inches='tight')
+    # def building_run_bipv_panel_simulation(self, path_simulation_folder, roof_pv_tech_obj, facades_pv_tech_obj,
+    #                                        uc_start_year,
+    #                                        uc_current_year, uc_end_year, efficiency_computation_method="yearly",
+    #                                        minimum_panel_eroi=1.2,
+    #                                        replacement_scenario="replace_failed_panels_every_X_years",
+    #                                        continue_simulation=False, **kwargs):
+    #     """
+    #     Run the BIPV simulation for the building on the roof and/or on the facades of the buildings.
+    #     :param path_simulation_folder: Path to the simulation folder
+    #     :param roof_pv_tech_obj: PVTechnology object: PV technology for the roof
+    #     :param facades_pv_tech_obj: PVTechnology object: PV technology for the facades
+    #     :param uc_start_year: int: start year of the use phase
+    #     :param uc_current_year: int: current year of the use phase
+    #     :param uc_end_year: int: end year of the use phase
+    #     :param efficiency_computation_method: str: default="yearly", method to compute the efficiency of the panels
+    #         during the use phase. Can be "yearly" or "cumulative"
+    #     :param minimum_panel_eroi: float: default=1.2, minimum EROI of the panels to be considered as efficient
+    #     :param replacement_scenario: str: default="replace_failed_panels_every_X_years", scenario for the replacement
+    #         of the panels. Can be "replace_failed_panels_every_X_years" or "replace_all_panels_every_X_years"
+    #     :param continue_simulation: bool: default=False, if True, continue the simulation from the last year
+    #     :param kwargs: dict: other arguments for the simulation
+    #     """
+    #
+    #     # Run the simulation
+    #     self.solar_radiation_and_bipv_simulation_obj.run_bipv_panel_simulation(
+    #         path_simulation_folder=path_simulation_folder, building_id=self.id, roof_pv_tech_obj=roof_pv_tech_obj,
+    #         facades_pv_tech_obj=facades_pv_tech_obj, uc_end_year=uc_end_year, uc_start_year=uc_start_year,
+    #         uc_current_year=uc_current_year, efficiency_computation_method=efficiency_computation_method,
+    #         minimum_panel_eroi=minimum_panel_eroi, replacement_scenario=replacement_scenario,
+    #         continue_simulation=continue_simulation, **kwargs)
+    #     # Write the results in a csv file
+    #     self.solar_radiation_and_bipv_simulation_obj.write_bipv_results_to_csv(
+    #         path_simulation_folder=path_simulation_folder,
+    #         building_id=self.id)
+    #
+    # def plot_panels_energy_results(self, path_simulation_folder_building, study_duration_years):
+    #     """
+    #     Todo @Elie, delete this function after making a new version....
+    #     """
+    #     # plot energy
+    #     cum_energy_harvested_roof = get_cumul_values(self.results_panels["roof"]["energy_harvested"]["list"])
+    #     cum_energy_harvested_roof = [i / 1000 for i in cum_energy_harvested_roof]
+    #
+    #     cum_primary_energy_roof = add_elements_of_two_lists(
+    #         get_cumul_values(
+    #             self.results_panels["roof"]["lca_cradle_to_installation_primary_energy"]["list"]),
+    #         get_cumul_values(self.results_panels["roof"]["lca_recycling_primary_energy"]["list"]))
+    #     cum_primary_energy_roof = [i / 1000 for i in cum_primary_energy_roof]
+    #
+    #     cum_energy_harvested_facades = get_cumul_values(
+    #         self.results_panels["facades"]["energy_harvested"]["list"])
+    #     cum_energy_harvested_facades = [i / 1000 for i in cum_energy_harvested_facades]
+    #
+    #     cum_primary_energy_facades = add_elements_of_two_lists(
+    #         get_cumul_values(
+    #             self.results_panels["facades"]["lca_cradle_to_installation_primary_energy"]["list"]),
+    #         get_cumul_values(self.results_panels["facades"]["lca_recycling_primary_energy"]["list"]))
+    #     cum_primary_energy_facades = [i / 1000 for i in cum_primary_energy_facades]
+    #
+    #     cum_energy_harvested_total = get_cumul_values(
+    #         self.results_panels["Total"]["energy_harvested"]["list"])
+    #     cum_energy_harvested_total = [i / 1000 for i in cum_energy_harvested_total]
+    #
+    #     cum_primary_energy_total = add_elements_of_two_lists(
+    #         get_cumul_values(
+    #             self.results_panels["Total"]["lca_cradle_to_installation_primary_energy"]["list"]),
+    #         get_cumul_values(self.results_panels["Total"]["lca_recycling_primary_energy"]["list"]))
+    #     cum_primary_energy_total = [i / 1000 for i in cum_primary_energy_total]
+    #
+    #     years = list(range(study_duration_years))
+    #     fig = plt.figure()
+    #     plt.plot(years, cum_energy_harvested_roof, 'gd', markersize=4,
+    #              label="Cumulative energy harvested on the roof")
+    #     plt.plot(years, cum_energy_harvested_facades, 'g.',
+    #              label="Cumulative energy harvested on the facades")
+    #     plt.plot(years, cum_energy_harvested_total, 'g', label="Total cumulative energy harvested")
+    #     plt.plot(years, cum_primary_energy_roof, 'rd', markersize=4, label="Cumulative primary energy, roof")
+    #     plt.plot(years, cum_primary_energy_facades, 'r.', label="Cumulative primary energy, facades")
+    #     plt.plot(years, cum_primary_energy_total, 'r', label="Total cumulative primary energy")
+    #
+    #     # get the intersection when energy harvested becomes higher thant primary energy
+    #     slope, intercept = transform_to_linear_function(years, cum_energy_harvested_total)
+    #
+    #     def cum_energy_harvested_eq(x):
+    #         return slope * x + intercept
+    #
+    #     cum_primary_energy_total_fun = generate_step_function(years, cum_primary_energy_total)
+    #
+    #     intersection = find_intersection_functions(cum_energy_harvested_eq, cum_primary_energy_total_fun,
+    #                                                years[0],
+    #                                                years[-1])
+    #     plt.axhline(round(intersection[1]), color='k')
+    #     plt.axvline(intersection[0], color='k')
+    #     plt.text(-2, round(intersection[1]), f'y={round(intersection[1])}', va='bottom', ha='left')
+    #     plt.text(round(intersection[0], 1), 0, f'x={round(intersection[0], 1)}', va='bottom', ha='left')
+    #
+    #     # get the intersection point when all the energy used has been reimbursed
+    #     asymptote_value = round(cum_primary_energy_total[-1])
+    #
+    #     def asymptote_eq(x):
+    #         return asymptote_value
+    #
+    #     interp_point = find_intersection_functions(cum_energy_harvested_eq, asymptote_eq, years[0], years[-1])
+    #     plt.axvline(x=round(interp_point[0], 1), color='k')
+    #     plt.text(round(interp_point[0], 1) - 3, -80000, f'x={round(interp_point[0], 1)}', va='bottom',
+    #              ha='left')
+    #     plt.axhline(asymptote_value, color='k')
+    #     plt.text(round(interp_point[0]), asymptote_value, f'y={asymptote_value}', va='bottom', ha='left')
+    #
+    #     plt.xlabel('Time (years)')
+    #     plt.ylabel('Energy (MWh)')
+    #     plt.title('Cumulative harvested energy and primary energy used during the study')
+    #     plt.grid(True)
+    #     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=2)
+    #     file_name = 'cumulative_energy_harvested_and_primary_energy.pdf'
+    #     fig.savefig(f'{path_simulation_folder_building}/{file_name}', bbox_inches='tight')
+    #     plt.show()
+    #
+    # def plot_panels_ghg_results(self, path_simulation_folder_building, study_duration_years,
+    #                             country_ghe_cost):
+    #
+    #     # get the data we need to plot the graphs
+    #     cum_carbon_emissions_roof = add_elements_of_two_lists(
+    #         get_cumul_values(self.results_panels["roof"]["lca_cradle_to_installation_carbon"]["list"]),
+    #         get_cumul_values(self.results_panels["roof"]["lca_recycling_carbon"]["list"]))
+    #     cum_carbon_emissions_roof = [i / 1000 for i in cum_carbon_emissions_roof]
+    #
+    #     avoided_carbon_emissions_list_roof = [i * country_ghe_cost for i in self.results_panels["roof"][
+    #         "energy_harvested"]["list"]]
+    #     avoided_carbon_emissions_list_roof = [i / 1000 for i in avoided_carbon_emissions_list_roof]
+    #
+    #     cum_avoided_carbon_emissions_roof = get_cumul_values(avoided_carbon_emissions_list_roof)
+    #
+    #     cum_carbon_emissions_facades = add_elements_of_two_lists(
+    #         get_cumul_values(self.results_panels["facades"]["lca_cradle_to_installation_carbon"]["list"]),
+    #         get_cumul_values(self.results_panels["facades"]["lca_recycling_carbon"]["list"]))
+    #     cum_carbon_emissions_facades = [i / 1000 for i in cum_carbon_emissions_facades]
+    #
+    #     avoided_carbon_emissions_list_facades = [i * country_ghe_cost for i in self.results_panels["facades"][
+    #         "energy_harvested"]["list"]]
+    #     avoided_carbon_emissions_list_facades = [i / 1000 for i in avoided_carbon_emissions_list_facades]
+    #
+    #     cum_avoided_carbon_emissions_facades = get_cumul_values(avoided_carbon_emissions_list_facades)
+    #
+    #     cum_carbon_emissions_total = add_elements_of_two_lists(
+    #         get_cumul_values(self.results_panels["Total"]["lca_cradle_to_installation_carbon"]["list"]),
+    #         get_cumul_values(self.results_panels["Total"]["lca_recycling_carbon"]["list"]))
+    #     cum_carbon_emissions_total = [i / 1000 for i in cum_carbon_emissions_total]
+    #
+    #     avoided_carbon_emissions_list_total = [i * country_ghe_cost for i in self.results_panels["Total"][
+    #         "energy_harvested"]["list"]]
+    #     avoided_carbon_emissions_list_total = [i / 1000 for i in avoided_carbon_emissions_list_total]
+    #
+    #     cum_avoided_carbon_emissions_total = get_cumul_values(avoided_carbon_emissions_list_total)
+    #
+    #     # plot the data
+    #     years = list(range(study_duration_years))
+    #     fig = plt.figure(figsize=(8, 6))
+    #     plt.plot(years, cum_avoided_carbon_emissions_roof, 'gd', markersize=4,
+    #              label="Cumulative avoided GHG emissions, roof")
+    #     plt.plot(years, cum_avoided_carbon_emissions_facades, 'go', markersize=4,
+    #              label="Cumulative avoided GHG emissions, facades")
+    #     plt.plot(years, cum_avoided_carbon_emissions_total, 'g',
+    #              label="Total cumulative avoided GHG emissions")
+    #     plt.plot(years, cum_carbon_emissions_roof, 'rd', markersize=4,
+    #              label="Cumulative GHG emissions, roof")
+    #     plt.plot(years, cum_carbon_emissions_facades, 'ro', markersize=4,
+    #              label="Cumulative GHG emissions, facades")
+    #     plt.plot(years, cum_carbon_emissions_total, 'r',
+    #              label="Total cumulative GHG emissions")
+    #
+    #     slope, intercept = transform_to_linear_function(years, cum_avoided_carbon_emissions_total)
+    #
+    #     def cum_avoided_carbon_emissions_eq(x):
+    #         return slope * x + intercept
+    #
+    #     # get the intersection point when all the energy used has been reimbursed
+    #     asymptote_value = round(cum_carbon_emissions_total[-1])
+    #
+    #     def asymptote_eq(x):
+    #         return asymptote_value
+    #
+    #     interp_point = find_intersection_functions(cum_avoided_carbon_emissions_eq, asymptote_eq, years[0],
+    #                                                years[-1])
+    #     plt.axvline(x=round(interp_point[0], 1), color='k')
+    #     plt.text(round(interp_point[0], 1) - 2, -60000, f'x={round(interp_point[0], 1)}', va='bottom',
+    #              ha='left')
+    #     plt.axhline(asymptote_value, color='k')
+    #     plt.text(round(interp_point[0]) - 6, asymptote_value, f'y={asymptote_value}', va='bottom', ha='left')
+    #
+    #     plt.xlabel('Time (years)')
+    #     plt.ylabel('GHE emissions (tCO2eq)')
+    #     plt.title('Cumulative GHG emissions during the study ')
+    #     plt.grid(True)
+    #     plt.subplots_adjust(bottom=0.5)
+    #     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=2)
+    #     file_name = 'cumulative_ghg_emissions.pdf'
+    #     fig.savefig(f'{path_simulation_folder_building}/{file_name}', bbox_inches='tight')
+    #     plt.show()
+    #
+    # def plot_panels_results_ghe_per_kwh(self, path_simulation_folder_building, study_duration_years):
+    #     # plot price in GHG emissions by kWh harvested
+    #
+    #     cum_energy_harvested_total = get_cumul_values(
+    #         self.results_panels["Total"]["energy_harvested"]["list"])
+    #     cum_carbon_emissions_total = add_elements_of_two_lists(
+    #         get_cumul_values(self.results_panels["Total"]["lca_cradle_to_installation_carbon"]["list"]),
+    #         get_cumul_values(self.results_panels["Total"]["lca_recycling_carbon"]["list"]))
+    #
+    #     ghg_per_kWh = [(x / y) * 1000 for x, y in zip(cum_carbon_emissions_total, cum_energy_harvested_total)]
+    #
+    #     years = list(range(study_duration_years))
+    #     fig = plt.figure()
+    #     plt.plot(years, ghg_per_kWh)
+    #     plt.xlabel('Time (years)')
+    #     plt.ylabel('GHE emissions (gCO2eq/kWh)')
+    #     plt.title("Evolution of the cost in GHG emissions for each kWh harvested during the study")
+    #     plt.grid(True)
+    #     file_name = 'ghg_per_kWh_plot.pdf'
+    #     fig.savefig(f'{path_simulation_folder_building}/{file_name}', bbox_inches='tight')
+    #
+    # def plot_panels_results_eroi(self, path_simulation_folder_building, study_duration_years):
+    #     # plot EROI
+    #     cum_primary_energy_total = add_elements_of_two_lists(
+    #         get_cumul_values(
+    #             self.results_panels["Total"]["lca_cradle_to_installation_primary_energy"]["list"]),
+    #         get_cumul_values(self.results_panels["Total"]["lca_recycling_primary_energy"]["list"]))
+    #     cum_energy_harvested_total = get_cumul_values(
+    #         self.results_panels["Total"]["energy_harvested"]["list"])
+    #     eroi = [x / y for x, y in zip(cum_energy_harvested_total, cum_primary_energy_total)]
+    #
+    #     years = list(range(study_duration_years))
+    #     fig = plt.figure()
+    #     plt.plot(years, eroi)
+    #     plt.xlabel('Time (years)')
+    #     plt.ylabel('EROI')
+    #     plt.title("Evolution of the EROI during the study")
+    #     plt.grid(True)
+    #     file_name = 'eroi.pdf'
+    #     fig.savefig(f'{path_simulation_folder_building}/{file_name}', bbox_inches='tight')

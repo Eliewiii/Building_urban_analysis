@@ -1,5 +1,5 @@
 """
-
+Functions to load buildings or geometries from a 2D GIS, hbjson files or json files
 """
 
 import os
@@ -53,15 +53,37 @@ class SimulationLoadBuildingOrGeometry:
 
     @staticmethod
     def add_buildings_from_hbjson_to_urban_canopy(urban_canopy_object, path_folder_hbjson, path_file_hbjson,
-                                                  are_buildings_targets=False,keep_context_from_hbjson=False):
+                                                  are_buildings_targets=False, keep_context_from_hbjson=False):
         """
         Add buildings from a folder of hbjson files to the urban canopy
         :param urban_canopy_object:
         :param path_folder_hbjson: path to the folder containing the hbjson files
+        :param path_file_hbjson: path to the hbjson file
+        :param are_buildings_targets: if True, the buildings will be considered as targets
+        :param keep_context_from_hbjson: if True, the context of the buildings will be kept
         """
         urban_canopy_object.add_buildings_from_hbjson_to_dict(path_directory_hbjson=path_folder_hbjson,
                                                               path_file_hbjson=path_file_hbjson,
                                                               are_buildings_targets=are_buildings_targets
-                                                              ,keep_context_from_hbjson=keep_context_from_hbjson)
+                                                              , keep_context_from_hbjson=keep_context_from_hbjson)
         user_logger.info("Building(s) from hbjson added to the urban canopy successfully")
         dev_logger.info("Building(s) from hbjson added to the urban canopy successfully")
+
+    @staticmethod
+    def add_buildings_from_lb_polyface3d_json_in_urban_canopy(urban_canopy_object, path_lb_polyface3d_json_file,
+                                                               typology=None,
+                                                               other_options_to_generate_building=None):
+        """
+        Load buildings from a json file containing LB polyface3d objects. Use mostly to transfer Breps from Rhino to
+        the urban canopy.
+        :param urban_canopy_object: urban canopy object
+        :param path_lb_polyface3d_json: path to the json file containing LB polyface3d objects
+        :param typology: if None, it will use the default typology
+        :param other_options_to_generate_building: other options to generate the building
+        """
+        urban_canopy_object.add_buildings_from_lb_polyface3d_json_to_dict(
+            path_lb_polyface3d_json_file=path_lb_polyface3d_json_file, typology=typology,
+            other_options_to_generate_building=other_options_to_generate_building)
+
+        user_logger.info("Building(s) from lb polyface3d json added to the urban canopy successfully")
+        dev_logger.info("Building(s) from lb polyface3d json added to the urban canopy successfully")

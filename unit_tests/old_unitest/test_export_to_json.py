@@ -17,7 +17,6 @@ SimulationPostProcessingAndPlots.generate_hb_model_contains_all_building_envelop
     path_simulation_folder=default_path_simulation_folder)
 
 #
-SimulationPostProcessingAndPlots.add_building_envelops_to_urban_canopy_json(urban_canopy_object=urban_canopy_object)
 
 # Export urban_canopy to pickle
 SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,
