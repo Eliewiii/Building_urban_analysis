@@ -204,8 +204,8 @@ class UrbanCanopy:
         if path_additional_gis_attribute_key_dict is not None:
             # check if it exists
             if os.path.exists(path_additional_gis_attribute_key_dict):
-                additional_gis_attribute_key_dict = load_additional_gis_attribute_key_dict(
-                    path_additional_gis_attribute_key_dict)
+                with open(path_additional_gis_attribute_key_dict, 'r') as json_file:
+                    additional_gis_attribute_key_dict = json.load(json_file)
             else:
                 additional_gis_attribute_key_dict = None
         else:

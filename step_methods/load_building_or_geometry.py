@@ -47,7 +47,8 @@ class SimulationLoadBuildingOrGeometry:
             # check if the file exist, it's not a mandatory input for the user
             with open(path_additional_gis_attribute_key_dict, "r") as f:
                 additional_gis_attribute_key_dict = json.load(f)
-                if "building_id_key_gis" in additional_gis_attribute_key_dict:
+                if "building_id_key_gis" in additional_gis_attribute_key_dict and additional_gis_attribute_key_dict[
+                    "building_id_key_gis"] is not None:
                     building_id_key_gis = additional_gis_attribute_key_dict["building_id_key_gis"]
         return building_id_key_gis
 
@@ -71,8 +72,8 @@ class SimulationLoadBuildingOrGeometry:
 
     @staticmethod
     def add_buildings_from_lb_polyface3d_json_in_urban_canopy(urban_canopy_object, path_lb_polyface3d_json_file,
-                                                               typology=None,
-                                                               other_options_to_generate_building=None):
+                                                              typology=None,
+                                                              other_options_to_generate_building=None):
         """
         Load buildings from a json file containing LB polyface3d objects. Use mostly to transfer Breps from Rhino to
         the urban canopy.
