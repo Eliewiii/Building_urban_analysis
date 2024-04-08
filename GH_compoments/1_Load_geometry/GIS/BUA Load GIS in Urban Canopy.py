@@ -50,16 +50,32 @@ if path_simulation_folder_ is None:
 else:
      clean_path(path_simulation_folder_)
 
+# Check GIS attribute keys dictionary
+if _gis_attribute_keys_dict_ is not None:
+    try:  # try to load the json
+        gis_attribute_keys_dict = json.loads(_gis_attribute_keys_dict_)
+    except:
+        raise ValueError("The GIS attribute keys dictionary is not a valid JSON dictionnary, please use the output of the Add GIS Attribute Keys component")
+    mandatory_keys = ["building_id_key_gis", "name", "age", "typology", "elevation", "height", "number of floor", "group"]
+    for key in madatory_keys:
+        if key not in gis_attribute_keys_dict:
+            raise ValueError("The GIS attribute keys dictionary is missing the key '{}'".format(key))
+else:
+    gis_attribute_keys_dict = None
+
 
 if _run:
     # if there are additionnal keys for GIS attributes, make a json file containing the values
-    path_gis_attribute_keys_dict = None  # default value
-    if _gis_attribute_keys_dict_ is not None:
-        None
-        # Make a json file that contains the dictionnary
-        # todo
-        # path_gis_attribute_keys_dict = put path
-
+    if gis_attribute_keys_dict is not None:
+        # Make the simulation folder as it might not exist yet
+        command = path_bat_file + " --make_simulation_folder 1 -f " + path_simulation_folder_
+        output = os.system(command)
+        # Make the json file in the temporary folder in the simulation folder
+        path_gis_attribute_keys_dict = os.path.join(path_simulation_folder_, name_folder_temporary_files, "gis_attribute_keys_dict.json")
+        with open(path_gis_attribute_keys_dict, 'w') as json_file:
+            json.dump(gis_attribute_keys_dict, json_file)
+    else:
+        path_gis_attribute_keys_dict = None  # Default value
     # Write the command
     command = path_bat_file
     argument = " "  # Initialize the argument
