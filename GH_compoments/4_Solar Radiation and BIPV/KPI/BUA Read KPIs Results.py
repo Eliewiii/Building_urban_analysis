@@ -35,7 +35,6 @@ labels = ["eroi", "primary energy payback time [year]", "ghg emissions intensity
           "ghg emissions payback time [year]", "net energy compensation", "net economical benefit [$]",
           "economical payback time [year]"]
 
-
 # Get Appdata\local folder
 local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
@@ -64,7 +63,7 @@ if _run:
         if _bipv_simulation_identifier_ not in urban_canopy_dict["bipv_scenarios"]:
             raise ValueError("The BIPV simulation identifier is not valid.")
     else:
-        if  "new_uc_scenario" in urban_canopy_dict["bipv_scenarios"].keys():
+        if "new_uc_scenario" in urban_canopy_dict["bipv_scenarios"].keys():
             _bipv_simulation_identifier_ = "new_uc_scenario"
         else:
             raise ValueError("Please provide a BIPV simulation identifier if you did not use the default one.")
@@ -78,59 +77,42 @@ if _run:
     end_uses_energy_consumption = []
 
     # Get results
-    kpis_label = labels
+    kpis_labels = labels
 
-    for label in kpis_label:
+    for label in kpis_labels:
         kpis_bipv_roof.append(urban_canopy_dict["kpis_results_dict"]["kpis"][label]["roof"])
         kpis_bipv_facades.append(urban_canopy_dict["kpis_results_dict"]["kpis"][label]["facades"])
         kpis_bipv_total.append(urban_canopy_dict["kpis_results_dict"]["kpis"][label]["total"])
 
     # Take care of KPIs with densities
     labels.append("zone harvested energy density [Kwh/m2]")
-    kpis_bipv_roof.append(urban_canopy_dict["kpis_results_dict"]["kpis"]["harvested energy density [Kwh/m2]"]["zone"]["roof"])
-    kpis_bipv_facades.append(urban_canopy_dict["kpis_results_dict"]["kpis"]["harvested energy density [Kwh/m2]"]["zone"]["facades"])
-    kpis_bipv_total.append(urban_canopy_dict["kpis_results_dict"]["kpis"]["harvested energy density [Kwh/m2]"]["zone"]["total"])
+    kpis_bipv_roof.append(
+        urban_canopy_dict["kpis_results_dict"]["kpis"]["harvested energy density [Kwh/m2]"]["zone"]["roof"])
+    kpis_bipv_facades.append(
+        urban_canopy_dict["kpis_results_dict"]["kpis"]["harvested energy density [Kwh/m2]"]["zone"]["facades"])
+    kpis_bipv_total.append(
+        urban_canopy_dict["kpis_results_dict"]["kpis"]["harvested energy density [Kwh/m2]"]["zone"]["total"])
     labels.append("conditioned apartment harvested energy density [Kwh/m2]")
-    kpis_bipv_roof.append(urban_canopy_dict["kpis_results_dict"]["kpis"]["harvested energy density [Kwh/m2]"]["conditioned_apartment"]["roof"])
-    kpis_bipv_facades.append(urban_canopy_dict["kpis_results_dict"]["kpis"]["harvested energy density [Kwh/m2]"]["conditioned_apartment"]["facades"])
-    kpis_bipv_total.append(urban_canopy_dict["kpis_results_dict"]["kpis"]["harvested energy density [Kwh/m2]"]["conditioned_apartment"]["total"])
+    kpis_bipv_roof.append(
+        urban_canopy_dict["kpis_results_dict"]["kpis"]["harvested energy density [Kwh/m2]"]["conditioned_apartment"][
+            "roof"])
+    kpis_bipv_facades.append(
+        urban_canopy_dict["kpis_results_dict"]["kpis"]["harvested energy density [Kwh/m2]"]["conditioned_apartment"][
+            "facades"])
+    kpis_bipv_total.append(
+        urban_canopy_dict["kpis_results_dict"]["kpis"]["harvested energy density [Kwh/m2]"]["conditioned_apartment"][
+            "total"])
     labels.append("zone net economical benefit density [$/m2]]")
-    kpis_bipv_roof.append(urban_canopy_dict["kpis_results_dict"]["kpis"]["net economical benefit density [$/m2]"]["zone"]["roof"])
-    kpis_bipv_facades.append(urban_canopy_dict["kpis_results_dict"]["kpis"]["net economical benefit density [$/m2]"]["zone"]["facades"])
-    kpis_bipv_total.append(urban_canopy_dict["kpis_results_dict"]["kpis"]["net economical benefit density [$/m2]"]["zone"]["total"])
+    kpis_bipv_roof.append(
+        urban_canopy_dict["kpis_results_dict"]["kpis"]["net economical benefit density [$/m2]"]["zone"]["roof"])
+    kpis_bipv_facades.append(
+        urban_canopy_dict["kpis_results_dict"]["kpis"]["net economical benefit density [$/m2]"]["zone"]["facades"])
+    kpis_bipv_total.append(
+        urban_canopy_dict["kpis_results_dict"]["kpis"]["net economical benefit density [$/m2]"]["zone"]["total"])
     labels.append("conditioned apartment net economical benefit density [$/m2]")
-    kpis_bipv_roof.append(urban_canopy_dict["kpis_results_dict"]["kpis"]["net economical benefit density [$/m2]"]["conditioned_apartment"]["roof"])
-    kpis_bipv_facades.append(urban_canopy_dict["kpis_results_dict"]["kpis"]["net economical benefit density [$/m2]"]["conditioned_apartment"]["facades"])
-    kpis_bipv_total.append(urban_canopy_dict["kpis_results_dict"]["kpis"]["net economical benefit density [$/m2]"]["conditioned_apartment"]["total"])
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    kpis_bipv_roof.append(urban_canopy_dict["kpis_results_dict"]["kpis"]["net economical benefit density [$/m2]"][
+                              "conditioned_apartment"]["roof"])
+    kpis_bipv_facades.append(urban_canopy_dict["kpis_results_dict"]["kpis"]["net economical benefit density [$/m2]"][
+                                 "conditioned_apartment"]["facades"])
+    kpis_bipv_total.append(urban_canopy_dict["kpis_results_dict"]["kpis"]["net economical benefit density [$/m2]"][
+                               "conditioned_apartment"]["total"])

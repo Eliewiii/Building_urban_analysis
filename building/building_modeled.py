@@ -197,7 +197,7 @@ class BuildingModeled(BuildingBasic):
             "is_target_building": self.is_target,
             "hb_model": self.hb_model_dict,
             "merged_faces_hb_model": self.merged_faces_hb_model_dict,
-            "shading_context": self.shading_context_obj.to_dict(),
+            "context_surfaces": self.shading_context_obj.to_dict(),
             "bes": self.bes_obj.to_dict(),
             "solar_radiation_and_bipv": self.solar_radiation_and_bipv_simulation_obj.to_dict()
         }

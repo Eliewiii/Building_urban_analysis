@@ -61,24 +61,25 @@ if _run and os.path.isfile(path_json):
         urban_canopy_dict = json.load(json_file)
 
     # Get the list of the building ids to display
-    if _building_id_list == [] or _building_id_list is None:
-        # add the id of the target building
-        _building_id_list = [building_key for building_key in urban_canopy_dict["buildings"].keys() if
-                             urban_canopy_dict["buildings"][building_key]["is_target_building"] == True]
-    elif _building_id_list == "target_and_simulated":
-        _building_id_list = [building_key for building_key in urban_canopy_dict["buildings"].keys() if
-                             urban_canopy_dict["buildings"][building_key]["is_target_building"] or
-                             urban_canopy_dict["buildings"][building_key]["is_building_to_simulate"]]
+    if building_id_list_ == [] or building_id_list_ is None:
+        # add the id of the buildings that have been run if no list is provided
+        building_id_list_ = [building_id for building_id in urban_canopy_dict["buildings"].keys() if
+                             (urban_canopy_dict["buildings"][building_id]["type"] == "BuildingModeled" and
+                              urban_canopy_dict["buildings"][building_id]["context_surfaces"]["first_pass_done"])]
+
     else:  # Check if the building ids are in the json file
-        for building_id in _building_id_list:
+        for building_id in building_id_list_:
             try:
                 urban_canopy_dict["buildings"][building_id]
             except KeyError:
                 raise KeyError("Building with ID '{}' not found in the dictionary.".format(building_id))
             else:
-                if not urban_canopy_dict["buildings"][building_id]["is_target_building"] and not \
-                        urban_canopy_dict["buildings"][building_id]["is_building_to_simulate"]:
-                    raise ValueError("Building with ID {} is not a target building. It does not".format(building_id))
+                if not urban_canopy_dict["buildings"][building_id]["type"] == "BuildingModeled":
+                    raise ValueError(
+                        "Building with ID {} does not have a HB model, a context filtering cannot be performed on it".format(
+                            building_id))
+                elif not urban_canopy_dict["buildings"][building_id]["context_surfaces"]["first_pass_done"]:
+                    raise ValueError("Context filtering for building ID {} was not performed".format(building_id))
 
     # Init
     forced_shade_from_user_tree = []
