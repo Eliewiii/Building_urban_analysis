@@ -77,7 +77,7 @@ def connection_tuples(df, models_dict):
 import os
 
 models_dict = load_models([model1_path, model2_path, model3_path])
-connections_df, connections = create_full_connections(models_dict)
+# connections_df, connections = create_full_connections(models_dict)
 # connections = connection_tuples(connections_df, models_dict)
 models = list(models_dict.values())
 
@@ -106,7 +106,7 @@ for i, m in enumerate(models):
 """ Seems like the programs stops after initialization if there is nothing that comes after, it creates an error """
 os.chdir(r'C:\Users\alejandro\AppData\Local\Building_urban_analysis\Scripts\long_wave_radiation_coupling\Ale')
 
-coupled_simulation = Master(models, connections)
+coupled_simulation = Master(models, [])#, connections)
 
 # path_ep_folder = r"C:\EnergyPlusV23-2-0"
 # # Get the current PATH variable and make a copy
