@@ -53,13 +53,13 @@ def create_extra_idf_fmu_statements(fmu_path, current_fmu_filename, connected_fm
     current_fmu_filepath = os.path.join(fmu_path, f'{current_fmu_filename}.fmu')
 
     return_statements = f"""ExternalInterface,           !- Object to activate the external interface
- FUNCTIONALMOCKUPUNITEXPORT;              !- Name of external interface
- 
-"""
+     FUNCTIONALMOCKUPUNITEXPORT;              !- Name of external interface
+
+    """
 
     #     return_statements += f"""Output:SQLite,
     #   SimpleAndTabular;                       !- Option Type
-
+    #
     # """
 
     #     for output_face in output_faces:
@@ -131,18 +131,101 @@ def create_extra_idf_fmu_statements(fmu_path, current_fmu_filename, connected_fm
     for output_face in output_faces:
         # Define the output of the FMU
         return_statements += f"""ExternalInterface:FunctionalMockupUnitExport:From:Variable,
-{output_face},             !- EnergyPlus Key Value
-Surface Outside Face Temperature,  !- EnergyPlus Variable Name
-{output_face.replace('.', '__')}_Surface_Outside_Face_Temperature;                 !- FMU Variable Name
+    {output_face},             !- EnergyPlus Key Value
+    Surface Outside Face Temperature,  !- EnergyPlus Variable Name
+    {output_face.replace('.', '__')}_Surface_Outside_Face_Temperature;                 !- FMU Variable Name
 
-"""
+    """
 
-        return_statements += f"""Output:Variable,
-    {output_face},                    !- Key Value
-    Surface Outside Face Temperature,   !- Variable Name
-    TimeStep;                    !- Reporting Frequency
+        return_statements += f"""SurfaceProperty:OtherSideCoefficients,
 
-"""
+        {output_face},   !- Name
+
+        1;                       !- Combined Convective/Radiative Film Coefficient {{W/m2-K}}
+
+    """
+
+        return_statements += f"""EnergyManagementSystem:Actuator,
+      {output_face.replace('.', '__')}_exp_actuator,     ! Name
+      {output_face},                                       ! Actuated Component Unique Name
+      Surface,                           ! Actuated Component Type
+      View Factor to Ground;           ! Actuated Component Control Type
+    """
+
+    #         return_statements += f"""ExternalInterface:FunctionalMockupUnitExport:To:Actuator,
+    #     {output_face.replace('.', '__')}_exp_actuator,  !- Name
+    #     {output_face},    !- Actuated Component Unique Name
+    #     Surface,  !- Actuated Component Type
+    #     View Factor to Ground,          !- Actuated Component Control Type  Combined Convective/Radiative Film Coefficient
+    #     {output_face.replace('.', '__')}_exp_actuator,                  !- FMU Variable Name
+    #     10;                       !- Initial Value
+    # """
+
+    for outface, inface in zip(output_faces, input_faces):
+        return_statements += f"""ExternalInterface:FunctionalMockupUnitExport:To:Actuator,
+        {inface.replace('.', '_')}_exp_actuator,  !- Name
+        {outface},    !- Actuated Component Unique Name
+        Surface,  !- Actuated Component Type
+        View Factor to Ground,          !- Actuated Component Control Type  Combined Convective/Radiative Film Coefficient
+        {inface.replace('.', '__')}_exp_actuator,                  !- FMU Variable Name
+        10;                       !- Initial Value
+
+    Output:Variable,
+        *,                    !- Key Value
+        {inface.replace('.', '_')}_exp_actuator,   !- Variable Name
+        TimeStep;                    !- Reporting Frequency
+
+    """
+
+        """
+
+EnergyManagementSystem:OutputVariable,
+  {inface.replace('.', '_')}_exp_actuator_output, ! Name
+  {inface.replace('.', '_')}_exp_actuator, ! EMS Variable Name
+  Averaged, ! Type of Data in Variable
+  SystemTimestep , ! Update Frequency (ZoneTimeStep)
+  ,           ! EMS Program or Subroutine Name
+  Whatever;"""
+
+    ems_calling = f"""
+
+    EnergyManagementSystem:ProgramCallingManager,
+      EMS Manager, ! Name
+      BeginZoneTimestepAfterInitHeatBalance,       ! EnergyPlus Model Calling Point
+      ems_program;                 ! Program Name"""
+
+    ems_program = f"""
+
+    EnergyManagementSystem:Program,
+      ems_program,         ! Name"""
+    for output_face in output_faces:
+        ems_program += f"""
+      SET {output_face.replace('.', '_')}_exp_actuator = 0.5,"""
+    #   ems_calling += f"""
+    # {output_face.replace('.', '__')}_program;                 ! Program Name"""
+    return_statements += ems_program[:-1] + ';' + ems_calling
+
+    #     return_statements += f"""ExternalInterface:Variable,
+    # {output_face.replace('.', '__')}_var,           !- Name of Erl variable
+    # 1;                !- Initial Value
+    #
+    # """
+
+    #     return_statements += f"""
+    #
+    # Output:Variable,
+    #     *,                    !- Key Value
+    #     Surface Outside Face Temperature,   !- Variable Name
+    #     TimeStep;                    !- Reporting Frequency
+    # """
+
+    """
+    Output:Variable,
+        *,                    !- Key Value
+        Surface View Factor to Ground,   !- Variable Name
+        TimeStep;                    !- Reporting Frequency
+
+    """
 
     for input_face in input_faces:
         #         return_statements += f"""ExternalInterface:Variable,
@@ -150,12 +233,348 @@ Surface Outside Face Temperature,  !- EnergyPlus Variable Name
         #     1;                                             !- Initial value
 
         # """
-        return_statements += f"""ExternalInterface:FunctionalMockupUnitExport:To:Variable,
-    {input_face.replace('.', '_')}_Surface_Outside_Face_Temperature,                       !- EnergyPlus Variable Name
+        """ExternalInterface:FunctionalMockupUnitExport:To:Variable,
+    {input_face.replace('.', '_')}_Surface_Outside_Face_Temperature,                       !- EMS E+ Variable Name
     {input_face.replace('.', '__')}_Surface_Outside_Face_Temperature,                                   !- FMU Variable Name
-    1;                                             !- Initial Value
+    1;                    !- Initial value
 
 """
+
+        #       return_statements += f"""EnergyManagementSystem:OutputVariable,
+        # {input_face.replace('.', '_')}_Surface_Outside_Face_Temperature_output, ! Name
+        # {input_face.replace('.', '_')}_Surface_Outside_Face_Temperature, ! EMS Variable Name
+        # Averaged, ! Type of Data in Variable
+        # SystemTimestep , ! Update Frequency (ZoneTimeStep)
+        # ,           ! EMS Program or Subroutine Name
+        # Whatever;"""
+        return_statements += f"""
+    Output:Variable,
+        *,                    !- Key Value
+        {input_face.replace('.', '_')}_Surface_Outside_Face_Temperature_output,   !- Variable Name
+        TimeStep;                    !- Reporting Frequency
+
+    """
+
+    return_statements += f"""Output:EnergyManagementSystem,
+        Verbose,    ! Actuator Availability Dictionary Reporting
+        Verbose,    ! Internal Variable Availability Dictionary Reporting
+        ErrorsOnly; ! EnergyPlus Runtime Language Debug Output Level
+
+    """
+
+    #     return_statements += f"""! EMS program. The first assignments sets the shading status and converts it into the
+    # !              EnergyPlus signal (i.e., replace 1 by 6).
+    # !              The second assignment sets yShade to
+    # !              an EnergyManagementSystem:OutputVariable
+    # !              which will be read by the external interface.
+    #
+    #   EnergyManagementSystem:Program,
+    #     Set_surface_ems  Set_Shade_Control_State, !- Name
+    #     Set Surface_signal = 6*{input_face.replace('.', '_')}_Surface_Outside_Face_Temperature,  !- Program Line 1
+    #     Set Surface_signal_01 = {input_face.replace('.', '_')}_Surface_Outside_Face_Temperature+0.1;  !- Program Line 2
+    #
+    # ! Declare an actuator to which the EnergyManagementSystem:Program will write
+    #
+    #   EnergyManagementSystem:Actuator,
+    #     Surface_signal,            !- Name
+    #     Zn001:Wall001:Win001,    !- Actuated Component Unique Name
+    #     Window Shading Control,  !- Actuated Component Type
+    #     Control Status;          !- Actuated Component Control Type
+    # """
+
+    #         """
+    #
+    # ExternalInterface:Variable,
+    #     {input_face.replace('.', '_')}_Surface_Outside_Face_Temperature,                  !- Name of Erl variable
+    #     1;                       !- Initial value"""
+
+    #     """SurfaceProperty:OtherSideCoefficients,
+    # {output_face},   !- Name
+    # {output_face.replace('.', '__')}_var,                       !- Combined Convective/Radiative Film Coefficient {{W/m2-K}}
+    # 0.000000;                !- Constant Temperature {{C}}"""
+
+    #         return_statements += f"""ExternalInterface:FunctionalMockupUnitExport:To:Schedule,
+    # {input_face.replace('.', '_')}_Surface_Outside_Face_Temperature_s,      !- Name
+    # ,              !- Schedule Type Limits Names
+    # {input_face.replace('.', '__')}_Surface_Outside_Face_Temperature_s,                       !- FMU Variable Name
+    # 1;                       !- Initial Value"""
+
+    return return_statements
+
+
+def create_extra_idf_fmu_statements_old(fmu_path, current_fmu_filename, connected_fmu_paths, output_faces, input_faces):
+    # make sure we are not connecting this FMU to itself
+    assert current_fmu_filename not in connected_fmu_paths
+
+    # get the name of the current FMU and then its expected filepath
+    current_fmu_instance_name = os.path.splitext(os.path.basename(os.path.dirname(fmu_path)))[0]
+    current_fmu_filepath = os.path.join(fmu_path, f'{current_fmu_filename}.fmu')
+
+    return_statements = f"""ExternalInterface,           !- Object to activate the external interface
+ FUNCTIONALMOCKUPUNITEXPORT;              !- Name of external interface
+ 
+"""
+
+#     return_statements += f"""Output:SQLite,
+#   SimpleAndTabular;                       !- Option Type
+#
+# """
+
+    #     for output_face in output_faces:
+    #         return_statements += f"""Output:Variable,*,{output_face.replace('.', '__')}_Surface_Outside_Face_Temperature,Hourly;  !- Include {output_face.replace('.', '_')}_Surface_Outside_Face_Temperature variable
+    # """
+    #     return_statements += """
+    # """
+
+    #     for connected_fmu_path in connected_fmu_paths:
+    # #         input_statements += f"""ExternalInterface:FunctionalMockupUnitImport:From:Variable,
+    # #     {connected_fmu_path},                !- FMU Name
+    # #     Surface Outside Face Temperature,      !- Output Variable Name
+    # #     {connected_fmu_path},       !- FMU Instance Name
+    # #     {connected_fmu_path} Surface Outside Face Temperature;    !- Variable Name for Retrieving the Value
+
+    # # """
+
+    # #         return_statements += f"""ExternalInterface:FunctionalMockupUnitImport,
+    # #     {connected_fmu_path},            !- FMU File Name could be fmu_path
+    # #     1500,                      !- FMU Timeout, check how much is needed
+    # #     0;                       !- FMU LoggingOn to see if debugging is enabled or not
+
+    # # """
+    #         pass
+
+    #     return_statements += f"""Output:JSON,
+    #     TimeSeriesAndTabular, !- timeseries data and tabular report data
+    #     Yes, !- turn on or off outputJSON
+    #     No, !- Output CBOR
+    #     No; !- turn off or on MessagePack output
+
+    # """
+
+    #     return_statements += f"""OutputControl:Files,
+    #   Yes, ! CSV
+    #   Yes, ! MTR
+    #   Yes, ! ESO
+    #   No , ! EIO
+    #   No , ! Tabular
+    #   No , ! SQLite
+    #   No , ! JSON
+    #   No , ! AUDIT
+    #   No , ! Zone Sizing
+    #   No , ! System Sizing
+    #   No , ! DXF
+    #   No , ! BND
+    #   No , ! RDD
+    #   No , ! MDD
+    #   No , ! MTD
+    #   Yes, ! END
+    #   No , ! SHD
+    #   No , ! DFS
+    #   No , ! GLHE
+    #   No , ! DelightIn
+    #   No , ! DelightELdmp
+    #   No , ! DelightDFdmp
+    #   No , ! EDD
+    #   No , ! DBG
+    #   No , ! PerfLog
+    #   No , ! SLN
+    #   No , ! SCI
+    #   No , ! WRL
+    #   No , ! Screen
+    #   No , ! ExtShd
+    #   No ; ! Tarcog
+
+    # """
+
+    for output_face in output_faces:
+        pass
+        # Define the output of the FMU
+        return_statements += f"""ExternalInterface:FunctionalMockupUnitExport:From:Variable,
+{output_face},             !- EnergyPlus Key Value
+Surface Outside Face Temperature,  !- EnergyPlus Variable Name
+{output_face.replace('.', '__')}_Surface_Outside_Face_Temperature;                 !- FMU Variable Name
+
+"""
+
+        return_statements += f"""SurfaceProperty:OtherSideCoefficients,
+
+    {output_face},   !- Name
+
+    1;                       !- Combined Convective/Radiative Film Coefficient {{W/m2-K}}
+
+"""
+
+        return_statements += f"""EnergyManagementSystem:Actuator,
+  {output_face.replace('.', '__')}_exp_actuator,     ! Name
+  {output_face},                                       ! Actuated Component Unique Name
+  Surface,                           ! Actuated Component Type
+  View Factor to Ground;           ! Actuated Component Control Type
+"""
+
+
+
+
+#         return_statements += f"""ExternalInterface:FunctionalMockupUnitExport:To:Actuator,
+#     {output_face.replace('.', '__')}_exp_actuator,  !- Name
+#     {output_face},    !- Actuated Component Unique Name
+#     Surface,  !- Actuated Component Type
+#     View Factor to Ground,          !- Actuated Component Control Type  Combined Convective/Radiative Film Coefficient
+#     {output_face.replace('.', '__')}_exp_actuator,                  !- FMU Variable Name
+#     10;                       !- Initial Value
+# """
+
+    for outface, inface in zip(output_faces, input_faces):
+        return_statements += f"""ExternalInterface:FunctionalMockupUnitExport:To:Actuator,
+    {inface.replace('.', '_')}_exp_actuator,  !- Name
+    {outface},    !- Actuated Component Unique Name
+    Surface,  !- Actuated Component Type
+    View Factor to Ground,          !- Actuated Component Control Type  Combined Convective/Radiative Film Coefficient
+    {inface.replace('.', '__')}_exp_actuator,                  !- FMU Variable Name
+    10;                       !- Initial Value
+
+Output:Variable,
+    *,                    !- Key Value
+    {inface.replace('.', '_')}_exp_actuator,   !- Variable Name
+    TimeStep;                    !- Reporting Frequency
+
+"""
+
+        """
+    
+EnergyManagementSystem:OutputVariable,
+  {inface.replace('.', '_')}_exp_actuator_output, ! Name
+  {inface.replace('.', '_')}_exp_actuator, ! EMS Variable Name
+  Averaged, ! Type of Data in Variable
+  SystemTimestep , ! Update Frequency (ZoneTimeStep)
+  ,           ! EMS Program or Subroutine Name
+  Whatever;"""
+
+    ems_calling = f"""
+
+EnergyManagementSystem:ProgramCallingManager,
+  EMS Manager, ! Name
+  BeginZoneTimestepAfterInitHeatBalance,       ! EnergyPlus Model Calling Point
+  ems_program;                 ! Program Name"""
+
+    ems_program = f"""
+
+EnergyManagementSystem:Program,
+  ems_program,         ! Name"""
+    for output_face in output_faces:
+        ems_program += f"""
+  SET {output_face.replace('.', '_')}_exp_actuator = 0.5,"""
+  #   ems_calling += f"""
+  # {output_face.replace('.', '__')}_program;                 ! Program Name"""
+    return_statements += ems_program[:-1] + ';' + ems_calling
+
+
+
+
+
+
+
+    #     return_statements += f"""ExternalInterface:Variable,
+    # {output_face.replace('.', '__')}_var,           !- Name of Erl variable
+    # 1;                !- Initial Value
+    #
+    # """
+
+#     return_statements += f"""
+#
+# Output:Variable,
+#     *,                    !- Key Value
+#     Surface Outside Face Temperature,   !- Variable Name
+#     TimeStep;                    !- Reporting Frequency
+# """
+
+    """
+    Output:Variable,
+        *,                    !- Key Value
+        Surface View Factor to Ground,   !- Variable Name
+        TimeStep;                    !- Reporting Frequency
+    
+    """
+
+    for input_face in input_faces:
+        #         return_statements += f"""ExternalInterface:Variable,
+        #     {input_face}_GB_Surface_Outside_Face_Temperature,                                   !- Name of Erl variable
+        #     1;                                             !- Initial value
+
+        # """
+        """ExternalInterface:FunctionalMockupUnitExport:To:Variable,
+    {input_face.replace('.', '_')}_Surface_Outside_Face_Temperature,                       !- EMS E+ Variable Name
+    {input_face.replace('.', '__')}_Surface_Outside_Face_Temperature,                                   !- FMU Variable Name
+    1;                    !- Initial value
+    
+"""
+
+  #       return_statements += f"""EnergyManagementSystem:OutputVariable,
+  # {input_face.replace('.', '_')}_Surface_Outside_Face_Temperature_output, ! Name
+  # {input_face.replace('.', '_')}_Surface_Outside_Face_Temperature, ! EMS Variable Name
+  # Averaged, ! Type of Data in Variable
+  # SystemTimestep , ! Update Frequency (ZoneTimeStep)
+  # ,           ! EMS Program or Subroutine Name
+  # Whatever;"""
+        return_statements += f"""
+Output:Variable,
+    *,                    !- Key Value
+    {input_face.replace('.', '_')}_Surface_Outside_Face_Temperature_output,   !- Variable Name
+    TimeStep;                    !- Reporting Frequency
+
+"""
+
+    return_statements += f"""Output:EnergyManagementSystem,
+    Verbose,    ! Actuator Availability Dictionary Reporting
+    Verbose,    ! Internal Variable Availability Dictionary Reporting
+    ErrorsOnly; ! EnergyPlus Runtime Language Debug Output Level
+
+"""
+
+#     return_statements += f"""! EMS program. The first assignments sets the shading status and converts it into the
+# !              EnergyPlus signal (i.e., replace 1 by 6).
+# !              The second assignment sets yShade to
+# !              an EnergyManagementSystem:OutputVariable
+# !              which will be read by the external interface.
+#
+#   EnergyManagementSystem:Program,
+#     Set_surface_ems  Set_Shade_Control_State, !- Name
+#     Set Surface_signal = 6*{input_face.replace('.', '_')}_Surface_Outside_Face_Temperature,  !- Program Line 1
+#     Set Surface_signal_01 = {input_face.replace('.', '_')}_Surface_Outside_Face_Temperature+0.1;  !- Program Line 2
+#
+# ! Declare an actuator to which the EnergyManagementSystem:Program will write
+#
+#   EnergyManagementSystem:Actuator,
+#     Surface_signal,            !- Name
+#     Zn001:Wall001:Win001,    !- Actuated Component Unique Name
+#     Window Shading Control,  !- Actuated Component Type
+#     Control Status;          !- Actuated Component Control Type
+# """
+
+
+
+
+
+
+
+    #         """
+#
+# ExternalInterface:Variable,
+#     {input_face.replace('.', '_')}_Surface_Outside_Face_Temperature,                  !- Name of Erl variable
+#     1;                       !- Initial value"""
+
+
+
+
+    #     """SurfaceProperty:OtherSideCoefficients,
+    # {output_face},   !- Name
+    # {output_face.replace('.', '__')}_var,                       !- Combined Convective/Radiative Film Coefficient {{W/m2-K}}
+    # 0.000000;                !- Constant Temperature {{C}}"""
+
+#         return_statements += f"""ExternalInterface:FunctionalMockupUnitExport:To:Schedule,
+# {input_face.replace('.', '_')}_Surface_Outside_Face_Temperature_s,      !- Name
+# ,              !- Schedule Type Limits Names
+# {input_face.replace('.', '__')}_Surface_Outside_Face_Temperature_s,                       !- FMU Variable Name
+# 1;                       !- Initial Value"""
 
     return return_statements
 

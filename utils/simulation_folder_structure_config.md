@@ -33,6 +33,11 @@ Irradiance_and_BIPV_simulation    # Contains shapefiles for the dataset
         ├── uc_scenario_1_kpis_results.csv    
     ├── uc_scenario_2
     ├── ...
+LWR
+  ├── FMUS
+    ├── name_folder_fmu_1
+      ├── ...
+        ├── in.fmu 
 urban_canopy.pkl
 urban_canopy.json
 ```
