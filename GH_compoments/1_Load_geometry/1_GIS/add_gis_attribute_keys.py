@@ -1,10 +1,4 @@
-"""Add  additional keys to load GIS attributes. GIS files can use different keys to store the same information (height, elevation...).
- This component allows you to add additional keys to the GIS attributes.
- Not all attributes need to be added as default value will be used if they cannot be extracted from the GIS, but certain
- attributes, such as the elevation, the height or the number can have a significant impact on the simulation results
- and it is recommended to add teh proper keys to extract them.
- It is mandatory to provide the key to identify the building ID in the GIS file. If this attribute does not exist add one manually in the GIS file with the QGIS software for instance.
- Only use GIS that use attributes keys and values with latin alphabet characters. Using other alphabets can lead to errors.
+"""Add  additional keys to load GIS attributes. GIS files can use different keys to store the same information (height, elevation...). This component allows you to add additional keys to the GIS attributes. Not all attributes need to be added as default value will be used if they cannot be extracted from the GIS, but certain attributes, such as the elevation, the height or the number can have a significant impact on the simulation results and it is recommended to add teh proper keys to extract them. It is mandatory to provide the key to identify the building ID in the GIS file. If this attribute does not exist add one manually in the GIS file with the QGIS software for instance. Only use GIS that use attributes keys and values with latin alphabet characters. Using other alphabets can lead to errors.
      Inputs:
         _building_id_key_gis: Key to identify the building ID in the GIS file.
         name_: List of keys to identify the name of the building in the GIS file. Keys already included: ["name", "full_name_"]
@@ -23,7 +17,6 @@ __version__ = "2024.03.31"
 
 ghenv.Component.Name = "BUA Add GIS Attribute Keys"
 ghenv.Component.NickName = 'AddGISAttributeKeys'
-ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '1 :: Load Buildings'
 ghenv.Component.AdditionalHelpFromDocStrings = "1"

@@ -8,11 +8,13 @@
         _run: Plug in a button to run the component
     Output:
         report: logs
-        path_folder_simulation_: path to the simulation folder to pass down to the next components"""
+        path_folder_simulation_: path to the simulation folder to pass down to the next components
+"""
+__author__ = "elie-medioni"
+__version__ = "2024.05.05"
 
 ghenv.Component.Name = "BUA Load HBjsons in Urban Canopy"
-ghenv.Component.NickName = 'LoadHBjson'
-ghenv.Component.Message = '0.0.0'
+ghenv.Component.NickName = 'LoadHBjsonsInUrbanCanopy'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '1 :: Load Buildings'
 ghenv.Component.AdditionalHelpFromDocStrings = "1"

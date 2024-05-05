@@ -22,7 +22,6 @@ user_logger = logging.getLogger("user")  # f"{__name__} user"
 dev_logger = logging.getLogger("dev")  # f"{__name__} dev"
 
 default_gis_attribute_key_dict = {
-    "building_id_key_gis": "none",
     "name": ["name", "full_name_"],
     "age": ["age", "date", "year"],
     "typology": ["typo", "typology", "type", "Typology"],

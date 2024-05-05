@@ -1,25 +1,28 @@
-"""Get the HB models from the urban canopy json file
+"""Get the HB Shading faces of the buildings.
     Inputs:
         path_simulation_folder_: Path to the simulation folder
         _building_id_list_ : List of the building id to get teh HB models. If empty, get all the HB models.
         _run : Plug a boolean toggle. Put it to true if we want to run the code.
     Output:
-        hb_model_list: List of the HB models"""
+        user_hb_shade_tree: Tree of the HB shades set by the user for the buildings
+        selected_context_filter_hb_shade_tree: Tree of the HB shades selected by the context filter for the buildings
+        """
 
 __author__ = "elie-medioni"
 __version__ = "2024.05.05"
 
-ghenv.Component.Name = "BUA Get HB Models"
-ghenv.Component.NickName = 'GetHBModels'
+ghenv.Component.Name = "BUA Get HB Shades"
+ghenv.Component.NickName = 'GetHBShades'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '2 :: Information'
 ghenv.Component.AdditionalHelpFromDocStrings = "1"
 
+import ghpythonlib.treehelpers as th
 
 import json
 import os
 
-from honeybee.model import Model
+from honeybee.shade import Shade
 
 # Get Appdata\local folder
 local_appdata = os.environ['LOCALAPPDATA']
@@ -55,10 +58,17 @@ if _run and os.path.isfile(path_json):
                         "Building with ID {} does not have a HB model and thus not shades".format(
                             building_id))
 
-    hb_model_list = []
+    user_hb_shade_tree = []
+    selected_context_filter_hb_shade_tree = []
+
     for building_id in _building_id_list_:
-        if urban_canopy_dict["buildings"][building_id]["hb_model"] is not None:
-            hb_model_list.append(Model.from_dict(urban_canopy_dict["buildings"][building_id]["hb_model"]))
+        user_hb_shade_tree.append([Shade.from_dict(shade) for shade in urban_canopy_dict["buildings"][building_id]["context_surfaces"][
+                                      "forced_hb_shades_from_user_list"]])
+        selected_context_filter_hb_shade_tree.append([Shade.from_dict(shade) for shade in
+            urban_canopy_dict["buildings"][building_id]["context_surfaces"]["context_shading_hb_shade_list"]])
+        # Convert to tree
+    user_hb_shade_tree = th.list_to_tree(user_hb_shade_tree)
+    selected_context_filter_hb_shade_tree = th.list_to_tree(selected_context_filter_hb_shade_tree)
 
 if not os.path.isfile(path_json):
     print("the json file of the urban canopy does not exist")
