@@ -353,7 +353,7 @@ class LoadArguments:
             "update_panel_technology": bool(int(args.update_panel_technology)),
             "country_ghe_cost": float(args.country_ghe_cost), # todo: outdated, to delete
             # KPIs
-            "zone_area": float(args.zone_area),
+            "zone_area": float(args.zone_area) if args.zone_area is not None else None,
             "grid_ghg_intensity": float(args.grid_ghg_intensity),
             "grid_energy_intensity": float(args.grid_energy_intensity),
             "grid_electricity_sell_price": float(args.grid_electricity_sell_price)
