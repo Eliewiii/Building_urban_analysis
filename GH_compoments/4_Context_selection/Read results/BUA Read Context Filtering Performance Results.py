@@ -5,7 +5,7 @@ simulations, but they can hinder some operations and displays and are thus not a
     Inputs:
         path_simulation_folder_: Path to the folder. By default, the code will be run in
                                 Appdata\Local\Building_urban_analysis\Simulation_temp
-        _building_id_list_: List of building ids to read. If empty, the result will be read for all target buildings.
+        building_id_list_: List of building ids to read. If empty, the result will be read for all target buildings.
         _run : Plug a boolean toggle to True to run the code and display the results.
     Output:
         read_building_id_list : List of the ids of the buildings that were read
@@ -25,7 +25,7 @@ ghenv.Component.Name = "BUA Read Context Filtering Results"
 ghenv.Component.NickName = 'ReadContextFilteringResults'
 ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
-ghenv.Component.SubCategory = '4 :: Context filtering'
+ghenv.Component.SubCategory = '4 :: Context Selection'
 ghenv.Component.AdditionalHelpFromDocStrings = "1"
 
 import json
@@ -61,14 +61,14 @@ if _run and os.path.isfile(path_json):
         urban_canopy_dict = json.load(json_file)
 
     # Get the list of the building ids to display
-    if _building_id_list_ == [] or _building_id_list_ is None:
+    if building_id_list_ == [] or building_id_list_ is None:
         # add the id of the buildings that have been run if no list is provided
-        _building_id_list_ = [building_id for building_id in urban_canopy_dict["buildings"].keys() if
+        building_id_list_ = [building_id for building_id in urban_canopy_dict["buildings"].keys() if
                              (urban_canopy_dict["buildings"][building_id]["type"] == "BuildingModeled" and
                               urban_canopy_dict["buildings"][building_id]["context_surfaces"]["first_pass_done"])]
 
     else:  # Check if the building ids are in the json file
-        for building_id in _building_id_list_:
+        for building_id in building_id_list_:
             try:
                 urban_canopy_dict["buildings"][building_id]
             except KeyError:
@@ -87,9 +87,9 @@ if _run and os.path.isfile(path_json):
     first_pass_discarded_building_id_tree = []
     second_pass_selected_hb_shade_tree = []
     second_pass_discarded_surface_tree = []
-    read_building_id_list = _building_id_list_
+    read_building_id_list = _building_id_list
 
-    for building_id in _building_id_list_:
+    for building_id in _building_id_list:
         # Check if the building has forced shades and add the list of forced HB Shades
         if urban_canopy_dict["buildings"][building_id]["context_surfaces"]["forced_shades_from_user"] is not None:
             forced_shade_from_user_tree.append([Shade.from_dict(shade) for shade in

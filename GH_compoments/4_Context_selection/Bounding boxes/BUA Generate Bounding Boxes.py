@@ -1,22 +1,20 @@
-""" Generate the bounding boxes of the context buildings. The bounding boxes are used to filter the context buildings.
+""" Generate the bounding boxes buildings for context selection algorithm.
     Inputs:
-        path_simulation_folder_: Path to the folder. Default = Appdata\Local\Building_urban_analysis\Simulation_temp
-        _overwrite_: bool: Put to True if the context filtering should be run again for buildings for which
-        it was already performed, otherwise the existing filtering will remain. Mandatory if new buildings were added.
+        path_simulation_folder_: Path to the simulation folder. Default = Appdata\Local\Building_urban_analysis\Simulation_temp
+        _overwrite_: Set to True to overwrite the existing bounding boxes. Default = False
         _run: Plug in a button to run the component
     Output:
         report: logs
         path_simulation_folder_: Path to the folder."""
 
 
-__author__ = "Eliewiii"
+__author__ = "elie-medioni"
 __version__ = "2023.12.27"
 
 ghenv.Component.Name = "BUA Generate Bounding Boxes"
 ghenv.Component.NickName = 'GenerateBoundingBoxes'
-ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
-ghenv.Component.SubCategory = '4 :: Context filtering'
+ghenv.Component.SubCategory = '4 :: Context Selection'
 
 import os
 

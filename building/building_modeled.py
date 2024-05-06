@@ -33,7 +33,7 @@ dev_logger = logging.getLogger("dev")
 class BuildingModeled(BuildingBasic):
     """BuildingBasic class, representing one building in an urban canopy."""
 
-    # todo :make the lb_face_footprint optional in the BuildingBasic class
+
     def __init__(self, identifier, lb_face_footprint=None, urban_canopy=None, building_index_in_gis=None,
                  **kwargs):
         # Initialize with the inherited attributes from the BuildingBasic parent class

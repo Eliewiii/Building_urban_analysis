@@ -101,7 +101,7 @@ if _run:
     output = os.system(command + argument)
 
     # delete json file with the additionnal GIS attributes
-    if os.path.exists(path_gis_attribute_keys_dict):
+    if path_gis_attribute_keys_dict is not None and os.path.exists(path_gis_attribute_keys_dict):
         os.remove(path_gis_attribute_keys_dict)
 
 report = read_logs(path_simulation_folder_)

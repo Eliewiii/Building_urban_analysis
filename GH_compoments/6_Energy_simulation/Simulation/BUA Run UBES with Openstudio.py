@@ -10,7 +10,7 @@
         a Honeybee parameter hbjson file.
         _cop_cooling_: float: Coefficient of performance of the cooling system. Default = 3.
         _cop_heating_: float: Coefficient of performance of the heating system. Default = 3.
-        _overwrite_: bool: Put to True if the existing simulation should be overwritten. (Default: True)
+        _overwrite_: Set to True if the existing simulation should be overwritten. (Default: True)
         run_in_parallel_: bool: True if the simulations should be run in parallel. (not implemented yet) (Default: False)
         _run: Plug in a button to run the component
     Output:

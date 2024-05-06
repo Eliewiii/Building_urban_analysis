@@ -1,25 +1,21 @@
-"""Plot the bounding boxes of the buildings inside the Urban Canopy.
-Useful mostly for the context filtering.
+"""Plot the bounding boxes of the buildings inside the Urban Canopy. For the context selection algorithm.
     Inputs:
         path_simulation_folder_: Path to the folder. By default, the code will be run in
                                 Appdata\Local\Building_urban_analysis\Simulation_temp
         building_id_list_: List of building ids to display. If empty, all the buildings will be displayed.
-
         _run : Plug a boolean toggle to True to run the code and display the results.
     Output:
         bounding_box_list : Brep of the bounding_boxes of the target building
         building_id_list : List of the ids of the buildings
 """
 
-__author__ = "Elie"
+__author__ = "elie-medioni"
 __version__ = "2023.12.22"
 
 ghenv.Component.Name = "BUA Plot Bounding Boxes"
 ghenv.Component.NickName = 'PlotBoundingBoxes'
-ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
-ghenv.Component.SubCategory = '4 :: Context filtering'
-ghenv.Component.AdditionalHelpFromDocStrings = "1"
+ghenv.Component.SubCategory = '4 :: Context Selection'
 
 import json
 import os

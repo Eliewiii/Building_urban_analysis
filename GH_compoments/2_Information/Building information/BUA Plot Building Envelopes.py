@@ -18,8 +18,7 @@ __version__ = "2024.05.05"
 ghenv.Component.Name = "BUA Load Building Envelopes"
 ghenv.Component.NickName = 'LoadBuildingEnvelopes'
 ghenv.Component.Category = 'BUA'
-ghenv.Component.SubCategory = '2 :: Building Manipulation'
-ghenv.Component.AdditionalHelpFromDocStrings = "1"
+ghenv.Component.SubCategory = '2 :: Information'
 
 import json
 import os

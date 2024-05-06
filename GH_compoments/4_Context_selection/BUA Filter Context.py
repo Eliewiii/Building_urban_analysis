@@ -19,7 +19,7 @@ ghenv.Component.Name = "BUA Filter Context"
 ghenv.Component.NickName = 'FilterContext'
 ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
-ghenv.Component.SubCategory = '4 :: Context filtering'
+ghenv.Component.SubCategory = '4 :: Context Selection'
 ghenv.Component.AdditionalHelpFromDocStrings = "1"
 
 def clean_path(path):
