@@ -82,6 +82,13 @@ class BuildingShadingContextFilter(BuildingContextFilter):
             "second_pass_done": self.second_pass_done
         }
 
+    def move(self,moving_vector):
+        """
+        Move the all the shading surfaces along the moving vector. (if the building is moved)
+        :param moving_vector: list: [x, y, z] translation vector
+        """
+        # todo Elie
+
     def overwrite_filtering(self, overwrite_first_pass=False, overwrite_second_pass=False):
         """
         Overwrite the filtering of the BuildingShadingContext object
@@ -377,4 +384,5 @@ class BuildingShadingContextFilter(BuildingContextFilter):
         """
         Add the BIPV panels as shades to the BuildingShadingContext object
         """
-        # todo
+        # todo, but likely to be impossible to do properly as we cannot adjust the R value of the external
+        #  wall and roofto consider the influence of the BIPV panels

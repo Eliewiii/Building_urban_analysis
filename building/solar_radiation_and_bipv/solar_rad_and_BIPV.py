@@ -260,6 +260,13 @@ class SolarRadAndBipvSimulation:
 
         return json_dict
 
+    def move(self,moving_vector):
+        """
+        Move the sensorgrid of the object if the building is moved.
+        :param moving_vector: list: [x, y, z] translation vector
+        """
+        # todo Elie
+
     def generate_sensor_grid(self, hb_model_obj, bipv_on_roof=True, bipv_on_facades=True, roof_grid_size_x=1,
                              facades_grid_size_x=1, roof_grid_size_y=1, facades_grid_size_y=1,
                              offset_dist=0.1, overwrite=False):

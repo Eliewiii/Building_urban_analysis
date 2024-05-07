@@ -208,7 +208,7 @@ class BuildingModeled(BuildingBasic):
     def move(self, vector):
         """
         Move the building
-        :param vector:
+        :param vector: list: [x, y, z] translation vector
         :return:
         """
         # move the LB footprint
@@ -225,6 +225,11 @@ class BuildingModeled(BuildingBasic):
             moved_merged_faces_hb_model_dict = Model.from_dict(self.merged_faces_hb_model_dict)
             moved_merged_faces_hb_model_dict.move(moving_vector)
             self.merged_faces_hb_model_dict = moved_merged_faces_hb_model_dict.to_dict()
+        # move the context shading object
+        self.shading_context_obj.move(moving_vector)  # todo : implement th function
+        # move the sensor grid
+        self.solar_radiation_and_bipv_simulation_obj.move(moving_vector)  # todo : implement th function
+
         self.moved_to_origin = True
 
     def get_conditioned_area(self):

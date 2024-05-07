@@ -45,7 +45,6 @@ path_json = os.path.join(path_simulation_folder_, "urban_canopy.json")
 
 if _run and os.path.isfile(path_json):
 
-    path_json = os.path.join(path_simulation_folder_, "urban_canopy.json")
     with open(path_json, "r") as f:
         urban_canopy_dict = json.load(f)
 

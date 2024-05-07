@@ -6,6 +6,7 @@ It will automatically generate the bounding boxes of all the buildings if not do
         buildings to simulate if _on_building_to_simulate_ is set to True, otherwise it will be run
         on the target buildings.
         _on_building_to_simulate_: True if we want to perform the context selection on the buildings to simulate.
+        In that case do not fill the building_id_list_ input. Default = False
         _min_vf_criterion_: Minimum view factor criterion (in ]1:0[ ) of a surface of a context building boundary box
         to be kept for the second pass (Default = 0.01). If you want all buildings to be selected, just input a very low
         value, like 0.00001. Look at the documentation for more detailed explanation about the filtering process.
@@ -18,16 +19,16 @@ It will automatically generate the bounding boxes of all the buildings if not do
 
 
 __author__ = "elie-medioni"
-__version__ = "2023.12.27"
+__version__ = "2024.05.07"
 
 ghenv.Component.Name = "BUA Perform First Pass Context Selection"
 ghenv.Component.NickName = 'PerformFirstPassContextSelection'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '4 :: Context Selection'
-ghenv.Component.AdditionalHelpFromDocStrings = "1"
 
 
 import os
+import json
 
 def clean_path(path):
     path = path.replace("\\", "/")
@@ -45,16 +46,44 @@ def read_logs(path_simulation_folder):
         return ("No log file found")
 
 
-# Check path_simulation_folder_
-if path_simulation_folder_ is not None and os.path.isdir(path_simulation_folder_) is False:
-    raise ValueError("The simulation folder does not exist, enter a valid path")
 
 # Get Appdata\local folder
 local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 path_bat_file = os.path.join(path_tool, "Scripts", "mains_tool", "run_BUA.bat")
 
+# Check path_simulation_folder_
+if path_simulation_folder_ is None:
+    path_simulation_folder_ = os.path.join(path_tool, "Simulation_temp")
+elif os.path.isdir(path_simulation_folder_) is False:
+    raise ValueError("The simulation folder does not exist, enter a valid path")
+
+# Path to the urban canopy json file
+path_json = os.path.join(path_simulation_folder_, "urban_canopy.json")
+
+# Check the _min_vf_criterion_
+if _min_vf_criterion_ is not None:
+    if not 0<_min_vf_criterion_ <1:
+        raise ValueError("The minimum view factor criterion should be in ]0:1[ range.")
+
 if _run:
+
+    # Check if the urban canopy json file exists
+    if not os.path.isfile(path_json):
+        raise ValueError("The urban canopy json file does not exist, buildings need to be loaded before running the context selection.")
+
+    # Check if the building id list is not empty
+    with open(path_json, "r") as f:
+        urban_canopy_dict = json.load(f)
+    if building_id_list_ == [] or building_id_list_ is None:
+        pass
+    else:  # Check if the building ids are in the json file
+        for building_id in building_id_list_:
+            try:
+                urban_canopy_dict["buildings"][building_id]
+            except KeyError:
+                raise KeyError("Building with ID '{}' not found in the dictionary.".format(building_id))
+
     # Write the command
     command = path_bat_file
     # Steps to execute
@@ -77,9 +106,6 @@ if _run:
     # Run the bat file
     output = os.system(command + argument)
 
-# set default value for the simulation folder if not provided
-if path_simulation_folder_ is None:
-    path_simulation_folder_ = os.path.join(path_tool, "Simulation_temp")
 
 # Read the log file
 report = read_logs(path_simulation_folder_)

@@ -47,15 +47,22 @@ def clean_path(path):
 local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 
-# set default value for the simulation folder if not provided
+# Check path_simulation_folder_
 if path_simulation_folder_ is None:
     path_simulation_folder_ = os.path.join(path_tool, "Simulation_temp")
+elif os.path.isdir(path_simulation_folder_) is False:
+    raise ValueError("The simulation folder does not exist, enter a valid path")
 
+# Path to the urban canopy json file
 path_json = os.path.join(path_simulation_folder_, "urban_canopy.json")
 
-# Run the code if the _run input is set to True
-if _run and os.path.isfile(path_json):
 
+# Run the code
+if _run:
+    # Check if the urban canopy json file exists
+    if not os.path.isfile(path_json):
+        raise ValueError(
+            "The urban canopy json file does not exist, buildings need to be loaded before running the context selection.")
     # Read the json file
     with open(path_json, 'r') as json_file:
         urban_canopy_dict = json.load(json_file)
@@ -91,16 +98,16 @@ if _run and os.path.isfile(path_json):
 
     for building_id in _building_id_list_:
         # Check if the building has forced shades and add the list of forced HB Shades
-        if urban_canopy_dict["buildings"][building_id]["context_surfaces"]["forced_shades_from_user"] is not None:
+        if urban_canopy_dict["buildings"][building_id]["context_surfaces"]["forced_hb_shades_from_user_list"] is not None:
             forced_shade_from_user_tree.append([Shade.from_dict(shade) for shade in
                                                 urban_canopy_dict["buildings"][building_id]["context_surfaces"][
-                                                    "forced_shades_from_user"]])
+                                                    "forced_hb_shades_from_user_list"]])
         else:
             forced_shade_from_user_tree.append([])
         # Check if the building first pass of the context filtering was done and add the selected building ids
-        if urban_canopy_dict["buildings"][building_id]["context_surfaces"]["parameters"]["first_pass_done"]:
+        if urban_canopy_dict["buildings"][building_id]["context_surfaces"]["first_pass_done"]:
             first_pass_selected_building_id_tree.append(
-                urban_canopy_dict["buildings"][building_id]["context_surfaces"]["first_pass_selected_building_id_list"])
+                urban_canopy_dict["buildings"][building_id]["context_surfaces"]["selected_context_building_id_list"])
             # make a list of discarded building ids
             first_pass_discarded_building_id_tree.append(
                 [id for id in list(urban_canopy_dict["buildings"].keys()) if
@@ -110,16 +117,16 @@ if _run and os.path.isfile(path_json):
             print(
                 "The first pass of the context filtering was not done for the building with id {}".format(building_id))
         # Check if the building second pass of the context filtering was done and add the selected HB shades
-        if urban_canopy_dict["buildings"][building_id]["context_surfaces"]["parameters"]["second_pass_done"]:
+        if urban_canopy_dict["buildings"][building_id]["context_surfaces"]["second_pass_done"]:
             second_pass_selected_hb_shade_tree.append([Shade.from_dict(shade) for shade in
                                                        urban_canopy_dict["buildings"][building_id]["context_surfaces"][
-                                                           "second_pass_selected_hb_shade_list"]])
+                                                           "context_shading_hb_shade_list"]])
             if urban_canopy_dict["buildings"][building_id]["context_surfaces"][
-                "discarded_face3d_second_pass_list"] is not None:
+                "discarded_lb_face3d_context_shading_second_pass_list"] is not None:
                 second_pass_discarded_surface_tree.append([from_face3d(Face3D.from_dict(face)) for face in
                                                            urban_canopy_dict["buildings"][building_id][
                                                                "context_surfaces"][
-                                                               "discarded_face3d_second_pass_list"]])
+                                                               "discarded_lb_face3d_context_shading_second_pass_list"]])
             else:
                 second_pass_discarded_surface_tree.append([])
                 print(
