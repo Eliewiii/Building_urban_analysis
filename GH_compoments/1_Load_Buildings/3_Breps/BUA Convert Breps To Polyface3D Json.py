@@ -46,6 +46,8 @@ if _close_brep_list is not None and not _close_brep_list == []:
         if not brep.IsSolid:
             raise ValueError("At least one of the Brep is not closed, only close Brep can be loaded")
 
+path_polyface3d_json_file = os.path.join(_path_folder_, _file_name_ + ".json")
+
 if _run:
     # Check the inputs
     if _close_brep_list is None or _close_brep_list == []:
@@ -53,7 +55,11 @@ if _run:
     if _prefix is None or _prefix == "":
         raise ValueError("The prefix is empty")
 
-    path_polyface3d_json_file = os.path.join(_path_folder_, _file_name_ + ".json")
+
+
+    # Create the temparary simulation folder if it does not exist if needed
+    if not os.path.exists(_path_folder_):
+        os.makedirs(_path_folder_)
 
     # Initialize the list of polyface3d
     polyface3d_dict = {}

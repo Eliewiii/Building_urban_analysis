@@ -54,6 +54,7 @@ if _path_polyface3d_json_file is not None and not os.path.isfile(clean_path(_pat
 
 if _run:
 
+
     # Write the command
     command = path_bat_file
     # Steps to execute
