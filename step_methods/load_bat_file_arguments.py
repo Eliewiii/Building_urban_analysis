@@ -409,5 +409,9 @@ def parse_and_clean_building_id_list_from_argument_parser(building_id_list_form_
     if building_id_list_form_argument_parser is None:
         return None
     else:
+        # delete the undesired characters
+        string = building_id_list_form_argument_parser.replace("[", "")
+        string = string.replace("]", "")
+        string = string.replace("'", "")
         # return a list of id, ignore the empty string if there is any
-        return [id for id in building_id_list_form_argument_parser.split(" ") if id != '']
+        return [id for id in string.split(",") if id != '']

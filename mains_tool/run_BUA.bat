@@ -10,8 +10,9 @@ call "%path_venv_script%\activate.bat"
 echo Run the main script
 python "%path_python_scripts%\mains_tool\start_BUA.py" %*
 
-rem Deactivate the virtual environment
-pause
+rem pause
 
+rem Deactivate the virtual environment
 deactivate
+
 pause

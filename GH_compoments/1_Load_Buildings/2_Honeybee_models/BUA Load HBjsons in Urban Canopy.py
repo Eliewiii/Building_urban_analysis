@@ -1,7 +1,7 @@
 """Add HB Models from hbjson to the urban canopy building collection
     Inputs:
         path_simulation_folder_: Path to the simulation folder. By default, the code will be run in Appdata\Roaming\Building_urban_analysis\Simulation_temp
-        _path_hbjson_file_: Path to a hbjson file containing a HB Model to load in the Urban canopy
+        _path_hbjson_file_: Path to a hbjson file containing a HB Model to load in the Urban canopy. A list of files can inputted, they will be loaded one after another.
         _path_folder_with_hbjson_: Path to a directory containing hbjson files, containing HB Models to load in the Urban canopy
         _are_targets_ : True if the buildings to add are target buildings that we want to simulate
         keep_context_: True if you want to keep the context of the HB Model of the hbjsons. (Default: False)

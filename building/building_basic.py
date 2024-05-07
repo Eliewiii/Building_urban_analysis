@@ -268,14 +268,10 @@ class BuildingBasic:
         # check the property of the building, correct and assign default value if needed
         self.check_and_correct_property()
 
-    def check_and_correct_property(self,from_brep=False):
-        """ check if there is enough information about the building"""
-        # From Brep
-        if from_brep:
-            self.num_floor = 1
-            self.floor_height = self.height
+    def check_and_correct_property(self):
+        """ Check if the information about the building and adjust the properties if needed."""
         # no valid height and no valid number of floor
-        elif ((type(self.height) != int and type(self.height) != float) or (
+        if ((type(self.height) != int and type(self.height) != float) or (
                 self.height < 3)) and (type(self.num_floor) != int or self.num_floor < 1):
             self.height = 3.
             self.num_floor = 1
@@ -332,9 +328,8 @@ class BuildingBasic:
             building_obj.height = height
             building_obj.elevation = elevation
             building_obj.typology = typology
-            # check the height, number of floor and floor height
-            # (in the case here it will deduce the number of floor and floor height)
-            building_obj.check_and_correct_property(from_brep=True)
+            # Do not set the number of floor and floor height as Brep might not represent buildings. When
+            # needed the number of floor and floor height will be deduced
 
             # The Breps are added after the GIS if there is any, thus they are supposed to be in position already
             building_obj.moved_to_origin = True

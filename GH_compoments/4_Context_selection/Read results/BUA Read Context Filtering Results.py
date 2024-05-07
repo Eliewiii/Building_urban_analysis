@@ -18,15 +18,13 @@ simulations, but they can hinder some operations and displays and are thus not a
         second_pass_discarded_surface_tree : Tree of the list of discarded faces for each read building (second pass).
 """
 
-__author__ = "Elie"
-__version__ = "2023.08.21"
+__author__ = "elie-medioni"
+__version__ = "2024.05.07"
 
 ghenv.Component.Name = "BUA Read Context Filtering Results"
 ghenv.Component.NickName = 'ReadContextFilteringResults'
-ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '4 :: Context Selection'
-ghenv.Component.AdditionalHelpFromDocStrings = "1"
 
 import json
 import os

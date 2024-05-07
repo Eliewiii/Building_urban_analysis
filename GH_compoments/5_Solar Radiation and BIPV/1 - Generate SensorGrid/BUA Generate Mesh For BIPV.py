@@ -1,38 +1,37 @@
-"""Generate mesh on buildings for BIPV simulation
+"""Generate mesh on buildings for BIPV simulation.
     Inputs:
-        path_simulation_folder_: Path to the folder. Default = Appdata\Local\Building_urban_analysis\Simulation_temp
+        path_simulation_folder_: Path to the simulation folder. Default = Appdata\Local\Building_urban_analysis\Simulation_temp
         building_id_list_: list of buildings we want to run the simulation on
         _roof_bipv: bool : True if we want to run the simulation on the roof
         _facades_bipv: bool : True if we want to run the simulation on the facades
-        _roof_grid_size_x_: float : Number for the distance to move points from the surfaces of the geometry of the model.
+        _roof_grid_size_x_: float : Size of the grid on the x axis on the roof.
                     Default = 1.5
-        _roof_grid_size_y_: float : Number for the distance to move points from the surfaces of the geometry of the model.
+        _roof_grid_size_y_: float : Size of the grid on the y axis on the roof.
                     Default = 1.5
-        _facades_grid_size_x_: float : Number for the distance to move points from the surfaces of the geometry of the model.
+        _facades_grid_size_x_: float : Size of the grid on the x axis on the facades.
                     Default = 1.5
-        _facades_grid_size_y_: float : Number for the distance to move points from the surfaces of the geometry of the model.
+        _facades_grid_size_y_: float : Size of the grid on the x axis on the facades.
                     Default = 1.5
-        _offset_dist_: float:  Number for the distance to move points from the surfaces of the geometry of the model.
+        _offset_dist_: float:  Distance between the edges of surfaces and the mesh .
                     Typically, this should be a small positive number to ensure points are not blocked by the mesh.
                     Default = 0.1
-        merge_building_faces_: bool: True if the mesh should be generated on a geometry with merged faces,
-                    especially to ignore the subdivisions of floors and apartment.
-                    Default = False
+        merge_building_faces_: Set to True if a on a geometry with merged faces should be generated to ignore
+            the artificial subdivisions of floors and apartment when generating the mesh. To adjust the parameters
+            of the merged faces, use the component "BUA Merge Building Faces" before generating the mesh.
+            Default = False
         overwrite_: bool: True if the new mesh should overwrite the previous one if it exists.
         _run: Plug in a button to run the component
     Output:
         report: logs
         path_simulation_folder_: Path to the folder."""
 
-__author__ = "Eliewiii"
-__version__ = "2023.08.21"
+__author__ = "elie-medioni"
+__version__ = "2024.05.07"
 
 ghenv.Component.Name = "BUA Generate Mesh For BIPV"
 ghenv.Component.NickName = 'GenerateMeshForBIPV'
-ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '5 :: BIPV And Solar Radiation'
-ghenv.Component.AdditionalHelpFromDocStrings = "1"
 
 
 import os
@@ -55,9 +54,7 @@ def read_logs(path_simulation_folder):
 if path_simulation_folder_ is not None and os.path.isdir(path_simulation_folder_) is False:
     raise ValueError("The simulation folder does not exist, enter a valid path")
 
-# Check _roof_bipv and _facades_bipv
-if _roof_bipv is None or _facades_bipv is None:
-    raise ValueError("Please select if you want to run the simulation on the roof and/or the facades")
+
 
 # todo: make grid parameter and merge_building_faces_ components
 # todo : check the values of the other parameters
@@ -69,6 +66,11 @@ path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 path_bat_file = os.path.join(path_tool, "Scripts", "mains_tool", "run_BUA.bat")
 
 if _run and (_roof_bipv or _facades_bipv):
+
+    # Check _roof_bipv and _facades_bipv
+    if (_roof_bipv is None or not _roof_bipv) and (_facades_bipv is None or not _facades_bipv):
+        raise ValueError("Please select if you want to run the simulation on the roof and/or the facades")
+
     # Write the command
     command = path_bat_file
     # Steps to execute

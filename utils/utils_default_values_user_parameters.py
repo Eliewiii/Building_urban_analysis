@@ -54,8 +54,8 @@ default_perform_context_filtering_on_building_to_simulate = True
 default_name_radiation_simulation_folder = 'Radiation Simulation'
 default_grid_size = 1.5  # todo check it !
 
-default_on_roof = True
-default_on_facades = True
+default_on_roof = False
+default_on_facades = False
 
 # Default value mesh generation
 default_roof_grid_size_x = 1.5
