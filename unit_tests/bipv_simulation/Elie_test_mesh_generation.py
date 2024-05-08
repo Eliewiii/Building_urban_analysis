@@ -10,8 +10,7 @@ urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object
 SimulationBuildingManipulationFunctions.make_merged_face_of_buildings_in_urban_canopy(urban_canopy_object=urban_canopy_object)
 
 # Generate the sensor grid
-SimFunSolarRadAndBipv.generate_sensor_grid(urban_canopy_object=urban_canopy_object,
-                                           building_id_list=["Buil_TA_0"])
+SimFunSolarRadAndBipv.generate_sensor_grid(urban_canopy_object=urban_canopy_object)
 
 # Export urban_canopy to pickle
 SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,

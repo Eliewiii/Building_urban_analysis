@@ -13,15 +13,13 @@
     Output:
         bipv_panel_parameters: Dictionary containing the parameters for the BIPV panels """
 
-__author__ = "elie-medioni"
-__version__ = "2024.04.01"
+__author__ = "Elie"
+__version__ = "2024.04.07"
 
 ghenv.Component.Name = "BUA BIPV Panels Parameters"
 ghenv.Component.NickName = 'BIPVPanelsParameters'
-ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '6 :: Solar Radiation and BIPV'
-ghenv.Component.AdditionalHelpFromDocStrings = "1"
 
 import os
 import json

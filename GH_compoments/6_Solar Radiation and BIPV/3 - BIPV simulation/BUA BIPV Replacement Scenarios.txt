@@ -1,0 +1,7 @@
+no replacement                                                              = "no_replacement"
+replace failed panels every X years                                         = "replace_failed_panels_every_X_years"
+replace all panels every X years                                            = "replace_all_panels_every_X_years"
+replace failed panels at urban scale every X years                          = "uc_replace_failed_panels_every_X_years",
+replace all panels at urban scale every X year                              = "uc_replace_all_panels_every_X_years"
+replace failed panels and panels above X years every Y years                = "replace_failed_panels_and_panels_above_X_years_every_Y_years"
+replace failed panels and panels above X years at urban scale every Y years = "uc_replace_failed_panels_and_panels_above_X_years_every_Y_years"

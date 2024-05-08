@@ -153,6 +153,10 @@ class LoadArguments:
                             default=default_roof_inverter_id)
         parser.add_argument("--facades_inverter_id", help="id of the inverter used for the facades",
                             default=default_facades_inverter_id)
+        parser.add_argument("--roof_inverter_sizing_ratio",help="ratio of the power of the inverter to the peak power of the panels for the roof",
+                            default=default_roof_inverter_sizing_ratio)
+        parser.add_argument("--facades_inverter_sizing_ratio", help="ratio of the power of the inverter to the peak power of the panels for the facades",
+                            default=default_facades_inverter_sizing_ratio)
         parser.add_argument("--start_year", help="Start year of the simulation",
                             default=default_start_year)
         parser.add_argument("--end_year", help="End year of the simulation",
@@ -344,6 +348,8 @@ class LoadArguments:
             "facades_transport_id": args.facades_transport_id,
             "roof_inverter_id": args.roof_inverter_id,
             "facades_inverter_id": args.facades_inverter_id,
+            "roof_inverter_sizing_ratio": float(args.roof_inverter_sizing_ratio),
+            "facades_inverter_sizing_ratio": float(args.facades_inverter_sizing_ratio),
             "start_year": int(args.start_year),
             "end_year": int(args.end_year),
             "minimum_panel_eroi": float(args.minimum_panel_eroi),

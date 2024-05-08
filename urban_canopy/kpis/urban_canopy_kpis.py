@@ -212,9 +212,13 @@ class UrbanCanopyKPIs:
         self.harvested_energy_density["conditioned_apartment"][sub_type] = \
             self.kpi_intermediate_results_dict[sub_type]["electricity_harvested_density"][
                 "conditioned_apartment"]["cumulative"][-1]
-        self.net_energy_compensation[sub_type] = bipv_result_dict["energy_harvested"][
-                                                     "total"] / self.ubes_electricity_consumption / len(
-            bipv_result_dict["energy_harvested"]["yearly"])
+        # Net energy compensation
+        if self.ubes_electricity_consumption > 0:  # to avoid division by zero if UBES did not run
+            self.net_energy_compensation[sub_type] = bipv_result_dict["energy_harvested"][
+                                                         "total"] / self.ubes_electricity_consumption / len(
+                bipv_result_dict["energy_harvested"]["yearly"])
+        else:
+            self.net_energy_compensation[sub_type] = 0.
         # Primary energy
         self.primary_energy_payback_time[sub_type] = self.compute_pay_back_time(
             cumulative_annual_cost_list=bipv_result_dict["primary_energy"]["total"]["cumulative"],
