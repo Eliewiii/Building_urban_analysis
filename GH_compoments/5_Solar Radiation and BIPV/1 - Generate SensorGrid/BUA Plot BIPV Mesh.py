@@ -78,11 +78,11 @@ if _run:
             else:
                 if not urban_canopy_dict["buildings"][building_id]["type"] == "BuildingModeled":
                     raise ValueError(
-                        "Building with ID {} does not have a HB model, a context filtering cannot be performed on it".format(
+                        "Building with ID {} does not have a HB model, no mesh could have been performed on it".format(
                             building_id))
                 elif (urban_canopy_dict["buildings"][building_id]["solar_radiation_and_bipv"]["roof_sensorgrid"] is None
                               and  urban_canopy_dict["buildings"][building_id]["solar_radiation_and_bipv"]["facades_sensorgrid"] is None):
-                    raise ValueError("Context filtering for building ID {} was not performed".format(building_id))
+                    raise ValueError("No mesh was generated for the building id {}".format(building_id))
 
     # Init
     mesh_roof_list = []

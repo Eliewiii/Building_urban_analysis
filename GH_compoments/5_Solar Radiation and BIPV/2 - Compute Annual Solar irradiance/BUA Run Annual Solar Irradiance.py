@@ -1,27 +1,26 @@
-"""Run the annual solar irradiance simulation
+"""Run the annual solar irradiance simulation on the mesh of the buildings.
     Inputs:
-        path_simulation_folder_: Path to the folder. Default = Appdata\Local\Building_urban_analysis\Simulation_temp
+        path_simulation_folder_: Path to the simulation folder. Default = Appdata\Local\Building_urban_analysis\Simulation_temp
         building_id_list_: list of ints: list of buildings we want to run the simulation on. If None, all the target
          buildings will be simulated
-        _path_epw_weather_file: Path to the weather file. Default = todo
+        _path_epw_weather_file: Path to the weather file.
         _north_: A number between -360 and 360 for the counterclockwise
             difference between the North and the positive Y-axis in degrees.
             90 is West and 270 is East. (Default: 0)
-        _overwrite_: bool: True if we want to rerun the simulation for buildings that were simulated before.
-                Otherwise they will be skipped and speed up the computation. (Default: False)
+        _overwrite_: Set to True if we want to rerun the simulation for buildings that were simulated before if some parameters were changed.
+                Otherwise they will be skipped. (Default: False)
+        _run: Plug in a button to run the component
     Output:
         report: report
         path_simulation_folder_: Path to the folder."""
 
-__author__ = "Eliewiii"
-__version__ = "2023.08.21"
+__author__ = "elie-medioni"
+__version__ = "2024.05.07"
 
 ghenv.Component.Name = "BUA Run Annual Solar Irradiance"
 ghenv.Component.NickName = 'RunAnnualSolarIrradiance'
-ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '5 :: BIPV And Solar Radiation'
-ghenv.Component.AdditionalHelpFromDocStrings = "1"
 
 import os
 
@@ -50,6 +49,9 @@ path_bat_file = os.path.join(path_tool, "Scripts", "mains_tool", "run_BUA.bat")
 if path_simulation_folder_ is not None and os.path.isdir(path_simulation_folder_) is False:
     raise ValueError("The simulation folder does not exist, enter a valid path")
 
+# Check the path to the weather file
+if _path_epw_weather_file is not None and os.path.isfile(_path_epw_weather_file) is False:
+    raise ValueError("The weather file does not exist, enter a valid path")
 
 if _run :
     # Write the command

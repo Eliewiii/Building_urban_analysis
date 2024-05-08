@@ -143,7 +143,7 @@ def main():
         UrbanBuildingEnergySimulationFunctions.load_epw_and_hb_simulation_parameters_for_ubes_in_urban_canopy(
             urban_canopy_obj=urban_canopy_object,
             path_simulation_folder=arguments_dictionary["path_simulation_folder"],
-            path_hbjson_simulation_parameter_file=arguments_dictionary["path_hbjson_simulation_parameter_file"],
+            path_hbjson_simulation_parameter_file=arguments_dictionary["path_hbjson_simulation_parameters_file"],
             path_weather_file=arguments_dictionary["path_weather_file"],
             ddy_file=arguments_dictionary["path_ddy_file"],
             overwrite=arguments_dictionary["overwrite"])

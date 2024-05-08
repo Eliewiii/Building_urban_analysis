@@ -12,11 +12,11 @@ required_outputs = ["Zone Electric Equipment Electricity Energy", "Zone Ideal Lo
                     "Zone Ideal Loads Supply Air Total Heating Energy", "Zone Lights Electricity Energy"]
 
 
-def check_simulation_parameters(path_hbjson_simulation_parameter_file, path_file_epw, ddy_file=None):
+def check_simulation_parameters(path_hbjson_simulation_parameter_file, path_weather_file, ddy_file=None):
     """
     Check if the simulation parameter file is valid
     :param path_hbjson_simulation_parameter_file: str, path to the simulation parameter file
-    :param path_file_epw: str, path to the epw file
+    :param path_weather_file: str, path to the epw file
     :param ddy_file: str, path to the ddy (design day) file
     :return hb_sim_parameter_obj: Honeybee SimulationParameter object, epw_obj: EPW object
     :return lb_epw_obj: Ladybug EPW object
@@ -26,7 +26,7 @@ def check_simulation_parameters(path_hbjson_simulation_parameter_file, path_file
     # Check if the file exists
     if not os.path.isfile(path_hbjson_simulation_parameter_file):
         raise FileNotFoundError("The simulation parameter file does not exist.")
-    elif not os.path.isfile(path_file_epw):
+    elif not os.path.isfile(path_weather_file):
         raise FileNotFoundError("The epw file does not exist.")
 
     # Check if the file contains a valid simulation parameters
@@ -39,7 +39,7 @@ def check_simulation_parameters(path_hbjson_simulation_parameter_file, path_file
 
     # Check if the epw file is valid
     try:
-        lb_epw_obj = EPW(path_file_epw)
+        lb_epw_obj = EPW(path_weather_file)
     except:
         raise ValueError("The epw file is not valid, it cannot be loaded.")
 

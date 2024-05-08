@@ -18,15 +18,13 @@
 """
 
 
-__author__ = "Eliewiii"
-__version__ = "2024.03.31"
+__author__ = "elie-medioni"
+__version__ = "2024.05.07"
 
 ghenv.Component.Name = "BUA Run UBES with Openstudio"
 ghenv.Component.NickName = 'RunUBESwithOpenstudio'
-ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '6 :: Energy Simulation'
-ghenv.Component.AdditionalHelpFromDocStrings = "1"
 
 
 import os
@@ -119,7 +117,7 @@ if _run:
     if path_ddy_file_ is not None:
         argument = argument + ' --ddy_file "{}"'.format(ddy_file_)
     if _hb_simulation_parameters is not None:
-        argument = argument + ' --path_hbjson_simulation_parameters "{}"'.format(path_hbjson_simulation_parameter_file)
+        argument = argument + ' --path_hbjson_simulation_parameters_file "{}"'.format(path_hbjson_simulation_parameter_file)
     if _cop_cooling_ is not None:
         argument = argument + " --cop_cooling {}".format(float(_cop_cooling_))
     if _cop_heating_ is not None:

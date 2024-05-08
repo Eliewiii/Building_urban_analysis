@@ -68,14 +68,14 @@ class UrbanBuildingEnergySimulation:
         in the meantime """
         bes_result_dict_to_csv(bes_results_dict=self.ubes_results_dict, path_csv_file=path_csv_file)
 
-    def load_epw_and_hb_simulation_parameters(self, path_hbjson_simulation_parameter_file, path_file_epw,
+    def load_epw_and_hb_simulation_parameters(self, path_hbjson_simulation_parameter_file, path_weather_file,
                                               ddy_file=None,
                                               overwrite=False):
         """
         Load the epw file and simulation parameters from the simulation parameter file and check and correct teh
         simulation parameters if needed.
         :param path_hbjson_simulation_parameter_file: str, path to the simulation parameter hbjson file
-        :param path_file_epw: str, path to the epw file
+        :param path_weather_file: str, path to the epw file
         :param ddy_file: str, path to the ddy (design day) file
         :param overwrite: bool, if True, overwrite the existing simulation parameters
         :return flag_re_initialize_building_bes: bool, True if the building bes needs to be re-initialized because
@@ -92,7 +92,7 @@ class UrbanBuildingEnergySimulation:
         # Check if the simulation parameter file and epw file are valid and adjust them if needed
         hb_sim_parameter_obj, lb_epw_obj = check_simulation_parameters(
             path_hbjson_simulation_parameter_file=path_hbjson_simulation_parameter_file,
-            path_file_epw=path_file_epw,
+            path_weather_file=path_weather_file,
             ddy_file=ddy_file)
         # Set the simulation parameter and epw file
         self.hb_simulation_parameters_obj = hb_sim_parameter_obj

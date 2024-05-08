@@ -24,7 +24,7 @@ class UrbanBuildingEnergySimulationFunctions:
     def load_epw_and_hb_simulation_parameters_for_ubes_in_urban_canopy(urban_canopy_obj: UrbanCanopy,
                                                                        path_simulation_folder=default_path_simulation_folder,
                                                                        path_hbjson_simulation_parameter_file=default_path_hbjson_simulation_parameter_file,
-                                                                       path_file_epw=default_path_weather_file,
+                                                                       path_weather_file=default_path_weather_file,
                                                                        ddy_file=None,
                                                                        overwrite=False):
         """
@@ -40,7 +40,7 @@ class UrbanBuildingEnergySimulationFunctions:
         urban_canopy_obj.load_epw_and_hb_simulation_parameters_for_ubes(
             path_simulation_folder=path_simulation_folder,
             path_hbjson_simulation_parameter_file=path_hbjson_simulation_parameter_file,
-            path_file_epw=path_file_epw, ddy_file=ddy_file, overwrite=overwrite)
+            path_weather_file=path_weather_file, ddy_file=ddy_file, overwrite=overwrite)
 
         # user_logger.info("")
         dev_logger.info("EPW file and HB simulation parameters loaded")

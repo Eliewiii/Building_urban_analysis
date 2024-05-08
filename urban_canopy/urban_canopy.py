@@ -633,7 +633,7 @@ class UrbanCanopy:
 
     def load_epw_and_hb_simulation_parameters_for_ubes(self, path_simulation_folder,
                                                        path_hbjson_simulation_parameter_file,
-                                                       path_file_epw, ddy_file=None,
+                                                       path_weather_file, ddy_file=None,
                                                        overwrite=False):
         """
         Load the HB simulation parameters from the json file, check if it is valid, correct it eventually and add to the
@@ -641,14 +641,14 @@ class UrbanCanopy:
         :param path_simulation_folder: string, path to the simulation folder.
         :param path_hbjson_simulation_parameter_file: string, path to the json file containing the HB simulation
             parameters.
-        :param path_file_epw: string, path to the epw file.
+        :param path_weather_file: string, path to the epw file.
         :param ddy_file: string, path to the ddy (design days) file.
         :param overwrite: bool, if True, the existing HB simulation parameters will be overwritten.
         """
 
         flag_re_initialize_building_bes = self.ubes_obj.load_epw_and_hb_simulation_parameters(
             path_hbjson_simulation_parameter_file=path_hbjson_simulation_parameter_file,
-            path_file_epw=path_file_epw, ddy_file=ddy_file, overwrite=overwrite)
+            path_weather_file=path_weather_file, ddy_file=ddy_file, overwrite=overwrite)
 
         # Re-initialize the UBES of the whole UrbanCanopy if needed
         if flag_re_initialize_building_bes:

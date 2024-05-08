@@ -103,8 +103,8 @@ class LoadArguments:
         parser.add_argument("--north_angle",
                             help="angle of the north in degree", default=0)
         # Urban Building Energy Simulation
-        parser.add_argument("--path_hbjson_simulation_parameters", help="path to the json file containing the HB"
-                                                                        " simulation parameters", default=None)
+        parser.add_argument("--path_hbjson_simulation_parameters_file", help="path to the json file containing the HB"
+                                                                        " simulation parameters", default=default_path_hbjson_simulation_parameter_file)
         parser.add_argument("--path_ddy_file", help="path to the ddy file", default=None)
         parser.add_argument("--cop_cooling", help="COP cooling", default=default_cop_cooling)
         parser.add_argument("--cop_heating", help="COP heating", default=default_cop_heating)
@@ -243,7 +243,7 @@ class LoadArguments:
                             nargs='?', default=False)
 
         # Urban Building Energy Simulation
-        parser.add_argument("--run_ubes_with-openstudio",
+        parser.add_argument("--run_ubes_with_openstudio",
                             help="Run the Urban Building Energy Simulation with Openstudio",
                             nargs='?', default=False)
 
@@ -324,7 +324,7 @@ class LoadArguments:
             "path_weather_file": args.path_weather_file,
             "north_angle": float(args.north_angle),
             # Urban Building Energy Simulation
-            "path_hbjson_simulation_parameters": args.path_hbjson_simulation_parameters,
+            "path_hbjson_simulation_parameters_file": args.path_hbjson_simulation_parameters_file,
             "path_ddy_file": args.path_ddy_file,
             "cop_cooling": float(args.cop_cooling),
             "cop_heating": float(args.cop_heating),
