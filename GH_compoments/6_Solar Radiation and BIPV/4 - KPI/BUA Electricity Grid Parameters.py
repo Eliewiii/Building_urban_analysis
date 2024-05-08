@@ -14,7 +14,7 @@ ghenv.Component.Name = "BUA Electricity Grid Parameters"
 ghenv.Component.NickName = 'ElectricityGridParameters'
 ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
-ghenv.Component.SubCategory = '5 :: Solar Radiation and BIPV'
+ghenv.Component.SubCategory = '6 :: Solar Radiation and BIPV'
 ghenv.Component.AdditionalHelpFromDocStrings = "1"
 
 import json

@@ -1,6 +1,6 @@
 """Read the results of the Building Energy Simulation (BES) for the buildings individually.
     Inputs:
-        path_simulation_folder_: Path to the folder. By default, the code will be run in
+        path_simulation_folder_: Path to the simulationfolder. By default, the code will be run in
                                 Appdata\Local\Building_urban_analysis\Simulation_temp
         building_id_list_: List of building ids to read. If empty, the result will be read for all target buildings.
         _run : Plug a boolean toggle to True to run the code and display the results.
@@ -15,10 +15,8 @@ __version__ = "2024.04.07"
 
 ghenv.Component.Name = "BUA Read BES Results"
 ghenv.Component.NickName = 'ReadBESResults'
-ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
-ghenv.Component.SubCategory = '6 :: Energy Simulation'
-ghenv.Component.AdditionalHelpFromDocStrings = "1"
+ghenv.Component.SubCategory = '5 :: Energy Simulation'
 
 import json
 import os

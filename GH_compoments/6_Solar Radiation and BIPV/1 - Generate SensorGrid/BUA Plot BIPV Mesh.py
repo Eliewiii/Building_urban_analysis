@@ -16,7 +16,7 @@ __version__ = "2024.05.07"
 ghenv.Component.Name = "BUA Plot BIPV Mesh"
 ghenv.Component.NickName = 'PlotBIPVMesh'
 ghenv.Component.Category = 'BUA'
-ghenv.Component.SubCategory = '5 :: Solar Radiation and BIPV'
+ghenv.Component.SubCategory = '6 :: Solar Radiation and BIPV'
 
 import ghpythonlib.treehelpers as th
 

@@ -704,7 +704,7 @@ class UrbanCanopy:
         for building_obj in self.building_dict.values():
             if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
                     and isinstance(building_obj, BuildingModeled) and (
-                    building_obj.is_target or building_obj.to_simulate):
+                    building_obj.is_target or building_obj.to_simulate) :
                 # Generate the hbjson then idf file for the building simulation
                 building_obj.generate_idf_for_bes_with_openstudio(
                     path_ubes_temp_sim_folder=path_ubes_temp_sim_folder,

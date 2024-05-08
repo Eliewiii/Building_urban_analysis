@@ -1,6 +1,6 @@
 """Read the results of the Urban Building Energy Simulation.
     Inputs:
-        path_simulation_folder_: Path to the folder. By default, the code will be run in
+        path_simulation_folder_: Path to the simulation folder. By default, the code will be run in
                                 Appdata\Local\Building_urban_analysis\Simulation_temp
         _run : Plug a boolean toggle to True to run the code and display the results.
     Output:
@@ -13,10 +13,8 @@ __version__ = "2024.04.07"
 
 ghenv.Component.Name = "BUA Read UBES Results"
 ghenv.Component.NickName = 'ReadUBESResults'
-ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
-ghenv.Component.SubCategory = '6 :: Energy Simulation'
-ghenv.Component.AdditionalHelpFromDocStrings = "1"
+ghenv.Component.SubCategory = '5 :: Energy Simulation'
 
 import json
 import os

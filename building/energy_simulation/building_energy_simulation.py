@@ -100,6 +100,7 @@ class BuildingEnergySimulation:
         :param hb_model_obj: Honeybee Model object
         :param silent: bool, if True, the EnergyPlus output will not be printed in the console
         """
+
         # Export the Honeybee Model to a hbjson file in the path_building_bes_temp_folder
         path_hbjson_file = hb_model_obj.to_hbjson(name=self.building_id, folder=path_building_bes_temp_folder)
 

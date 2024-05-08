@@ -20,7 +20,7 @@ ghenv.Component.Name = "BUA BIPV Panels Parameters"
 ghenv.Component.NickName = 'BIPVPanelsParameters'
 ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
-ghenv.Component.SubCategory = '5 :: Solar Radiation and BIPV'
+ghenv.Component.SubCategory = '6 :: Solar Radiation and BIPV'
 ghenv.Component.AdditionalHelpFromDocStrings = "1"
 
 import os

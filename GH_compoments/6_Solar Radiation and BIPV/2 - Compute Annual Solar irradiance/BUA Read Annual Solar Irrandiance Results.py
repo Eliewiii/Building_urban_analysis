@@ -7,8 +7,8 @@
         _run: Plug in a boolean toggle to run the component and read the results
     Output:
         report: report
-        roof_annual_irrandiance_tree: Tree of the annual irradiance for the roof
-        facades_annual_irrandiance_tree: Tree of the annual irradiance for the facades"""
+        roof_annual_irradiance_tree: Tree of the annual irradiance for the roof
+        facades_annual_irradiance_tree: Tree of the annual irradiance for the facades"""
 
 __author__ = "elie-medioni"
 __version__ = "2024.05.07"
@@ -16,7 +16,7 @@ __version__ = "2024.05.07"
 ghenv.Component.Name = "BUA Read Annual Solar Irrandiance Results"
 ghenv.Component.NickName = 'ReadAnnualSolarIrrandianceResults'
 ghenv.Component.Category = 'BUA'
-ghenv.Component.SubCategory = '5 :: Solar Radiation and BIPV'
+ghenv.Component.SubCategory = '6 :: Solar Radiation and BIPV'
 
 import ghpythonlib.treehelpers as th
 
@@ -112,8 +112,8 @@ if _run:
         else:
             facades_annual_solar_irr_list.append([])
 
-    roof_annual_irrandiance_tree = th.list_to_tree(roof_annual_solar_irr_list)
-    facades_annual_irrandiance_tree = th.list_to_tree(facades_annual_solar_irr_list)
+    roof_annual_irradiance_tree = th.list_to_tree(roof_annual_solar_irr_list)
+    facades_annual_irradiance_tree = th.list_to_tree(facades_annual_solar_irr_list)
 
 if not os.path.isfile(path_json):
     print("the json file of the urban canopy does not exist")

@@ -26,7 +26,7 @@ ghenv.Component.Name = "BUA Continue BIPV Simulation"
 ghenv.Component.NickName = 'ContinueBIPVSimulation'
 ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
-ghenv.Component.SubCategory = '5 :: BIPV And Solar Radiation'
+ghenv.Component.SubCategory = '6 :: Solar Radiation and BIPV'
 ghenv.Component.AdditionalHelpFromDocStrings = "1"
 
 import os

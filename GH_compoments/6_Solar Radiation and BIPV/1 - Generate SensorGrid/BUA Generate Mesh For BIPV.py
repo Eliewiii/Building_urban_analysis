@@ -31,7 +31,7 @@ __version__ = "2024.05.07"
 ghenv.Component.Name = "BUA Generate Mesh For BIPV"
 ghenv.Component.NickName = 'GenerateMeshForBIPV'
 ghenv.Component.Category = 'BUA'
-ghenv.Component.SubCategory = '5 :: BIPV And Solar Radiation'
+ghenv.Component.SubCategory = '6 :: Solar Radiation and BIPV'
 
 
 import os

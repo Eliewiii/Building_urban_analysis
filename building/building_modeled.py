@@ -409,6 +409,9 @@ class BuildingModeled(BuildingBasic):
         :param overwrite: bool: default=False, if True, the IDF file will be overwritten if it already exists
         :param silent: bool: default=False, if True, the OpenStudio messages will not be printed
         """
+        # Do not run for if the IDF file already exists and overwrite is False
+        if not overwrite and self.bes_obj.idf_generated:
+            return
         # Check if the building sub-folder exist in the temporary folder, if not create it
         path_building_bes_temp_folder = os.path.join(path_ubes_temp_sim_folder, self.id)
         if os.path.isdir(path_building_bes_temp_folder):
