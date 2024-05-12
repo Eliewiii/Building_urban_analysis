@@ -1,6 +1,6 @@
 """Generate a version of the HB model of the building with merged faces. It is useful to ignore the subdivisions
-of floors and apartment. It can be used for the context filtering and generate the mesh for the solar radiation simulation.
-Only building with a Honeybee Model can generate a merged face HB Model.
+of floors and apartment. It can be used for the context selection and generate the mesh for the solar radiation simulation.
+Only BuildingModelled objects (with a Honeybee Model) can generate a merged face HB Model.
     Inputs:
         path_simulation_folder_: Path to the folder. Default = Appdata\Local\Building_urban_analysis\Simulation_temp
         building_id_list_: list of buildings we want to run the simulation on. If set to None, it will be run on
@@ -12,12 +12,11 @@ Only building with a Honeybee Model can generate a merged face HB Model.
         report: logs
         path_simulation_folder_: Path to the folder."""
 
-__author__ = "Eliewiii"
-__version__ = "2023.12.27"
+__author__ = "elie-medioni"
+__version__ = "2024.05.07"
 
 ghenv.Component.Name = "BUA Merge Building Faces"
 ghenv.Component.NickName = 'MergeBuildingFaces'
-ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '3 :: Building manipulation'
 
@@ -41,14 +40,19 @@ def read_logs(path_simulation_folder):
         return ("No log file found")
 
 
-# Check path_simulation_folder_
-if path_simulation_folder_ is not None and os.path.isdir(path_simulation_folder_) is False:
-    raise ValueError("The simulation folder does not exist, enter a valid path")
-
 # Get Appdata\local folder
 local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 path_bat_file = os.path.join(path_tool, "Scripts", "mains_tool", "run_BUA.bat")
+
+# Check path_simulation_folder_
+if path_simulation_folder_ is None:
+    path_simulation_folder_ = os.path.join(path_tool, "Simulation_temp")
+elif os.path.isdir(path_simulation_folder_) is False:
+    raise ValueError("The simulation folder does not exist, enter a valid path")
+
+# Path to the urban canopy json file
+path_json = os.path.join(path_simulation_folder_, "urban_canopy.json")
 
 # Check _bipv_parameters
 if _merge_face_parameters_ is not None:

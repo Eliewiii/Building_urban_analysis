@@ -1,2 +1,1 @@
-mitrex_roof c-Si    = "mitrex_roof c-Si"
-mitrex_facades c-Si = "mitrex_facades c-Si"
+Canada/Israel = "transport c-si roof canada"

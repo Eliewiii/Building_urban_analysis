@@ -14,9 +14,8 @@ __version__ = "2023.08.21"
 
 ghenv.Component.Name = "BUA Get Building Ids"
 ghenv.Component.NickName = 'GetBuildingIds'
-ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = "BUA"
-ghenv.Component.SubCategory = "7 :: Information"
+ghenv.Component.SubCategory = "2 :: Information"
 
 
 
@@ -46,14 +45,18 @@ if _run and os.path.isfile(path_json):
     target_building_id_list = []
     simulated_building_id_list = []
     context_building_id_list = []
-
-    for id in list(urban_canopy_dict["buildings"].keys()):
-        if urban_canopy_dict["buildings"][id]["is_target_building"] == True:
-            target_building_id_list.append(id)
-        elif urban_canopy_dict["buildings"][id]["is_building_to_simulate"] == True:
-            simulated_building_id_list.append(id)
+    # Get the list of the target, simulated and context buildings
+    for building_id in list(urban_canopy_dict["buildings"].keys()):
+    # Get the list of the target, simulated and context buildings
+        if urban_canopy_dict["buildings"][building_id]["type"] == "BuildingModeled":
+            if urban_canopy_dict["buildings"][building_id]["is_target_building"] == True:
+                target_building_id_list.append(building_id)
+            elif urban_canopy_dict["buildings"][building_id]["is_building_to_simulate"] == True:
+                simulated_building_id_list.append(building_id)
+            else:
+                context_building_id_list.append(building_id)
         else:
-            context_building_id_list.append(id)
+            context_building_id_list.append(building_id)
 
 
 if not os.path.isfile(path_json):

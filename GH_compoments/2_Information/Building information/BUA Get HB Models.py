@@ -13,7 +13,6 @@ ghenv.Component.Name = "BUA Get HB Models"
 ghenv.Component.NickName = 'GetHBModels'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '2 :: Information'
-ghenv.Component.AdditionalHelpFromDocStrings = "1"
 
 
 import json
