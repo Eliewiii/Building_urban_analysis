@@ -100,6 +100,10 @@ class BipvInverter:
         :param capacity: capacity in Wp
         :return ghg: ghg emission in kgCO2eq
         """
+        if capacity < 0:
+            raise ValueError("The capacity must be positive")
+        if capacity == 0:
+            return 0
         ghg = self.ghg_coefficient * capacity/1000. + self.ghg_offset
         return ghg
 
@@ -109,6 +113,10 @@ class BipvInverter:
         :param capacity: capacity in kWp
         :return ghg: ghg emission in kgCO2eq
         """
+        if capacity < 0:
+            raise ValueError("The capacity must be positive")
+        if capacity == 0:
+            return 0
         primary_energy = self.primary_energy_coefficient * capacity/1000. + self.primary_energy_offset
         return primary_energy
 

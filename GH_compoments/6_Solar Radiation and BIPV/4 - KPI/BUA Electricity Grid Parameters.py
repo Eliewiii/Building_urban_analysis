@@ -1,5 +1,4 @@
 """Parameters of the Electricity Grid for the KPIs computation.
-The default values
     Inputs:
         _grid_ghg_intensity: Green house gaz intensity of the electricity grid in kgCO2/kWh.
         _grid_energy_intensity: Energy intensity of the electricity grid in kWh/kWh.
@@ -12,10 +11,8 @@ __version__ = "2024.03.31"
 
 ghenv.Component.Name = "BUA Electricity Grid Parameters"
 ghenv.Component.NickName = 'ElectricityGridParameters'
-ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '6 :: Solar Radiation and BIPV'
-ghenv.Component.AdditionalHelpFromDocStrings = "1"
 
 import json
 

@@ -1,6 +1,6 @@
 """ Compute the KPIs of the urban canopy scenario based on the results of the UBES and BIPV simulations.
     Inputs:
-        path_simulation_folder_: Path to the folder. Default = Appdata\Local\Building_urban_analysis\Simulation_temp
+        path_simulation_folder_: Path to the simulation folder. Default = Appdata\Local\Building_urban_analysis\Simulation_temp
         _bipv_simulation_identifier_: Identifier of the simulation that should be simulated. The results of each
             simulation saved in a separate folder. (Default = "new_uc_scenario")
         _electricity_grid_parameters : Parameters of the electricity grid. to be defined from the ElectricityGridParameters component.
@@ -17,10 +17,8 @@ __version__ = "2024.04.01"
 
 ghenv.Component.Name = "BUA Compute KPIs"
 ghenv.Component.NickName = 'ComputeKPIs'
-ghenv.Component.Message = '0.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '6 :: Solar Radiation and BIPV'
-ghenv.Component.AdditionalHelpFromDocStrings = "1"
 
 import os
 import json
@@ -42,14 +40,20 @@ def read_logs(path_simulation_folder):
         return ("No log file found")
 
 
-# Check path_simulation_folder_
-if path_simulation_folder_ is not None and os.path.isdir(path_simulation_folder_) is False:
-    raise ValueError("The simulation folder does not exist, enter a valid path")
-
 # Get Appdata\local folder
 local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 path_bat_file = os.path.join(path_tool, "Scripts", "mains_tool", "run_BUA.bat")
+
+
+# Check path_simulation_folder_
+if path_simulation_folder_ is None:
+    path_simulation_folder_ = os.path.join(path_tool, "Simulation_temp")
+elif os.path.isdir(path_simulation_folder_) is False:
+    raise ValueError("The simulation folder does not exist, enter a valid path")
+
+# Path to the urban canopy json file
+path_json = os.path.join(path_simulation_folder_, "urban_canopy.json")
 
 # Check electricity grid parameters
 if _electricity_grid_parameters is not None:
@@ -95,6 +99,17 @@ if zone_area_ is not None:
     if zone_area_ <= 0:
         raise ValueError("The zone area must be greater than 0")
 
+# Check if the _bipv_simulation_identifier_ is exist in the urban canopy json file if not None
+if _bipv_simulation_identifier_ is not None:
+    if not os.path.isfile(path_json):
+        raise ValueError("The urban canopy json file does not exist, buildings need to be loaded before running the context selection.")
+    with open(path_uc_json, 'r') as json_file:
+        urban_canopy_dict = json.load(json_file)
+    if _bipv_simulation_identifier_ not in urban_canopy_dict["bipv_scenarios"].keys():
+        raise ValueError(
+            "The simulation identifier is not valid, please check the identifier of the bipv simulation"
+            "that were run with the adequate component")
+
 if _run:
     # Write the command
     command = path_bat_file
@@ -105,7 +120,7 @@ if _run:
     if path_simulation_folder_ is not None:
         argument = argument + ' -f "{}"'.format(path_simulation_folder_)
     if _bipv_simulation_identifier_ is not None:
-        argument = argument + ' -b "{}"'.format(_bipv_simulation_identifier_)
+        argument = argument + ' --bipv_scenario_identifier "{}"'.format(_bipv_simulation_identifier_)
     if grid_ghg_intensity is not None:
         argument = argument + ' --grid_ghg_intensity "{}"'.format(grid_ghg_intensity)
     if grid_energy_intensity is not None:

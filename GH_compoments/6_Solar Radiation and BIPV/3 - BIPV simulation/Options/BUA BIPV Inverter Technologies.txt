@@ -1,0 +1,1 @@
+default inverter technology   = "inverter_default"

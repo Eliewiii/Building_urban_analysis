@@ -96,6 +96,8 @@ def main():
         SimulationBuildingManipulationFunctions.move_buildings_to_origin(
             urban_canopy_object=urban_canopy_object)
 
+    # Microclimate weather files
+
     # Merge faces of buildings
     if simulation_step_dictionary["run_make_merged_faces_hb_model"]:
         SimulationBuildingManipulationFunctions.make_merged_face_of_buildings_in_urban_canopy(
@@ -231,7 +233,16 @@ def main():
                                                                      update_panel_technology=arguments_dictionary[
                                                                          "update_panel_technology"])
 
-    # Microclimate weather files
+    # Run KPI computation
+    if simulation_step_dictionary["run_kpi_simulation"]:
+        SimFunSolarRadAndBipv.run_kpi_simulation(urban_canopy_object=urban_canopy_object,
+                                                 path_simulation_folder=arguments_dictionary["path_simulation_folder"],
+                                                 bipv_scenario_identifier=arguments_dictionary["bipv_scenario_identifier"],
+                                                 grid_ghg_intensity=arguments_dictionary["grid_ghg_intensity"],
+                                                 grid_energy_intensity=arguments_dictionary["grid_energy_intensity"],
+                                                 grid_electricity_sell_price=arguments_dictionary[
+                                                     "grid_electricity_sell_price"],
+                                                 zone_area=arguments_dictionary["zone_area"])
 
     # Preprocessing Longwave radiation #
 
@@ -247,23 +258,6 @@ def main():
         SimulationCommonMethods.save_urban_canopy_to_json(urban_canopy_object=urban_canopy_object,
                                                           path_simulation_folder=arguments_dictionary[
                                                               "path_simulation_folder"])
-
-    # # Post-processing panels
-    # if simulation_step_dictionary["generate_panels_results_in_csv"]:
-    #     SimulationPostProcessingAndPlots.generate_csv_panels_simulation_results(
-    #         urban_canopy_object=urban_canopy_object,
-    #         path_simulation_folder=
-    #         arguments_dictionary[
-    #             "path_simulation_folder"])
-    #
-    # if simulation_step_dictionary["plot_graph_results_building_panel_simulation"]:
-    #     SimulationPostProcessingAndPlots.plot_graphs(urban_canopy_object=urban_canopy_object,
-    #                                                  path_simulation_folder=arguments_dictionary[
-    #                                                      "path_simulation_folder"],
-    #                                                  study_duration_years=arguments_dictionary[
-    #                                                      "study_duration_years"],
-    #                                                  country_ghe_cost=arguments_dictionary[
-    #                                                      "country_ghe_cost"])
 
 
 if __name__ == "__main__":

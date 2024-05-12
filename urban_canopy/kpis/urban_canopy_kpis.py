@@ -267,7 +267,7 @@ class UrbanCanopyKPIs:
             bipv_result_dict["energy_harvested"]["yearly"]]
 
         # Intensity
-        sub_kpi_intermediate_results_dict["eroi"]["cumulative"] = [electricity_harvested / primary_energy_cost
+        sub_kpi_intermediate_results_dict["eroi"]["cumulative"] = [electricity_harvested / primary_energy_cost if primary_energy_cost > 0 else None
                                                                    for
                                                                    electricity_harvested, primary_energy_cost
                                                                    in
@@ -277,10 +277,10 @@ class UrbanCanopyKPIs:
                                                                            "total"][
                                                                            "cumulative"])]
         sub_kpi_intermediate_results_dict["ghg_emissions_intensity"]["cumulative"] = [
-            ghg_emissions / electricity_harvested for
+            ghg_emissions / electricity_harvested if electricity_harvested > 0 else None for
             ghg_emissions, electricity_harvested in
             zip(bipv_result_dict["ghg"]["total"]["cumulative"], bipv_result_dict["energy_harvested"]["cumulative"])]
-        sub_kpi_intermediate_results_dict["electricity_cost"]["cumulative"] = [bipv_cost / electricity_harvested
+        sub_kpi_intermediate_results_dict["electricity_cost"]["cumulative"] = [bipv_cost / electricity_harvested if electricity_harvested > 0 else None
                                                                                for bipv_cost, electricity_harvested in
                                                                                zip(bipv_result_dict["cost"][
                                                                                        "net_profit"][
