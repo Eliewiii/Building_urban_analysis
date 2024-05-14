@@ -1,6 +1,6 @@
 # Building Urban Analysis
 
-A powerful urban building energy modeling (UBEM) tool for energy simulation, lca and Building Integrated Photovoltaic BIPV.
+A powerful urban building energy modeling (UBEM) tool for energy simulation, lca and Building Integrated Photovoltaic (BIPV) for python and Grasshopper.
 
 ## Table of Contents
 
@@ -15,53 +15,53 @@ A powerful urban building energy modeling (UBEM) tool for energy simulation, lca
 
 ## Introduction
 
-ChatBot-3000 is an AI-powered chatbot designed to engage users in natural conversations. Using cutting-edge natural language processing techniques, ChatBot-3000 can understand and respond to a wide range of user queries and commands. Whether you need assistance, want to chat, or simply have questions, ChatBot-3000 is here to help!
+Building Urban Analysis is a powerful urban building energy modeling (UBEM) tool for energy simulation, lca and Building Integrated Photovoltaic (BIPV) for python and Grasshopper. It is designed to help architects, engineers, and urban planners to analyze the energy performance of buildings and urban areas, and to optimize the design of buildings and urban areas for energy efficiency and sustainability.
 
 ## Features
 
-- Natural language understanding
-- Contextual conversation handling
-- Support for multiple languages
-- Customizable responses
+- Energy simulation of buildings and urban areas
+- Building Integrated Photovoltaic (BIPV) analysis
+- Life Cycle Assessment (LCA) of BIPV at urban scale
+- User-friendly interface for easy input and output in Grasshopper
 
 ## Getting Started
 
-To get started with ChatBot-3000, follow these simple steps:
+To get started with Building Urban Analysis, follow these steps:
 
 ### Prerequisites
+- Rhino 7 or 8 (if you plan to use the Grasshopper interface)
+- Polination for Grasshopper (that can be downloaded from [here](https://www.pollination.cloud/grasshopper-plugin))
 
-- Python 3.6+
-- Pip (Python package manager)
 
 ### Installation
 
-1. Clone the repository:
-git clone https://github.com/yourusername/ChatBot-3000.git
-2. 
-2. Navigate to the project directory:
+1. Open the page of the last release of Building_Urban_Analysis in GitHub
+2. Download the BUA_installer.bat
+3. run the BUA_installer.bat
 
-cd ChatBot-3000
+You will need to accept the first popups from Python for its installation.
 
-markdown
-
-
-3. Install dependencies:
-
-pip install -r requirements.txt
-
-bash
-
+You might encounter some additional popups from python, just close the windows. If the installation failed you can run 
+the BUA_installer.bat again. 
 
 ## Usage
 
-To start ChatBot-3000, run the following command:
+Please refer to the documentation in the documentation folder to understand the logic and how to use the tool.
 
-python chatbot.py
+### Using Python 
+Using the tool through Python enable further customization and automation of the tool, running many simulations at once, or performing parametric optimization. 
 
-python
+You can create you own scripts using the Building Urban Analysis package. No documentation is available yet, 
+but you can check the examples in unit_test folder and run your scripts using the virtual environment created during the installation of the tool.
+
+Even for python user, it will be recommended to use the Grasshopper interface for building modeling and plotting purposes.
+
+### Using Grasshopper
+The Grasshopper interface is a user-friendly way to use the tool. You can find the Grasshopper components in the Building Urban Analysis tab in Grasshopper. They should be installed and updated automatically with the installer/updater of the tool.
 
 
-Once the chatbot is running, you can start interacting with it by typing your messages and pressing Enter.
+## Updating the package
+To update the package you can run the BUA_updater.bat. This will download the last version of the package and install it. This file is available in the last release of the tool in GitHub.
 
 ## Contributing
 
