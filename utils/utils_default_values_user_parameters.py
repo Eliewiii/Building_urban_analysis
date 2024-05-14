@@ -10,24 +10,15 @@ from utils.utils_configuration import path_tool, path_simulation_temp_folder, pa
 # Default path to the simulation folder
 default_path_simulation_folder = path_simulation_temp_folder
 
-# ???
+# Default GIS
 default_move_buildings_to_origin = False
-default_make_hb_model_envelops = False
 
-# GIS
-default_path_gis = os.path.join(path_libraries_tool_folder, "GIS", "gis_typo_id_extra_small")
+default_path_gis = os.path.join(path_libraries_tool_folder, "Samples","gis", "gis_example")
 default_building_id_key_gis = "idbinyan"
-default_gis_attribute_key_dict = {
-    "building_id_key_gis": "none",
-    "name": ["name", "full_name_"],
-    "age": ["age", "date", "year"],
-    "typology": ["typo", "typology", "type", "Typology"],
-    "elevation": ["minheight"],
-    "height": ["height", "Height", "govasimple"],
-    "number of floor": ["number_floor", "nb_floor", "mskomot"],
-    "group": ["group"]
-}
 default_unit_gis = "m"
+
+# Default hbjson
+default_path_hbjson = os.path.join(path_libraries_tool_folder, "Samples","hb_models", "sample_building.hbjson")
 
 # EPW weather file
 default_path_weather_file = os.path.join(path_tool, "Libraries", "EPW", "IS_5280_A_Haifa.epw")
