@@ -36,6 +36,8 @@ class LoadArguments:
                             nargs='?', default=False)
         parser.add_argument("--overwrite", help="if True overwrite the previous simulation",
                             nargs='?', default=False)
+        parser.add_argument("--run_in_parallel", help="if, True run the simulation in parallel",
+                            nargs='?', default=False)
         # Building manipulation
         parser.add_argument("-t", "--are_buildings_target",
                             help="boolean (here '0' or '1') telling if the buildings inputed in the component are "
@@ -52,7 +54,7 @@ class LoadArguments:
         parser.add_argument("-d", "--path_dic_additional_gis_attribute_keys",
                             help="path to the additional key dictionary of the attributes in the GIS file",
                             nargs='?', default=None)
-        # Extract Geometry frpm json
+        # Typology
         parser.add_argument("--typology",
                             help="name of the typology of that should be applied to the buildings",
                             nargs='?', default=None)
@@ -100,6 +102,13 @@ class LoadArguments:
                             default=default_path_weather_file)
         parser.add_argument("--north_angle",
                             help="angle of the north in degree", default=0)
+        # Urban Building Energy Simulation
+        parser.add_argument("--path_hbjson_simulation_parameters_file", help="path to the json file containing the HB"
+                                                                        " simulation parameters", default=default_path_hbjson_simulation_parameter_file)
+        parser.add_argument("--path_ddy_file", help="path to the ddy file", default=None)
+        parser.add_argument("--cop_cooling", help="COP cooling", default=default_cop_cooling)
+        parser.add_argument("--cop_heating", help="COP heating", default=default_cop_heating)
+
         # Sensorgrid
         parser.add_argument("--on_roof", help="True if the simulation is to be run on the roof, else False",
                             default=default_on_roof)
@@ -132,13 +141,22 @@ class LoadArguments:
         # BIPV
         parser.add_argument("--bipv_scenario_identifier",
                             help="Identifier of the BIPV scenario", default=default_bipv_scenario_identifier)
-        parser.add_argument("--path_pv_tech_dictionary_folder",
-                            help="path to the folder containing the json with PVPanelTechnologies",
-                            default=default_path_pv_tech_dictionary_folder)
-        parser.add_argument("--id_pv_tech_roof", help="name of the pv tech used on the roof",
+        parser.add_argument("--id_pv_tech_roof", help="id of the pv tech used on the roof",
                             default=default_id_pv_tech_roof)
-        parser.add_argument("--id_pv_tech_facades", help="name of the pv tech used on the facades",
+        parser.add_argument("--id_pv_tech_facades", help="id of the pv tech used on the facades",
                             default=default_id_pv_tech_facades)
+        parser.add_argument("--roof_transport_id", help="id of the transport used for the roof",
+                            default=default_roof_transport_id)
+        parser.add_argument("--facades_transport_id", help="id of the transport used for the facades",
+                            default=default_facades_transport_id)
+        parser.add_argument("--roof_inverter_id", help="id of the inverter used for the roof",
+                            default=default_roof_inverter_id)
+        parser.add_argument("--facades_inverter_id", help="id of the inverter used for the facades",
+                            default=default_facades_inverter_id)
+        parser.add_argument("--roof_inverter_sizing_ratio",help="ratio of the power of the inverter to the peak power of the panels for the roof",
+                            default=default_roof_inverter_sizing_ratio)
+        parser.add_argument("--facades_inverter_sizing_ratio", help="ratio of the power of the inverter to the peak power of the panels for the facades",
+                            default=default_facades_inverter_sizing_ratio)
         parser.add_argument("--start_year", help="Start year of the simulation",
                             default=default_start_year)
         parser.add_argument("--end_year", help="End year of the simulation",
@@ -160,6 +178,17 @@ class LoadArguments:
         parser.add_argument("--country_ghe_cost",
                             help="Cost in gCO2eq per kWh depending on the country energy mix",
                             default=default_country_ghe_cost)
+        # KPIs
+        parser.add_argument("--zone_area", help="Area in m2 of the terrain the urban canopy/group of buildings is built on, to compute the KPIs per m2 of land use",
+                            default=None)
+        parser.add_argument("--grid_ghg_intensity", help="GHG intensity of the grid in kgCO2eq/kWh",
+                            default=default_grid_ghg_intensity)
+        parser.add_argument("--grid_energy_intensity", help="Energy intensity of the grid in kWh/kWh",
+                            default=default_grid_energy_intensity)
+        parser.add_argument("--grid_electricity_sell_price", help="Sell price of the electricity in $/kWh",
+                            default=default_grid_electricity_sell_price)
+
+
 
     @staticmethod
     def add_user_simulation_features_to_parser(parser):
@@ -216,6 +245,12 @@ class LoadArguments:
         parser.add_argument("--run_second_pass_context_filtering",
                             help="Perform teh second pass of the context filtering for buildings",
                             nargs='?', default=False)
+
+        # Urban Building Energy Simulation
+        parser.add_argument("--run_ubes_with_openstudio",
+                            help="Run the Urban Building Energy Simulation with Openstudio",
+                            nargs='?', default=False)
+
         # Generate objects for visualization
         parser.add_argument("--generate_model_with_building_envelop",
                             help="Make a HB model containing the envelop of all the buildings in the urban canopy "
@@ -225,11 +260,15 @@ class LoadArguments:
         parser.add_argument("--generate_sensorgrids_on_buildings",
                             help="Perform the generation of the mesh on the buildings", default=False)
         parser.add_argument("--run_annual_solar_irradiance_simulation",
-                            help="Perform the generation of the mesh on the buildings", default=False)
+                            help="Perform the solar irradiance simulation on the buildings", default=False)
         parser.add_argument("--run_bipv_harvesting_and_lca_simulation",
-                            help="Perform the generation of the mesh on the buildings", default=False)
+                            help="Perform the BIPV simulation on the buildings", default=False)
+
+        # KPIs simulation
+        parser.add_argument("--run_kpi_simulation", help="Computes the KPIs", default=False)
 
         # Post-processing
+        # todo: outdated, to delete
         parser.add_argument("--generate_panels_results_in_csv",
                             help="Generate the csv file containing all the useful "
                                  "data calculated by the simulation", default=False)
@@ -263,6 +302,7 @@ class LoadArguments:
             "building_id_list": buildings_id_list,
             "silent": bool(int(args.silent)),
             "overwrite": bool(int(args.overwrite)),
+            "run_in_parallel": bool(int(args.run_in_parallel)),
             # Building manipulation
             "are_buildings_target": bool(int(args.are_buildings_target)),
             "on_building_to_simulate": bool(int(args.on_building_to_simulate)),
@@ -287,6 +327,11 @@ class LoadArguments:
             # Simulation general
             "path_weather_file": args.path_weather_file,
             "north_angle": float(args.north_angle),
+            # Urban Building Energy Simulation
+            "path_hbjson_simulation_parameters_file": args.path_hbjson_simulation_parameters_file,
+            "path_ddy_file": args.path_ddy_file,
+            "cop_cooling": float(args.cop_cooling),
+            "cop_heating": float(args.cop_heating),
             # Sensorgrid
             "on_roof": bool(int(args.on_roof)),
             "on_facades": bool(int(args.on_facades)),
@@ -297,9 +342,14 @@ class LoadArguments:
             "offset_dist": float(args.offset_dist),
             # BIPV
             "bipv_scenario_identifier": args.bipv_scenario_identifier,
-            "path_pv_tech_dictionary": args.path_pv_tech_dictionary_folder,
             "roof_id_pv_tech": args.id_pv_tech_roof,
             "facades_id_pv_tech": args.id_pv_tech_facades,
+            "roof_transport_id": args.roof_transport_id,
+            "facades_transport_id": args.facades_transport_id,
+            "roof_inverter_id": args.roof_inverter_id,
+            "facades_inverter_id": args.facades_inverter_id,
+            "roof_inverter_sizing_ratio": float(args.roof_inverter_sizing_ratio),
+            "facades_inverter_sizing_ratio": float(args.facades_inverter_sizing_ratio),
             "start_year": int(args.start_year),
             "end_year": int(args.end_year),
             "minimum_panel_eroi": float(args.minimum_panel_eroi),
@@ -307,7 +357,12 @@ class LoadArguments:
             "replacement_scenario": args.replacement_scenario,
             "replacement_frequency_in_years": int(args.replacement_frequency_in_years),
             "update_panel_technology": bool(int(args.update_panel_technology)),
-            "country_ghe_cost": float(args.country_ghe_cost),
+            "country_ghe_cost": float(args.country_ghe_cost), # todo: outdated, to delete
+            # KPIs
+            "zone_area": float(args.zone_area) if args.zone_area is not None else None,
+            "grid_ghg_intensity": float(args.grid_ghg_intensity),
+            "grid_energy_intensity": float(args.grid_energy_intensity),
+            "grid_electricity_sell_price": float(args.grid_electricity_sell_price)
         }
 
         # Create a dictionary with the arguments and the name of their variable that will be imported in the main script
@@ -332,11 +387,16 @@ class LoadArguments:
             "run_context_filtering": bool(int(args.run_full_context_filtering)),
             "run_first_pass_context_filtering": bool(int(args.run_first_pass_context_filtering)),
             "run_second_pass_context_filtering": bool(int(args.run_second_pass_context_filtering)),
+            # Urban Building Energy Simulation
+            "run_ubes_with_openstudio": bool(int(args.run_ubes_with_openstudio)),
             # Solar and BIPV simulation
             "run_generate_sensorgrids_on_buildings": bool(int(args.generate_sensorgrids_on_buildings)),
             "run_annual_solar_irradiance_simulation": bool(int(args.run_annual_solar_irradiance_simulation)),
             "run_bipv_harvesting_and_lca_simulation": bool(int(args.run_bipv_harvesting_and_lca_simulation)),
-            "generate_panels_results_in_csv": bool(int(args.generate_panels_results_in_csv)),
+            # KPIs simulation
+            "run_kpi_simulation": bool(int(args.run_kpi_simulation)),
+            # Post-processing
+            "generate_panels_results_in_csv": bool(int(args.generate_panels_results_in_csv)), # todo: outdated, to delete
             "plot_graph_results_building_panel_simulation": bool(
                 int(args.plot_graph_results_building_panel_simulation)),  # todo outdated
             "plot_graph_results_urban_canopy": bool(int(args.plot_graph_results_urban_canopy))  # todo outdated
@@ -355,5 +415,9 @@ def parse_and_clean_building_id_list_from_argument_parser(building_id_list_form_
     if building_id_list_form_argument_parser is None:
         return None
     else:
+        # delete the undesired characters
+        string = building_id_list_form_argument_parser.replace("[", "")
+        string = string.replace("]", "")
+        string = string.replace("'", "")
         # return a list of id, ignore the empty string if there is any
-        return [id for id in building_id_list_form_argument_parser.split(" ") if id != '']
+        return [id for id in string.split(",") if id != '']

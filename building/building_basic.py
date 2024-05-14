@@ -8,6 +8,7 @@ from math import isnan
 
 from ladybug_geometry.geometry3d.pointvector import Vector3D
 from ladybug_geometry.geometry3d.polyface import Polyface3D
+from honeybee.room import Room
 
 from libraries_addons.lb_face_addons import make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint, \
     LB_face_footprint_to_lB_polyface3D_extruded_footprint
@@ -21,7 +22,6 @@ user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")  
 
 default_gis_attribute_key_dict = {
-    "building_id_key_gis": "none",
     "name": ["name", "full_name_"],
     "age": ["age", "date", "year"],
     "typology": ["typo", "typology", "type", "Typology"],
@@ -158,6 +158,34 @@ class BuildingBasic:
 
         return building_id_list, building_obj_list
 
+    def to_dict(self):
+        """
+        Export the building to a dictionary.
+        :return: building_dict, a dictionary with the properties of the building
+        """
+        # Pre-processessing
+        self.make_lb_polyface3d_extruded_footprint()
+        building_dict = {
+            "type": "BuildingBasic",
+            "index_in_gis": self.index_in_gis,
+            "name": self.name,
+            "group": self.group,
+            "age": self.age,
+            "typology": self.typology,
+            "height": self.height,
+            "num_floor": self.num_floor,
+            "elevation": self.elevation,
+            "floor_height": self.floor_height,
+            "lb_face_footprint": self.lb_face_footprint.to_dict(),
+            "lb_polyface3d_oriented_bounding_box": self.lb_polyface3d_oriented_bounding_box.to_dict() if self.lb_polyface3d_oriented_bounding_box else None,
+            "lb_polyface3d_extruded_footprint": self.lb_polyface3d_extruded_footprint.to_dict(),
+            "hb_room_envelope": Room.from_polyface3d(identifier=self.id,
+                                                     polyface=self.lb_polyface3d_extruded_footprint).to_dict(),
+            "moved_to_origin": self.moved_to_origin
+        }
+
+        return building_dict
+
     def extract_building_attributes_from_GIS(self, GIS_file, additional_gis_attribute_key_dict=None):
         """
         Affect the properties of the building from a shp file.
@@ -241,12 +269,12 @@ class BuildingBasic:
         self.check_and_correct_property()
 
     def check_and_correct_property(self):
-        """ check if there is enough information about the building"""
+        """ Check if the information about the building and adjust the properties if needed."""
         # no valid height and no valid number of floor
         if ((type(self.height) != int and type(self.height) != float) or (
                 self.height < 3)) and (type(self.num_floor) != int or self.num_floor < 1):
-            self.height = 9.
-            self.num_floor = 3
+            self.height = 3.
+            self.num_floor = 1
             self.floor_height = 3.
         # no valid height but valid number of floor
         elif ((type(self.height) != int or type(self.height) != float) or (
@@ -300,9 +328,8 @@ class BuildingBasic:
             building_obj.height = height
             building_obj.elevation = elevation
             building_obj.typology = typology
-            # check the height, number of floor and floor height
-            # (in the case here it will deduce the number of floor and floor height)
-            building_obj.check_and_correct_property()
+            # Do not set the number of floor and floor height as Brep might not represent buildings. When
+            # needed the number of floor and floor height will be deduced
 
             # The Breps are added after the GIS if there is any, thus they are supposed to be in position already
             building_obj.moved_to_origin = True
@@ -330,9 +357,8 @@ class BuildingBasic:
         self.moved_to_origin = True
 
     def make_lb_polyface3d_extruded_footprint(self, overwrite=False):
-        """ make the oriented bounding box of the building
-        :param overwrite: if True, overwrite the existing LB_polyface3d_oriented_bounding_box
-        :return: LB_polyface3d_oriented_bounding_box, a LB Polyface3D object
+        """ Make an extruded footprint of the building
+        :param overwrite: if True, overwrite the existing LB_polyface3d_extruded_footprint
         """
         if overwrite or self.lb_polyface3d_extruded_footprint is None:
             self.lb_polyface3d_extruded_footprint = LB_face_footprint_to_lB_polyface3D_extruded_footprint(
@@ -341,7 +367,6 @@ class BuildingBasic:
     def make_lb_polyface3d_oriented_bounding_box(self, overwrite=False):
         """ make the oriented bounding box of the building
         :param overwrite: if True, overwrite the existing LB_polyface3d_oriented_bounding_box
-        :return: LB_polyface3d_oriented_bounding_box, a LB Polyface3D object
         """
         if overwrite or self.lb_polyface3d_oriented_bounding_box is None:
             self.lb_polyface3d_oriented_bounding_box = make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint(

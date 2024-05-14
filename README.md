@@ -1,62 +1,81 @@
-# Building_urban_analysis
+# Building Urban Analysis
+
+A powerful urban building energy modeling (UBEM) tool for energy simulation, lca and Building Integrated Photovoltaic (BIPV) for python and Grasshopper.
+
+## Table of Contents
+
+- [Introduction](#introduction)
+- [Features](#features)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+
+  - [Updating the package](#updating-the-package)
+- [Usage](#usage)
+  - [Using Python](#using-python)
+  - [Using Grasshopper](#using-grasshopper)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Introduction
+
+Building Urban Analysis is a powerful urban building energy modeling (UBEM) tool for energy simulation, lca and Building Integrated Photovoltaic (BIPV) for python and Grasshopper. It is designed to help architects, engineers, and urban planners to analyze the energy performance of buildings and urban areas, and to optimize the design of buildings and urban areas for energy efficiency and sustainability.
+
+## Features
+
+- Energy simulation of buildings and urban areas
+- Building Integrated Photovoltaic (BIPV) analysis
+- Life Cycle Assessment (LCA) of BIPV at urban scale
+- User-friendly interface for easy input and output in Grasshopper
+
+## Getting Started
+
+To get started with Building Urban Analysis, follow these steps:
+
+### Prerequisites
+- Rhino 7 or 8 (if you plan to use the Grasshopper interface)
+- Polination for Grasshopper (that can be downloaded from [here](https://www.pollination.cloud/grasshopper-plugin))
 
 
-# requirements
+### Installation
 
-appdirs==1.4.4
-attrs==22.2.0
-certifi
-charset-normalizer==2.1.1
-click==7.1.2
-click-plugins==1.1.1
-cligj==0.7.2
-contourpy==1.0.6
-cycler==0.11.0
-dragonfly-core==1.35.8
-dragonfly-energy==1.22.53
-dragonfly-schema==1.6.82
-dragonfly-uwg==0.5.292
-Fiona==1.8.22
-fonttools==4.38.0
-geopandas==0.12.2
-honeybee-core
-honeybee-energy
-honeybee-energy-standards
-honeybee-radiance==1.64.117
-honeybee-radiance-command==1.22.2
-honeybee-radiance-folder==2.11.10
-honeybee-schema
-honeybee-standards
-idna==3.4
-imageio==2.24.0
-install==1.3.5
-kiwisolver==1.4.4
-ladybug-core
-ladybug-geometry
-ladybug-geometry-polyskel
-matplotlib==3.6.2
-munch==2.5.0
-numpy
-packaging==23.0
-pandas==1.5.2
-Pillow==9.4.0
-pooch==1.6.0
-pydantic==1.10.4
-pydantic-openapi-helper==0.2.10
-pyparsing==3.0.9
-pyproj==3.4.1
-python-dateutil==2.8.2
-pytz==2022.7
-pyviewfactor==0.0.11
-pyvista==0.37.0
-requests==2.28.1
-scooby==0.7.0
-shapely==2.0.0
-six
-torch==1.13.1
-torchvision==0.14.1
-typing_extensions==4.4.0
-urllib3==1.26.13
-uwg==5.8.10
-vtk==9.2.5
-wincertstore==0.2
+1. Open the page of the last release of Building_Urban_Analysis in GitHub
+2. Download the BUA_installer.bat
+3. run the BUA_installer.bat
+
+You will need to accept the first popups from Python for its installation.
+
+You might encounter some additional popups from python, just close the windows. If the installation failed you can run 
+the BUA_installer.bat again. 
+
+## Usage
+
+Please refer to the documentation in the documentation folder to understand the logic and how to use the tool.
+
+### Using Python 
+Using the tool through Python enable further customization and automation of the tool, running many simulations at once, or performing parametric optimization. 
+
+You can create you own scripts using the Building Urban Analysis package. No documentation is available yet, 
+but you can check the examples in unit_test folder and run your scripts using the virtual environment created during the installation of the tool.
+
+Even for python user, it will be recommended to use the Grasshopper interface for building modeling and plotting purposes.
+
+### Using Grasshopper
+The Grasshopper interface is a user-friendly way to use the tool. You can find the Grasshopper components in the Building Urban Analysis tab in Grasshopper. They should be installed and updated automatically with the installer/updater of the tool.
+If you cannot see the components, you can try to restart Rhino and Grasshopper.
+
+You can find example files .
+
+
+## Updating the package
+To update the package you can run the BUA_updater.bat. This will download the last version of the package and install it. This file is available in the last release of the tool in GitHub.
+
+## Contributing
+
+We welcome contributions from the community!
+
+We are not yet ready to accept contributions in standard ways, but we will be soon.
+
+If you have any questions or suggestions, please feel free to open an issue or contact us at elie-medioni@campus.technion.ac.il 
+
+## License

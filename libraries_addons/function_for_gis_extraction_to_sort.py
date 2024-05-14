@@ -133,7 +133,7 @@ def add_additional_attribute_keys_to_dict(attribute_key_dict, additional_attribu
         return attribute_key_dict
     else:
         concatenated_attribute_key_dict = {}  # initialize the concatenated attribute key dictionary
-        for key in additional_attribute_key_dict.keys():
+        for key in attribute_key_dict.keys():
             # sum the list = concatenating the attribute keys
             concatenated_attribute_key_dict[key] = attribute_key_dict[key] + additional_attribute_key_dict[key]
         return concatenated_attribute_key_dict
