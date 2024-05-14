@@ -9,7 +9,11 @@ A powerful urban building energy modeling (UBEM) tool for energy simulation, lca
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
+
+  - [Updating the package](#updating-the-package)
 - [Usage](#usage)
+  - [Using Python](#using-python)
+  - [Using Grasshopper](#using-grasshopper)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -58,6 +62,9 @@ Even for python user, it will be recommended to use the Grasshopper interface fo
 
 ### Using Grasshopper
 The Grasshopper interface is a user-friendly way to use the tool. You can find the Grasshopper components in the Building Urban Analysis tab in Grasshopper. They should be installed and updated automatically with the installer/updater of the tool.
+If you cannot see the components, you can try to restart Rhino and Grasshopper.
+
+You can find example files .
 
 
 ## Updating the package
@@ -65,16 +72,10 @@ To update the package you can run the BUA_updater.bat. This will download the la
 
 ## Contributing
 
-We welcome contributions from the community! If you'd like to contribute to ChatBot-3000, please follow these guidelines:
-- Fork the repository
-- Create a new branch (`git checkout -b feature/foo`)
-- Make your changes
-- Commit your changes (`git commit -am 'Add new feature'`)
-- Push to the branch (`git push origin feature/foo`)
-- Create a new Pull Request
+We welcome contributions from the community!
+
+We are not yet ready to accept contributions in standard ways, but we will be soon.
+
+If you have any questions or suggestions, please feel free to open an issue or contact us at elie-medioni@campus.technion.ac.il 
 
 ## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-
