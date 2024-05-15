@@ -1,2 +1,2 @@
-Mitrex facade c-Si 350W    = "mitrex_facades c-Si Solar Siding 350W - Dove Grey china"
-Mitrex roof c-Si 390W = "mitrex_roof c-Si M390-A1F"
+Mitrex facade c-Si 350W    = "mitrex_facades c-Si Solar Siding 350W - Dove Grey china default"
+Mitrex roof c-Si 390W = "mitrex_roof c-Si M390-A1F default"

@@ -1,1 +1,1 @@
-Canada/Israel = "transport c-si roof canada"
+China-Israel = "China-Israel"

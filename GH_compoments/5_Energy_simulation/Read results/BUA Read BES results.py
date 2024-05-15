@@ -15,6 +15,7 @@ __version__ = "2024.04.07"
 
 ghenv.Component.Name = "BUA Read BES Results"
 ghenv.Component.NickName = 'ReadBESResults'
+ghenv.Component.Message = '1.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '5 :: Energy Simulation'
 

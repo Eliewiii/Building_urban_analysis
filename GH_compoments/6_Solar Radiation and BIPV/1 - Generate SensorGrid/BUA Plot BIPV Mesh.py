@@ -15,6 +15,7 @@ __version__ = "2024.05.07"
 
 ghenv.Component.Name = "BUA Plot BIPV Mesh"
 ghenv.Component.NickName = 'PlotBIPVMesh'
+ghenv.Component.Message = '1.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '6 :: Solar Radiation and BIPV'
 

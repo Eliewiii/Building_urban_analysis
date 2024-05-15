@@ -17,6 +17,7 @@ __version__ = "2024.05.07"
 
 ghenv.Component.Name = "BUA Merge Building Faces"
 ghenv.Component.NickName = 'MergeBuildingFaces'
+ghenv.Component.Message = '1.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '3 :: Building manipulation'
 

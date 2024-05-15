@@ -24,6 +24,7 @@ __version__ = "2024.04.07"
 
 ghenv.Component.Name = "BUA Run BIPV Simulation"
 ghenv.Component.NickName = 'RunBIPVSimulation'
+ghenv.Component.Message = '1.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '6 :: Solar Radiation and BIPV'
 

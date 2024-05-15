@@ -11,6 +11,7 @@ __version__ = "2024.03.31"
 
 ghenv.Component.Name = "BUA Electricity Grid Parameters"
 ghenv.Component.NickName = 'ElectricityGridParameters'
+ghenv.Component.Message = '1.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '6 :: Solar Radiation and BIPV'
 

@@ -15,11 +15,15 @@ A powerful urban building energy modeling (UBEM) tool for energy simulation, lca
   - [Using Python](#using-python)
   - [Using Grasshopper](#using-grasshopper)
 - [Contributing](#contributing)
+- [Credits](#credits)
 - [License](#license)
 
 ## Introduction
 
-Building Urban Analysis is a powerful urban building energy modeling (UBEM) tool for energy simulation, lca and Building Integrated Photovoltaic (BIPV) for python and Grasshopper. It is designed to help architects, engineers, and urban planners to analyze the energy performance of buildings and urban areas, and to optimize the design of buildings and urban areas for energy efficiency and sustainability.
+Building Urban Analysis is a powerful urban building energy modeling (UBEM) tool for energy simulation, Life Cycle Assessment (LCA) and Building Integrated Photovoltaic (BIPV) for python and Grasshopper. 
+It is designed to help architects, engineers, and urban planners to analyze the energy performance of buildings and urban areas, and to optimize the design of buildings and urban areas for energy efficiency and sustainability.
+
+The tool used the LadybugTools (Ladybug, Honeybee and Dragonfly) objects and functions, and should be used alongside these tools and Grasshopper components.
 
 ## Features
 
@@ -27,6 +31,8 @@ Building Urban Analysis is a powerful urban building energy modeling (UBEM) tool
 - Building Integrated Photovoltaic (BIPV) analysis
 - Life Cycle Assessment (LCA) of BIPV at urban scale
 - User-friendly interface for easy input and output in Grasshopper
+- Compatibility with LadybugTools (Ladybug, Honeybee, Dragonfly)
+- Python use only for advanced users (automation, parametric optimization, etc.)
 
 ## Getting Started
 
@@ -77,5 +83,13 @@ We welcome contributions from the community!
 We are not yet ready to accept contributions in standard ways, but we will be soon.
 
 If you have any questions or suggestions, please feel free to open an issue or contact us at elie-medioni@campus.technion.ac.il 
+
+## Credits
+This tool was created by Elie Medioni as part of his PhD research at the Technion - Israel Institute of Technology, under the supervision of Prof. Sabrina Spatari and Ass. Prof. Abraham Yezioro.
+
+The project was funded by the Israeli Ministry of Energy in order to develop methods and guidance for BIPV deployments 
+in new or existing residential neighborhood in urban areas.
+
+Thank you to Hilany Yelloz and Julius Jandl for their contribution to the project.
 
 ## License

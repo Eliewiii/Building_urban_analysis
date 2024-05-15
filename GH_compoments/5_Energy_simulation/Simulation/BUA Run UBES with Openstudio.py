@@ -23,6 +23,7 @@ __version__ = "2024.05.07"
 
 ghenv.Component.Name = "BUA Run UBES with Openstudio"
 ghenv.Component.NickName = 'RunUBESwithOpenstudio'
+ghenv.Component.Message = '1.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '5 :: Energy Simulation'
 

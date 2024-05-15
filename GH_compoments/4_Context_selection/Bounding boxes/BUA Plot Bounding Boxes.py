@@ -14,6 +14,7 @@ __version__ = "2023.12.22"
 
 ghenv.Component.Name = "BUA Plot Bounding Boxes"
 ghenv.Component.NickName = 'PlotBoundingBoxes'
+ghenv.Component.Message = '1.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '4 :: Context Selection'
 

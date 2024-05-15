@@ -3,14 +3,14 @@
         _run: Set to True to run the component"""
 
 __author__ = "Eliewiii"
-__version__ = "2023.08.22"
+__version__ = "2024.05.15"
 
 ghenv.Component.Name = "BUA Clean Default Simulation Folder"
 ghenv.Component.NickName = 'CleanDefaultSimulationFolder'
-ghenv.Component.Message = '0.0.0'
+ghenv.Component.Message = '1.0.0'
 ghenv.Component.Category = 'BUA'
-ghenv.Component.SubCategory = '6 :: General'
-ghenv.Component.AdditionalHelpFromDocStrings = "1"
+ghenv.Component.SubCategory = '7 :: General'
+
 
 import shutil
 import os

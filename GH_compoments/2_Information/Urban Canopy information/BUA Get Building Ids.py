@@ -14,6 +14,7 @@ __version__ = "2023.08.21"
 
 ghenv.Component.Name = "BUA Get Building Ids"
 ghenv.Component.NickName = 'GetBuildingIds'
+ghenv.Component.Message = '1.0.0'
 ghenv.Component.Category = "BUA"
 ghenv.Component.SubCategory = "2 :: Information"
 
