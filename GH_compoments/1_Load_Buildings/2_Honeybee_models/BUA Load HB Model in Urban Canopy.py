@@ -15,6 +15,7 @@ __version__ = "2024.05.05"
 
 ghenv.Component.Name = "BUA Load HB Model in Urban Canopy"
 ghenv.Component.NickName = 'LoadHBModelinUrbanCanopy'
+ghenv.Component.Message = '1.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '1 :: Load Buildings'
 ghenv.Component.AdditionalHelpFromDocStrings = "1"

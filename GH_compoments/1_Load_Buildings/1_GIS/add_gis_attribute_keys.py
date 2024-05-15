@@ -17,6 +17,7 @@ __version__ = "2024.03.31"
 
 ghenv.Component.Name = "BUA Add GIS Attribute Keys"
 ghenv.Component.NickName = 'AddGISAttributeKeys'
+ghenv.Component.Message = '1.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '1 :: Load Buildings'
 ghenv.Component.AdditionalHelpFromDocStrings = "1"

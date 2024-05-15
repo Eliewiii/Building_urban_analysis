@@ -12,7 +12,7 @@ __version__ = "2023.09.06"
 
 ghenv.Component.Name = "BUA Merge Face Parameters"
 ghenv.Component.NickName = 'MergeFaceParameters'
-ghenv.Component.Message = '0.0.0'
+ghenv.Component.Message = '1.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '3 :: Building manipulation'
 

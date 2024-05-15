@@ -17,6 +17,7 @@ __version__ = "2024.04.01"
 
 ghenv.Component.Name = "BUA Compute KPIs"
 ghenv.Component.NickName = 'ComputeKPIs'
+ghenv.Component.Message = '1.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '6 :: Solar Radiation and BIPV'
 

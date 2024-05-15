@@ -17,7 +17,7 @@ __version__ = "2023.08.21"
 
 ghenv.Component.Name = "BUA Filter Context"
 ghenv.Component.NickName = 'FilterContext'
-ghenv.Component.Message = '0.0.0'
+ghenv.Component.Message = '1.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '4 :: Context Selection'
 ghenv.Component.AdditionalHelpFromDocStrings = "1"

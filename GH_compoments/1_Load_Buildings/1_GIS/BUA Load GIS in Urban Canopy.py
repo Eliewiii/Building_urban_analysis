@@ -15,6 +15,7 @@
 
 ghenv.Component.Name = "BUA Load GIS in Urban Canopy"
 ghenv.Component.NickName = 'LoadGISInUrbanCanopy'
+ghenv.Component.Message = '1.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '1 :: Load Buildings'
 ghenv.Component.AdditionalHelpFromDocStrings = "1"

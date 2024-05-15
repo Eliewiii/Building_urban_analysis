@@ -13,6 +13,7 @@ __version__ = "2024.05.05"
 
 ghenv.Component.Name = "BUA Get HB Shades"
 ghenv.Component.NickName = 'GetHBShades'
+ghenv.Component.Message = '1.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '2 :: Information'
 ghenv.Component.AdditionalHelpFromDocStrings = "1"

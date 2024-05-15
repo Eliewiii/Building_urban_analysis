@@ -26,6 +26,7 @@ __version__ = "2024.05.07"
 
 ghenv.Component.Name = "BUA Perform Second Pass Context Selection"
 ghenv.Component.NickName = 'PerformSecondPassContextSelection'
+ghenv.Component.Message = '1.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '4 :: Context Selection'
 

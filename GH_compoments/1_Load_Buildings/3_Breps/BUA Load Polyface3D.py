@@ -13,6 +13,7 @@ __version__ = "2024.05.05"
 
 ghenv.Component.Name = "BUA Load Polyface3D json"
 ghenv.Component.NickName = 'LoadPolyface3Djson'
+ghenv.Component.Message = '1.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '1 :: Load Buildings'
 

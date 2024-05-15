@@ -13,6 +13,7 @@ __version__ = "2023.12.27"
 
 ghenv.Component.Name = "BUA Generate Bounding Boxes"
 ghenv.Component.NickName = 'GenerateBoundingBoxes'
+ghenv.Component.Message = '1.0.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '4 :: Context Selection'
 
