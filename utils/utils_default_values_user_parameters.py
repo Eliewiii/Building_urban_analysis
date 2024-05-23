@@ -56,7 +56,7 @@ default_facades_grid_size_y = 1.5
 default_offset_dist = 0.1
 
 # Default values for panel simulation
-default_id_pv_tech_roof = "mitrex_roof c-Si Solar Siding 350W - Dove Grey china"
+default_id_pv_tech_roof = "mitrex_roof c-Si M390-A1F default"
 default_id_pv_tech_facades = "mitrex_facades c-Si Solar Siding 350W - Dove Grey china"
 default_roof_transport_id = "China-Israel"
 default_facades_transport_id = "China-Israel"
@@ -71,14 +71,15 @@ default_efficiency_computation_method = "yearly"
 default_replacement_scenario = "replace_failed_panels_every_X_years"
 default_replacement_frequency_in_years = 20
 default_bipv_scenario_identifier = "new_uc_scenario"
+
 # Default values for panel simulation - LCA
-default_country_ghe_cost = 0.57874
+default_country_ghe_cost = 0.57874  # todo: value used on old files
 
 
-# Default values for KPI computationm  todo: put proper values
-default_grid_ghg_intensity = 0.500  # kgCO2/kWh
-default_grid_energy_intensity = 2  # kWh/kWh
-default_grid_electricity_sell_price = 0.1  # $/kWh
+# Default values for KPI computation, values for 2023, taken from Zenebu's excel sheet
+default_grid_ghg_intensity = 0.660  # kgCO2/kWh
+default_grid_energy_intensity = 2.84      # kWh/kWh
+default_grid_electricity_sell_price = 0.14  # $/kWh
 
 
 
