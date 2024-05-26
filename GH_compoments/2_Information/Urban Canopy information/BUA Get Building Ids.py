@@ -4,17 +4,17 @@
                                 Appdata\Local\Building_urban_analysis\Simulation_temp
         _run : True if we want to run the code
     Output:
-        target_building_id_list : Brep of the envelopes of the target building
-        simulation_building_id_list : Brep of the envelopes of the simulation building
-        context_building_id_list : Brep of the envelopes of the context building
+        target_building_modeled_id_list : Brep of the envelopes of the target building
+        non_target_building_modeled_list : Brep of the envelopes of the simulation building
+        building_basic_id_list : Brep of the envelopes of the context building
 """
 
 __author__ = "Elie"
-__version__ = "2023.08.21"
+__version__ = "2024.05.26"
 
 ghenv.Component.Name = "BUA Get Building Ids"
 ghenv.Component.NickName = 'GetBuildingIds'
-ghenv.Component.Message = '1.0.0'
+ghenv.Component.Message = '1.1.0'
 ghenv.Component.Category = "BUA"
 ghenv.Component.SubCategory = "2 :: Information"
 
@@ -43,21 +43,20 @@ if _run and os.path.isfile(path_json):
     with open(path_json, "r") as f:
         urban_canopy_dict = json.load(f)
 
-    target_building_id_list = []
-    simulated_building_id_list = []
-    context_building_id_list = []
+    # Initialize the lists
+    target_building_modeled_id_list = []
+    non_target_building_modeled_id_list = []
+    building_basic_id_list = []
+
     # Get the list of the target, simulated and context buildings
-    for building_id in list(urban_canopy_dict["buildings"].keys()):
-    # Get the list of the target, simulated and context buildings
+    for building_id in building_id_list_:
         if urban_canopy_dict["buildings"][building_id]["type"] == "BuildingModeled":
             if urban_canopy_dict["buildings"][building_id]["is_target_building"] == True:
-                target_building_id_list.append(building_id)
-            elif urban_canopy_dict["buildings"][building_id]["is_building_to_simulate"] == True:
-                simulated_building_id_list.append(building_id)
-            else:
-                context_building_id_list.append(building_id)
+                target_building_modeled_id_list.append(building_id)
+            else :
+                non_target_building_modeled_id_list.append(building_id)
         else:
-            context_building_id_list.append(building_id)
+            building_basic_id_list.append(building_id)
 
 
 if not os.path.isfile(path_json):

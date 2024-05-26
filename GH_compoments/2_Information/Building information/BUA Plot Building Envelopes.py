@@ -5,9 +5,9 @@
         building_id_list_: List of building ids to display. If empty, all the buildings will be displayed.
         _run : True if we want to run the code
     Output:
-        target_building_envelopes : Brep of the envelopes of the target building
-        simulation_building_envelopes : Brep of the envelopes of the simulation building
-        context_building_envelopes : Brep of the envelopes of the context building
+        target_building_modeled_envelopes : Brep of the envelopes of the target BuildingModeled
+        non_target_building_modeled_envelopes : Brep of the envelopes of the non-target BuildingModeled
+        building_basic_envelopes : Brep of the envelopes of the BuildingBasic
         building_hb_rooms : list of the HB rooms of representing the envelopes of buildings, can be used
             to display the ids of the buildings
 """
@@ -17,7 +17,7 @@ __version__ = "2024.05.05"
 
 ghenv.Component.Name = "BUA Load Building Envelopes"
 ghenv.Component.NickName = 'LoadBuildingEnvelopes'
-ghenv.Component.Message = '1.0.0'
+ghenv.Component.Message = '1.1.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '2 :: Information'
 
@@ -60,41 +60,39 @@ if _run and os.path.isfile(path_json):
                 raise KeyError("Building with ID '{}' not found in the dictionary.".format(building_id))
 
     # Initialize the lists
-    target_building_id_list = []
-    simulated_building_id_list = []
-    context_building_id_list = []
+    target_building_modeled_id_list = []
+    non_target_building_modeled_id_list = []
+    building_basic_id_list = []
 
     # Get the list of the target, simulated and context buildings
     for building_id in building_id_list_:
         if urban_canopy_dict["buildings"][building_id]["type"] == "BuildingModeled":
             if urban_canopy_dict["buildings"][building_id]["is_target_building"] == True:
-                target_building_id_list.append(building_id)
-            elif urban_canopy_dict["buildings"][building_id]["is_building_to_simulate"] == True:
-                simulated_building_id_list.append(building_id)
-            else:
-                context_building_id_list.append(building_id)
+                target_building_modeled_id_list.append(building_id)
+            else :
+                non_target_building_modeled_id_list.append(building_id)
         else:
-            context_building_id_list.append(building_id)
+            building_basic_id_list.append(building_id)
 
-    target_building_envelopes = []
-    simulated_building_envelopes = []
-    context_building_envelopes = []
+    target_building_modeled_envelopes = []
+    non_target_building_modeled_envelopes = []
+    building_basic_envelopes = []
 
     building_hb_rooms = [Room.from_dict(urban_canopy_dict["buildings"][building_id]["hb_room_envelope"]) for
                          building_id in building_id_list_]
 
-    for building_id in target_building_id_list:
+    for building_id in target_building_modeled_id_list:
         building_hb_room_envelopes = Room.from_dict(
             urban_canopy_dict["buildings"][building_id]["hb_room_envelope"])
-        target_building_envelopes.append(from_polyface3d(building_hb_room_envelopes.geometry))
-    for building_id in simulated_building_id_list:
+        target_building_modeled_envelopes.append(from_polyface3d(building_hb_room_envelopes.geometry))
+    for building_id in non_target_building_modeled_id_list:
         building_hb_room_envelopes = Room.from_dict(
             urban_canopy_dict["buildings"][building_id]["hb_room_envelope"])
-        simulated_building_envelopes.append(from_polyface3d(building_hb_room_envelopes.geometry))
-    for building_id in context_building_id_list:
+        non_target_building_modeled_envelopes.append(from_polyface3d(building_hb_room_envelopes.geometry))
+    for building_id in building_basic_id_list:
         building_hb_room_envelopes = Room.from_dict(
             urban_canopy_dict["buildings"][building_id]["hb_room_envelope"])
-        context_building_envelopes.append(from_polyface3d(building_hb_room_envelopes.geometry))
+        building_basic_envelopes.append(from_polyface3d(building_hb_room_envelopes.geometry))
 
 if not os.path.isfile(path_json):
     print("the json file of the urban canopy does not exist")

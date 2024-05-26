@@ -157,9 +157,11 @@
 
 \newpage
 
-    \section{Introduction}
+\section{Introduction}
+\label{sec:introduction}
 
     \subsection{Overview}
+    \label{subsec:overview}
 % Briefly describe what your software does, its main features, and its purpose.
     The Building Urban Analysis (BUA) tool is a software designed to analyze the energy performance of buildings at the \textbf{urban scale}.
     It provides a comprehensive set of tools for simulating the thermal behavior of buildings, assessing their energy consumption, and optimizing their design for energy efficiency.
@@ -187,20 +189,24 @@
     For users at ease with Python, it is recommended to run the simulations in Python and use the Grasshopper interface for visualization and post-processing.
 
     \subsection{Prerequisites}
+    \label{subsec:prerequisites}
 % List any prerequisites or dependencies required to use the software.
     As of today (version 1.1.0), the tool is only available for Windows (10-11) operating systems.
     The prerequisites are:
     \begin{itemize}
         \item Rhinoceros 3D version 7 or 8 (if you want to use the Grasshopper interface);
-        \item Polination for Grasshopper that can be downloaded from \href{https://www.pollination.cloud/grasshopper-plugin}{here}, (required even if you use the Python version only).
+        \item Polination for Grasshopper that can be downloaded from \href{https://www.pollination.cloud/grasshopper-plugin}{here}, (required even if you use the Python version only);
+        \item Knoledge of the Ladybug Tools or access to Honeybee Models of the target buildings to simulate.
     \end{itemize}
     The tool comes an installer that takes care of all the installation automatically.
     It generates the necessary folder, download the data and python scripts, install the required version of Python (if not already installed), and create a dedicated Python virtual environment with the required packages for the tool.
 
 
-    \section{Getting Started}
+\section{Getting Started}
+\label{sec:getting-started}
 
     \subsection{Installation}
+    \label{subsec:installation}
 % Provide step-by-step instructions for installing the software on different platforms.
     To install the software, follow these steps:
     \begin{enumerate}
@@ -215,9 +221,11 @@
     This file is available in the last release of the tool in GitHub.
 
     \subsection{Quick Start Guide}
+    \label{subsec:quick-start-guide}
 % A simple example to demonstrate basic usage of the software.
 
     \subsubsection{Grasshopper}
+    \label{subsubsec:quick-start-guide-grasshopper}
     After installing the software, you can start using it in Grasshopper by following these steps:
     \begin{enumerate}
         \item Open Rhinoceros 3D;
@@ -230,6 +238,7 @@
     \end{enumerate}
 
     \subsubsection{Python}
+    \label{subsubsec:quick-start-guide-python}
     After installing the software, you can start using it in Python by following these steps:
     \begin{enumerate}
         \item Open a Python editor (PyCharm, etc.);
@@ -242,6 +251,7 @@
 
 
     \section{Object Model}
+    \label{sec:object-model}
 % Describe the object model of the software from a high-level perspective.
     The software is based on an object-oriented model, with classes representing different elements of the building and urban environment.
 
@@ -253,6 +263,7 @@
     \end{center}
 
     \subsection{Urban Canopy}
+    \label{subsec:urban-canopy}
     Each simulation is represented by an instance of the \texttt{UrbanCanopy} class, which contains all the necessary information for running the simulation, such as the building model, weather data, simulation parameters and results once the simulation has run.
     The \gls{UrbanCanopy} drives the whole simulation process, from loading the building and urban models to running the simulation and analyzing the results.
     Once one/multiple simulation steps have been run, the \texttt{UrbanCanopy} object is saved as $.pkl$ file (binary file to save objects) in the user defined \gls{SimFolder}.
@@ -260,17 +271,20 @@
     A $.json$ file of the urban canopy is also saved in the \gls{SimFolder}.
     It contains all the information a user would want to access to and can be open by Grasshopper to display information or results.
 
-    \subsection{Building}
+    \subsection{Buildings}
+    \label{subsec:buildings}
     The \gls{UrbanCanopy} contains one or multiple buildings.
     The buildings are represented by instances of the \texttt{BuildingBasic} and \texttt{BuildingModeled} classes.
     They need to have unique identifier keys.
 
     \subsubsection{BuildingBasic}
+    \label{subsubsec:building-basic}
     The \gls{BuildingBasic} class represents a building with basic attributes, such as its footprint, height, envelope, age, typology, etc.
     They do not have a detailed modeling (detailed geometry, apartment subdivision, construction materials, etc.) and no simulation can be performed on them.
     They are used as context for the \gls{BuildingModeled} objects, for instance for the shading surface computation.
 
     \subsubsection{BuildingModeled}
+    \label{subsubsec:building-modeled}
     The \gls{BuildingModeled} class represents a building with a detailed modeling, in the form of a Honeybee Model object, including its geometry, construction materials, internal subdivision, etc.
     \gls{BuildingModeled} is a subclass of \gls{BuildingBasic} and thus inherits all its attributes.
     Simulation can be run on \gls{BuildingModeled} objects that are labeled as \glspl{TargetBuilding}.
@@ -287,16 +301,47 @@
     The $.pkl$ and $.json$ files, the saved inputs for EnergyPlus and Radiance, as well as all the results files (especially $.csv$) are saved in the \gls{SimFolder}.
     If a simulation is run in a \gls{SimFolder} that already contains files from a previous simulation, the files will not be overwritten, the state of the \gls{UrbanCanopy} object will be loaded and the simulation will continue from there.
 
+    In order to overwrite a simulation, it is necessary to delete the content of the user defined \gls{SimFolder} by hand, to avoid automatic deletion of import folders if the selected folder was not set properly.
+
+    The simulation folder can be located anywhere on the computer, but it is recommended to keep it in the same folder as the script or the Grasshopper file for easier access.
+
+    Note that due to logic of the tool, it is not possible to undo a simulation step, as running a simulation step will overwrite the previous \gls{UrbanCanopy}.
+    Running a new simulation step does not affect the previously computed results/actions on the buildings.
+    It is possible to save the state of an \gls{UrbanCanopy} object, for backup or to test different alternatives, by duplicating the \gls{SimFolder}.
 
     \subsection{Usage in Grasshopper}
     \label{subsec:usage-in-grasshopper}
 
+    The Grasshopper interface is designed to be user-friendly and intuitive.
+    The components are organized in tabs, with each tab corresponding to a specific type of action or analysis.
 
+    \subsubsection{Components types}
+    \label{subsubsec:components-types}
+    There are 5 types of components in the Grasshopper interface:
+    \paragraph{Simulation components:} These components are used to run a simulation step.
+    They need to be activated by a button component.
+    They need to be activated one at a time as they overwrite the previous state of the \gls{UrbanCanopy}.
+    They generally do not have outputs beside \textit{report} and \textit{path\_simulation\_folder}.
+    Contrary to Honeybee components, outputs cannot be objects that can be displayed in the Rhino viewport.
+    All the data is saved in the \gls{UrbanCanopy} $.pkl$ and $.json$ files in the \gls{SimFolder}.
+    In order to display information about the \gls{UrbanCanopy}, the buildings, or the results, the display type components need to be used.
 
+    \paragraph{Simulation parameter components:} These components are used to set the simulation parameters.
+    They work the same way as parameter components in Honeybee.
+    Some of them require a boolean toggle to be activated, as they perform a check in the $.json$ file of the \gls{UrbanCanopy}.
 
+    \paragraph{Option list components:} These components are possible values for certain parameters.
+    They work the same way as option list components in Honeybee.
 
+    \paragraph{Display components:} These components are meant to display information about the \gls{UrbanCanopy}, the buildings, or the results.
+    They do not run any simulation step in Python.
+    They need to be activated by a boolean toggle.
+    They can return text, tables, Honeybee/Ladybug objects, or Rhino geometry that can be displayed in the Rhino viewport.
+
+    \paragraph{Utility components:} These components are used to perform specific actions, such as erasing the content of the default simulation folder, or giving sample values for the EPW, GIS, or Honeybee Models.
 
     \subsection{Usage in Python}
+    \label{subsec:usage-in-python}
     No documentation is available yet for the Python usage of the software.
     Please contact the author for more information.
     The contact mail address is provided in the \ref{Contact Information} section.
@@ -331,23 +376,3 @@ To be added in future releases.
 
 
 \end{document}
-
-
-% Include links to additional resources, such as tutorials, forums, or the official website.
-
-
-% Syntax if needed
-
-% \begin{itemize}
-% 	\item Paroi 1 : {mortier $+$ isolant côté extérieur} : $\tau>900s$ ;
-% 	\item Paroi 2 : {isolant seul} : $\tau =190s$ ;
-% 	\item Paroi 3 : {mortier $+$ isolant côté intérieur} : $\tau=190s$
-% 	\item Paroi 4 : {mortier seul}  : $\tau>900s$ .
-% \end{itemize}
-
-% \begin{center}
-% 	\captionsetup{justification=centering} % centre la légende
-% 	\includegraphics[height=7cm]{apports_solaires_modele}% image
-% 	\captionof{figure}{Montage pour la modélisation des apports solaires } % légende
-% 	\label{apports_solaires_modele}
-% \end{center}
