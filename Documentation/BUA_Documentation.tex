@@ -1,0 +1,254 @@
+\documentclass[a4paper,12pt]{article} %article ou book,
+
+\usepackage[T1]{fontenc} %accents jolis
+\usepackage[utf8]{inputenc} %accents
+\usepackage[french]{babel} %règles orthographes
+\usepackage{amsmath}
+\usepackage[a4paper,left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{libertine}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{sectsty}
+\usepackage{float}
+\usepackage{wrapfig}
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
+\newcommand{\hsp}{\hspace{20pt}}
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+
+\renewcommand{\headrulewidth}{1pt}
+%\fancyhead[C]{\textbf{page \thepage}}
+\fancyhead[L]{\rightmark}
+\fancyhead[R]{Logiciel CFD : Fluent TP 1}
+
+\renewcommand{\footrulewidth}{1pt}
+\fancyfoot[C]{\textbf{Page \thepage}}
+\fancyfoot[R]{ }
+\fancyfoot[L]{}
+%\fancyfoot[R]{\leftmark}
+
+\fancypagestyle{plain}{\renewcommand{\headrulewidth}{1pt}
+\fancyhead[L]{}
+\fancyhead[R]{Logiciel CFD : Fluent TP 1}
+\renewcommand{\footrulewidth}{1pt}
+\fancyfoot[C]{\textbf{Page \thepage}}
+\fancyfoot[R]{}
+\fancyfoot[L]{}}
+
+\parindent=1cm
+\begin{document}
+    \begin{titlepage}
+        \begin{sffamily}
+            \begin{center}
+                % Upper part of the page. The '~' is needed because \\
+                % only works if a paragraph has started.
+                % Title
+                \HRule \\[0.4cm]
+                { \huge \bfseries Building Urban Analysis Documentation \\[0.4cm] }
+                \nopagebreak
+                \large
+                Version 1.1.0
+                \HRule \\[1cm]
+
+                \bigbreak
+                \bigbreak
+
+
+                \bigbreak
+                \bigbreak
+
+                % \begin{center}
+                % \captionsetup{justification=centering} % centre la légende
+                % \centerline{\includegraphics[width=20cm]{cellule}}% image
+                % \captionof{figure}{Dispositif expérimental} % légende
+                % \end{center}
+
+                % Author and supervisor
+
+                \Large
+                Elie MEDIONI \\
+                \bigbreak
+
+                \medbreak
+                {\centerline{\large $26^{th}$ of May 2024}}
+                \bigbreak
+                {Prospective and Early-Stage LCA Laboratory}\\
+                {\&}\\
+                {Climate and Environment Laboratory in Architecture}
+                \smallbreak
+                \bigbreak
+                {Technion - Israel Institute of Technology}
+                \bigbreak
+
+
+                % Bottom of the page
+
+            \end{center}
+        \end{sffamily}
+    \end{titlepage}
+
+    \newpage
+%	\fancyfoot[C]{}
+
+    \renewcommand{\contentsname}{Table of contents}
+    \tableofcontents
+
+
+
+    \newpage
+%	\fancyfoot[C]{\textbf{Page \thepage}}
+%	\setcounter{page}{1}
+
+
+\section{Introduction}
+
+    \subsection{Overview}
+% Briefly describe what your software does, its main features, and its purpose.
+    The Building Urban Analysis (BUA) tool is a software designed to analyze the energy performance of buildings at the \textbf{urban scale}.
+    It provides a comprehensive set of tools for simulating the thermal behavior of buildings, assessing their energy consumption, and optimizing their design for energy efficiency.
+    Its design emphasize on the coupling among buildings and the urban environment, allowing users to evaluate the impact of urban form and layout on energy performance.
+
+    \smallbreak
+        It includes a wide range of features, such as:
+    \begin{itemize}
+        \item Loading various building and urban models from Honeybee (Ladybug Tools), GIS, and other sources;
+        \item Computing electricity consumption with EnergyPlus, using functions from teh Ladybug Tools SDK;
+        \item Advanced selection of context for shading computation;
+        \item Simulation of Building Integrated Photovoltaics (BIPV) and key performance indicators (KPIs), including energy, environmental (using Life cycle assessment), and economic metrics.
+    \end{itemize}
+
+    Some other interesting features under development are:
+    \begin{itemize}
+        \item Automatic identification of the typology/archetype of buildings, using machine learning algorithms;
+        \item Automatic generation of building models from their determined typology and attributes (especially from GIS) for more accurate description of the urban environment.
+    \end{itemize}
+    \smallbreak
+    The tool is intended for architects, engineers, and researchers working in the field of sustainable building design and urban planning.
+    It can be used through Python only, using macro functions and classes, or through a graphical user interface (GUI) in Grasshopper (Rhinoceros 3D) for a more user-friendly experience.
+    While the Grasshopper interface offers the plotting capabilities of Rhino, the Python version is more flexible and can allow advanced automations for optimization purposes or performing large numbers of simulations in a row.
+    For users at ease with Python, it is recommended to run the simulations in Python and use the Grasshopper interface for visualization and post-processing.
+
+    \subsection{Prerequisites}
+% List any prerequisites or dependencies required to use the software.
+    As of today (version 1.1.0), the tool is only available for Windows (10-11) operating systems.
+    The prerequisites are:
+    \begin{itemize}
+        \item Rhinoceros 3D version 7 or 8 (if you want to use the Grasshopper interface);
+        \item Polination for Grasshopper that can be downloaded from \href{https://www.pollination.cloud/grasshopper-plugin}{here}, (required even if you use the Python version only).
+    \end{itemize}
+    The tool comes an installer that takes care of all the installation automatically.
+    It generates the necessary folder, download the data and python scripts, install the required version of Python (if not already installed), and create a dedicated Python virtual environment with the required packages for the tool.
+
+\section{Getting Started}
+
+    \subsection{Installation}
+% Provide step-by-step instructions for installing the software on different platforms.
+    To install the software, follow these steps:
+    \begin{enumerate}
+    \item Open the page of the last release of Building\_Urban\_Analysis in GitHub (\href{https://github.com/Eliewiii/Building_Urban_Analysis}{here})
+    \item Download the BUA\_installer.bat
+    \item run the BUA\_installer.bat
+    \end{enumerate}
+
+
+    \subsection{Quick Start Guide}
+% A simple example to demonstrate basic usage of the software.
+    \subsubsection{Grasshopper}
+    After installing the software, you can start using it in Grasshopper by following these steps:
+    \begin{enumerate}
+        \item Open Rhinoceros 3D;
+        \item Open Grasshopper;
+        \item Create a new Grasshopper file or use one the examples provided in the ...\textbackslash Building\_urban\_analysis\textbackslash Grasshopper\_examples folder;
+        \item Drag and drop the components from the BUA tab that you need;
+        \item Set the inputs of the component;
+        \item Run the components.
+    \end{enumerate}
+
+
+
+\section{Object Model}
+% Describe the object model of the software from a high-level perspective.
+The software is based on an object-oriented model, with classes representing different elements of the building and urban environment.
+Each simulation is represented by an instance of the \texttt{UrbanCanopy} class, which contains all the necessary information for running the simulation, such as the building model, weather data, and simulation parameters.
+
+    \section{Usage}
+
+    \subsection{Detailed Usage Instructions}
+% Provide comprehensive instructions on how to use the software’s features.
+
+    \subsection{Examples}
+% Include various examples showcasing different use cases.
+
+    \subsection{Best Practices}
+% Offer tips and best practices for using the software effectively.
+
+
+    \section{API Reference}
+
+    \subsection{Endpoints/Functions}
+% Document each endpoint or function, including its parameters, return values, and examples.
+
+    \subsection{Data Models}
+% Describe any data models or structures used by the API.
+
+
+    \section{Advanced Topics}
+
+    \subsection{Customization}
+% Explain how users can customize the software to suit their needs.
+
+    \subsection{Integration}
+% Provide details on how to integrate the software with other systems or tools.
+
+
+    \section{Troubleshooting}
+
+    \subsection{Common Issues}
+% List common issues users might encounter and how to resolve them.
+
+    \subsection{Error Messages}
+% Explain error messages and their solutions.
+
+
+    \section{FAQ}
+% Address common questions and concerns users might have.
+
+
+    \section{Appendices}
+
+    \subsection{Glossary}
+% Define technical terms and jargon used in the documentation.
+
+    \subsection{Resources}
+% Include links to additional resources, such as tutorials, forums, or the official website.
+
+
+% Syntax if needed
+
+% \begin{itemize}
+% 	\item Paroi 1 : {mortier $+$ isolant côté extérieur} : $\tau>900s$ ;
+% 	\item Paroi 2 : {isolant seul} : $\tau =190s$ ;
+% 	\item Paroi 3 : {mortier $+$ isolant côté intérieur} : $\tau=190s$
+% 	\item Paroi 4 : {mortier seul}  : $\tau>900s$ .
+% \end{itemize}
+
+% \begin{center}
+% 	\captionsetup{justification=centering} % centre la légende
+% 	\includegraphics[height=7cm]{apports_solaires_modele}% image
+% 	\captionof{figure}{Montage pour la modélisation des apports solaires } % légende
+% 	\label{apports_solaires_modele}
+% \end{center}
+
+
+    \section{}
+
+
+    \section{Acknole}
+
+
+\end{document}
