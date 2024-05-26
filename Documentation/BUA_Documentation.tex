@@ -11,11 +11,16 @@
 \usepackage{caption}
 \usepackage{libertine}
 \usepackage{graphicx}
-\usepackage{caption}
 \usepackage[dvipsnames]{xcolor}
 \usepackage{sectsty}
 \usepackage{float}
 \usepackage{wrapfig}
+
+\usepackage[acronym]{glossaries}
+
+
+\makeglossaries
+
 \setlength{\parindent}{0cm}
 \setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
 \newcommand{\hsp}{\hspace{20pt}}
@@ -174,7 +179,9 @@
 \section{Object Model}
 % Describe the object model of the software from a high-level perspective.
 The software is based on an object-oriented model, with classes representing different elements of the building and urban environment.
-Each simulation is represented by an instance of the \texttt{UrbanCanopy} class, which contains all the necessary information for running the simulation, such as the building model, weather data, and simulation parameters.
+
+Each simulation is represented by an instance of the \texttt{UrbanCanopy} class, which contains all the necessary information for running the simulation, such as the building model, weather data, simulation parameters and results once the simulation has run.
+The Urban Canopy drives the whole simulation process, from loading the building and urban models to running the simulation and analyzing the results. Once one/multiple simulation steps have been run, the \texttt{UrbanCanopy} object is saved as $.pkl$ file in the user defined \gls{SimFolder}, with all the necessary information to be reloaded later.
 
     \section{Usage}
 
@@ -218,11 +225,37 @@ Each simulation is represented by an instance of the \texttt{UrbanCanopy} class,
     \section{FAQ}
 % Address common questions and concerns users might have.
 
+    \section{Glossary}
+% Define technical terms and jargon used in the documentation.
+
+\newglossaryentry{SimFolder}{
+name=\textit{simulation folder},
+description={   }
+}
+
+\newglossaryentry{UrbanCanopy}{
+name=\textit{Urban Canopy},
+description={Object representing a simulation in the software. It contains all the buildings, the simulation parameters as well as all the results of the simulation. All the simulations are run through an instance of the UrbanCanopy class.}
+}
+
+\newglossaryentry{BuildingBasic}{
+    name=\textit{BuildingBasic},
+    description={Object representing a building with basic attributes in the software. It contains the information about the building, such as its footprint, and if available its heigh, envelop, age, typology... No simulation can be run with a BuildingBasic object, it needs to be converted to a BuildingModeled object first.}
+}
+
+\newglossaryentry{BuildingModeled}{
+    name=\textit{BuildingModeled},
+    description={ }
+}
+
+
+
+
+\printglossary[type=\glsdefaulttype]
 
     \section{Appendices}
 
-    \subsection{Glossary}
-% Define technical terms and jargon used in the documentation.
+
 
     \subsection{Resources}
 % Include links to additional resources, such as tutorials, forums, or the official website.
