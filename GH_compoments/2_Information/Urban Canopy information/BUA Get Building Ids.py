@@ -5,12 +5,14 @@
         _run : True if we want to run the code
     Output:
         target_building_modeled_id_list : Brep of the envelopes of the target building
-        non_target_building_modeled_list : Brep of the envelopes of the simulation building
+        non_target_building_modeled_id_list : Brep of the envelopes of the simulation building
         building_basic_id_list : Brep of the envelopes of the context building
 """
 
 __author__ = "Elie"
 __version__ = "2024.05.26"
+
+from ghpythonlib.componentbase import executingcomponent as component
 
 ghenv.Component.Name = "BUA Get Building Ids"
 ghenv.Component.NickName = 'GetBuildingIds'
@@ -49,7 +51,7 @@ if _run and os.path.isfile(path_json):
     building_basic_id_list = []
 
     # Get the list of the target, simulated and context buildings
-    for building_id in building_id_list_:
+    for building_id in list(urban_canopy_dict["buildings"].keys()):
         if urban_canopy_dict["buildings"][building_id]["type"] == "BuildingModeled":
             if urban_canopy_dict["buildings"][building_id]["is_target_building"] == True:
                 target_building_modeled_id_list.append(building_id)

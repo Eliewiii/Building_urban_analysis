@@ -21,12 +21,14 @@ but they are used in all the following steps of the simulation implying the shad
         path_simulation_folder_: Path to the folder."""
 
 __author__ = "elie-medioni"
-__version__ = "2024.05.07"
+__version__ = "2024.05.27"
+
+from ghpythonlib.componentbase import executingcomponent as component
 
 
 ghenv.Component.Name = "BUA Perform Second Pass Context Selection"
 ghenv.Component.NickName = 'PerformSecondPassContextSelection'
-ghenv.Component.Message = '1.0.0'
+ghenv.Component.Message = '1.1.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '4 :: Context Selection'
 

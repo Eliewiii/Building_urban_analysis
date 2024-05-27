@@ -13,7 +13,9 @@
 """
 
 __author__ = "Elie"
-__version__ = "2024.05.05"
+__version__ = "2024.05.26"
+
+from ghpythonlib.componentbase import executingcomponent as component
 
 ghenv.Component.Name = "BUA Load Building Envelopes"
 ghenv.Component.NickName = 'LoadBuildingEnvelopes'

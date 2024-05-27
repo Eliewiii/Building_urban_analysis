@@ -120,10 +120,10 @@ class BuildingBasic:
             except:
                 user_logger.warning(
                     f"The footprint of the building id {building_id} in the GIS file could not be converted"
-                    " to a Ladybug footprint. The building will be ignored.")
+                    " to a Ladybug footprint. Check the unit of the GIS, it could lead to this error. The building will be ignored.")
                 dev_logger.warning(
                     f"The footprint of the building id {building_id} in the GIS file could not be converted"
-                    " to a Ladybug footprint. The building will be ignored.")
+                    " to a Ladybug footprint. Check the unit of the GIS, it could lead to this error. The building will be ignored.")
             else:
                 building_obj = cls.make_buildingbasic_from_shapely_polygon(polygon=footprint, identifier=building_id,
                                                                            unit=unit,

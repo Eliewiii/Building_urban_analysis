@@ -409,8 +409,16 @@ class UrbanCanopy:
 
     def move_buildings_to_origin(self):
         """ Move the buildings to the origin if the urban canopy has not already been moved to the origin"""
-        # Check if the the urban canopy has already been moved to the origin
+       # Check if the the urban canopy has already been moved to the origin
         if self.moving_vector_to_origin is not None:
+            # Check if a building has not been moved yet
+            flag = False
+            for building in self.building_dict.values():
+                if not building.moved_to_origin:
+                    flag = True
+                    break
+            if not flag:
+                return  # The urban canopy has already been moved to the origin, no need to move the buildings
             logging.info(
                 "The urban canopy has already been moved to the origin, the building will be moved back and"
                 " then moved again to the origin with the new buildings")

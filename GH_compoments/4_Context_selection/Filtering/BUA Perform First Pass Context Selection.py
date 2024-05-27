@@ -2,11 +2,8 @@
 It will automatically generate the bounding boxes of all the buildings if not done already.
     Inputs:
         path_simulation_folder_: Path to the simulation folder. Default = Appdata\Local\Building_urban_analysis\Simulation_temp
-        building_id_list_: List of buildings we want to run the simulation on. If set to None, it will be run on the
-        buildings to simulate if _on_building_to_simulate_ is set to True, otherwise it will be run
+        building_id_list_: List of buildings we want to run the simulation on. If set to None, it will be run
         on the target buildings.
-        _on_building_to_simulate_: True if we want to perform the context selection on the buildings to simulate.
-        In that case do not fill the building_id_list_ input. Default = False
         _min_vf_criterion_: Minimum view factor criterion (in ]1:0[ ) of a surface of a context building boundary box
         to be kept for the second pass (Default = 0.01). If you want all buildings to be selected, just input a very low
         value, like 0.00001. Look at the documentation for more detailed explanation about the filtering process.
@@ -19,11 +16,14 @@ It will automatically generate the bounding boxes of all the buildings if not do
 
 
 __author__ = "elie-medioni"
-__version__ = "2024.05.07"
+__version__ = "2024.05.27"
+
+from ghpythonlib.componentbase import executingcomponent as component
+
 
 ghenv.Component.Name = "BUA Perform First Pass Context Selection"
 ghenv.Component.NickName = 'PerformFirstPassContextSelection'
-ghenv.Component.Message = '1.0.0'
+ghenv.Component.Message = '1.1.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '4 :: Context Selection'
 
@@ -95,8 +95,6 @@ if _run:
         argument = argument + ' -f "{}"'.format(path_simulation_folder_)
     if building_id_list_ is not None and building_id_list_ != []:
         argument = argument + ' --building_id_list "{}"'.format(building_id_list_)
-    if _on_building_to_simulate_ is not None:
-        argument = argument + " --on_building_to_simulate {}".format(int(_on_building_to_simulate_))
     if _min_vf_criterion_ is not None:
         argument = argument + " --min_vf_criterion {}".format(float(_min_vf_criterion_))
     if _overwrite_ is not None:
