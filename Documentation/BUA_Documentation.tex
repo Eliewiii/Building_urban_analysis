@@ -17,6 +17,7 @@
 \usepackage{wrapfig}
 
 \usepackage[acronym,toc]{glossaries}
+\usepackage{datagidx}
 
 
 
@@ -230,7 +231,7 @@
     \begin{enumerate}
         \item Open Rhinoceros 3D;
         \item Open Grasshopper;
-        \item Create a new Grasshopper file or use one the examples provided in the ...\textbackslash Building\_urban\_analysis\textbackslash Grasshopper\_examples folder;
+        \item Create a new Grasshopper file or use one the examples provided in the last github release of the tool \href{https://github.com/Eliewiii/Building_Urban_Analysis/releases/latest/download/BUA_Grasshopper_example_files.zip}{here};
         \item Drag and drop the components from the BUA tab that you need;
         \item Set the inputs of the component;
         \item Run the components:
@@ -346,7 +347,21 @@
     Please contact the author for more information.
     The contact mail address is provided in the \ref{Contact Information} section.
 
+\section{Simulation Steps}
+\label{sec:simulation-steps}
+The tool is meant to be used in a step-by-step process, with each step corresponding to a specific action or analysis.
+These steps correspond to components in Grasshopper and "macro functions" in Python.
+Note that Grasshopper only calls Python for it to execute these "macro functions", Grasshopper act as an API for the Python code.
 
+In general, the simulations steps should be executed as follows:
+\begin{enumerate}
+    \item Create or empty the \gls{SimFolder};
+    \item Load \gls{BuildingBasic} from GIS file if there is any;
+    \item Load \gls{BuildingBasic} from files containing 3D geometries, the available format for now are closed Brep 3D geometries, and closed Ladybug Polyface3D;
+    \item Load \gls{BuildingModeled} from Honeybee Models;
+    \item Run the simulation;
+    \item Analyze the results.
+\end{enumerate}
 
 
 \section{Resources}
