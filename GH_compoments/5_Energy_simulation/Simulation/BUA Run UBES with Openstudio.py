@@ -19,11 +19,11 @@
 
 
 __author__ = "elie-medioni"
-__version__ = "2024.05.07"
+__version__ = "2024.05.28"
 
 ghenv.Component.Name = "BUA Run UBES with Openstudio"
 ghenv.Component.NickName = 'RunUBESwithOpenstudio'
-ghenv.Component.Message = '1.0.0'
+ghenv.Component.Message = '1.1.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '5 :: Energy Simulation'
 
@@ -101,8 +101,11 @@ if _overwrite_ is None:
 
 if _run:
     # Convert the simulation parameters to hbjson if it is not already
+    print(type(_hb_simulation_parameters))
     if isinstance(_hb_simulation_parameters, SimulationParameter):
-        _hb_simulation_parameters.to_dict(path_hbjson_simulation_parameter_file)
+        hb_simulation_parameters_dict = _hb_simulation_parameters.to_dict()
+        with open(path_hbjson_simulation_parameter_file,"w") as json_file:
+            json.dump(hb_simulation_parameters_dict,json_file)
     # Write the command
     command = path_bat_file
     # Steps to execute

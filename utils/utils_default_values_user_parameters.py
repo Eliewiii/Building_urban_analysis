@@ -57,7 +57,7 @@ default_offset_dist = 0.1
 
 # Default values for panel simulation
 default_id_pv_tech_roof = "mitrex_roof c-Si M390-A1F default"
-default_id_pv_tech_facades = "mitrex_facades c-Si Solar Siding 350W - Dove Grey china"
+default_id_pv_tech_facades = "mitrex_facades c-Si Solar Siding 350W - Dove Grey china default"
 default_roof_transport_id = "China-Israel"
 default_facades_transport_id = "China-Israel"
 default_roof_inverter_id = "inverter_default"
