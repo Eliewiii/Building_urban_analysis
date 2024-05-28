@@ -17,7 +17,6 @@
 \usepackage{wrapfig}
 
 \usepackage[acronym,toc]{glossaries}
-\usepackage{datagidx}
 
 
 
@@ -88,7 +87,7 @@
 \fancyfoot[R]{}
 \fancyfoot[L]{}}
 
-\parindent=1cm
+
 \begin{document}
     \begin{titlepage}
         \begin{sffamily}
@@ -216,6 +215,8 @@
         \item run the \textit{BUA\_installer.bat}
     \end{enumerate}
 
+    The tool install itself inside the user/appdata/local/building\_urban\_analysis folder in your computer.
+
     To update the package you can run the \textit{BUA\_updater.bat}.
     This will download the last version of the package and install it.
 
@@ -223,7 +224,7 @@
 
     \subsection{Quick Start Guide}
     \label{subsec:quick-start-guide}
-% A simple example to demonstrate basic usage of the software.
+
 
     \subsubsection{Grasshopper}
     \label{subsubsec:quick-start-guide-grasshopper}
@@ -243,8 +244,8 @@
     After installing the software, you can start using it in Python by following these steps:
     \begin{enumerate}
         \item Open a Python editor (PyCharm, etc.);
-        \item Set the Python interpreter to the one installed by the BUA installer (in ...\textbackslash Building\_urban\_analysis\textbackslash tool\_venv);
-        \item Create a new script and use the structure in the examples provided in the ...\textbackslash Building\_urban\_analysis\textbackslash Script \textbackslash unit\_tests folder;
+        \item Set the Python interpreter to the one installed by the BUA installer;
+        \item Create a new script and use the structure in the examples provided in the unit\_tests folder;
         \item Set the user inputs in the script;
         \item Run the script:
         \item Get the results from the generated files (depending on the simulation run) or directly from the script/objects with the debugger.
@@ -293,6 +294,9 @@
 
 \section{Usage}
 \label{sec:usage}
+    Before jumping into the details, it is very imnportant to use only english letters for any input in the software.
+    It includes the name of the inputs, the folders, the files, the attributes of the buildings, etc.
+    Using other alphabet can lead to errors in the software.
 
     \subsection{General Usage Instructions}
     \label{subsec:general-usage-instructions}
@@ -357,12 +361,66 @@ In general, the simulations steps should be executed as follows:
 \begin{enumerate}
     \item Create or empty the \gls{SimFolder};
     \item Load \gls{BuildingBasic} from GIS file if there is any;
-    \item Load \gls{BuildingBasic} from files containing 3D geometries, the available format for now are closed Brep 3D geometries, and closed Ladybug Polyface3D;
-    \item Load \gls{BuildingModeled} from Honeybee Models;
-    \item Run the simulation;
-    \item Analyze the results.
+    \item Load \gls{BuildingBasic} from files containing 3D geometries if there is any, the available format for now are closed Brep, and closed Ladybug Polyface3D;
+    \item Load \gls{BuildingModeled} from Honeybee Models (directly or through $.hbjson$ files);
+    \item Run merging of coplanar building surfaces;
+    \item Run shading context selection;
+    \item Run the urban building energy simulation (if relevant);
+    \item Run the BIPV simulation (if relevant), consisting in:
+        \subitem Genererating sensor grids on building roof and/or facades;
+        \subitem Running the solar radiation simulation;
+        \subitem Running the BIPV panels and energy harvesting simulation;
+    \item Run the KPIs computation.
 \end{enumerate}
 
+All the steps are not necessary for all simulations, and the tool has a high flexibility to allow complex scenarios, such as adding new building through the BIPV simulation to account for gradual construction, or updating the BIPV technologies used to simulate an evolution of the properties through time.
+However, some steps are interdependent, and need to be executed in a specific order.
+Very advance use of the tool, such as the one described above, require a very good understanding of the tool and the simulation process, and are not recommended for beginners.
+Do not hesitate to contact the author for more information.
+
+This section explains in details the different steps, their user parameters, and best practices to use them.
+However, the detail about the modeling methods, technical details, as well as the data used in the simulation will be provided in seperate documents or publications.
+
+    \subsection{Load Buildings}
+    \label{subsec:load-buildings}
+
+        \subsubsection{From GIS}
+        \label{subsubsec:from-gis}
+        GIS can be used to load \gls{BuildingBasic} objects.
+        GIS is composed of multiple files.
+        the input required by this step is a path to the folder containing the GIS files.
+
+        The buildings represented in the GIS must contain the following attributes:
+        \begin{itemize}
+            \item A 2D geometry representing the building footprint (apriori a given for any GIS);
+            \item A unique identifier for the building;
+            \item A height (optionnal but necessary for descent representation of the building in the simulation);
+            \item An elevation (optionnal but necessary for descent representation of the building in the simulation);
+        \end{itemize}
+
+        The key to access these attributes can be custom, An additionnal component is available to set the key to access the attributes.
+        Only use english letters to name the attributes.
+        Eventually change the name of the attributes in a software such as QGIS.
+
+        Pay atention to the unit of the GIS.
+        It can be in meter or degree.
+        Set the \textit{unit} input accordingly, using the wrong unit will make the tool crash.
+
+        Keep also in ming that GIS maps are geolocated, and can be thus located very far away from the origin of the Rhino sofware, and thus very far from the locations of your other type of geometries.
+        It is thus recommended to use the \textit{move to origin} input that will automatically move the GIS geometries to the origin of the Rhino software, according to the center of the GIS.
+        It is possible to load multiple GIS one after the other.
+        The buildings of the first GIS will be moved back, then a new center will be computed for the combined GIS, and the buildings of the second GIS will be moved to the new center.
+        Due to this process, it is mandatory to load the GISs before any other type of geometry as these geometries need to be placed according to the position of the GIS buildings once moved.
+
+        \subsubsection{From 3D geometries}
+        \label{subsubsec:from-3d-geometries}
+
+
+        \subsubsection{From Honeybee Models}
+        \label{subsubsec:from-honeybee-models}
+
+    \subsection{Other steps}
+    Explanations about the other steps will be added in future releases.
 
 \section{Resources}
 \label{sec:resources}
