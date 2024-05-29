@@ -96,9 +96,7 @@ class SimulationContextFiltering:
                                                               number_of_rays=default_shading_number_of_rays_context_filter_second_pass,
                                                               on_building_to_simulate=False,
                                                               consider_windows=False,
-                                                              keep_shades_from_user=False,
-                                                              no_ray_tracing=False,
-                                                              overwrite=False,
+                                                              keep_shades_from_user=True,
                                                               keep_discarded_faces=False):
         """
         Perform second pass of context filtering on buildings.
