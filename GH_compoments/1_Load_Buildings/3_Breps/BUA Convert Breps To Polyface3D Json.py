@@ -37,7 +37,7 @@ default_file_name = "polyface3d"
 
 if _file_name_ is None or _file_name_ == "":
     _file_name_ = default_file_name
-if _path_folder_ is None or _path_folder == "":
+if _path_folder_ is None or _path_folder_ == "":
     _path_folder_ = os.path.join(path_tool, "Simulation_temp", name_folder_temporary_files)
 elif os.path.isdir(_path_folder_) is False:
     raise ValueError("The path folder does not exist, enter a valid path")
