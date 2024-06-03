@@ -1,14 +1,13 @@
 from unit_tests.utils_main_import_scripts import *
 
+
 # Create simulation folder
 SimulationCommonMethods.make_simulation_folder()
 # Create urban_canopy
-urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object(
-    path_simulation_folder=default_path_simulation_folder)
+urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object()
 
 # Run KPI computation
 SimFunSolarRadAndBipv.run_kpi_simulation(urban_canopy_object=urban_canopy_object,
-                                         bipv_scenario_identifier="zob_2",
                                          grid_ghg_intensity=default_grid_ghg_intensity,
                                          grid_energy_intensity=default_grid_energy_intensity,
                                          grid_electricity_sell_price=default_grid_electricity_sell_price,

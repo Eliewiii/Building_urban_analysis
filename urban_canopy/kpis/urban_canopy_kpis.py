@@ -76,6 +76,7 @@ class UrbanCanopyKPIs:
         self.net_energy_compensation = {"roof": None, "facades": None, "total": None}
         # todo : need proper KPIs for the energy, that are independent of the building/urban size
         # Economic KPIs
+        self.economical_roi = {"roof": None, "facades": None, "total": None}
         self.net_economical_benefit = {"roof": None, "facades": None, "total": None}
         self.net_economical_benefit_density = {"zone": {"roof": None, "facades": None, "total": None},
                                                "conditioned_apartment": {"roof": None, "facades": None,
@@ -129,9 +130,10 @@ class UrbanCanopyKPIs:
                 "ghg emissions payback time [year]": self.ghg_emissions_payback_time,
                 "harvested energy density [Kwh/m2]": self.harvested_energy_density,
                 "net energy compensation": self.net_energy_compensation,
+                "economical payback time [year]": self.economical_payback_time,
+                "economical roi": self.economical_roi,
                 "net economical benefit [$]": self.net_economical_benefit,
-                "net economical benefit density [$/m2]": self.net_economical_benefit_density,
-                "economical payback time [year]": self.economical_payback_time
+                "net economical benefit density [$/m2]": self.net_economical_benefit_density
             },
             "intermediate_results": self.kpi_intermediate_results_dict,
             "has_run": self.has_run
@@ -236,6 +238,8 @@ class UrbanCanopyKPIs:
             self.kpi_intermediate_results_dict[sub_type]["ghg_emissions_intensity"][
                 "cumulative"][-1]
         # Economical
+        self.economical_roi[sub_type] = self.kpi_intermediate_results_dict[sub_type]["net_economical_income"]["cumulative"][-1] / \
+                                          bipv_result_dict["cost"]["net_profit"]["cumulative"][-1]
         self.economical_payback_time[sub_type] = self.compute_pay_back_time(
             cumulative_annual_cost_list=bipv_result_dict["cost"]["net_profit"]["cumulative"],
             cumulative_annual_offset_list=
@@ -245,10 +249,12 @@ class UrbanCanopyKPIs:
             self.kpi_intermediate_results_dict[sub_type]["net_economical_benefit"][
                 "cumulative"][-1]
         if self.zone_area is not None:
-            self.net_economical_benefit_density["zone"][sub_type] = self.kpi_intermediate_results_dict[sub_type][
-                "net_economical_benefit_density"]["zone"]["cumulative"][-1]
-        self.net_economical_benefit_density["conditioned_apartment"][sub_type] = self.kpi_intermediate_results_dict[sub_type][
-            "net_economical_benefit_density"]["conditioned_apartment"]["cumulative"][-1]
+            self.net_economical_benefit_density["zone"][sub_type] = \
+                self.kpi_intermediate_results_dict[sub_type][
+                    "net_economical_benefit_density"]["zone"]["cumulative"][-1]
+        self.net_economical_benefit_density["conditioned_apartment"][sub_type] = \
+            self.kpi_intermediate_results_dict[sub_type][
+                "net_economical_benefit_density"]["conditioned_apartment"]["cumulative"][-1]
 
     def compute_intermediate_sub_results_dict(self, bipv_result_dict):
         """
@@ -267,26 +273,29 @@ class UrbanCanopyKPIs:
             bipv_result_dict["energy_harvested"]["yearly"]]
 
         # Intensity
-        sub_kpi_intermediate_results_dict["eroi"]["cumulative"] = [electricity_harvested / primary_energy_cost if primary_energy_cost > 0 else None
-                                                                   for
-                                                                   electricity_harvested, primary_energy_cost
-                                                                   in
-                                                                   zip(bipv_result_dict["energy_harvested"][
-                                                                           "cumulative"],
-                                                                       bipv_result_dict["primary_energy"][
-                                                                           "total"][
-                                                                           "cumulative"])]
+        sub_kpi_intermediate_results_dict["eroi"]["cumulative"] = [
+            electricity_harvested / primary_energy_cost if primary_energy_cost > 0 else None
+            for
+            electricity_harvested, primary_energy_cost
+            in
+            zip(bipv_result_dict["energy_harvested"][
+                    "cumulative"],
+                bipv_result_dict["primary_energy"][
+                    "total"][
+                    "cumulative"])]
         sub_kpi_intermediate_results_dict["ghg_emissions_intensity"]["cumulative"] = [
             ghg_emissions / electricity_harvested if electricity_harvested > 0 else None for
             ghg_emissions, electricity_harvested in
-            zip(bipv_result_dict["ghg"]["total"]["cumulative"], bipv_result_dict["energy_harvested"]["cumulative"])]
-        sub_kpi_intermediate_results_dict["electricity_cost"]["cumulative"] = [bipv_cost / electricity_harvested if electricity_harvested > 0 else None
-                                                                               for bipv_cost, electricity_harvested in
-                                                                               zip(bipv_result_dict["cost"][
-                                                                                       "net_profit"][
-                                                                                       "cumulative"], bipv_result_dict[
-                                                                                       "energy_harvested"][
-                                                                                       "cumulative"])]
+            zip(bipv_result_dict["ghg"]["total"]["cumulative"],
+                bipv_result_dict["energy_harvested"]["cumulative"])]
+        sub_kpi_intermediate_results_dict["electricity_cost"]["cumulative"] = [
+            bipv_cost / electricity_harvested if electricity_harvested > 0 else None
+            for bipv_cost, electricity_harvested in
+            zip(bipv_result_dict["cost"][
+                    "net_profit"][
+                    "cumulative"], bipv_result_dict[
+                    "energy_harvested"][
+                    "cumulative"])]
         # Spared ghg emissions from the grid
         sub_kpi_intermediate_results_dict["ghg_emissions_offset_from_the_grid"]["yearly"] = [
             electricity_harvested * self.grid_ghg_intensity for electricity_harvested in
@@ -309,7 +318,8 @@ class UrbanCanopyKPIs:
         sub_kpi_intermediate_results_dict["net_economical_benefit"]["yearly"] = [
             electricity_harvested * self.grid_electricity_sell_price - bipv_cost for
             electricity_harvested, bipv_cost in
-            zip(bipv_result_dict["energy_harvested"]["yearly"], bipv_result_dict["cost"]["net_profit"]["yearly"])]
+            zip(bipv_result_dict["energy_harvested"]["yearly"],
+                bipv_result_dict["cost"]["net_profit"]["yearly"])]
         if self.zone_area is not None:
             sub_kpi_intermediate_results_dict["net_economical_benefit_density"]["zone"]["yearly"] = [
                 net_economical_benefit / self.zone_area for net_economical_benefit in
@@ -331,45 +341,18 @@ class UrbanCanopyKPIs:
         """
         if cumulative_annual_offset_list[-1] < cumulative_annual_cost_list[-1]:
             return False
-        for year in range(len(cumulative_annual_cost_list) - 2, -1,
-                          -1):  # from the last year to the first year
-            if cumulative_annual_cost_list[year] > cumulative_annual_offset_list[year]:
-                """
-                We need to shift the years by 1 because the indexes refer to what is produced/generated 
-                during the year, and thus cumulated values are obtained at the end of each year.
-                """
-                # Linear interpolation to find the payback time
-                line1 = ((year + 1, cumulative_annual_cost_list[year]),
-                         (year + 2, cumulative_annual_cost_list[year + 1]))
-                line2 = ((year + 1, cumulative_annual_offset_list[year]),
-                         (year + 2, cumulative_annual_offset_list[year + 1]))
-                [pay_back_time, cost] = line_intersection(line1, line2)
-                return pay_back_time
+        if 0 > cumulative_annual_cost_list[-1]:
+            return 0
+        for year in range(0, len(cumulative_annual_cost_list)):
+            previous_year_offset = cumulative_annual_cost_list[year-1] if year > 0 else 0
+            if cumulative_annual_offset_list[year] >= cumulative_annual_cost_list[-1]:
+
+                # Using Thales theorem, assuming a linear increase of the offset between two years
+                payback_time = year + (cumulative_annual_cost_list[-1] - previous_year_offset)/(
+                            cumulative_annual_offset_list[year] - previous_year_offset)
+                return payback_time
         # If the payback time is not found it means the values were compensated at the beginning
         return 0
-
-
-def line_intersection(line1, line2):
-    """
-    Compute the intersection of two lines.
-    :param line1: tuple of tuple, the first line ((x1,y1),(x2,y2))
-    :param line2: tuple of tuple, the second line ((x3,y3),(x4,y4))
-    :return: list, the intersection point
-    """
-    xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
-    ydiff = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1])
-
-    def det(a, b):
-        return a[0] * b[1] - a[1] * b[0]
-
-    div = det(xdiff, ydiff)
-    if div == 0:
-        raise Exception('lines do not intersect')
-
-    d = (det(*line1), det(*line2))
-    x = det(d, xdiff) / div
-    y = det(d, ydiff) / div
-    return [x, y]
 
 
 def flatten_intermediate_dict(d, parent_key='', sep='_'):
@@ -388,6 +371,7 @@ def flatten_intermediate_dict(d, parent_key='', sep='_'):
             items.append((new_key, v))
     return dict(items)
 
+
 def fill_empty_column(intermediate_dict, nb_years):
     """
     Add None to the intermediate results dictionary to fill the empty columns
@@ -399,6 +383,7 @@ def fill_empty_column(intermediate_dict, nb_years):
             if len(v) < nb_years:
                 intermediate_dict[k] = v + [None] * (nb_years - len(v))
     return intermediate_dict
+
 
 def flatten_kpi_dict(d, parent_key='', sep='_'):
     """

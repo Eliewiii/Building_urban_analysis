@@ -156,14 +156,16 @@ class BipvScenario:
         :param zone_area: float: m2: area of the zone
 
         """
-
+        # Initialize the KPIs object (once again, in case it already exists)
+        self.urban_canopy_bipv_kpis_obj = UrbanCanopyKPIs()
+        # Set the parameters
         self.set_parameters_for_kpis_computation(grid_ghg_intensity=grid_ghg_intensity,
                                                  grid_energy_intensity=grid_energy_intensity,
                                                  grid_electricity_sell_price=grid_electricity_sell_price,
                                                  ubes_electricity_consumption=ubes_electricity_consumption,
                                                  conditioned_apartment_area=conditioned_apartment_area,
                                                  zone_area=zone_area)
-
+        # Compute the KPIs
         self.urban_canopy_bipv_kpis_obj.compute_kpis(
             bipv_results_dict=self.bipv_results_dict)
 

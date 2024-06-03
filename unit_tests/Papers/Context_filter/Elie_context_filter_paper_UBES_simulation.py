@@ -19,7 +19,7 @@ dev_handler.setFormatter(dev_formatter)
 dev_logger.addHandler(dev_handler)
 
 # Paths to the different files
-path_ubes_inputs = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\Ministry of Energy Research\Papers\Simulations_Elie\Inputs\UBES"
+path_ubes_inputs = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\Ministry of Energy Research\Papers\CheckContext\Simulations_Elie\Inputs\UBES"
 name_building_folder_list = ["Residential", "Office"]
 name_context_folder = "Context"
 name_context_alternative_list = ["context_1", "context_2", "context_3"]
@@ -27,7 +27,7 @@ path_ep_simulation_parameter_json_file = None  # todo
 
 # Initialize json result file
 name_result_json_file = "residential.json"
-path_result_folder = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\Ministry of Energy Research\Papers\Simulations_Elie\results"
+path_result_folder = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\Ministry of Energy Research\Papers\CheckContext\Simulations_Elie\results"
 path_json_result_file = os.path.join(path_result_folder, name_result_json_file)
 json_result_dict = {}
 
@@ -125,7 +125,8 @@ for name_building_folder in name_building_folder_list:
                             "number_of_rays": nb_of_rays,
                             "consider_windows": consider_windows,
                             "duration": None,
-                            "nb_selected_buildings": None,
+                            "nb_selected_shades": None,
+                            "nb_user_shades": None,  # Louvers in that case
                         }
                     },
                     "BES":
