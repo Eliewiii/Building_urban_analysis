@@ -97,6 +97,8 @@ class SimulationContextFiltering:
                                                               on_building_to_simulate=False,
                                                               consider_windows=False,
                                                               keep_shades_from_user=True,
+                                                              no_ray_tracing=False,
+                                                              overwrite=False,
                                                               keep_discarded_faces=False):
         """
         Perform second pass of context filtering on buildings.

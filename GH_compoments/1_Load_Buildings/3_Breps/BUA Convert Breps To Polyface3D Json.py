@@ -14,7 +14,7 @@ __version__ = "2024.05.05"
 
 ghenv.Component.Name = "BUA Convert Breps To Polyface3D Json"
 ghenv.Component.NickName = 'ConvertBrepsToPolyface3DJson'
-ghenv.Component.Message = '1.0.0'
+ghenv.Component.Message = '1.1.1'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '1 :: Load Buildings'
 
