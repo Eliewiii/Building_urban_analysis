@@ -30,6 +30,8 @@ name_result_json_file = "residential.json"
 path_result_folder = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\Ministry of Energy Research\Papers\CheckContext\Simulations_Elie\results"
 path_json_result_file = os.path.join(path_result_folder, name_result_json_file)
 
+# EPW file
+path_epw = ""  # todo
 
 # Simulation parameters
 mvfc_list = [0.5, 0.5, 0.5]
@@ -76,6 +78,12 @@ for name_building_folder in name_building_folder_list:
         SimulationBuildingManipulationFunctions.make_oriented_bounding_boxes_of_buildings_in_urban_canopy(
             urban_canopy_object=urban_canopy_object_initial, overwrite=True)
 
+        # Load epw and simulation parameters
+        UrbanBuildingEnergySimulationFunctions.load_epw_and_hb_simulation_parameters_for_ubes_in_urban_canopy(
+            urban_canopy_obj=urban_canopy_object,
+            path_weather_file=path_epw,
+            overwrite=True)
+
         # Loop over the buildings
         for building_hbjson_name, building_hbjson_file in zip(building_hbjson_file_name_list,
                                                               building_hbjson_file_list):
@@ -90,7 +98,7 @@ for name_building_folder in name_building_folder_list:
                 path_folder_hbjson=None,
                 path_file_hbjson=building_hbjson_file,
                 are_buildings_targets=True,
-                keep_context_from_hbjson=True)
+                keep_context_from_hbjson=False)
 
             # Make the merged face of the building (not too sure if necessary)
             SimulationBuildingManipulationFunctions.make_merged_face_of_buildings_in_urban_canopy(
@@ -103,11 +111,10 @@ for name_building_folder in name_building_folder_list:
             for mvfc in mvfc_list:
                 for no_ray_tracing in [True, False]:
 
-
                     # Alternative identifier
                     alternative_identifier = f"{building_name}_mvfc_{mvfc}_NBray_{nb_of_rays}_no_ray_tracing_{no_ray_tracing}"
-                    # if
-
+                    if alternative_identifier in json_result_dict:
+                        continue
 
                     # Perform the context filtering
                     SimulationContextFiltering.perform_first_pass_of_context_filtering_on_buildings(
@@ -123,18 +130,31 @@ for name_building_folder in name_building_folder_list:
                         overwrite=True)
 
                     # UBES
+                    # Write IDF
+                    UrbanBuildingEnergySimulationFunctions.generate_idf_files_for_ubes_with_openstudio_in_urban_canopy(
+                        urban_canopy_obj=urban_canopy_object,
+                        overwrite=True,
+                        silent=True)
+                    # Run IDF through EnergyPlus
+                    UrbanBuildingEnergySimulationFunctions.run_idf_files_with_energyplus_for_ubes_in_urban_canopy(
+                        urban_canopy_obj=urban_canopy_object,
+                        overwrite=True,
+                        silent=True)
+                    # Extract UBES results
+                    UrbanBuildingEnergySimulationFunctions.extract_results_from_ep_simulation(
+                        urban_canopy_obj=urban_canopy_object,
+                        cop_heating=3., cop_cooling=3.)
 
-
-
-                    # Extract the results
+                    # Extract all the results
 
                     bes_duration = None
                     bes_results_dict = {}
 
 
 
-                    building_result_dict = {
+                    alternative_result_dict = {
                         "building_name": building_name,
+                        "context_alternative": name_context_alternative,
                         "context_selection": {  # todo: fill the dictionary with the outputs
                             "first_pass": {
                                 "mvfc": None,
@@ -171,7 +191,7 @@ for name_building_folder in name_building_folder_list:
                 # Update the result dictionary
                 if building_name not in json_result_dict:
                     json_result_dict[building_name] = {}
-                json_result_dict[building_name][name_context_alternative] = building_result_dict
+                json_result_dict[alternative_identifier] = alternative_result_dict
                 # Overwrite the json file
                 with open(path_json_result_file, 'w') as json_file:
                     json.dump(json_result_dict, json_file)
