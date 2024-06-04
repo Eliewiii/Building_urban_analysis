@@ -6,18 +6,18 @@
             the results of the last simulation.
         _run : Plug a boolean toggle to True to run the code and display the results.
     Output:
-        kpis_label : list of the eend energy use categories shown in the results
+        kpis_labels : list of the eend energy use categories shown in the results
         kpis_bipv_roof : list of the kpis for the roof BIPV.
         kpis_bipv_facades : list of the kpis for the facades BIPV.
         kpis_bipv_total : list of the kpis for the total BIPV.
 """
 
 __author__ = "Elie"
-__version__ = "2024.04.07"
+__version__ = "2024.06.04"
 
 ghenv.Component.Name = "BUA Read Kpis Results"
 ghenv.Component.NickName = 'ReadUKPIsResults'
-ghenv.Component.Message = '1.0.0'
+ghenv.Component.Message = '1.1.2'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '6 :: Solar Radiation and BIPV'
 
@@ -29,10 +29,23 @@ def clean_path(path):
     path = path.replace("\\", "/")
     return (path)
 
+def flatten_kpi_dict(d, parent_key='', sep=' '):
+    """
+    Flatten the KPI dictionary to convert it to CSV.
+    :param d: dict, the KPI dictionary
+    """
+    items = []
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, dict) and isinstance(list(v.values())[0], dict):
+            items.extend(flatten_kpi_dict(v, parent_key=new_key, sep=sep).items())
+        else:
+            items.append((new_key, [value for value in v.values()]))
+    return dict(items)
 
-labels = ["eroi", "primary energy payback time [year]", "ghg emissions intensity [kgCo2eq/kWh]",
-          "ghg emissions payback time [year]", "net energy compensation", "net economical benefit [$]",
-          "economical payback time [year]"]
+
+labels = ["eroi", "ghg emissions intensity [kgCo2eq/kWh]",
+           "net energy compensation","economical roi", "net economical benefit [$]",]
 
 # Get Appdata\local folder
 local_appdata = os.environ['LOCALAPPDATA']
@@ -83,44 +96,44 @@ if _run:
         else:
             raise ValueError("Please provide a BIPV simulation identifier if you did not use the default one.")
 
-    print(urban_canopy_dict["bipv_scenarios"][_bipv_simulation_identifier_]["kpis_results_dict"])
     # Check that the UBES was run
     if not urban_canopy_dict["bipv_scenarios"][_bipv_simulation_identifier_]["kpis_results_dict"]["has_run"]:
         raise ValueError("The KPI computation was not run. Run the simulation first.")
 
+    # Load KPI result dictionary
     result_dict = urban_canopy_dict["bipv_scenarios"][_bipv_simulation_identifier_]["kpis_results_dict"]["kpis"]
-    # Init
-    end_uses_energy_consumption = []
+    # Flatten the dictionary
+    flatten_result_dict = flatten_kpi_dict(result_dict)  # index roof=0, facades=1, total=2
+
+
+    kpi_labels_oredered = [
+        "eroi",
+        "primary energy payback time [year] profitability_threshold",
+        "primary energy payback time [year] lifetime_investment",
+        "ghg emissions intensity [kgCo2eq/kWh]",
+        "ghg emissions payback time [year] profitability_threshold",
+        "ghg emissions payback time [year] lifetime_investment",
+        "harvested energy density [Kwh/m2] zone",
+        "harvested energy density [Kwh/m2] conditioned_apartment",
+        "net energy compensation",
+        "economical roi",
+        "economical payback time [year] profitability_threshold",
+        "economical payback time [year] lifetime_investment",
+        "net economical benefit [$]",
+        "net economical benefit density [$/m2] zone",
+        "net economical benefit density [$/m2] conditioned_apartment",
+    ]
 
     # Get results
-    kpis_labels = labels
+    results_kpis_labels = flatten_result_dict.keys()
+    kpis_labels = []
     kpis_bipv_roof = []
     kpis_bipv_facades = []
     kpis_bipv_total = []
 
-    for label in kpis_labels:
-        kpis_bipv_roof.append(result_dict[label]["roof"])
-        kpis_bipv_facades.append(result_dict[label]["facades"])
-        kpis_bipv_total.append(result_dict[label]["total"])
-
-    # Take care of KPIs with densities
-    labels.append("zone harvested energy density [Kwh/m2]")
-    kpis_bipv_roof.append(result_dict["harvested energy density [Kwh/m2]"]["zone"]["roof"])
-    kpis_bipv_facades.append(result_dict["harvested energy density [Kwh/m2]"]["zone"]["facades"])
-    kpis_bipv_total.append(result_dict["harvested energy density [Kwh/m2]"]["zone"]["total"])
-    labels.append("conditioned apartment harvested energy density [Kwh/m2]")
-    kpis_bipv_roof.append(result_dict["harvested energy density [Kwh/m2]"]["conditioned_apartment"]["roof"])
-    kpis_bipv_facades.append(result_dict["harvested energy density [Kwh/m2]"]["conditioned_apartment"][
-            "facades"])
-    kpis_bipv_total.append(result_dict["harvested energy density [Kwh/m2]"]["conditioned_apartment"]["total"])
-    labels.append("zone net economical benefit density [$/m2]]")
-    kpis_bipv_roof.append(result_dict["net economical benefit density [$/m2]"]["zone"]["roof"])
-    kpis_bipv_facades.append(result_dict["net economical benefit density [$/m2]"]["zone"]["facades"])
-    kpis_bipv_total.append(result_dict["net economical benefit density [$/m2]"]["zone"]["total"])
-    labels.append("conditioned apartment net economical benefit density [$/m2]")
-    kpis_bipv_roof.append(result_dict["net economical benefit density [$/m2]"]["conditioned_apartment"][
-                              "roof"])
-    kpis_bipv_facades.append(result_dict["net economical benefit density [$/m2]"]["conditioned_apartment"][
-                                 "facades"])
-    kpis_bipv_total.append(result_dict["net economical benefit density [$/m2]"]["conditioned_apartment"][
-                               "total"])
+    for label in kpi_labels_oredered:
+        if label in results_kpis_labels:
+            kpis_labels.append(label)
+            kpis_bipv_roof.append(flatten_result_dict[label][0])
+            kpis_bipv_facades.append(flatten_result_dict[label][1])
+            kpis_bipv_total.append(flatten_result_dict[label][2])

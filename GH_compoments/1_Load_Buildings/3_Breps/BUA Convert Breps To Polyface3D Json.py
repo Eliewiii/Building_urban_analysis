@@ -4,17 +4,18 @@
         (mostly to send them to the urban canopy)
         _prefix: Prefix to add to the identifier of the Polyface3D object. Make sure it is unique to this project
         _file_name_ : Name of the json file to create without extension (Default: polyface3d)
-        _path_folder_: True if you want to keep the context of the HB Model of the hbjsons. (Default: False)
+        _path_folder_: Path to the location where the file will be generated. If None, the file will be generated in the default simulation folder.
+            It is recommended to specify a folder if you are not using the default simulation folder.
         _run: Plug in a button to run the component
     Output:
         path_polyface3d_json_file: path to the json file containing the polyface3d object"""
 
 __author__ = "elie-medioni"
-__version__ = "2024.05.05"
+__version__ = "2024.06.04"
 
 ghenv.Component.Name = "BUA Convert Breps To Polyface3D Json"
 ghenv.Component.NickName = 'ConvertBrepsToPolyface3DJson'
-ghenv.Component.Message = '1.1.1'
+ghenv.Component.Message = '1.1.2'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '1 :: Load Buildings'
 
@@ -39,6 +40,8 @@ if _file_name_ is None or _file_name_ == "":
     _file_name_ = default_file_name
 if _path_folder_ is None or _path_folder_ == "":
     _path_folder_ = os.path.join(path_tool, "Simulation_temp", name_folder_temporary_files)
+    if not os.path.isdir(_path_folder_):
+        os.makedirs(_path_folder_)
 elif os.path.isdir(_path_folder_) is False:
     raise ValueError("The path folder does not exist, enter a valid path")
 

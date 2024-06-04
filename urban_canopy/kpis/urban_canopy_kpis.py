@@ -66,9 +66,13 @@ class UrbanCanopyKPIs:
         self.kpi_intermediate_results_dict = deepcopy(empty_kpi_intermediate_results_dict)
         # Environmental KPIs
         self.eroi = {"roof": None, "facades": None, "total": None}
-        self.primary_energy_payback_time = {"roof": None, "facades": None, "total": None}
+        self.primary_energy_payback_time = {
+            "profitability_threshold":{"roof": None, "facades": None, "total": None},
+            "lifetime_investment": {"roof": None, "facades": None, "total": None}}
         self.ghg_emissions_intensity = {"roof": None, "facades": None, "total": None}
-        self.ghg_emissions_payback_time = {"roof": None, "facades": None, "total": None}
+        self.ghg_emissions_payback_time = {
+            "profitability_threshold":{"roof": None, "facades": None, "total": None},
+            "lifetime_investment": {"roof": None, "facades": None, "total": None}}
         # Energy KPIs
         self.harvested_energy_density = {"zone": {"roof": None, "facades": None, "total": None},
                                          "conditioned_apartment": {"roof": None, "facades": None,
@@ -77,11 +81,13 @@ class UrbanCanopyKPIs:
         # todo : need proper KPIs for the energy, that are independent of the building/urban size
         # Economic KPIs
         self.economical_roi = {"roof": None, "facades": None, "total": None}
+        self.economical_payback_time = {
+            "profitability_threshold":{"roof": None, "facades": None, "total": None},
+            "lifetime_investment": {"roof": None, "facades": None, "total": None}}
         self.net_economical_benefit = {"roof": None, "facades": None, "total": None}
         self.net_economical_benefit_density = {"zone": {"roof": None, "facades": None, "total": None},
                                                "conditioned_apartment": {"roof": None, "facades": None,
                                                                          "total": None}}
-        self.economical_payback_time = {"roof": None, "facades": None, "total": None}
         self.initial_investment_per_area = None  # something like this
 
     def set_parameters(self, grid_ghg_intensity, grid_energy_intensity, grid_electricity_sell_price,
@@ -222,14 +228,24 @@ class UrbanCanopyKPIs:
         else:
             self.net_energy_compensation[sub_type] = 0.
         # Primary energy
-        self.primary_energy_payback_time[sub_type] = self.compute_pay_back_time(
+        self.primary_energy_payback_time["profitability_threshold"][sub_type] = self.compute_profitability_threshold_pay_back_time(
+            cumulative_annual_cost_list=bipv_result_dict["primary_energy"]["total"]["cumulative"],
+            cumulative_annual_offset_list=
+            self.kpi_intermediate_results_dict[sub_type]["primary_energy_offset_from_the_grid"][
+                "cumulative"])
+        self.primary_energy_payback_time["lifetime_investment"][sub_type] = self.compute_lifetime_investment_pay_back_time(
             cumulative_annual_cost_list=bipv_result_dict["primary_energy"]["total"]["cumulative"],
             cumulative_annual_offset_list=
             self.kpi_intermediate_results_dict[sub_type]["primary_energy_offset_from_the_grid"][
                 "cumulative"])
         self.eroi[sub_type] = self.kpi_intermediate_results_dict[sub_type]["eroi"]["cumulative"][-1]
         # GHG emissions
-        self.ghg_emissions_payback_time[sub_type] = self.compute_pay_back_time(
+        self.ghg_emissions_payback_time["lifetime_investment"][sub_type] = self.compute_lifetime_investment_pay_back_time(
+            cumulative_annual_cost_list=bipv_result_dict["ghg"]["total"]["cumulative"],
+            cumulative_annual_offset_list=
+            self.kpi_intermediate_results_dict[sub_type]["ghg_emissions_offset_from_the_grid"][
+                "cumulative"])
+        self.ghg_emissions_payback_time["profitability_threshold"][sub_type] = self.compute_profitability_threshold_pay_back_time(
             cumulative_annual_cost_list=bipv_result_dict["ghg"]["total"]["cumulative"],
             cumulative_annual_offset_list=
             self.kpi_intermediate_results_dict[sub_type]["ghg_emissions_offset_from_the_grid"][
@@ -238,9 +254,15 @@ class UrbanCanopyKPIs:
             self.kpi_intermediate_results_dict[sub_type]["ghg_emissions_intensity"][
                 "cumulative"][-1]
         # Economical
-        self.economical_roi[sub_type] = self.kpi_intermediate_results_dict[sub_type]["net_economical_income"]["cumulative"][-1] / \
-                                          bipv_result_dict["cost"]["net_profit"]["cumulative"][-1]
-        self.economical_payback_time[sub_type] = self.compute_pay_back_time(
+        self.economical_roi[sub_type] = \
+            self.kpi_intermediate_results_dict[sub_type]["net_economical_income"]["cumulative"][-1] / \
+            bipv_result_dict["cost"]["net_profit"]["cumulative"][-1]
+        self.economical_payback_time["lifetime_investment"][sub_type] = self.compute_lifetime_investment_pay_back_time(
+            cumulative_annual_cost_list=bipv_result_dict["cost"]["net_profit"]["cumulative"],
+            cumulative_annual_offset_list=
+            self.kpi_intermediate_results_dict[sub_type]["net_economical_income"][
+                "cumulative"])
+        self.economical_payback_time["profitability_threshold"][sub_type] = self.compute_profitability_threshold_pay_back_time(
             cumulative_annual_cost_list=bipv_result_dict["cost"]["net_profit"]["cumulative"],
             cumulative_annual_offset_list=
             self.kpi_intermediate_results_dict[sub_type]["net_economical_income"][
@@ -332,7 +354,7 @@ class UrbanCanopyKPIs:
         return sub_kpi_intermediate_results_dict
 
     @staticmethod
-    def compute_pay_back_time(cumulative_annual_cost_list, cumulative_annual_offset_list):
+    def compute_lifetime_investment_pay_back_time(cumulative_annual_cost_list, cumulative_annual_offset_list):
         """
         Compute a payback time for the BIPV installation.
         :param cumulative_annual_cost_list: list, the cumulative annual cost (in primary energy, ghg or money)
@@ -344,15 +366,65 @@ class UrbanCanopyKPIs:
         if 0 > cumulative_annual_cost_list[-1]:
             return 0
         for year in range(0, len(cumulative_annual_cost_list)):
-            previous_year_offset = cumulative_annual_cost_list[year-1] if year > 0 else 0
+            previous_year_offset = cumulative_annual_cost_list[year - 1] if year > 0 else 0
             if cumulative_annual_offset_list[year] >= cumulative_annual_cost_list[-1]:
-
                 # Using Thales theorem, assuming a linear increase of the offset between two years
-                payback_time = year + (cumulative_annual_cost_list[-1] - previous_year_offset)/(
-                            cumulative_annual_offset_list[year] - previous_year_offset)
+                payback_time = year + (cumulative_annual_cost_list[-1] - previous_year_offset) / (
+                        cumulative_annual_offset_list[year] - previous_year_offset)
                 return payback_time
         # If the payback time is not found it means the values were compensated at the beginning
         return 0
+
+    @staticmethod
+    def compute_profitability_threshold_pay_back_time(cumulative_annual_cost_list,
+                                                      cumulative_annual_offset_list):
+        """
+        Compute a payback time for the BIPV installation.
+        :param cumulative_annual_cost_list: list, the cumulative annual cost (in primary energy, ghg or money)
+         of the BIPV installation.
+        :param cumulative_annual_offset_list: list, the cumulative annual offset of the BIPV installation
+        """
+        if cumulative_annual_offset_list[-1] < cumulative_annual_cost_list[-1]:
+            return False
+        for year in range(len(cumulative_annual_cost_list) - 2, -1,
+                          -1):  # from the last year to the first year
+            if cumulative_annual_cost_list[year] > cumulative_annual_offset_list[year]:
+                """
+                We need to shift the years by 1 because the indexes refer to what is produced/generated 
+                during the year, and thus cumulated values are obtained at the end of each year.
+                """
+                # Linear interpolation to find the payback time
+                line1 = ((year + 1, cumulative_annual_cost_list[year]),
+                         (year + 2, cumulative_annual_cost_list[year + 1]))
+                line2 = ((year + 1, cumulative_annual_offset_list[year]),
+                         (year + 2, cumulative_annual_offset_list[year + 1]))
+                [pay_back_time, cost] = line_intersection(line1, line2)
+                return pay_back_time
+        # If the payback time is not found it means the values were compensated at the beginning
+        return 0
+
+
+def line_intersection(line1, line2):
+    """
+    Compute the intersection of two lines.
+    :param line1: tuple of tuple, the first line ((x1,y1),(x2,y2))
+    :param line2: tuple of tuple, the second line ((x3,y3),(x4,y4))
+    :return: list, the intersection point
+    """
+    xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
+    ydiff = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1])
+
+    def det(a, b):
+        return a[0] * b[1] - a[1] * b[0]
+
+    div = det(xdiff, ydiff)
+    if div == 0:
+        raise Exception('lines do not intersect')
+
+    d = (det(*line1), det(*line2))
+    x = det(d, xdiff) / div
+    y = det(d, ydiff) / div
+    return [x, y]
 
 
 def flatten_intermediate_dict(d, parent_key='', sep='_'):
