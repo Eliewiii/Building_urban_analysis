@@ -141,9 +141,9 @@ class BuildingModeled(BuildingBasic):
         hb_model.add_prefix(identifier + "_")
 
         # Keep the context of the building
-        if keep_context and (hb_model.shades != [] and hb_model.shades is not None):
+        if keep_context and (hb_model.orphaned_shades != [] and hb_model.orphaned_shades is not None):
             building_modeled_obj.shading_context_obj.get_hb_shades_from_hb_model(hb_model)
-        hb_model.remove_all_shades()
+        hb_model.remove_shades()
         # Set the attributes of the BuildingModeled object
         building_modeled_obj.hb_model_obj = hb_model
         building_modeled_obj.urban_canopy = urban_canopy

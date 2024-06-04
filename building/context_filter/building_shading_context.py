@@ -128,7 +128,7 @@ class BuildingShadingContextFilter(BuildingContextFilter):
         Extract the shades from the Honeybee Model and add them to context_shading_hb_shade_list attribute
         :param hb_model: Honeybee Model
         """
-        self.forced_hb_shades_from_user_list.extend(hb_model.shades)
+        self.forced_hb_shades_from_user_list.extend(hb_model.orphaned_shades)
 
     def select_non_obstructed_context_faces_with_ray_tracing(self, uc_shade_manager,
                                                              target_lb_polyface3d_extruded_footprint,

@@ -29,20 +29,24 @@ path_ep_simulation_parameter_json_file = None  # todo
 name_result_json_file = "residential.json"
 path_result_folder = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\Ministry of Energy Research\Papers\CheckContext\Simulations_Elie\results"
 path_json_result_file = os.path.join(path_result_folder, name_result_json_file)
-json_result_dict = {}
+
 
 # Simulation parameters
 mvfc_list = [0.5, 0.5, 0.5]
 nb_of_rays = 3
-no_ray_tracing = False
 consider_windows = False
 
 cop_heating = 3
 cop_cooling = 3
 
-with open(path_json_result_file, 'w') as json_file:
-    json.dump(json_result_dict, json_file)
+# Create the json result file if it does not exist
+if not os.path.isfile(path_json_result_file):
+    json_result_dict = {}
+else:
+    with open(path_json_result_file, 'r') as json_file:
+        json_result_dict = json.load(json_file)
 
+# loop over the alternatieves
 for name_building_folder in name_building_folder_list:
     path_building_folder = os.path.join(path_ubes_inputs, name_building_folder)
     for name_context_alternative in name_context_alternative_list:
@@ -97,56 +101,72 @@ for name_building_folder in name_building_folder_list:
 
             # Loop over the simulation parameters
             for mvfc in mvfc_list:
+                for no_ray_tracing in [True, False]:
 
-                # Perform the context filtering
-                SimulationContextFiltering.perform_first_pass_of_context_filtering_on_buildings(
-                    urban_canopy_object=urban_canopy_object,
-                    min_VF_criterion=mvfc,
-                    overwrite=True)
-                SimulationContextFiltering.perform_second_pass_of_context_filtering_on_buildings(
-                    urban_canopy_object=urban_canopy_object,
-                    nb_of_rays=nb_of_rays,
-                    consider_windows=consider_windows,
-                    no_ray_tracing=no_ray_tracing,
-                    keep_shades_from_user=True,
-                    overwrite=True)
 
-                bes_duration = None
-                bes_results_dict = {}
+                    # Alternative identifier
+                    alternative_identifier = f"{building_name}_mvfc_{mvfc}_NBray_{nb_of_rays}_no_ray_tracing_{no_ray_tracing}"
+                    # if
 
-                building_result_dict = {
-                    "context_selection": {  # todo: fill the dictionary with the outputs
-                        "first_pass": {
-                            "mvfc": None,
-                            "duration": None,
-                            "nb_selected_buildings": None,
-                        },
-                        "second_pass": {
-                            "number_of_rays": nb_of_rays,
-                            "consider_windows": consider_windows,
-                            "duration": None,
-                            "nb_selected_shades": None,
-                            "nb_user_shades": None,  # Louvers in that case
-                        }
-                    },
-                    "BES":
-                        {
-                            "cop_heating": None,
-                            "cop_cooling": None,
-                            "duration": None,
-                            "results": {
-                                "heating": bes_results_dict["heating"]["yearly"],
-                                "cooling": bes_results_dict["cooling"]["yearly"],
-                                "lighting": bes_results_dict["lighting"]["yearly"],
-                                "equipment": bes_results_dict["equipment"]["yearly"],
-                                "total": bes_results_dict["total"]["yearly"],
-                                "h+c": bes_results_dict["heating"]["yearly"] + bes_results_dict["cooling"][
-                                    "yearly"],
-                                "h+c+l": bes_results_dict["heating"]["yearly"] + bes_results_dict["cooling"][
-                                    "yearly"] + bes_results_dict["lighting"]["yearly"]
+
+                    # Perform the context filtering
+                    SimulationContextFiltering.perform_first_pass_of_context_filtering_on_buildings(
+                        urban_canopy_object=urban_canopy_object,
+                        min_VF_criterion=mvfc,
+                        overwrite=True)
+                    SimulationContextFiltering.perform_second_pass_of_context_filtering_on_buildings(
+                        urban_canopy_object=urban_canopy_object,
+                        nb_of_rays=nb_of_rays,
+                        consider_windows=consider_windows,
+                        no_ray_tracing=no_ray_tracing,
+                        keep_shades_from_user=True,
+                        overwrite=True)
+
+                    # UBES
+
+
+
+                    # Extract the results
+
+                    bes_duration = None
+                    bes_results_dict = {}
+
+
+
+                    building_result_dict = {
+                        "building_name": building_name,
+                        "context_selection": {  # todo: fill the dictionary with the outputs
+                            "first_pass": {
+                                "mvfc": None,
+                                "duration": None,
+                                "nb_selected_buildings": None,
+                            },
+                            "second_pass": {
+                                "number_of_rays": nb_of_rays,
+                                "consider_windows": consider_windows,
+                                "duration": None,
+                                "nb_selected_shades": None,
+                                "nb_user_shades": None,  # Louvers in that case
                             }
-                        }
-                }
+                        },
+                        "BES":
+                            {
+                                "cop_heating": None,
+                                "cop_cooling": None,
+                                "duration": None,
+                                "results": {
+                                    "heating": bes_results_dict["heating"]["yearly"],
+                                    "cooling": bes_results_dict["cooling"]["yearly"],
+                                    "lighting": bes_results_dict["lighting"]["yearly"],
+                                    "equipment": bes_results_dict["equipment"]["yearly"],
+                                    "total": bes_results_dict["total"]["yearly"],
+                                    "h+c": bes_results_dict["heating"]["yearly"] + bes_results_dict["cooling"][
+                                        "yearly"],
+                                    "h+c+l": bes_results_dict["heating"]["yearly"] + bes_results_dict["cooling"][
+                                        "yearly"] + bes_results_dict["lighting"]["yearly"]
+                                }
+                            }
+                    }
 
                 # Update the result dictionary
                 if building_name not in json_result_dict:
