@@ -16,31 +16,30 @@ dev_logger = logging.getLogger("dev")
 dev_logger.setLevel(logging.WARNING)
 dev_handler = logging.FileHandler('dev_log.log', mode='w')
 dev_formatter = logging.Formatter(
-    '% %(asctime)s - %(message)s')
+    '%(name)s: %(asctime)s - %(message)s')
 dev_handler.setFormatter(dev_formatter)
 dev_logger.addHandler(dev_handler)
 
 # Paths to the different files
-path_ubes_inputs = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\Ministry of Energy Research\Papers\CheckContext\Simulations_Elie\Inputs\UBES"  # todo : change to the correct path
-name_building_folder_list = ["Residential", "Office"]
+path_ubes_inputs = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\Ministry of Energy Research\Papers\CheckContext\Simulations_Elie\Inputs\UBES_mvfc"  # todo : change to the correct path
+name_building_folder_list = ["Residential"]
 name_context_folder = "Context"
-name_context_alternative_list = ["context_1", "context_2", "context_3"]
+name_context_alternative_list = ["context_1"]
 path_ep_simulation_parameter_json_file = default_path_hbjson_simulation_parameter_file
 
 # Initialize json result file
-name_result_json_file = "results_context_filter.json"
+name_result_json_file = "results_mvfc_context_filter.json"
 path_result_folder = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\Ministry of Energy Research\Papers\CheckContext\Simulations_Elie\results"
 path_json_result_file = os.path.join(path_result_folder, name_result_json_file)
 
 # EPW file
 path_epw = r"C:\Users\elie-medioni\AppData\Local\Building_urban_analysis\Libraries\EPW\IS_5280_A_Tel_Aviv.epw"
 
-
-
-
-
 # Simulation parameters
-mvfc_list = [0.99, 0.1,0.05, 0.01]
+mvfc_list = [0.99, 0.25, 0.11111111, 0.0625, 0.04, 0.02777778,
+             0.02040816, 0.015625, 0.01234568, 0.01, 0.00826446, 0.00694444,
+             0.00591716, 0.00510204, 0.00444444, 0.00390625, 0.00346021, 0.00308642,
+             0.00277008, 0.0025]
 nb_of_rays = 3
 consider_windows = False
 
@@ -140,6 +139,7 @@ for name_building_folder in name_building_folder_list:
                     # log
                     dev_logger.warning(
                         f"Building: {building_name}, Context alternative: {name_context_alternative}, MVFC: {mvfc}, No ray tracing: {no_ray_tracing}")
+                    print(f"Building: {building_name}, Context alternative: {name_context_alternative}, MVFC: {mvfc}, No ray tracing: {no_ray_tracing}")
 
                     # Perform the context filtering
                     SimulationContextFiltering.perform_first_pass_of_context_filtering_on_buildings(
@@ -182,14 +182,16 @@ for name_building_folder in name_building_folder_list:
                             "first_pass": {
                                 "mvfc": context_selection_results_dict["min_vf_criterion"],
                                 "duration": context_selection_results_dict["first_pass_duration"],
-                                "nb_selected_buildings": len(context_selection_results_dict["selected_context_building_id_list"]),
+                                "nb_selected_buildings": len(
+                                    context_selection_results_dict["selected_context_building_id_list"]),
                             },
                             "second_pass": {
                                 "number_of_rays": nb_of_rays,
                                 "consider_windows": consider_windows,
                                 "no_ray_tracing": no_ray_tracing,
                                 "duration": context_selection_results_dict["second_pass_duration"],
-                                "nb_selected_shades": len(context_selection_results_dict["context_shading_hb_shade_list"]),
+                                "nb_selected_shades": len(
+                                    context_selection_results_dict["context_shading_hb_shade_list"]),
                                 "nb_user_shades": None,  # Louvers in that case
                             }
                         },
@@ -214,7 +216,6 @@ for name_building_folder in name_building_folder_list:
                                 }
                             }
                     }
-
 
                     json_result_dict[alternative_identifier] = alternative_result_dict
                     # Overwrite the json file

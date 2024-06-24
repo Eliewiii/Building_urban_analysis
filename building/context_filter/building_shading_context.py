@@ -17,6 +17,8 @@ from building.context_filter.building_context import BuildingContextFilter
 from building.context_filter.utils_functions_context_filter import is_vector3d_vertical, \
     are_hb_face_or_lb_face3d_facing, ray_list_from_emitter_to_receiver
 
+from utils.utils_constants import AREA_TOLERANCE
+
 user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")
 
@@ -52,8 +54,10 @@ class BuildingShadingContextFilter(BuildingContextFilter):
 
     def prepare_for_pkl(self):
         """ Prepare the object for pickling """
-        self.forced_hb_shades_from_user_list = [hb_shade.to_dict() for hb_shade in self.forced_hb_shades_from_user_list]
-        self.context_shading_hb_shade_list = [hb_shade.to_dict() for hb_shade in self.context_shading_hb_shade_list]
+        self.forced_hb_shades_from_user_list = [hb_shade.to_dict() for hb_shade in
+                                                self.forced_hb_shades_from_user_list]
+        self.context_shading_hb_shade_list = [hb_shade.to_dict() for hb_shade in
+                                              self.context_shading_hb_shade_list]
 
     def load_from_pkl(self):
         """ Load the object from pickling """
@@ -75,14 +79,17 @@ class BuildingShadingContextFilter(BuildingContextFilter):
             # Second pass
             "number_of_rays": self.number_of_rays,
             "consider_windows": self.consider_windows,
-            "forced_hb_shades_from_user_list": self.forced_hb_shades_from_user_list,  # Already converted to dict for pkl
-            "context_shading_hb_shade_list": self.context_shading_hb_shade_list,  # Already converted to dict for pkl
-            "discarded_lb_face3d_context_shading_second_pass_list": [lb_face3d.to_dict() for lb_face3d in self.discarded_lb_face3d_context_shading_second_pass_list],
+            "forced_hb_shades_from_user_list": self.forced_hb_shades_from_user_list,
+            # Already converted to dict for pkl
+            "context_shading_hb_shade_list": self.context_shading_hb_shade_list,
+            # Already converted to dict for pkl
+            "discarded_lb_face3d_context_shading_second_pass_list": [lb_face3d.to_dict() for lb_face3d in
+                                                                     self.discarded_lb_face3d_context_shading_second_pass_list],
             "second_pass_duration": self.second_pass_duration,
             "second_pass_done": self.second_pass_done
         }
 
-    def move(self,moving_vector):
+    def move(self, moving_vector):
         """
         Move the all the shading surfaces along the moving vector. (if the building is moved)
         :param moving_vector: list: [x, y, z] translation vector
@@ -121,7 +128,8 @@ class BuildingShadingContextFilter(BuildingContextFilter):
             self.consider_windows = consider_windows
         else:
             self.consider_windows = False
-            user_logger.warning(f"The consider windows inputted was not valid, the consider windows was set to False")
+            user_logger.warning(
+                f"The consider windows inputted was not valid, the consider windows was set to False")
 
     def get_hb_shades_from_hb_model(self, hb_model):
         """
@@ -134,7 +142,8 @@ class BuildingShadingContextFilter(BuildingContextFilter):
                                                              target_lb_polyface3d_extruded_footprint,
                                                              context_hb_model_or_lb_polyface3d_list_to_test,
                                                              full_urban_canopy_pyvista_mesh,
-                                                             keep_shades_from_user=False, no_ray_tracing=False,
+                                                             keep_shades_from_user=False,
+                                                             no_ray_tracing=False,
                                                              keep_discarded_faces=False):
         """
         Perform the second pass of the context filtering for the shading computation. It selects the context surfaces
@@ -210,13 +219,16 @@ class BuildingShadingContextFilter(BuildingContextFilter):
             if isinstance(context_hb_model_or_lb_polyface_3d, Model):
                 for hb_room in context_hb_model_or_lb_polyface_3d.rooms:
                     for hb_face in list(hb_room.faces):
-                        if isinstance(hb_face.boundary_condition, Outdoors):
+                        if isinstance(hb_face.boundary_condition, Outdoors) and hb_face.area > AREA_TOLERANCE:
                             hb_face_or_lb_face3d_to_test_list.append(hb_face)
             elif isinstance(context_hb_model_or_lb_polyface_3d, Polyface3D):
-                hb_face_or_lb_face3d_to_test_list.extend(list(context_hb_model_or_lb_polyface_3d.faces))
+                for face in list(context_hb_model_or_lb_polyface_3d.faces):
+                    if face.area > AREA_TOLERANCE:
+                        hb_face_or_lb_face3d_to_test_list.append(face)
             else:
                 raise ValueError(
                     "The context_hb_model_or_lb_polyface_3d is not a Honeybee Model or a Ladybug Polyface3D")
+
         # Loop through the rooms of the context Honeybee model
         for face in hb_face_or_lb_face3d_to_test_list:
             """ Here the horizontal context surfaces are not discarded as they can reflect the sun light, 
@@ -276,11 +288,12 @@ class BuildingShadingContextFilter(BuildingContextFilter):
                     "The context_hb_model_or_lb_polyface_3d is not a Honeybee Model or a Ladybug Polyface3D")
             # Loop through the rooms of the context Honeybee model
             for face in hb_face_or_lb_face3d_to_test_list:
-                selected_hb_face_lb_face3d_or_hb_aperture_list.append(face)
-                # Consider the windows if needed
-                if isinstance(face, Face) and consider_windows:
-                    for hb_aperture in face.apertures:
-                        selected_hb_face_lb_face3d_or_hb_aperture_list.append(hb_aperture)
+                if face.area > AREA_TOLERANCE:
+                    selected_hb_face_lb_face3d_or_hb_aperture_list.append(face)
+                    # Consider the windows if needed
+                    if isinstance(face, Face) and consider_windows:
+                        for hb_aperture in face.apertures:
+                            selected_hb_face_lb_face3d_or_hb_aperture_list.append(hb_aperture)
 
         return selected_hb_face_lb_face3d_or_hb_aperture_list, discarded_hb_face_lb_face3d_or_hb_aperture_list
 
@@ -295,8 +308,9 @@ class BuildingShadingContextFilter(BuildingContextFilter):
         shade_index = 0
         hb_shade_list = []
         for hb_face_or_aperture in hb_face_or_aperture_context_list:
-            hb_shade_list.append(uc_shade_manager.from_hb_face_or_aperture_to_shade(hb_or_lb_object=hb_face_or_aperture,
-                                                                                    shade_index=shade_index))
+            hb_shade_list.append(
+                uc_shade_manager.from_hb_face_or_aperture_to_shade(hb_or_lb_object=hb_face_or_aperture,
+                                                                   shade_index=shade_index))
             shade_index += 1
 
         return hb_shade_list
@@ -319,7 +333,8 @@ class BuildingShadingContextFilter(BuildingContextFilter):
 
         return discarded_lb_face3d_list
 
-    def is_hb_face_context_surface_obstructed_for_target_lb_polyface3d(self, target_lb_polyface3d_extruded_footprint,
+    def is_hb_face_context_surface_obstructed_for_target_lb_polyface3d(self,
+                                                                       target_lb_polyface3d_extruded_footprint,
                                                                        context_hb_face_or_lb_face3d_to_test,
                                                                        full_urban_canopy_pyvista_mesh,
                                                                        number_of_rays):
@@ -363,11 +378,13 @@ class BuildingShadingContextFilter(BuildingContextFilter):
         # Make the list of ray to launch
         ray_list = ray_list_from_emitter_to_receiver(face_emitter=target_lb_face3d,
                                                      face_receiver=context_hb_face_or_lb_face3d_to_test,
-                                                     exclude_surface_from_ray=True, number_of_rays=number_of_rays)
+                                                     exclude_surface_from_ray=True,
+                                                     number_of_rays=number_of_rays)
         # Loop over all the rays
         for ray in ray_list:
             # Check if the ray is obstructed
-            points, ind = full_urban_canopy_pyvista_mesh.ray_trace(origin=ray[0], end_point=ray[1], first_point=False,
+            points, ind = full_urban_canopy_pyvista_mesh.ray_trace(origin=ray[0], end_point=ray[1],
+                                                                   first_point=False,
                                                                    plot=False)
 
             if ind.size == 0:  # no obstruction
@@ -380,7 +397,7 @@ class BuildingShadingContextFilter(BuildingContextFilter):
 
         return True
 
-    def add_bipv_panel_as_shades(self,panel_lb_face3d_list):
+    def add_bipv_panel_as_shades(self, panel_lb_face3d_list):
         """
         Add the BIPV panels as shades to the BuildingShadingContext object
         """

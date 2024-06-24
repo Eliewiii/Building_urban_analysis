@@ -16,20 +16,20 @@ dev_logger = logging.getLogger("dev")
 dev_logger.setLevel(logging.WARNING)
 dev_handler = logging.FileHandler('dev_log.log', mode='w')
 dev_formatter = logging.Formatter(
-    '% %(asctime)s - %(message)s')
+    '%(name)s: %(asctime)s - %(levelname)s - %(filename)s (function: %(funcName)s, line: %(lineno)d) - %(message)s')
 dev_handler.setFormatter(dev_formatter)
 dev_logger.addHandler(dev_handler)
 
 # Paths to the different files
-path_ubes_inputs = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\Ministry of Energy Research\Papers\CheckContext\Simulations_Elie\Inputs\UBES"  # todo : change to the correct path
-name_building_folder_list = ["Residential", "Office"]
+path_ubes_inputs = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\Ministry of Energy Research\Papers\CheckContext\Simulations_Elie\Inputs\UBES_mvfc"  # todo : change to the correct path
+name_building_folder_list = ["Residential"]
 name_context_folder = "Context"
-name_context_alternative_list = ["context_1", "context_2", "context_3"]
+name_context_alternative_list = ["context_1"]
 path_ep_simulation_parameter_json_file = default_path_hbjson_simulation_parameter_file
 
 # Initialize json result file
 name_result_json_file = "results_context_filter.json"
-path_result_folder = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\Ministry of Energy Research\Papers\CheckContext\Simulations_Elie\results"
+path_result_folder = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\Ministry of Energy Research\Papers\CheckContext\Simulations_Elie\results_test_2"
 path_json_result_file = os.path.join(path_result_folder, name_result_json_file)
 
 # EPW file
@@ -50,8 +50,6 @@ cop_cooling = 3
 # Create the json result file if it does not exist
 if not os.path.isfile(path_json_result_file):
     json_result_dict = {}
-    with open(path_json_result_file, 'w') as json_file:
-        json.dump(json_result_dict, json_file)
 else:
     with open(path_json_result_file, 'r') as json_file:
         json_result_dict = json.load(json_file)
@@ -76,15 +74,6 @@ for name_building_folder in name_building_folder_list:
         SimulationCommonMethods.make_simulation_folder()
         # Make an original urban canopy object that will be copied for each simulation
         urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object()
-        # Load context from json
-        SimulationLoadBuildingOrGeometry.add_buildings_from_lb_polyface3d_json_in_urban_canopy(
-            urban_canopy_object=urban_canopy_object,
-            path_lb_polyface3d_json_file=path_context_alternative_json_file)
-        # Make the merged face of the context buildings
-        SimulationBuildingManipulationFunctions.make_merged_face_of_buildings_in_urban_canopy(
-            urban_canopy_object=urban_canopy_object, overwrite=True)
-        SimulationBuildingManipulationFunctions.make_oriented_bounding_boxes_of_buildings_in_urban_canopy(
-            urban_canopy_object=urban_canopy_object, overwrite=True)
 
         # Load epw and simulation parameters
         UrbanBuildingEnergySimulationFunctions.load_epw_and_hb_simulation_parameters_for_ubes_in_urban_canopy(
@@ -124,9 +113,9 @@ for name_building_folder in name_building_folder_list:
             # Make the merged face of the building (not too sure if necessary)
             SimulationBuildingManipulationFunctions.make_merged_face_of_buildings_in_urban_canopy(
                 urban_canopy_object=urban_canopy_object, overwrite=False)
-            # Make the oriented bounding boxes of the building (not too sure if necessary)
-            SimulationBuildingManipulationFunctions.make_oriented_bounding_boxes_of_buildings_in_urban_canopy(
-                urban_canopy_object=urban_canopy_object, overwrite=False)
+            # # Make the oriented bounding boxes of the building (not too sure if necessary)
+            # SimulationBuildingManipulationFunctions.make_oriented_bounding_boxes_of_buildings_in_urban_canopy(
+            #     urban_canopy_object=urban_canopy_object, overwrite=False)
 
             # Loop over the simulation parameters
             for mvfc in mvfc_list:

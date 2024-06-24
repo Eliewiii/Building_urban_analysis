@@ -29,6 +29,7 @@ def merge_facades_and_roof_faces_in_hb_model(hb_model_obj, orient_roof_mesh_to_a
     :param name: str: default=None
     :return:
     """
+    hb_model_obj = hb_model_obj.duplicate()
     # Collect all the LB Face3D of the HB model that are exterior walls
     lb_face3d_list = [face.geometry for face in hb_model_obj.faces if
                       (isinstance(face.boundary_condition, Outdoors) and (

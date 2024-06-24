@@ -3,6 +3,7 @@ Performs the energy simulation of a building using the EnergyPlus software and s
 """
 
 import os
+import json
 import logging
 import shutil
 
@@ -100,9 +101,20 @@ class BuildingEnergySimulation:
         :param hb_model_obj: Honeybee Model object
         :param silent: bool, if True, the EnergyPlus output will not be printed in the console
         """
+        hb_model_copy = hb_model_obj.duplicate()
+        if len(hb_model_copy.stories) == 0 and len(hb_model_copy.rooms) != 0:
+            hb_model_copy.assign_stories_by_floor_height()
+
+        hb_model_dict = hb_model_copy.to_dict(triangulate_sub_faces=True)
+        hb_model_copy.properties.energy.add_autocal_properties_to_dict(hb_model_dict)
+
+        path_hbjson_file = os.path.join(path_building_bes_temp_folder, '{}.hbjson'.format(self.building_id))
+
+        with open(path_hbjson_file, 'w') as fp:
+            json.dump(hb_model_dict, fp)
 
         # Export the Honeybee Model to a hbjson file in the path_building_bes_temp_folder
-        path_hbjson_file = hb_model_obj.to_hbjson(name=self.building_id, folder=path_building_bes_temp_folder)
+        # path_hbjson_file = hb_model_obj.to_hbjson(name=self.building_id, folder=path_building_bes_temp_folder)
 
         from_hbjson_to_idf(dir_to_write_idf_in=path_building_bes_temp_folder,
                            path_hbjson_file=path_hbjson_file,
@@ -200,8 +212,10 @@ class BuildingEnergySimulation:
                                                          "Heating"] * total_floor_area / self.cop_heating
         self.bes_results_dict["cooling"]["yearly"] = eui_dict["end_uses"][
                                                          "Cooling"] * total_floor_area / self.cop_cooling
-        self.bes_results_dict["equipment"]["yearly"] = eui_dict["end_uses"]["Electric Equipment"] * total_floor_area
-        self.bes_results_dict["lighting"]["yearly"] = eui_dict["end_uses"]["Interior Lighting"] * total_floor_area
+        self.bes_results_dict["equipment"]["yearly"] = eui_dict["end_uses"][
+                                                           "Electric Equipment"] * total_floor_area
+        self.bes_results_dict["lighting"]["yearly"] = eui_dict["end_uses"][
+                                                          "Interior Lighting"] * total_floor_area
         # self.bes_results_dict["ventilation"]["yearly"] = eui_dict["end_uses"]["ventilation"] * total_floor_area
         self.bes_results_dict["total"]["yearly"] = sum([self.bes_results_dict["heating"]["yearly"],
                                                         self.bes_results_dict["cooling"]["yearly"],

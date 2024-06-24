@@ -429,8 +429,7 @@ class BuildingModeled(BuildingBasic):
         # Make a copy of the hb_model attribute and add the shading surfaces
         hb_model_with_shades = self.hb_model_obj.duplicate()
         # Make the list of shades to add to the model
-        hb_shade_list = self.shading_context_obj.forced_hb_shades_from_user_list + self.shading_context_obj.context_shading_hb_shade_list \
-                        + self.shading_context_obj.solar_panels_hb_shade_list
+        hb_shade_list = self.shading_context_obj.forced_hb_shades_from_user_list + self.shading_context_obj.context_shading_hb_shade_list
         # Add the shades to the model
         hb_model_with_shades.add_shades(hb_shade_list)
         # Generate the IDF file
