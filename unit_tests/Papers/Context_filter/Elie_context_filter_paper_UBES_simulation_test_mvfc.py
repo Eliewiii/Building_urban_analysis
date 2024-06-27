@@ -36,10 +36,7 @@ path_json_result_file = os.path.join(path_result_folder, name_result_json_file)
 path_epw = r"C:\Users\elie-medioni\AppData\Local\Building_urban_analysis\Libraries\EPW\IS_5280_A_Tel_Aviv.epw"
 
 # Simulation parameters
-mvfc_list = [0.99, 0.25, 0.11111111, 0.0625, 0.04, 0.02777778,
-             0.02040816, 0.015625, 0.01234568, 0.01, 0.00826446, 0.00694444,
-             0.00591716, 0.00510204, 0.00444444, 0.00390625, 0.00346021, 0.00308642,
-             0.00277008, 0.0025]
+mvfc_list = [0.0005]
 nb_of_rays = 3
 consider_windows = False
 

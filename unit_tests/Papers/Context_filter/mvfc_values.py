@@ -15,7 +15,7 @@ def generate_inverse_squared_values(N, min_value):
 
 
 # Example usage
-N = 20
+N = 30
 min_value = 0.1
 
 values = generate_inverse_squared_values(N, min_value)

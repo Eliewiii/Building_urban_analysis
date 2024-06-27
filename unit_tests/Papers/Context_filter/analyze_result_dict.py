@@ -215,5 +215,5 @@ if __name__ == "__main__":
             else:
                 plot_computation_time_vs_mvfc(result_dict)
                 plot_error_all_surfaces_vs_mvfc(result_dict)
-                # plot_error_raytracing_vs_mvfc(result_dict)
-                # plot_computation_time_vs_number_of_surfaces(result_dict)
+                plot_error_raytracing_vs_mvfc(result_dict)
+                plot_computation_time_vs_number_of_surfaces(result_dict)
