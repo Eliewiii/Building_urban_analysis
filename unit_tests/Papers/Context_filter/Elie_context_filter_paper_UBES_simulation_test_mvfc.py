@@ -28,7 +28,7 @@ name_context_alternative_list = ["context_1"]
 path_ep_simulation_parameter_json_file = default_path_hbjson_simulation_parameter_file
 
 # Initialize json result file
-name_result_json_file = "results_mvfc_context_filter.json"
+name_result_json_file = "results_mvfc_context_filter_test_repeatability.json"
 path_result_folder = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\Ministry of Energy Research\Papers\CheckContext\Simulations_Elie\results"
 path_json_result_file = os.path.join(path_result_folder, name_result_json_file)
 
@@ -36,7 +36,7 @@ path_json_result_file = os.path.join(path_result_folder, name_result_json_file)
 path_epw = r"C:\Users\elie-medioni\AppData\Local\Building_urban_analysis\Libraries\EPW\IS_5280_A_Tel_Aviv.epw"
 
 # Simulation parameters
-mvfc_list = [0.0005]
+mvfc_list = [0.01]
 nb_of_rays = 3
 consider_windows = False
 
