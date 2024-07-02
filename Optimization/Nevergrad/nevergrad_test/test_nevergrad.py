@@ -6,28 +6,28 @@ CATEGORIES = ['A', 'B', 'C']
 
 
 # Define the evaluation function
-def eval_func(**kwargs):
-    print(kwargs)
-    x = [kwargs[key] for key in kwargs.keys()]
-
-    # Extract the integer variables with different boundaries
-    int_var_1 = int(x[0])
-    int_var_2 = int(x[1])
-
-    # Extract the float variables with different boundaries
-    float_var_1 = x[2]
-    float_var_2 = x[3]
-
-    # Extract the categorical variable index
-    cat_var_index = int(x[4])
+def eval_func(int_var_1=0,int_var_2=0,float_var_1=0,float_var_2=0,cat_var=0):
+    print (int_var_1)
+    # x = [kwargs[key] for key in kwargs.keys()]
+    #
+    # # Extract the integer variables with different boundaries
+    # int_var_1 = int(x[0])
+    # int_var_2 = int(x[1])
+    #
+    # # Extract the float variables with different boundaries
+    # float_var_1 = x[2]
+    # float_var_2 = x[3]
+    #
+    # # Extract the categorical variable index
+    # cat_var_index = int(x[4])
 
     # Get the actual categorical value
-    cat_var = CATEGORIES[cat_var_index]
+    cat_var = CATEGORIES[cat_var]
 
     if cat_var == 'A':
-        constraint= False
+        constraint = False
     else:
-        constraint= True
+        constraint = True
 
     # For demonstration, print the values
     # print(f"Input vector: {x}")
@@ -45,6 +45,7 @@ def eval_func(**kwargs):
     # Note: Nevergrad minimizes the objective by default, so we negate it
     return -objective_value
 
+
 # Define the search space with different boundaries
 instrumentation = ng.p.Instrumentation(
     int_var_1=ng.p.Scalar(lower=0, upper=5).set_integer_casting(),  # Integer variable 1 with bounds 0 to 5
@@ -54,11 +55,17 @@ instrumentation = ng.p.Instrumentation(
     cat_var=ng.p.Choice(range(len(CATEGORIES)))  # Categorical variable with 3 categories
 )
 
+budget = 10
+
 # Choose an optimizer
-optimizer = ng.optimizers.OnePlusOne(parametrization=instrumentation, budget=10)
+# optimizer = ng.optimizers.OnePlusOne(parametrization=instrumentation, budget=budget, num_workers=1)
+# optimizer = ng.optimizers.NgIohTuned(parametrization=instrumentation, budget=budget, num_workers=1)
+optimizer = ng.optimizers.DiscreteOnePlusOne(parametrization=instrumentation, budget=budget, num_workers=1)
+# optimizer = ng.optimizers.PortfolioDiscreteOnePlusOne(parametrization=instrumentation, budget=budget, num_workers=1)
+
 
 # Run the optimization
-recommendation = optimizer.minimize(eval_func, verbosity=2)
+recommendation = optimizer.minimize(eval_func, verbosity=0)
 
 # Extract the best individual
 best_individual = recommendation.kwargs['int_var_1']
@@ -69,8 +76,10 @@ best_float_var_2 = recommendation.kwargs['float_var_2']
 best_cat_var_index = int(recommendation.kwargs['cat_var'])
 best_cat_var = CATEGORIES[best_cat_var_index]
 
-# Print the best individual
-print(f"Best integer variables: {best_int_var_1}, {best_int_var_2}")
-print(f"Best float variables: {best_float_var_1}, {best_float_var_2}")
-print(f"Best categorical variable index: {best_cat_var_index}")
-print(f"Best categorical variable: {best_cat_var}")
+# # Print the best individual
+print(
+    f"Best integer variables: {best_int_var_1}, {best_int_var_2}, Best float variables: {best_float_var_1}, "
+    f"{best_float_var_2}, Best categorical variable index: {best_cat_var_index},"
+    f"Best categorical variable: {best_cat_var}")
+
+# print(recommendation.value)

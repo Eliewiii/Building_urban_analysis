@@ -65,12 +65,12 @@ def mutate_cat(individual, indpb):
             individual[i] = random.randint(0, len(CATEGORIES) - 1)
     return individual,
 
-
-toolbox.register("mutate", tools.mutate, indpb=0.2)
-toolbox.decorate("mutate", tools.mutGaussian, mu=0, sigma=1)
-
-toolbox.register("mutate_int", mutate_int, mu=0, sigma=1, indpb=0.2)
-toolbox.register("mutate_cat", mutate_cat, indpb=0.1)
+#
+# toolbox.register("mutate", tools.mutate, indpb=0.2)
+# toolbox.decorate("mutate", tools.mutGaussian, mu=0, sigma=1)
+#
+# toolbox.register("mutate_int", mutate_int, mu=0, sigma=1, indpb=0.2)
+# toolbox.register("mutate_cat", mutate_cat, indpb=0.1)
 
 toolbox.register("select", tools.selBest)
 
