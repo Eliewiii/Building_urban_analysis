@@ -2,7 +2,7 @@ from urban_canopy.urban_canopy import UrbanCanopy
 
 
 
-def eval_funct(urban_canopy_obj : UrbanCanopy,fitness_func,id_roof_technology :str =""):
+def eval_funct(urban_canopy_obj : UrbanCanopy,fitness_func ,id_roof_technology :str =""):
     """
 
     """
@@ -31,7 +31,7 @@ def create_eval_func_with_custom_object(custom_obj,fitness_func):
 
 
 
-# Define the search space with different boundaries
+# Define the boundaries of the inputs and the input to
 CATEGORIES = ['A', 'B', 'C']
 instrumentation = ng.p.Instrumentation(
     int_var_1=ng.p.Scalar(lower=0, upper=5).set_integer_casting(),  # Integer variable 1 with bounds 0 to 5
