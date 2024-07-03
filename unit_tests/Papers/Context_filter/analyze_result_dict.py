@@ -310,6 +310,6 @@ if __name__ == "__main__":
                 print(f"Error reading JSON file: {e}")
             else:
                 # plot_computation_time_vs_mvfc(result_dict, buidling_type="residential", context_id="All", number_of_floors="5")
-                # plot_error_all_surfaces_vs_mvfc(result_dict, buidling_type="office", context_id="1", number_of_floors="30")
+                plot_error_all_surfaces_vs_mvfc(result_dict, buidling_type="residential", context_id="1", number_of_floors="30")
                 # plot_error_raytracing_vs_mvfc(result_dict)
-                plot_computation_time_vs_number_of_surfaces(result_dict,buidling_type="residential")
+                # plot_computation_time_vs_number_of_surfaces(result_dict,buidling_type="residential")

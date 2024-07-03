@@ -52,3 +52,7 @@ NEBD_CA_REF_ENV = 50  # Net Economical Benefit Density Conditionned apartment [$
 HED_ZONE_REF_ENV = 4000  # Harvested energy density Zone [Kwh/m2]   todo: check this value
 HED_CA_REF_ENV = 4000  # Harvested energy density Conditionned apartment [Kwh/m2]
 NEC_REF_ENV = 0.5  # Net Energy Compensation
+
+###############################
+# Balance scenarios
+###############################
