@@ -1,18 +1,18 @@
 """
 
 """
-
+"""
 example_parsed_dict = {
     "Context-1_Res_5-flrs": {
         "building_type": "Residential",
         "context_id": "1",
         "number_of_floors": "5",
-        "no_ray_tracing": False,
-        "mvfc": 0.1,
-        "result_dict": {"BES": {"results": {"h+c": 1.0, "h+c+l": 2.0, "total": 3.0}}}
+        "no_ray_tracing": {0.99:{result dict},0.1:{...},
+        "ray_tracing": {0.99:{result dict},0.1:{},
     },
-    "Context-2_Of_10-flrs": {}
+    "Context-2_Of_10-flrs": {"no_ray_tracing": {0.99:{result dict},0.1:{},}
 }
+"""
 
 
 def parse_result_dict(result_dict: dict) -> dict:
@@ -22,25 +22,35 @@ def parse_result_dict(result_dict: dict) -> dict:
     return: dict, parsed_dict
     """
     parsed_dict = {}
-    for key,value in result_dict.items():
-        parsed_dict[key] = {}
+    for key, value in result_dict.items():
         # Extract building type
         if is_residential(key):
-            parsed_dict[key]["building_type"] = "Residential"
+            building_type = "Res"
         elif is_office(key):
-            parsed_dict[key]["building_type"] = "Office"
+            building_type = "Of"
         else:
             raise ValueError(f"Building type not recognized for key {key}")
         # Extract context id
-        parsed_dict[key]["context_id"] = get_context_id(key)
+        context_id = get_context_id(key)
         # Extract number of floors
-        parsed_dict[key]["number_of_floors"] = get_nb_of_floors(key)
-        # Extract no_ray_tracing
-        parsed_dict[key]["no_ray_tracing"] = value["context_selection"]["second_pass"]['no_ray_tracing']
-        # Extract mvfc
-        parsed_dict[key]["mvfc"] = value["context_selection"]["first_pass"]['mvfc']
-        # Extract result_dict
-        parsed_dict[key]["result_dict"] = value
+        nb_floor = get_nb_of_floors(key)
+        # Building id
+        building_id = f"Context-{context_id}_{building_type}_{nb_floor}-flrs"
+        # Initialize the building id
+        if building_id not in parsed_dict:
+            parsed_dict[building_id] = {}
+            parsed_dict[building_id]["building_type"] = building_type
+            parsed_dict[building_id]["context_id"] = context_id
+            parsed_dict[building_id]["number_of_floors"] = nb_floor
+            parsed_dict[building_id]["no_ray_tracing"] = {}
+            parsed_dict[building_id]["ray_tracing"] = {}
+        # Extract the results
+        if value["context_selection"]["second_pass"]["no_ray_tracing"]:
+            parsed_dict[building_id]["no_ray_tracing"][
+                value["context_selection"]["first_pass"]["mvfc"]] = value
+        else:
+            parsed_dict[building_id]["ray_tracing"][value["context_selection"]["first_pass"]["mvfc"]] = value
+
     return parsed_dict
 
 
@@ -117,13 +127,15 @@ def get_context_id(result_dict_key):
     """
     return result_dict_key.split("Context-")[1].split("_")[0]
 
+
 def get_nb_of_floors(result_dict_key):
     """
     Get the number of floors
     param result_dict_key: dict, result_dict_key
     return: str, "5", "10", "15", "20", "25" or "30"
     """
-    return result_dict_key.split("-flrs")[0].split("-")[1]
+    return result_dict_key.split("-flrs")[0].split("_")[-1]
+
 
 def is_context_id(result_dict_key, context_id):
     """
