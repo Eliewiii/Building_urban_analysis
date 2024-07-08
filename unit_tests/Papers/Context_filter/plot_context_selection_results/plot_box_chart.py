@@ -61,23 +61,20 @@ def plot_xlog_box_chart(data: list, x_positions: list, x_label: str, y_label: st
                  color=outlier_color)
 
         # Add outliers
-        plt.scatter([pos] * len(outliers), outliers, marker='o', color='white', s=50, edgecolor='black',
+        plt.scatter([pos] * len(outliers), outliers, marker='o', color='white', s=30, edgecolor='black',
                     linewidth=2, zorder=4)
 
     # Set x-axis to logarithmic scale
     ax.set_xscale('log')
 
     # Add title and labels
-    if title:
-        plt.title(title)
-    else:
-        plt.subplots_adjust(top=0.95, bottom=0.1, left=0.1, right=0.95, hspace=0.2, wspace=0.2)
-        # plt.title('Box Plot Example with Logarithmic X-axis')
+
+    plt.subplots_adjust(top=0.95, bottom=0.1, left=0.1, right=0.95, hspace=0.2, wspace=0.2)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
 
     # Save the figure in the Figures folder
-    plt.savefig('Figures/box_chart.png', dpi=dpi)
+    plt.savefig(f'Figures/{title}.png', dpi=dpi)
 
 
 if __name__ == "__main__":
