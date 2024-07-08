@@ -6,7 +6,7 @@ CATEGORIES = ['A', 'B', 'C']
 
 
 # Define the evaluation function
-def eval_func(int_var_1=0,int_var_2=0,float_var_1=0,float_var_2=0,cat_var=0):
+def eval_func(zob,int_var_1=0,int_var_2=0,float_var_1=0,float_var_2=0,cat_var=0):
     # x = [kwargs[key] for key in kwargs.keys()]
     #
     # # Extract the integer variables with different boundaries
@@ -44,6 +44,11 @@ def eval_func(int_var_1=0,int_var_2=0,float_var_1=0,float_var_2=0,cat_var=0):
     # Note: Nevergrad minimizes the objective by default, so we negate it
     return -objective_value
 
+def create_eval_func_with_custom_object(zob):
+    def wrapped_eval_func(**kwargs):
+        return eval_func(zob, **kwargs)
+    return wrapped_eval_func
+
 test_input = ng.p.Scalar(lower=0, upper=5).set_integer_casting()
 
 # Define the search space with different boundaries
@@ -65,7 +70,7 @@ optimizer = ng.optimizers.DiscreteOnePlusOne(parametrization=instrumentation, bu
 
 
 # Run the optimization
-recommendation = optimizer.minimize(eval_func, verbosity=0)
+recommendation = optimizer.minimize(create_eval_func_with_custom_object(zob=1), verbosity=0)
 
 # Extract the best individual
 best_individual = recommendation.kwargs['int_var_1']

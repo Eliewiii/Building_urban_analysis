@@ -1,0 +1,57 @@
+"""
+Main script to run optimization with Nevergrad using the BUA evaluation function
+"""
+import nevergrad as ng
+import numpy as np
+
+from nevergrad.optimization.optimizerlib import OnePlusOne, DiscreteOnePlusOne, PortfolioDiscreteOnePlusOne
+
+from Optimization.Nevergrad.optimization_test_with_BUA.eval_function import eval_func_wrapper, \
+    suppress_print_wrapper
+from Optimization.Nevergrad.optimization_test_with_BUA.fitness_functions import \
+    environmental_oriented_fitness_func
+from Optimization.Nevergrad.optimization_test_with_BUA.design_variable_definition_and_boundaries import \
+    roof_inverter_sizing_ratio_dv, facades_inverter_sizing_ratio_dv, min_panel_eroi_dv, \
+    replacement_frequency_dv, roof_panel_id_dv, facades_panel_id_dv
+
+
+def run_optimization_BUA(path_json_results_file: str,
+                         optimization_algorithm=OnePlusOne,
+                         fitness_function=environmental_oriented_fitness_func,
+                         budget=20):
+    """
+
+    """
+
+    # Read the Urban Canopy object (assumed to be in the default simulation folder)
+    urban_canopy_obj = None
+    #
+
+    # Define the search space with different boundaries
+    instrumentation = ng.p.Instrumentation(
+        roof_inverter_sizing_ratio=roof_inverter_sizing_ratio_dv,
+        facades_inverter_sizing_ratio=facades_inverter_sizing_ratio_dv,
+        min_panel_eroi=min_panel_eroi_dv,
+        replacement_frequency=replacement_frequency_dv,
+        roof_panel_id=roof_panel_id_dv,
+        facades_panel_id=facades_panel_id_dv
+    )
+
+    optimizer = optimization_algorithm(parametrization=instrumentation, budget=budget,
+                                       num_workers=1)
+
+    # Run the optimization
+    recommendation = optimizer.minimize(
+        eval_func_wrapper(urban_canopy_obj=urban_canopy_obj, fitness_func=fitness_function,
+                          path_json_results_file=path_json_results_file), verbosity=0)
+
+    # # Print the best individual
+    print(f"optimized value: \n")
+    print(f"{variable} : {recommendation.kwargs[variable]} \n" for variable in list(recommendation.kwargs))
+
+    # Save the best individual in the json file
+    # todo
+
+
+if __name__ == "__main__":
+    run_optimization_BUA()

@@ -33,10 +33,21 @@ min_panel_eroi_dv = ng.p.Scalar(
 ).set_integer_casting()
 
 # Panel Replacement frequency
-"""
-To"""
+""" The replacement frequency will be multiplied by 5"""
 replacement_frequency_dv = ng.p.Scalar(
     lower=1,
     upper=8
 ).set_integer_casting()
 
+
+###############################
+# Categorial design variables
+###############################
+
+# Roof Panel techonology ids
+ROOF_PANEL_TECHNOLOGIES = ['A', 'B']
+roof_panel_id_dv = ng.p.Choice(range(len(ROOF_PANEL_TECHNOLOGIES)))
+
+# Facades Panel techonology ids
+FACADES_PANEL_TECHNOLOGIES = ['C', 'D']
+facades_panel_id_dv = ng.p.Choice(range(len(FACADES_PANEL_TECHNOLOGIES)))

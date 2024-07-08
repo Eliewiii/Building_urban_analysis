@@ -1,8 +1,14 @@
+import sys
+import os
+
 from urban_canopy.urban_canopy import UrbanCanopy
 
+import nevergrad as ng
+import numpy as np
 
 
-def eval_funct(urban_canopy_obj : UrbanCanopy,fitness_func ,id_roof_technology :str =""):
+
+def eval_func(urban_canopy_obj : UrbanCanopy,fitness_func ,id_roof_technology :str =""):
     """
 
     """
@@ -22,23 +28,25 @@ def eval_funct(urban_canopy_obj : UrbanCanopy,fitness_func ,id_roof_technology :
 
 
 # Function to wrap the eval_func with a custom object
-def create_eval_func_with_custom_object(custom_obj,fitness_func):
+def eval_func_wrapper(urban_canopy_obj,fitness_func,path_json_results_file):
     def wrapped_eval_func(**kwargs):
-        return eval_funct(custom_obj,fitness_func, **kwargs)
+        return eval_func(urban_canopy_obj,fitness_func,path_json_results_file, **kwargs)
     return wrapped_eval_func
 
 
 
+def suppress_print_wrapper(func, *args, **kwargs):
+    # Save the current stdout so we can restore it later
+    original_stdout = sys.stdout
+    # Redirect stdout to null
+    sys.stdout = open(os.devnull, 'w')
+    try:
+        result = func(*args, **kwargs)
+    finally:
+        # Restore stdout to its original state
+        sys.stdout = original_stdout
+    return result
 
+if __name__=="__main__":
+    suppress_print_wrapper(print, "Hello, world!")
 
-# Define the boundaries of the inputs and the input to
-CATEGORIES = ['A', 'B', 'C']
-instrumentation = ng.p.Instrumentation(
-    int_var_1=ng.p.Scalar(lower=0, upper=5).set_integer_casting(),  # Integer variable 1 with bounds 0 to 5
-    int_var_2=ng.p.Scalar(lower=5, upper=10).set_integer_casting(),  # Integer variable 2 with bounds 5 to 10
-    float_var_1=ng.p.Scalar(lower=0, upper=5),  # Float variable 1 with bounds 0 to 5
-    float_var_2=ng.p.Scalar(lower=5, upper=10),  # Float variable 2 with bounds 5 to 10
-    cat_var=ng.p.Choice(range(len(CATEGORIES)))  # Categorical variable with 3 categories
-)
-
-budget = 100
