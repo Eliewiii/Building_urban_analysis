@@ -12,7 +12,7 @@ def eval_func(urban_canopy_obj : UrbanCanopy,fitness_func ,id_roof_technology :s
     """
 
     """
-    #run BIPV simulation
+    # run BIPV simulation
 
     #Run KPI
 

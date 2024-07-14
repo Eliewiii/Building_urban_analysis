@@ -3,6 +3,7 @@ Main script to run optimization with Nevergrad using the BUA evaluation function
 """
 import nevergrad as ng
 import numpy as np
+import json
 
 from nevergrad.optimization.optimizerlib import OnePlusOne, DiscreteOnePlusOne, PortfolioDiscreteOnePlusOne
 
@@ -14,6 +15,15 @@ from Optimization.Nevergrad.optimization_test_with_BUA.design_variable_definitio
     roof_inverter_sizing_ratio_dv, facades_inverter_sizing_ratio_dv, min_panel_eroi_dv, \
     replacement_frequency_dv, roof_panel_id_dv, facades_panel_id_dv
 
+from unit_tests.utils_main_import_scripts import *
+
+def init_json_results_dict(json_file_name: str):
+    """
+    Initialize the json file with the result from each iteration
+    """
+    with open(json_file_name, 'w') as json_file:
+        json_dict = {"itaration_nb": 0, "iteration_results": []}
+        json.dump({}, json_file)
 
 def run_optimization_BUA(path_json_results_file: str,
                          optimization_algorithm=OnePlusOne,
@@ -22,10 +32,17 @@ def run_optimization_BUA(path_json_results_file: str,
     """
 
     """
+    # Initialize json file with the result from each iteration
+    json_file_name = "opt_results"
+    with open(json_file_name, 'w') as json_file:
+        json.dump({}, json_file)
+
 
     # Read the Urban Canopy object (assumed to be in the default simulation folder)
-    urban_canopy_obj = None
-    #
+    urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object(
+        path_simulation_folder=default_path_simulation_folder)
+
+
 
     # Define the search space with different boundaries
     instrumentation = ng.p.Instrumentation(
@@ -42,7 +59,7 @@ def run_optimization_BUA(path_json_results_file: str,
 
     # Run the optimization
     recommendation = optimizer.minimize(
-        eval_func_wrapper(urban_canopy_obj=urban_canopy_obj, fitness_func=fitness_function,
+        eval_func_wrapper(urban_canopy_obj=urban_canopy_object, fitness_func=fitness_function,
                           path_json_results_file=path_json_results_file), verbosity=0)
 
     # # Print the best individual
