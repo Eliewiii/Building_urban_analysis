@@ -1,6 +1,5 @@
 from unit_tests.utils_main_import_scripts import *
 
-path_hbjson_file = None  # todo: add path to the HBJSON file
 
 def preprocessing(path_hbjson_file: str):
 
@@ -94,4 +93,6 @@ def preprocessing(path_hbjson_file: str):
                                                       path_simulation_folder=default_path_simulation_folder)
 
 if __name__ == "__main__":
+    path_hbjson_file = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\Ministry of Energy Research\Papers\BIPV extended paper\Simulations\Test_Nevergrad\hbjsons\Buil_TA_0.hbjson"
+
     preprocessing(path_hbjson_file)
