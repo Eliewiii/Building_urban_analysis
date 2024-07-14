@@ -28,4 +28,3 @@ def update_json_results_dict(path_json_file: str, fitness_value: float,kpi_dict:
     # Save the updated json file
     with open(path_json_file, 'w') as json_file:
         json.dump(json_dict, json_file)
-
