@@ -14,20 +14,13 @@ from Optimization.Nevergrad.optimization_test_with_BUA.fitness_functions import 
 from Optimization.Nevergrad.optimization_test_with_BUA.design_variable_definition_and_boundaries import \
     roof_inverter_sizing_ratio_dv, facades_inverter_sizing_ratio_dv, min_panel_eroi_dv, \
     replacement_frequency_dv, roof_panel_id_dv, facades_panel_id_dv
-from Optimization.Nevergrad.optimization_test_with_BUA.json_result_dict_methods import init_json_results_dict,finalize_json_results_dict
-
+from Optimization.Nevergrad.optimization_test_with_BUA.json_result_dict_methods import init_json_results_dict, \
+    finalize_json_results_dict
 
 from unit_tests.utils_main_import_scripts import *
 
-def init_json_results_dict(json_file_name: str):
-    """
-    Initialize the json file with the result from each iteration
-    """
-    with open(json_file_name, 'w') as json_file:
-        json_dict = {"itaration_nb": 0, "iteration_results": []}
-        json.dump({}, json_file)
 
-def run_optimization_BUA(path_json_results_file: str,
+def run_optimization_bua(path_json_results_file: str,
                          optimization_algorithm=OnePlusOne,
                          fitness_function=environmental_oriented_fitness_func,
                          budget=20):
@@ -40,7 +33,6 @@ def run_optimization_BUA(path_json_results_file: str,
     # Read the Urban Canopy object (assumed to be in the default simulation folder)
     urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object(
         path_simulation_folder=default_path_simulation_folder)
-
 
     instrumentation = ng.p.Instrumentation(
         roof_panel_id=roof_panel_id_dv,
@@ -66,8 +58,11 @@ def run_optimization_BUA(path_json_results_file: str,
     print(f"{variable} : {recommendation.kwargs[variable]} \n" for variable in list(recommendation.kwargs))
 
     # Save the best individual in the json file
-    # todo
+    finalize_json_results_dict(path_json_file=path_json_results_file, recommendation=recommendation)
 
 
 if __name__ == "__main__":
-    run_optimization_BUA()
+    run_optimization_bua(path_json_results_file="results.json",
+                         optimization_algorithm=OnePlusOne,
+                         fitness_function=environmental_oriented_fitness_func,
+                         budget=5)
