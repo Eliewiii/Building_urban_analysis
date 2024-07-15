@@ -4,7 +4,7 @@
 
 import logging
 
-from urban_canopy.urban_canopy_additional_functions import UrbanCanopyAdditionalFunction
+from bua.urban_canopy.urban_canopy_additional_functions import UrbanCanopyAdditionalFunction
 
 user_logger = logging.getLogger("user")  
 dev_logger = logging.getLogger("dev")  

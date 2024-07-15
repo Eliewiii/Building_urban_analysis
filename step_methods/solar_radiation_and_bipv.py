@@ -3,7 +3,7 @@ Functions to be run by the main to perform the different steps of teh solar radi
 """
 import logging
 
-from urban_canopy.urban_canopy import UrbanCanopy
+from bua.urban_canopy.urban_canopy import UrbanCanopy
 
 from utils.utils_default_values_user_parameters import default_path_simulation_folder, \
     default_path_weather_file
@@ -16,7 +16,6 @@ from utils.utils_default_values_user_parameters import default_id_pv_tech_roof, 
     default_roof_inverter_id, default_facades_inverter_id, default_roof_inverter_sizing_ratio, \
     default_facades_inverter_sizing_ratio, default_minimum_panel_eroi, default_start_year, default_end_year, \
     default_efficiency_computation_method, default_replacement_scenario, \
-    default_replacement_frequency_in_years, \
     default_bipv_scenario_identifier, default_grid_ghg_intensity, default_grid_energy_intensity, \
     default_grid_electricity_sell_price
 

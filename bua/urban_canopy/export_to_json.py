@@ -2,15 +2,7 @@
 Contains all the functions to export the data of an urban canopy object to json files.
 """
 
-import os
 import copy
-
-from honeybee.room import Room
-
-from bipv.bipv_technology import BipvTechnology
-
-from building.building_basic import BuildingBasic
-from building.building_modeled import BuildingModeled
 
 # Tree structure of the urban canopy json file
 tree_structure_urban_canopy_json_dict = {

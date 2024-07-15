@@ -2,8 +2,7 @@
 Panel class, modeling solar panels, to track the age and energy production of panels on buildings
 """
 
-from libraries_addons.solar_panels.pv_efficiency_functions import get_efficiency_loss_function_from_string
-from bipv.bipv_technology import BipvTechnology
+from bua.bipv.bipv_technology import BipvTechnology
 
 
 class BipvPanel:

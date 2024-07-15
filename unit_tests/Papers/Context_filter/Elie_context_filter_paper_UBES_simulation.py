@@ -1,15 +1,12 @@
 """
 Script for the context selection paper UBES simulation.
 """
-import os
 import json
 import logging
 
-from copy import deepcopy
-
 from unit_tests.utils_main_import_scripts import *
 
-from building.building_modeled import BuildingModeled
+from bua.building.building_modeled import BuildingModeled
 
 # Initialize logger
 dev_logger = logging.getLogger("dev")

@@ -6,12 +6,10 @@ import os
 
 from copy import deepcopy
 
-from building.solar_radiation_and_bipv.solar_rad_and_BIPV import empty_bipv_results_dict, \
+from bua.building.solar_radiation_and_bipv.solar_rad_and_BIPV import empty_bipv_results_dict, \
     sum_bipv_results_dicts_with_different_years, bipv_results_to_csv
 
-from building.energy_simulation.building_energy_simulation import empty_bes_results_dict
-
-from urban_canopy.kpis.urban_canopy_kpis import UrbanCanopyKPIs
+from bua.urban_canopy.urban_canopy import UrbanCanopyKPIs
 
 
 class BipvScenario:

@@ -6,8 +6,8 @@ import logging
 
 from honeybee_radiance.sensorgrid import SensorGrid
 
-from bipv.bipv_panel import BipvPanel
-from bipv.bipv_technology import BipvTechnology
+from bua.bipv.bipv_panel import BipvPanel
+from bua.bipv.bipv_technology import BipvTechnology
 
 user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")

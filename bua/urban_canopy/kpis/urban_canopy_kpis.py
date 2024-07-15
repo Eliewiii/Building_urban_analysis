@@ -8,7 +8,7 @@ import pandas as pd
 
 from copy import deepcopy
 
-from building.solar_radiation_and_bipv.solar_rad_and_BIPV import \
+from bua.building.solar_radiation_and_bipv.solar_rad_and_BIPV import \
     compute_cumulative_and_total_value_bipv_result_dict
 
 user_logger = logging.getLogger("user")

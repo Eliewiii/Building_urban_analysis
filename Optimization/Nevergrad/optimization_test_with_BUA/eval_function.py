@@ -1,12 +1,8 @@
 import sys
-import os
 
-from urban_canopy.urban_canopy import UrbanCanopy
+from bua.urban_canopy.urban_canopy import UrbanCanopy
 
 from unit_tests.utils_main_import_scripts import *
-
-import nevergrad as ng
-import numpy as np
 
 from Optimization.Nevergrad.optimization_test_with_BUA.json_result_dict_methods import \
     update_json_results_dict

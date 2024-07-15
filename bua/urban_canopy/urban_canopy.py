@@ -11,27 +11,25 @@ from datetime import datetime
 
 from honeybee.model import Model
 
-from urban_canopy.urban_canopy_additional_functions import UrbanCanopyAdditionalFunction
-from urban_canopy.export_to_json import ExportUrbanCanopyToJson
-from urban_canopy.bipv_scenario_urban_canopy import BipvScenario
-from urban_canopy.uc_context_filter.shade_manager import ShadeManager
-from urban_canopy.ubes.uc_energy_simulation import UrbanBuildingEnergySimulation
+from bua.urban_canopy.urban_canopy import ExportUrbanCanopyToJson
+from bua.urban_canopy.bipv_scenario_urban_canopy import BipvScenario
+from bua.urban_canopy.urban_canopy import ShadeManager
+from bua.urban_canopy.ubes.uc_energy_simulation import UrbanBuildingEnergySimulation
 
 from building.building_basic import BuildingBasic
-from building.building_modeled import BuildingModeled
-from building.solar_radiation_and_bipv.solar_rad_and_BIPV import SolarRadAndBipvSimulation
+from bua.building.building_modeled import BuildingModeled
 from building.context_filter.utils_functions_context_filter import \
     make_pyvista_polydata_from_list_of_hb_model_and_lb_polyface3d
 from libraries_addons.extract_gis_files import extract_gis
 from typology.typology import Typology
 
-from bipv.bipv_technology import BipvTechnology
-from bipv.bipv_inverter import BipvInverter
-from bipv.bipv_transportation import BipvTransportation
+from bua.bipv.bipv_technology import BipvTechnology
+from bua.bipv.bipv_inverter import BipvInverter
+from bua.bipv.bipv_transportation import BipvTransportation
 
 from utils.utils_configuration import name_urban_canopy_export_file_pkl, name_urban_canopy_export_file_json, \
     name_radiation_simulation_folder, name_temporary_files_folder, name_ubes_temp_simulation_folder, \
-    name_ubes_simulation_result_folder, name_ubes_hbjson_simulation_parameters_file, name_ubes_epw_file, \
+    name_ubes_simulation_result_folder, name_ubes_epw_file, \
     path_folder_default_bipv_parameters, \
     path_folder_user_bipv_parameters
 from utils.utils_constants import TOLERANCE_LBT

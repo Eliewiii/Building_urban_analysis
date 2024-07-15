@@ -2,17 +2,11 @@
 Additional functions used by Urban canopy
 """
 import os
-import copy
 
 import numpy
 import matplotlib.pyplot as plt
 
-from honeybee.model import Model
-
-from utils.utils_configuration import name_radiation_simulation_folder
-from utils.utils_constants import TOLERANCE_LBT
-from building.building_basic import BuildingBasic
-from building.building_modeled import BuildingModeled
+from bua.building.building_modeled import BuildingModeled
 
 from libraries_addons.solar_panels.useful_functions_solar_panel import get_cumul_values, \
     add_elements_of_two_lists, \

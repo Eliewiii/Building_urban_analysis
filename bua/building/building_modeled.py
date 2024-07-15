@@ -6,7 +6,6 @@ as they will be simulated
 import os
 import logging
 import shutil
-import matplotlib.pyplot as plt
 
 from ladybug_geometry.geometry3d import Vector3D
 from honeybee.model import Model
@@ -18,13 +17,9 @@ from building.context_filter.building_shading_context import BuildingShadingCont
 # from building.context_filter.building_lwr_context import BuildingLWRContext  # Useful later
 from building.merge_hb_model_faces.merge_hb_model_faces import merge_facades_and_roof_faces_in_hb_model
 from building.energy_simulation.building_energy_simulation import BuildingEnergySimulation
-from building.solar_radiation_and_bipv.solar_rad_and_BIPV import SolarRadAndBipvSimulation
+from bua.building.solar_radiation_and_bipv.solar_rad_and_BIPV import SolarRadAndBipvSimulation
 
 from libraries_addons.hb_model_addons import HbAddons
-from libraries_addons.solar_panels.useful_functions_solar_panel import get_cumul_values, \
-    add_elements_of_two_lists, \
-    transform_to_linear_function, find_intersection_functions, \
-    generate_step_function
 
 user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")

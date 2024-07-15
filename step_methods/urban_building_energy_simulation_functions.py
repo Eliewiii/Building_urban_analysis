@@ -2,13 +2,11 @@
 Common methods to perform the energy simulation of a building with EnergyPlus
 """
 
-import os
-import shutil
 import logging
 
 from time import time
 
-from urban_canopy.urban_canopy import UrbanCanopy
+from bua.urban_canopy.urban_canopy import UrbanCanopy
 
 from utils.utils_default_values_user_parameters import default_path_simulation_folder, \
     default_path_weather_file, \
