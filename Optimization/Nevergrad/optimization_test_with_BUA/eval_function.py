@@ -18,7 +18,17 @@ def eval_func(urban_canopy_object: UrbanCanopy, fitness_func, path_json_results_
               roof_panel_id: int, facades_panel_id: int, roof_inverter_sizing_ratio: float,
               facades_inverter_sizing_ratio: float, min_panel_eroi: float, replacement_frequency: int):
     """
-    Function to evaluate the fitness of the optimization
+    Function to compute the fitness value for the optimization.
+    :param urban_canopy_object: UrbanCanopy object, urban canopy object to run the simulation
+    :param fitness_func: function, fitness function to compute the fitness value
+    :param path_json_results_file: str, path to the json file to update
+    :param roof_panel_id: int, id of the roof panel technology
+    :param facades_panel_id: int, id of the facades panel technology
+    :param roof_inverter_sizing_ratio: float, inverter sizing ratio for the roof
+    :param facades_inverter_sizing_ratio: float, inverter sizing ratio for the facades
+    :param min_panel_eroi: float, minimum panel eroi
+    :param replacement_frequency: int, replacement frequency in years
+    :return: float, fitness value
     """
     # Adjust inputs
     roof_panel_id = ROOF_PANEL_TECHNOLOGIES_DICT[roof_panel_id]
@@ -55,8 +65,10 @@ def eval_func(urban_canopy_object: UrbanCanopy, fitness_func, path_json_results_
     kpi_dict = urban_canopy_object.bipv_scenario_dict[
         bipv_scenario_identifier].urban_canopy_bipv_kpis_obj.to_dict()
 
+    # Compute the fitness value
     fitness_value = fitness_func(kpi_dict)
 
+    # Save the results in the json file
     update_json_results_dict(path_json_results_file=path_json_results_file, fitness_value=fitness_value,
                              kpi_dict=kpi_dict)
 
