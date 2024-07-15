@@ -3,6 +3,8 @@ import os
 
 from urban_canopy.urban_canopy import UrbanCanopy
 
+from unit_tests.utils_main_import_scripts import *
+
 import nevergrad as ng
 import numpy as np
 
@@ -12,23 +14,46 @@ from Optimization.Nevergrad.optimization_test_with_BUA.design_variable_definitio
     ROOF_PANEL_TECHNOLOGIES_DICT, FACADES_PANEL_TECHNOLOGIES_DICT, REPLACEMENT_FREQUENCY_MULTIPLIER
 
 
-def eval_func(urban_canopy_obj: UrbanCanopy, fitness_func, path_json_results_file: str,
+def eval_func(urban_canopy_object: UrbanCanopy, fitness_func, path_json_results_file: str,
               roof_panel_id: int, facades_panel_id: int, roof_inverter_sizing_ratio: float,
               facades_inverter_sizing_ratio: float, min_panel_eroi: float, replacement_frequency: int):
     """
-
+    Function to evaluate the fitness of the optimization
     """
     # Adjust inputs
     roof_panel_id = ROOF_PANEL_TECHNOLOGIES_DICT[roof_panel_id]
     facades_panel_id = FACADES_PANEL_TECHNOLOGIES_DICT[facades_panel_id]
     replacement_frequency = replacement_frequency * REPLACEMENT_FREQUENCY_MULTIPLIER  # The replacement frequency is multiplied by 5
 
+    # Define bipv_scenario_identifier default
+    bipv_scenario_identifier = "optimization_BUA"
     # run BIPV simulation
-
-    # Run KPI
+    SimFunSolarRadAndBipv.run_bipv_harvesting_and_lca_simulation(
+        urban_canopy_object=urban_canopy_object,
+        bipv_scenario_identifier=bipv_scenario_identifier,
+        roof_id_pv_tech=roof_panel_id,
+        facades_id_pv_tech=facades_panel_id,
+        roof_inverter_sizing_ratio=roof_inverter_sizing_ratio,
+        facades_inverter_sizing_ratio=facades_inverter_sizing_ratio,
+        minimum_panel_eroi=min_panel_eroi,
+        start_year=0,
+        end_year=50,
+        replacement_scenario="replace_failed_panels_every_X_years",
+        continue_simulation=False,
+        update_panel_technology=False,
+        replacement_frequency_in_years=replacement_frequency
+    )
+    # Run KPI computation
+    SimFunSolarRadAndBipv.run_kpi_simulation(urban_canopy_object=urban_canopy_object,
+                                             bipv_scenario_identifier="replace_failed_panels_every_X_years",
+                                             grid_ghg_intensity=default_grid_ghg_intensity,
+                                             grid_energy_intensity=default_grid_energy_intensity,
+                                             grid_electricity_sell_price=default_grid_electricity_sell_price,
+                                             zone_area=None)
 
     # extract the KPI dict
-    kpi_dict = urban_canopy_obj.get_kpi()  # something like this
+    kpi_dict = urban_canopy_object.bipv_scenario_dict[
+        bipv_scenario_identifier].urban_canopy_bipv_kpis_obj.to_dict()
 
     fitness_value = fitness_func(kpi_dict)
 
