@@ -20,7 +20,7 @@ from building.building_basic import BuildingBasic
 from bua.building.building_modeled import BuildingModeled
 from building.context_filter.utils_functions_context_filter import \
     make_pyvista_polydata_from_list_of_hb_model_and_lb_polyface3d
-from bua.libraries_addons.extract_gis_files import extract_gis
+from bua.urban_canopy.utils_urban_canopy.extract_gis_files import extract_gis
 from bua.typology.typology import Typology
 
 from bua.bipv.bipv_technology import BipvTechnology
