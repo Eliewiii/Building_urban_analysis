@@ -19,7 +19,7 @@ from building.merge_hb_model_faces.merge_hb_model_faces import merge_facades_and
 from building.energy_simulation.building_energy_simulation import BuildingEnergySimulation
 from bua.building.solar_radiation_and_bipv.solar_rad_and_BIPV import SolarRadAndBipvSimulation
 
-from libraries_addons.hb_model_addons import HbAddons
+from bua.libraries_addons.hb_model_addons import HbAddons
 
 user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")

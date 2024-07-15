@@ -14,10 +14,9 @@ from honeybee.shade import Shade
 
 from building.context_filter.building_context import BuildingContextFilter
 
-from building.context_filter.utils_functions_context_filter import is_vector3d_vertical, \
-    are_hb_face_or_lb_face3d_facing, ray_list_from_emitter_to_receiver
+from building.context_filter.utils_functions_context_filter import are_hb_face_or_lb_face3d_facing, ray_list_from_emitter_to_receiver
 
-from utils.utils_constants import AREA_TOLERANCE
+from bua.utils.utils_constants import AREA_TOLERANCE
 
 user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")

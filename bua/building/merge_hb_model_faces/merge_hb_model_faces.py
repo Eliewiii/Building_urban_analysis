@@ -1,9 +1,8 @@
-import os
 import numpy as np
 from math import pi, cos, sin
 
 from shapely.geometry import Polygon, MultiPolygon
-from shapely import coverage_union_all, coverage_union, normalize
+from shapely import coverage_union, normalize
 from ladybug_geometry.geometry3d.polyface import Polyface3D
 from ladybug_geometry.geometry3d.face import Face3D
 from ladybug_geometry.geometry3d.pointvector import Point3D, Vector3D
@@ -15,7 +14,7 @@ from honeybee.model import Model
 from honeybee.boundarycondition import Outdoors, Ground
 from honeybee.facetype import Wall, RoofCeiling
 
-from utils.utils_constants import TOLERANCE_LBT
+from bua.utils.utils_constants import TOLERANCE_LBT
 
 
 def merge_facades_and_roof_faces_in_hb_model(hb_model_obj, orient_roof_mesh_to_according_to_building_orientation=True,

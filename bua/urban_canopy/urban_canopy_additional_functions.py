@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 from bua.building.building_modeled import BuildingModeled
 
-from libraries_addons.solar_panels.useful_functions_solar_panel import get_cumul_values, \
+from bua.libraries_addons.solar_panels.useful_functions_solar_panel import get_cumul_values, \
     add_elements_of_two_lists, \
     transform_to_linear_function, find_intersection_functions, generate_step_function, write_to_csv_arr
 

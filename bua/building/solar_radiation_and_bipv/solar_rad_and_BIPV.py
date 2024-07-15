@@ -8,7 +8,6 @@ import shutil
 import csv
 
 from copy import deepcopy
-from datetime import datetime
 from time import time
 
 from honeybee_radiance.sensorgrid import SensorGrid
@@ -24,7 +23,7 @@ from building.solar_radiation_and_bipv.utils_bipv import init_bipv_on_sensor_gri
     compute_lca_and_cost_for_transportation, \
     compute_lca_and_cost_for_inverter, compute_lca_and_cost_for_maintenance
 
-from utils.utils_configuration import name_temporary_files_folder, name_radiation_simulation_folder
+from bua.utils.utils_configuration import name_temporary_files_folder, name_radiation_simulation_folder
 
 user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")

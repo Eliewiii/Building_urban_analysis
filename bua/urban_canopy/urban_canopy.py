@@ -20,21 +20,21 @@ from building.building_basic import BuildingBasic
 from bua.building.building_modeled import BuildingModeled
 from building.context_filter.utils_functions_context_filter import \
     make_pyvista_polydata_from_list_of_hb_model_and_lb_polyface3d
-from libraries_addons.extract_gis_files import extract_gis
-from typology.typology import Typology
+from bua.libraries_addons.extract_gis_files import extract_gis
+from bua.typology.typology import Typology
 
 from bua.bipv.bipv_technology import BipvTechnology
 from bua.bipv.bipv_inverter import BipvInverter
 from bua.bipv.bipv_transportation import BipvTransportation
 
-from utils.utils_configuration import name_urban_canopy_export_file_pkl, name_urban_canopy_export_file_json, \
+from bua.utils.utils_configuration import name_urban_canopy_export_file_pkl, name_urban_canopy_export_file_json, \
     name_radiation_simulation_folder, name_temporary_files_folder, name_ubes_temp_simulation_folder, \
     name_ubes_simulation_result_folder, name_ubes_epw_file, \
     path_folder_default_bipv_parameters, \
     path_folder_user_bipv_parameters
-from utils.utils_constants import TOLERANCE_LBT
+from bua.utils.utils_constants import TOLERANCE_LBT
 
-from utils.utils_default_values_user_parameters import default_path_weather_file
+from bua.utils.utils_default_values_user_parameters import default_path_weather_file
 
 dev_logger = logging.getLogger("dev")
 user_logger = logging.getLogger("user")

@@ -11,7 +11,7 @@ from honeybee.boundarycondition import Outdoors
 from building.context_filter.utils_functions_mvfc import majorized_vf_between_2_surfaces
 from building.context_filter.utils_functions_context_filter import is_vector3d_vertical
 
-from utils.utils_constants import TOLERANCE_LBT
+from bua.utils.utils_constants import TOLERANCE_LBT
 
 user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")

@@ -10,10 +10,10 @@ from ladybug_geometry.geometry3d.pointvector import Vector3D
 from ladybug_geometry.geometry3d.polyface import Polyface3D
 from honeybee.room import Room
 
-from libraries_addons.lb_face_addons import make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint, \
+from bua.libraries_addons.lb_face_addons import make_LB_polyface3D_oriented_bounding_box_from_LB_face3D_footprint, \
     LB_face_footprint_to_lB_polyface3D_extruded_footprint
-from libraries_addons.hb_rooms_addons import RoomsAddons
-from libraries_addons.function_for_gis_extraction_to_sort import polygon_to_LB_footprint, \
+from bua.libraries_addons.hb_rooms_addons import RoomsAddons
+from bua.libraries_addons.function_for_gis_extraction_to_sort import polygon_to_LB_footprint, \
     add_additional_attribute_keys_to_dict
 
 from building.geometry.prepare_lb_polyface3d import LBPolyface3dAddons
