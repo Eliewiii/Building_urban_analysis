@@ -176,18 +176,18 @@ def plot_computation_time_compared_to_ref_vs_mvfc(path_to_result_dict: str, buil
 
 
 if __name__ == "__main__":
-    path_to_result_dict = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\Ministry of Energy Research\Papers\CheckContext\Simulations_Elie\results\Saved_results\results_context_filter_lca_lab_5_ext_plus_no_rt.json"
-    # plot_bes_error_compared_to_ref_vs_mvfc(path_to_result_dict,
-    #                                        building_type="Office",
-    #                                        no_raytracing=False,
-    #                                        result_key="h+c+l",
-    #                                        base_width=0.01,
-    #                                        fig_height=10., fig_width=15.)
-    plot_bes_error_compared_to_no_raytracing_vs_mvfc(path_to_result_dict,
-                                                     building_type="Office",
-                                                     result_key="h+c",
-                                                     base_width=0.01,
-                                                     fig_height=10., fig_width=15.)
+    path_to_result_dict = r"C:\Users\elie-medioni\OneDrive\OneDrive - Technion\Ministry of Energy Research\Papers\CheckContext\Simulations_Elie\results\Saved_results\results_context_filter_lca_lab_5_ext.json"
+    plot_bes_error_compared_to_ref_vs_mvfc(path_to_result_dict,
+                                           building_type="Office",
+                                           no_raytracing=False,
+                                           result_key="h+c+l",
+                                           base_width=0.01,
+                                           fig_height=10., fig_width=15.)
+    # plot_bes_error_compared_to_no_raytracing_vs_mvfc(path_to_result_dict,
+    #                                                  building_type="Residential",
+    #                                                  result_key="h+c",
+    #                                                  base_width=0.01,
+    #                                                  fig_height=10., fig_width=15.)
     # plot_bes_error_compared_to_ref_vs_mvfc(path_to_result_dict,
     #                                        building_type="Office",
     #                                        no_raytracing=False,
