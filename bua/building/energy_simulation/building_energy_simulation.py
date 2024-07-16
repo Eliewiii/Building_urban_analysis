@@ -173,9 +173,10 @@ class BuildingEnergySimulation:
             shutil.rmtree(path_bes_temp_folder, ignore_errors=True)
             return
         else:
-            # Make the result folder if it does not exist
-            if not os.path.isdir(path_bes_result_folder):
-                os.mkdir(path_bes_result_folder)
+            # Delete the result folder if it exist, then create the result folder
+            if os.path.isdir(path_bes_result_folder):
+                shutil.rmtree(path_bes_result_folder, ignore_errors=True)
+            os.mkdir(path_bes_result_folder)
             # Move the result and idf files to the result folder
             shutil.move(path_eplusout_err, path_bes_result_folder)
             shutil.move(path_eplusout_sql, path_bes_result_folder)

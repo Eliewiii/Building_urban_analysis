@@ -7,14 +7,18 @@ import pytest
 from bua.utils.utils_import_simulation_steps_and_config_var import *
 
 from bua.urban_canopy.urban_canopy import UrbanCanopy
+from bua.building.building_modeled import BuildingModeled
 
 # Inputs to be used
 path_test_gis_folder = r"..\test_files\test_gis"
-unit_gis = "m"
+unit_gis = "deg"
 
 path_test_lb_polyface3d_json = r"..\test_files\test_lb_polyface3d_context.json"
-path_test_building_hbjson_1 = r"..\test_files\test_hbjsons\Building_sample_0.hbjson.hbjson"
-path_test_building_hbjson_2 = r"..\test_files\test_hbjsons\Building_sample_1.hbjson.hbjson"
+
+path_test_building_hbjson_0 = r"..\test_files\test_hbjsons\Building_sample_0.hbjson"
+path_test_building_hbjson_1 = r"..\test_files\test_hbjsons\Building_sample_3.hbjson"
+path_test_building_hbjson_2 = r"..\test_files\test_hbjsons\Building_sample_2.hbjson"
+
 
 
 def test_clean_temp_folder_and_make_simulation_folder():
@@ -23,11 +27,11 @@ def test_clean_temp_folder_and_make_simulation_folder():
     """
     # Clear simulation temp folder
     SimulationCommonMethods.clear_simulation_temp_folder()
-    assert os.path.listdir(default_path_simulation_folder) is []
+    assert os.listdir(default_path_simulation_folder) == []
     # Create simulation folder
     SimulationCommonMethods.make_simulation_folder(path_simulation_folder=path_simulation_temp_folder)
-    assert os.isdir(os.path.join(path_simulation_temp_folder, name_gh_components_logs_folder))
-    assert os.isdir(os.path.join(path_simulation_temp_folder, name_temporary_files_folder))
+    assert os.path.isdir(os.path.join(path_simulation_temp_folder, name_gh_components_logs_folder))
+    assert os.path.isdir(os.path.join(path_simulation_temp_folder, name_temporary_files_folder))
 
 
 def test_make_and_save_urban_canopy_object():
@@ -41,15 +45,15 @@ def test_make_and_save_urban_canopy_object():
     # Save the UrbanCanopy object to a pickle and json files
     SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,
                                                                path_simulation_folder=path_simulation_temp_folder)
-    assert os.isfile(os.path.join(path_simulation_temp_folder, "urban_canopy.pkl"))
+    assert os.path.isfile(os.path.join(path_simulation_temp_folder, "urban_canopy.pkl"))
     SimulationCommonMethods.save_urban_canopy_to_json(urban_canopy_object=urban_canopy_object,
                                                       path_simulation_folder=path_simulation_temp_folder)
-    assert os.isfile(os.path.join(path_simulation_temp_folder, "urban_canopy.json"))
+    assert os.path.isfile(os.path.join(path_simulation_temp_folder, "urban_canopy.json"))
 
 
-def test_load_gis_in_urban_canopy():
+def test_bua_simulation_flow():
     """
-    Check that the GIS data is added to the UrbanCanopy object
+    Check all the rest of the simulation flow
     """
 
     ###############################
@@ -90,8 +94,14 @@ def test_load_gis_in_urban_canopy():
     SimulationLoadBuildingOrGeometry.add_buildings_from_hbjson_to_urban_canopy(
         urban_canopy_object=urban_canopy_object,
         path_folder_hbjson=None,
+        path_file_hbjson=path_test_building_hbjson_0,
+        are_buildings_targets=True,
+        keep_context_from_hbjson=False)
+    SimulationLoadBuildingOrGeometry.add_buildings_from_hbjson_to_urban_canopy(
+        urban_canopy_object=urban_canopy_object,
+        path_folder_hbjson=None,
         path_file_hbjson=path_test_building_hbjson_1,
-        are_buildings_targets=False,
+        are_buildings_targets=True,
         keep_context_from_hbjson=False)
     SimulationLoadBuildingOrGeometry.add_buildings_from_hbjson_to_urban_canopy(
         urban_canopy_object=urban_canopy_object,
@@ -99,9 +109,12 @@ def test_load_gis_in_urban_canopy():
         path_file_hbjson=path_test_building_hbjson_2,
         are_buildings_targets=False,
         keep_context_from_hbjson=False)
-
     # Tests
-    assert len(urban_canopy_object.buildings) == 2
+    assert len([target_building_obj for target_building_obj in urban_canopy_object.building_dict.values() if
+               (isinstance(target_building_obj, BuildingModeled) and target_building_obj.is_target)]) == 2
+
+    assert len([target_building_obj for target_building_obj in urban_canopy_object.building_dict.values() if
+                (isinstance(target_building_obj, BuildingModeled) and not target_building_obj.is_target)]) == 1
     # todo: more tests, with lovers, user cintext etc.
 
     ###############################
@@ -130,7 +143,7 @@ def test_load_gis_in_urban_canopy():
     # Perform the second pass of context filtering
     SimulationContextFiltering.perform_second_pass_of_context_filtering_on_buildings(
         urban_canopy_object=urban_canopy_object,
-        number_of_rays= 3,
+        number_of_rays=3,
         consider_windows=True,
         keep_shades_from_user=False,
         no_ray_tracing=False,
@@ -197,7 +210,7 @@ def test_load_gis_in_urban_canopy():
     # todo
 
     # Run Solar Radiation Simulation
-    SimFunSolarRadAndBipv.run_solar_radiation_simulation(
+    SimFunSolarRadAndBipv.run_annual_solar_irradiance_simulation(
         urban_canopy_object=urban_canopy_object,
         path_simulation_folder=default_path_simulation_folder,
         path_weather_file=default_path_weather_file,
@@ -207,7 +220,7 @@ def test_load_gis_in_urban_canopy():
     # todo
 
     # Run BIPV Simulation
-    SimFunSolarRadAndBipv.run_bipv_simulation(
+    SimFunSolarRadAndBipv.run_bipv_harvesting_and_lca_simulation(
         urban_canopy_object=urban_canopy_object,
         path_simulation_folder=default_path_simulation_folder,
         bipv_scenario_identifier=default_bipv_scenario_identifier,
@@ -224,7 +237,7 @@ def test_load_gis_in_urban_canopy():
         end_year=30,
         replacement_scenario=default_replacement_scenario,
         continue_simulation=False,
-        replacement_frequency=25
+        replacement_frequency_in_years=25
     )
     # Test
     # todo
@@ -242,7 +255,6 @@ def test_load_gis_in_urban_canopy():
 
     # Test
     # todo
-
 
     # Save the UrbanCanopy object to a pickle and json files
     SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,
