@@ -1,6 +1,6 @@
 from bua.utils.utils_import_simulation_steps_and_config_var import *
 
-path_gis = r"C:\Users\elie-medioni\AppData\Local\Building_urban_analysis\Libraries\GIS\Example_context_filter_different_labels"
+path_gis = r"C:\Users\elie-medioni\AppData\Local\Building_urban_analysis\Scripts\test\test_files\test_gis"
 
 
 
@@ -18,7 +18,7 @@ SimulationLoadBuildingOrGeometry.add_2D_GIS_to_urban_canopy(urban_canopy=urban_c
                                                             path_gis=path_gis,
                                                             path_additional_gis_attribute_key_dict=
                                                             None,
-                                                            unit="m")
+                                                            unit="deg")
 
 # Move building to origin
 SimulationBuildingManipulationFunctions.move_buildings_to_origin(urban_canopy_object=urban_canopy_object)

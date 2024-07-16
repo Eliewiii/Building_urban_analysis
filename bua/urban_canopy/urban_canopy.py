@@ -11,14 +11,14 @@ from datetime import datetime
 
 from honeybee.model import Model
 
-from bua.urban_canopy.urban_canopy import ExportUrbanCanopyToJson
+from bua.urban_canopy.export_to_json import ExportUrbanCanopyToJson
 from bua.urban_canopy.bipv_scenario_urban_canopy import BipvScenario
-from bua.urban_canopy.urban_canopy import ShadeManager
+from bua.urban_canopy.uc_context_filter.shade_manager import ShadeManager
 from bua.urban_canopy.ubes.uc_energy_simulation import UrbanBuildingEnergySimulation
 
-from building.building_basic import BuildingBasic
+from bua.building.building_basic import BuildingBasic
 from bua.building.building_modeled import BuildingModeled
-from building.context_filter.utils_functions_context_filter import \
+from bua.building.context_filter.utils_functions_context_filter import \
     make_pyvista_polydata_from_list_of_hb_model_and_lb_polyface3d
 from bua.urban_canopy.utils_urban_canopy.extract_gis_files import extract_gis
 from bua.typology.typology import Typology

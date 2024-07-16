@@ -8,8 +8,8 @@ from time import time
 from ladybug_geometry.geometry3d.polyface import Polyface3D
 from honeybee.boundarycondition import Outdoors
 
-from building.context_filter.utils_functions_mvfc import majorized_vf_between_2_surfaces
-from building.context_filter.utils_functions_context_filter import is_vector3d_vertical
+from bua.building.context_filter.utils_functions_mvfc import majorized_vf_between_2_surfaces
+from bua.building.context_filter.utils_functions_context_filter import is_vector3d_vertical
 
 from bua.utils.utils_constants import TOLERANCE_LBT
 

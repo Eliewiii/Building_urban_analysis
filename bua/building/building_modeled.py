@@ -11,12 +11,12 @@ from ladybug_geometry.geometry3d import Vector3D
 from honeybee.model import Model
 from honeybee.room import Room
 
-from building.building_basic import BuildingBasic
+from bua.building.building_basic import BuildingBasic
 
-from building.context_filter.building_shading_context import BuildingShadingContextFilter
+from bua.building.context_filter.building_shading_context import BuildingShadingContextFilter
 # from building.context_filter.building_lwr_context import BuildingLWRContext  # Useful later
-from building.merge_hb_model_faces.merge_hb_model_faces import merge_facades_and_roof_faces_in_hb_model
-from building.energy_simulation.building_energy_simulation import BuildingEnergySimulation
+from bua.building.merge_hb_model_faces.merge_hb_model_faces import merge_facades_and_roof_faces_in_hb_model
+from bua.building.energy_simulation.building_energy_simulation import BuildingEnergySimulation
 from bua.building.solar_radiation_and_bipv.solar_rad_and_BIPV import SolarRadAndBipvSimulation
 
 from bua.building.utils_buildings.lbt_obj_methods.hb_model_addons import HbAddons

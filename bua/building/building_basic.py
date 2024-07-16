@@ -16,7 +16,7 @@ from bua.building.utils_buildings.lbt_obj_methods.hb_rooms_addons import RoomsAd
 from bua.building.utils_buildings.lbt_obj_methods.function_for_gis_extraction_to_sort import polygon_to_LB_footprint, \
     add_additional_attribute_keys_to_dict
 
-from building.geometry.prepare_lb_polyface3d import LBPolyface3dAddons
+from bua.building.geometry.prepare_lb_polyface3d import LBPolyface3dAddons
 
 user_logger = logging.getLogger("user")  
 dev_logger = logging.getLogger("dev")  

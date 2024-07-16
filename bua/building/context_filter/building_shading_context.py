@@ -12,9 +12,9 @@ from honeybee.aperture import Aperture
 from honeybee.boundarycondition import Outdoors
 from honeybee.shade import Shade
 
-from building.context_filter.building_context import BuildingContextFilter
+from bua.building.context_filter.building_context import BuildingContextFilter
 
-from building.context_filter.utils_functions_context_filter import are_hb_face_or_lb_face3d_facing, ray_list_from_emitter_to_receiver
+from bua.building.context_filter.utils_functions_context_filter import are_hb_face_or_lb_face3d_facing, ray_list_from_emitter_to_receiver
 
 from bua.utils.utils_constants import AREA_TOLERANCE
 
