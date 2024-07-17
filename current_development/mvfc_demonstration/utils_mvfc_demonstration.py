@@ -14,7 +14,7 @@ def computes_vf_betweem_2_rectangles(pv_rectangle_1, pv_rectangle_2):
 
     """
     if pvf.get_visibility(pv_rectangle_1, pv_rectangle_2, strict=False, print_warning=False):
-        vf = pvf.compute_viewfactor(pv_rectangle_1, pv_rectangle_2, epsilon=0.001, rounding_decimal=10)
+        vf = pvf.compute_viewfactor(pv_rectangle_1, pv_rectangle_2, epsilon=0.0000001, rounding_decimal=10)
         supremum_vf = majorized_vf_between_2_surfaces(pv_rectangle_1, pv_rectangle_2)
 
         return vf, supremum_vf
