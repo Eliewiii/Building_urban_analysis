@@ -12,20 +12,22 @@ import pyviewfactor as pvf
 from math import sqrt, atan, log, pi
 
 
-def generate_random_rectangles(min_size: float = 0.0001, max_size: float = 100.):
+def generate_random_rectangles(min_size: float = 0.0001, max_size: float = 100.) -> tuple[
+    pv.Rectangle, pv.Rectangle]:
     """
-
+    Generate a reference rectangle and a random rectangle that faces the reference rectangle.
+    :param min_size: The minimum size of an edge of the rectangles.
+    :param max_size: The maximum size of an edge of the rectangles.
+    :return: The reference rectangle and the random rectangle.
     """
-
-    max_distance = 100 * max_size
 
     def generate_ref_rectangle_in_xy_plane():
         """ Generate a rectangle in the (x, y) plane. """
         width = random.uniform(min_size, max_size)
-        pointa = [1, 0, 0]
-        pointb = [1, width, 0]
-        pointc = [0, width, 0]
-        pointd = [0, 0, 0]
+        pointa = [1., 0., 0.]
+        pointb = [1., width, 0.]
+        pointc = [0., width, 0.]
+        pointd = [0., 0., 0.]
         return pv.Rectangle([pointa, pointb, pointc])
 
     def generate_random_rectangle(ref_rectangle):
@@ -36,41 +38,39 @@ def generate_random_rectangles(min_size: float = 0.0001, max_size: float = 100.)
                                                                            max_distance=max_distance,
                                                                            ensure_z_posive=True)
         # Select a random normal unit vector for the new rectangle
-
-        random_normal_unit_vector = random_nonzero_vector(ensure_z_negative=True)
-        random_normal_unit_vector = normalize_vector(random_normal_unit_vector)
-        # Select a random distance from the reference rectangle
-        random_distance = random.uniform(0, max_distance)
-
-        # Compute the centroid of the reference rectangle
-        centroid = np.array(ref_rectangle.center)
-        # Compute the centroid of the random rectangle
-        random_centroid = [centroid[0] + random_distance * (-random_normal_unit_vector[0]),
-                           centroid[1] + random_distance * (-random_normal_unit_vector[1]),
-                           centroid[2] + random_distance * (-random_normal_unit_vector[2])]
-        # Unit vectors of the plane that contains the reference rectangle and are orthogonal to the random_normal_unit_vector
-        random_orthogonal_vectors(normal_vec=random_normal_unit_vector)
-        # rotate the unit vector by a random angle around the normal vector
-        random_angle = random.uniform(0, 2 * pi)
-        rotation_matrix_according_to_normal_vector =
-
-        random_unit_vector_1 = [
-            random_unit_vector_1[0] * cos(random_angle) + random_unit_vector_2[0] * sin(random_angle),
-            random_unit_vector_1[1] * cos(random_angle) + random_unit_vector_2[1] * sin(random_angle),
-            random_unit_vector_1[2] * cos(random_angle) + random_unit_vector_2[2] * sin(random_angle)]
-        random_unit_vector_2 = [
-            random_unit_vector_2[0] * cos(random_angle) - random_unit_vector_1[0] * sin(random_angle),
-            random_unit_vector_2[1] * cos(random_angle) - random_unit_vector_1[1] * sin(random_angle),
-            random_unit_vector_2[2] * cos(random_angle) - random_unit_vector_1[2] * sin(random_angle)]
-        # normalize the unit vectors
-        random_unit_vector_1 = normalize_vector(random_unit_vector_1)
-        random_unit_vector_2 = normalize_vector(random_unit_vector_2)
-
-        # Compute the random rectangle
+        ref_rectangle_normal = np.array(ref_rectangle.normal)
+        rectangle_normal_unit_vector = random_face_normal_vector_facing_face(
+            vertex_ref=ref_rectangle_centroid, normal_ref=ref_rectangle_normal, normalize=True)
+        # Select random orthogonal unit vectors for the new rectangle
+        (ortho_vec1, ortho_vec2) = random_orthonormal_vectors(normal_vec=rectangle_normal_unit_vector,
+                                                              normalize=True)
+        # Size of the random rectangle
         random_width = random.uniform(min_size, max_size)
         random_length = random.uniform(min_size, max_size)
+        # Generate the random rectangle ensuring the orientation of the rectangle according to the normal vector
+        point_a = rectangle_centroid + 0.5 * random_width * ortho_vec1 - 0.5 * random_length * ortho_vec2
+        point_b = point_a + random_length * ortho_vec2
+        point_c = point_b - random_width * ortho_vec1
+        point_d = point_c - random_length * ortho_vec2
+        # Check that the rectangle is properly oriented
+        is_rectangle_oriented_to_normal(normal_vec=rectangle_normal_unit_vector, point_a=point_a,
+                                        point_b=point_b,
+                                        point_c=point_c)
 
-def random_face_normal_vector_facing_face(vertex_ref:np.ndarray,normal_ref:np.ndarray,vertex_new:np.ndarray,normalize:bool=False):
+        return pv.Rectangle([point_a, point_b, point_c])
+
+    # Set the maximum distance with an arbitrary factor
+    max_distance = 100 * max_size
+    # Generate the reference rectangle
+    ref_rectangle = generate_ref_rectangle_in_xy_plane()
+    # Generate the random rectangle
+    random_rectangle = generate_random_rectangle(ref_rectangle)
+
+    return ref_rectangle, random_rectangle
+
+
+def random_face_normal_vector_facing_face(vertex_ref: np.ndarray, normal_ref: np.ndarray,
+                                          vertex_new: np.ndarray, normalize: bool = False):
     """
     Generate a random face normal vector facing a reference face.
     :param vertex_ref: The reference face vertex.
@@ -95,6 +95,7 @@ def random_point_with_maximum_distance_from_point(point: np.ndarray, max_distanc
     Generate a random point with a maximum distance from a given point.
     :param point: The given point.
     :param max_distance: The maximum distance.
+    :param ensure_z_posive: Ensure the z coordinate of the random point is positive.
     :return: The random point.
     """
     # make a random vector
@@ -104,9 +105,10 @@ def random_point_with_maximum_distance_from_point(point: np.ndarray, max_distanc
     return point + random_distance * random_unit_vector
 
 
-def random_orthogonal_vectors(normal_vec: np.ndarray,normalize:bool=False) -> tuple[np.ndarray, np.ndarray]:
+def random_orthonormal_vectors(normal_vec: np.ndarray, normalize: bool = False) -> tuple[
+    np.ndarray, np.ndarray]:
     """
-    Generate two random orthogonal vectors to a given normal vector.
+    Generate two random orthonormal vectors.
     :param normal_vec: The normal vector.
     :param normalize: Normalize the orthogonal vectors.
     :return: Two orthogonal vectors.
@@ -118,8 +120,8 @@ def random_orthogonal_vectors(normal_vec: np.ndarray,normalize:bool=False) -> tu
     # Subtract the parallel component from rand_vec to get a vector perpendicular to normal_vec
     perpendicular_vec = rand_vec - parallel_component
     # Normalize the perpendicular vector to get the first orthogonal vector
-    ortho_vec1 = perpendicular_vec / np.linalg.norm(perpendicular_vec)
-    # Calculate the second orthogonal vector using the cross product with normal_vec
+    ortho_vec1 = normalize_vector(perpendicular_vec)
+    # Calculate the second orthonormal vector, ensuring the orientation of the new coordinate system
     ortho_vec2 = np.cross(normal_vec, ortho_vec1)
     # Normalize the second orthogonal vector
     ortho_vec2 /= np.linalg.norm(ortho_vec2)
@@ -132,7 +134,7 @@ def random_orthogonal_vectors(normal_vec: np.ndarray,normalize:bool=False) -> tu
 
 
 def are_faces_facing(centroid_1: np.ndarray, normal_1: np.ndarray, centroid_2: np.ndarray,
-                                  normal_2: np.ndarray):
+                     normal_2: np.ndarray):
     """
     Visibility check between 2 faces
     :param centroid_1: centroid of the first face
@@ -151,6 +153,24 @@ def are_faces_facing(centroid_1: np.ndarray, normal_1: np.ndarray, centroid_2: n
         return True
     else:
         return False
+
+
+def is_rectangle_oriented_to_normal(normal_vec: np.ndarray, point_a: np.ndarray, point_b: np.ndarray,
+                                    point_c: np.ndarray) -> bool:
+    """
+    Check if a rectangle is oriented according to a normal vector.
+    :param normal_vec: The normal vector.
+    :param point_a: The first point of the rectangle.
+    :param point_b: The second point of the rectangle.
+    :param point_c: The third point of the rectangle.
+    """
+    # Calculate the normal vector of the rectangle
+    rectangle_normal = np.cross(point_b - point_a, point_c - point_a)
+    # Check if the normal vector of the rectangle is parallel to the given normal vector
+    if np.linalg.norm(np.cross(rectangle_normal, normal_vec)) < 1e-6:
+        return True
+    raise ValueError("The rectangle is not oriented according to the normal vector")
+
 
 def normalize_vector(vector: np.ndarray) -> np.ndarray:
     """
@@ -189,6 +209,3 @@ def random_nonzero_vector(ensure_z_posive: bool = False, ensure_z_negative=False
                 return normalize_vector(rand_vec)
             return rand_vec
     raise ValueError("Could not generate a nonzero vector after 100 attempts")
-
-
-
