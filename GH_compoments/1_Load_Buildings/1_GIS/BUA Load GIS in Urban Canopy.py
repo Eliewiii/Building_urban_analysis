@@ -72,7 +72,7 @@ if _run:
     # if there are additionnal keys for GIS attributes, make a json file containing the values
     if gis_attribute_keys_dict is not None:
         # Make the simulation folder as it might not exist yet
-        command = path_bat_file + " --make_simulation_folder 1 --create_or_load_urban_canopy_object 1 -f " + path_simulation_folder_
+        command = path_bat_file + " --make_simulation_folder 1 --create_or_load_urban_canopy_object 1 -f " + ' -f "{}"'.format(path_simulation_folder_)
         output = os.system(command)
         # Make the json file in the temporary folder in the simulation folder
         path_gis_attribute_keys_dict = os.path.join(path_simulation_folder_, name_folder_temporary_files, "gis_attribute_keys_dict.json")
