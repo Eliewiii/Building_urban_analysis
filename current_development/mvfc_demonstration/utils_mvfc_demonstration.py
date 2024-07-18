@@ -2,6 +2,8 @@
 
 """
 
+import os
+import sys
 import random
 
 import pyvista as pv
@@ -9,17 +11,20 @@ import pyviewfactor as pvf
 
 from math import sqrt, atan, log, pi
 
-def computes_vf_betweem_2_rectangles(pv_rectangle_1, pv_rectangle_2):
+from current_development.mvfc_demonstration.utils_to_radiance import compute_vf_between_2_rectangles_with_radiance
+
+def computes_vf_betweem_2_rectangles(pv_rectangle_1, pv_rectangle_2,path_temp_folder=r".\file_temp"):
     """
 
     """
     if pvf.get_visibility(pv_rectangle_1, pv_rectangle_2, strict=False, print_warning=False):
         vf = pvf.compute_viewfactor(pv_rectangle_1, pv_rectangle_2, epsilon=0.0000001, rounding_decimal=10)
         supremum_vf = majorized_vf_between_2_surfaces(pv_rectangle_1, pv_rectangle_2)
+        vf_radiance=suppress_print_wrapper(compute_vf_between_2_rectangles_with_radiance,pv_rectangle_1, pv_rectangle_2, path_temp_folder, nb_rays=10000)
 
-        return vf, supremum_vf
+        return vf,vf_radiance,supremum_vf
     else:
-        return False, False
+        return False, False,False
 
 
 def majorized_vf_between_2_surfaces(pv_rectangle_1, pv_rectangle_2):
@@ -91,3 +96,16 @@ def compute_analytical_vf_coaxial_parallel_squares(area_1: float, area_2: float,
     t = v * (x * atan(x / v) - y * atan(y / v))
 
     return 1 / (pi * w_1 ** 2) * (log(p / q) + s - t)
+
+
+def suppress_print_wrapper(func, *args, **kwargs):
+    # Save the current stdout so we can restore it later
+    original_stdout = sys.stdout
+    # Redirect stdout to null
+    sys.stdout = open(os.devnull, 'w')
+    try:
+        result = func(*args, **kwargs)
+    finally:
+        # Restore stdout to its original state
+        sys.stdout = original_stdout
+    return result

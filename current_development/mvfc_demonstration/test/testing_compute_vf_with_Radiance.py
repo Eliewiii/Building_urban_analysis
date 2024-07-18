@@ -1,6 +1,13 @@
+"""
+Test the function to compute the view factor between two rectangles with Radiance
+"""
+
 import numpy as np
+
 import pyvista as pv
 import pyviewfactor as pvf
+
+from current_development.mvfc_demonstration.utils_to_radiance import compute_vf_between_2_rectangles_with_radiance
 
 # first define a rectangle...
 pointa = [1, 0, 0]
@@ -20,9 +27,9 @@ liste_pts = [pointa, pointb, pointc]
 liste_pts.reverse() # let us put the normal the other way around (facing the rectangle)
 triangle = pv.Rectangle(liste_pts) # ... done with geometry.
 
-# preliminary check for visibility
-if pvf.get_visibility(rectangle , triangle):
-    F = pvf.compute_viewfactor(rectangle, triangle)
-    print("View factor from triangle to rectangle = ", F)
-else:
-    print("Not facing each other")
+vf_pvf = pvf.compute_viewfactor(rectangle, triangle)
+
+path_temp_folder = r"..\file_temp"
+vf_radiance = compute_vf_between_2_rectangles_with_radiance(rectangle, triangle, path_temp_folder,nb_rays=10000)
+
+print (vf_pvf, vf_radiance)
