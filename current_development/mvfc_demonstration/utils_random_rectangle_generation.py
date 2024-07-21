@@ -12,7 +12,9 @@ import pyviewfactor as pvf
 from math import sqrt, atan, log, pi
 
 
-def generate_random_rectangles(min_size: float = 0.0001, max_size: float = 100.,max_distance_factor:float=100.) -> tuple[
+def generate_random_rectangles(min_size: float = 0.0001, max_size: float = 100.,
+                               max_distance_factor: float = 100., parallel_coaxial_squares: bool = False) -> \
+tuple[
     pv.Rectangle, pv.Rectangle]:
     """
     Generate a reference rectangle and a random rectangle that faces the reference rectangle.
@@ -21,33 +23,62 @@ def generate_random_rectangles(min_size: float = 0.0001, max_size: float = 100.,
     :return: The reference rectangle and the random rectangle.
     """
 
-    def generate_ref_rectangle_in_xy_plane():
-        """ Generate a rectangle in the (x, y) plane. """
-        width = random.uniform(min_size, max_size)
+    def generate_ref_rectangle_in_xy_plane(parallel_coaxial_squares: bool = False):
+        """
+        Generate a rectangle in the (x, y) plane.
+        :param parallel_coaxial_squares: If True, the width of the rectangle is set to 1. to make a normalized square.
+        """
+        if parallel_coaxial_squares:
+            width = 1.
+        else:
+            width = random.uniform(min_size, max_size)
         pointa = [1., 0., 0.]
         pointb = [1., width, 0.]
         pointc = [0., width, 0.]
         pointd = [0., 0., 0.]
         return pv.Rectangle([pointa, pointb, pointc])
 
-    def generate_random_rectangle(ref_rectangle: pv.Rectangle):
-        """ Generate a random rectangle that faces the reference rectangle. """
-        # Select a random vertex for the centroid of the new rectangle
-        ref_rectangle_centroid = np.array(ref_rectangle.center)
-        rectangle_centroid = random_point_with_maximum_distance_from_point(point=ref_rectangle_centroid,
-                                                                           max_distance=max_distance,
-                                                                           ensure_z_posive=True)
-        # Select a random normal unit vector for the new rectangle
-        ref_rectangle_normal_unit_vector = rectangle_normal(ref_rectangle)
-        rectangle_normal_unit_vector = random_face_normal_vector_facing_face(
-            vertex_ref=ref_rectangle_centroid, normal_ref=ref_rectangle_normal_unit_vector,
-            vertex_new=rectangle_centroid, normalize=True)
-        # Select random orthogonal unit vectors for the new rectangle
-        (ortho_vec1, ortho_vec2) = random_orthonormal_vectors(normal_vec=rectangle_normal_unit_vector,
-                                                              normalize=True)
-        # Size of the random rectangle
-        random_width = random.uniform(min_size, max_size)
-        random_length = random.uniform(min_size, max_size)
+    def generate_random_rectangle(ref_rectangle: pv.Rectangle,
+                                  parallel_coaxial_squares: bool = False) -> pv.Rectangle:
+        """
+        Generate a random rectangle that faces the reference rectangle.
+        :param ref_rectangle: The reference rectangle.
+        :param parallel_coaxial_squares: If True, the width of the rectangle is set to 1. to make a normalized square.
+        """
+        if not parallel_coaxial_squares:
+            # Select a random vertex for the centroid of the new rectangle
+            ref_rectangle_centroid = np.array(ref_rectangle.center)
+            rectangle_centroid = random_point_with_maximum_distance_from_point(point=ref_rectangle_centroid,
+                                                                               max_distance=max_distance,
+                                                                               ensure_z_posive=True)
+            # Select a random normal unit vector for the new rectangle
+            ref_rectangle_normal_unit_vector = rectangle_normal(ref_rectangle)
+            rectangle_normal_unit_vector = random_face_normal_vector_facing_face(
+                vertex_ref=ref_rectangle_centroid, normal_ref=ref_rectangle_normal_unit_vector,
+                vertex_new=rectangle_centroid, normalize=True)
+            # Select random orthogonal unit vectors for the new rectangle
+            (ortho_vec1, ortho_vec2) = random_orthonormal_vectors(normal_vec=rectangle_normal_unit_vector,
+                                                                  normalize=True)
+            # Size of the random rectangle
+            random_width = random.uniform(min_size, max_size)
+            random_length = random.uniform(min_size, max_size)
+        else:
+            # Select a random vertex for the centroid of the new rectangle
+            ref_rectangle_centroid = np.array(ref_rectangle.center)
+            rectangle_centroid = random_point_with_maximum_distance_from_point(point=ref_rectangle_centroid,
+                                                                               max_distance=max_distance,
+                                                                               ensure_z_posive=True,
+                                                                               enforce_z_direction=True)
+            # Select a random normal unit vector for the new rectangle
+            ref_rectangle_normal_unit_vector = rectangle_normal(ref_rectangle)
+            rectangle_normal_unit_vector = np.array([0., 0., -1.])
+            # Select random orthogonal unit vectors for the new rectangle
+            (ortho_vec1, ortho_vec2) = random_orthonormal_vectors(normal_vec=rectangle_normal_unit_vector,
+                                                                  normalize=True, enforce_y_x=True)
+            # Size of the random rectangle
+            random_width = random.uniform(min_size, max_size)
+            random_length = random_width
+
         # Generate the random rectangle ensuring the orientation of the rectangle according to the normal vector
         point_a = rectangle_centroid + 0.5 * random_width * ortho_vec1 - 0.5 * random_length * ortho_vec2
         point_b = point_a + random_length * ortho_vec2
@@ -63,9 +94,9 @@ def generate_random_rectangles(min_size: float = 0.0001, max_size: float = 100.,
     # Set the maximum distance with an arbitrary factor
     max_distance = max_distance_factor * max_size
     # Generate the reference rectangle
-    ref_rectangle = generate_ref_rectangle_in_xy_plane()
+    ref_rectangle = generate_ref_rectangle_in_xy_plane(parallel_coaxial_squares=parallel_coaxial_squares)
     # Generate the random rectangle
-    random_rectangle = generate_random_rectangle(ref_rectangle)
+    random_rectangle = generate_random_rectangle(ref_rectangle, parallel_coaxial_squares=parallel_coaxial_squares)
 
     return ref_rectangle, random_rectangle
 
@@ -91,29 +122,40 @@ def random_face_normal_vector_facing_face(vertex_ref: np.ndarray, normal_ref: np
 
 
 def random_point_with_maximum_distance_from_point(point: np.ndarray, max_distance: float,
-                                                  ensure_z_posive: bool = True) -> np.ndarray:
+                                                  ensure_z_posive: bool = True,
+                                                  enforce_z_direction:bool =False) -> np.ndarray:
     """
     Generate a random point with a maximum distance from a given point.
     :param point: The given point.
     :param max_distance: The maximum distance.
     :param ensure_z_posive: Ensure the z coordinate of the random point is positive.
+    :param enforce_z_direction: Ensure direction of the "translation" is z.
     :return: The random point.
     """
-    # make a random vector
-    random_unit_vector = random_nonzero_vector(ensure_z_posive=ensure_z_posive, normalize=True)
     # normalize the random vector
     random_distance = max_distance * random.uniform(sys.float_info.epsilon, 1)
+    # make a random vector
+    if enforce_z_direction:
+        random_unit_vector = np.array([0, 0, 1])
+    else:
+        random_unit_vector = random_nonzero_vector(ensure_z_posive=ensure_z_posive, normalize=True)
+
     return point + random_distance * random_unit_vector
 
 
-def random_orthonormal_vectors(normal_vec: np.ndarray, normalize: bool = False) -> tuple[
+def random_orthonormal_vectors(normal_vec: np.ndarray, normalize: bool = False,enforce_y_x:bool = False) -> tuple[
     np.ndarray, np.ndarray]:
     """
     Generate two random orthonormal vectors.
     :param normal_vec: The normal vector.
     :param normalize: Normalize the orthogonal vectors.
+    :param enforce_y_x: Ensure the orthogonal vectors are x and y
     :return: Two orthogonal vectors.
     """
+    if enforce_y_x:
+        ortho_vec2 = np.array([1., 0., 0.])
+        ortho_vec1 = np.array([0., 1., 0.])
+        return ortho_vec1, ortho_vec2
     # Generate a random vector
     rand_vec = non_parallel_random_nonzero_vector(normal_vec=normal_vec)
     # Project rand_vec onto normal_vec to get a component parallel to normal_vec

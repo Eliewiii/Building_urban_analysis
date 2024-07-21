@@ -13,14 +13,14 @@ from math import sqrt, atan, log, pi
 
 from current_development.mvfc_demonstration.utils_to_radiance import compute_vf_between_2_rectangles_with_radiance
 
-def computes_vf_betweem_2_rectangles(pv_rectangle_1, pv_rectangle_2,path_temp_folder=r".\file_temp"):
+def computes_vf_betweem_2_rectangles(pv_rectangle_1, pv_rectangle_2,path_temp_folder=r".\file_temp",nb_rays=10000):
     """
 
     """
     if pvf.get_visibility(pv_rectangle_1, pv_rectangle_2, strict=False, print_warning=False):
-        vf = pvf.compute_viewfactor(pv_rectangle_1, pv_rectangle_2, epsilon=0.0000001, rounding_decimal=10)
+        vf = pvf.compute_viewfactor(pv_rectangle_1, pv_rectangle_2, epsilon=0.0001, rounding_decimal=10)
         supremum_vf = majorized_vf_between_2_surfaces(pv_rectangle_1, pv_rectangle_2)
-        vf_radiance=suppress_print_wrapper(compute_vf_between_2_rectangles_with_radiance,pv_rectangle_1, pv_rectangle_2, path_temp_folder, nb_rays=10000)
+        vf_radiance=suppress_print_wrapper(compute_vf_between_2_rectangles_with_radiance,pv_rectangle_1, pv_rectangle_2, path_temp_folder, nb_rays=nb_rays)
 
         return vf,vf_radiance,supremum_vf
     else:
@@ -55,9 +55,9 @@ def distance_between_rectangle_centroids(pv_rectangle_1, pv_rectangle_2):
 
 def distance_between_points(pt_1, pt_2):
     """
-    Distance between 2 Ladybug geometry Point3D
-    :param pt_1: Ladybug Point3D
-    :param pt_2: Ladybug Point3D
+    Distance between 2 points
+    :param pt_1:
+    :param pt_2:
     :return: distance between the 2 points
     """
     return sqrt((pt_1[0] - pt_2[0]) ** 2 + (pt_1[1] - pt_2[1]) ** 2 + (pt_1[2] - pt_2[2]) ** 2)
