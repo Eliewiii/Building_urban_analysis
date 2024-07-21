@@ -5,6 +5,8 @@ import nevergrad as ng
 
 from nevergrad.optimization.optimizerlib import OnePlusOne
 
+from bua.utils.utils_import_simulation_steps_and_config_var import *
+
 from current_development.Optimization.Nevergrad.optimization_test_with_BUA.eval_function import eval_func_wrapper
 from current_development.Optimization.Nevergrad.optimization_test_with_BUA.fitness_functions import \
     environmental_oriented_fitness_func
@@ -23,7 +25,7 @@ def run_optimization_bua(path_json_results_file: str,
 
     """
     # Initialize json file with the result from each iteration
-    init_json_results_dict(json_file_name=path_json_results_file)
+    init_json_results_dict(path_json_file=path_json_results_file)
 
     # Read the Urban Canopy object (assumed to be in the default simulation folder)
     urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object(
