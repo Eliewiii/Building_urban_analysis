@@ -688,9 +688,9 @@ class UrbanCanopy:
                     dev_logger.info(
                         f"The building id {building_id} is not in the urban canopy, make sure you indicated "
                         f"the proper identifier in the input")
-                elif not isinstance(self.building_dict[building_id], BuildingModeled) or not \
+                elif not isinstance(self.building_dict[building_id], BuildingModeled) or (not \
                         self.building_dict[building_id].is_target or not self.building_dict[
-                    building_id].to_simulate:
+                    building_id].to_simulate):
                     user_logger.warning(
                         f"The building id {building_id} is not a target building or is not set to be "
                         f"simulated, thus it cannot be simulated by with EnergyPlus")
@@ -735,9 +735,9 @@ class UrbanCanopy:
                     dev_logger.info(
                         f"The building id {building_id} is not in the urban canopy, make sure you indicated "
                         f"the proper identifier in the input")
-                elif not isinstance(self.building_dict[building_id], BuildingModeled) or not \
+                elif not isinstance(self.building_dict[building_id], BuildingModeled) or (not \
                         self.building_dict[building_id].is_target or not self.building_dict[
-                    building_id].to_simulate:
+                    building_id].to_simulate):
                     user_logger.warning(
                         f"The building id {building_id} is not a target building or is not set to be "
                         f"simulated, thus it cannot be simulated by with EnergyPlus")

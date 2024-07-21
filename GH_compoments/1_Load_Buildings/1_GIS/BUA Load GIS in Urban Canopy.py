@@ -15,10 +15,19 @@
 
 ghenv.Component.Name = "BUA Load GIS in Urban Canopy"
 ghenv.Component.NickName = 'LoadGISInUrbanCanopy'
-ghenv.Component.Message = '1.0.0'
+ghenv.Component.Message = '1.2.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '1 :: Load Buildings'
 ghenv.Component.AdditionalHelpFromDocStrings = "1"
+
+import rhinoscriptsyntax as rs
+def get_rhino_version():
+    return rs.ExeVersion()
+rhino_version = get_rhino_version()
+if rhino_version > 7:
+    import ghpythonlib as ghlib
+    c = ghlib.component._get_active_component()
+    c.ToggleObsolete(False)
 
 import os
 import json
@@ -44,7 +53,7 @@ def read_logs(path_simulation_folder):
 # Get Appdata\local folder
 local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
-path_bat_file = os.path.join(path_tool, "Scripts", "mains_tool", "run_BUA.bat")
+path_bat_file = os.path.join(path_tool, "Scripts","bua", "mains_tool", "run_BUA.bat")
 name_folder_temporary_files = "temporary_files"
 
 # set default value for the simulation folder if not provided
@@ -72,7 +81,7 @@ if _run:
     # if there are additionnal keys for GIS attributes, make a json file containing the values
     if gis_attribute_keys_dict is not None:
         # Make the simulation folder as it might not exist yet
-        command = path_bat_file + " --make_simulation_folder 1 --create_or_load_urban_canopy_object 1 -f " + path_simulation_folder_
+        command = path_bat_file + " --make_simulation_folder 1 --create_or_load_urban_canopy_object 1 -f " + '"{}"'.format(path_simulation_folder_)
         output = os.system(command)
         # Make the json file in the temporary folder in the simulation folder
         path_gis_attribute_keys_dict = os.path.join(path_simulation_folder_, name_folder_temporary_files, "gis_attribute_keys_dict.json")

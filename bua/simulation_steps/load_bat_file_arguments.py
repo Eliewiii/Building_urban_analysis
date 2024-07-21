@@ -103,8 +103,10 @@ class LoadArguments:
         parser.add_argument("--north_angle",
                             help="angle of the north in degree", default=0)
         # Urban Building Energy Simulation
-        parser.add_argument("--path_hbjson_simulation_parameters_file", help="path to the json file containing the HB"
-                                                                        " simulation parameters", default=default_path_hbjson_simulation_parameter_file)
+        parser.add_argument("--path_hbjson_simulation_parameters_file",
+                            help="path to the json file containing the HB"
+                                 " simulation parameters",
+                            default=default_path_hbjson_simulation_parameter_file)
         parser.add_argument("--path_ddy_file", help="path to the ddy file", default=None)
         parser.add_argument("--cop_cooling", help="COP cooling", default=default_cop_cooling)
         parser.add_argument("--cop_heating", help="COP heating", default=default_cop_heating)
@@ -153,9 +155,11 @@ class LoadArguments:
                             default=default_roof_inverter_id)
         parser.add_argument("--facades_inverter_id", help="id of the inverter used for the facades",
                             default=default_facades_inverter_id)
-        parser.add_argument("--roof_inverter_sizing_ratio",help="ratio of the power of the inverter to the peak power of the panels for the roof",
+        parser.add_argument("--roof_inverter_sizing_ratio",
+                            help="ratio of the power of the inverter to the peak power of the panels for the roof",
                             default=default_roof_inverter_sizing_ratio)
-        parser.add_argument("--facades_inverter_sizing_ratio", help="ratio of the power of the inverter to the peak power of the panels for the facades",
+        parser.add_argument("--facades_inverter_sizing_ratio",
+                            help="ratio of the power of the inverter to the peak power of the panels for the facades",
                             default=default_facades_inverter_sizing_ratio)
         parser.add_argument("--start_year", help="Start year of the simulation",
                             default=default_start_year)
@@ -179,7 +183,8 @@ class LoadArguments:
                             help="Cost in gCO2eq per kWh depending on the country energy mix",
                             default=default_country_ghe_cost)
         # KPIs
-        parser.add_argument("--zone_area", help="Area in m2 of the terrain the urban canopy/group of buildings is built on, to compute the KPIs per m2 of land use",
+        parser.add_argument("--zone_area",
+                            help="Area in m2 of the terrain the urban canopy/group of buildings is built on, to compute the KPIs per m2 of land use",
                             default=None)
         parser.add_argument("--grid_ghg_intensity", help="GHG intensity of the grid in kgCO2eq/kWh",
                             default=default_grid_ghg_intensity)
@@ -187,8 +192,6 @@ class LoadArguments:
                             default=default_grid_energy_intensity)
         parser.add_argument("--grid_electricity_sell_price", help="Sell price of the electricity in $/kWh",
                             default=default_grid_electricity_sell_price)
-
-
 
     @staticmethod
     def add_user_simulation_features_to_parser(parser):
@@ -237,7 +240,8 @@ class LoadArguments:
         # Context filtering features
         parser.add_argument("--generate_bounding_boxes", help="Generate bounding boxes for the buildings",
                             nargs='?', default=False)
-        parser.add_argument("--run_full_context_filtering", help="Perform the full context filtering for buildings",
+        parser.add_argument("--run_full_context_filtering",
+                            help="Perform the full context filtering for buildings",
                             nargs='?', default=False)
         parser.add_argument("--run_first_pass_context_filtering",
                             help="Perform teh first pass of the context filtering for buildings",
@@ -357,7 +361,7 @@ class LoadArguments:
             "replacement_scenario": args.replacement_scenario,
             "replacement_frequency_in_years": int(args.replacement_frequency_in_years),
             "update_panel_technology": bool(int(args.update_panel_technology)),
-            "country_ghe_cost": float(args.country_ghe_cost), # todo: outdated, to delete
+            "country_ghe_cost": float(args.country_ghe_cost),  # todo: outdated, to delete
             # KPIs
             "zone_area": float(args.zone_area) if args.zone_area is not None else None,
             "grid_ghg_intensity": float(args.grid_ghg_intensity),
@@ -375,7 +379,8 @@ class LoadArguments:
             # Import geometry
             "run_extract_gis": bool(int(args.extract_gis)),
             "run_extract_buildings_from_hbjson_models": bool(int(args.extract_buildings_from_hbjson_models)),
-            "run_extract_buildings_from_polyface3d_json": bool(int(args.extract_buildings_from_polyface3d_json)),
+            "run_extract_buildings_from_polyface3d_json": bool(
+                int(args.extract_buildings_from_polyface3d_json)),
             # Building manipulation
             "run_move_buildings_to_origin": bool(int(args.move_buildings_to_origin)),
             "run_remove_building_list_from_urban_canopy": bool(
@@ -396,10 +401,12 @@ class LoadArguments:
             # KPIs simulation
             "run_kpi_simulation": bool(int(args.run_kpi_simulation)),
             # Post-processing
-            "generate_panels_results_in_csv": bool(int(args.generate_panels_results_in_csv)), # todo: outdated, to delete
+            "generate_panels_results_in_csv": bool(int(args.generate_panels_results_in_csv)),
+            # todo: outdated, to delete
             "plot_graph_results_building_panel_simulation": bool(
                 int(args.plot_graph_results_building_panel_simulation)),  # todo outdated
-            "plot_graph_results_urban_canopy": bool(int(args.plot_graph_results_urban_canopy))  # todo outdated
+            "plot_graph_results_urban_canopy": bool(int(args.plot_graph_results_urban_canopy))
+            # todo outdated
         }
 
         return arguments_dictionary, step_dictionary
@@ -416,8 +423,10 @@ def parse_and_clean_building_id_list_from_argument_parser(building_id_list_form_
         return None
     else:
         # delete the undesired characters
-        string = building_id_list_form_argument_parser.replace("[", "")
-        string = string.replace("]", "")
-        string = string.replace("'", "")
-        # return a list of id, ignore the empty string if there is any
-        return [id for id in string.split(",") if id != '']
+        string_list = building_id_list_form_argument_parser.split("'")
+        return [string_list[i * 2 + 1] for i in range(len(string_list) // 2) if id != '']
+
+
+if __name__ == "__main__":
+    list_test = "['Buil_TA_0', 'Buil_TA_3']"
+    print(parse_and_clean_building_id_list_from_argument_parser(list_test))
