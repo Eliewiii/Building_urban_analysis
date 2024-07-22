@@ -140,6 +140,7 @@ def main():
 
     # Urban Building Energy Simulation
     if simulation_step_dictionary["run_ubes_with_openstudio"]:
+
         # Load and check simulation parameters and epw file
         UrbanBuildingEnergySimulationFunctions.load_epw_and_hb_simulation_parameters_for_ubes_in_urban_canopy(
             urban_canopy_obj=urban_canopy_object,

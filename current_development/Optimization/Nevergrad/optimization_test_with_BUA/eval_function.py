@@ -2,7 +2,6 @@ import sys
 
 from bua.utils.utils_import_simulation_steps_and_config_var import *
 
-
 from bua.urban_canopy.urban_canopy import UrbanCanopy
 
 from current_development.Optimization.Nevergrad.optimization_test_with_BUA.json_result_dict_methods import \
@@ -35,39 +34,43 @@ def eval_func(urban_canopy_object: UrbanCanopy, fitness_func, path_json_results_
     # Define bipv_scenario_identifier default
     bipv_scenario_identifier = "optimization_BUA"
     # run BIPV simulation
-    SimFunSolarRadAndBipv.run_bipv_harvesting_and_lca_simulation(
-        urban_canopy_object=urban_canopy_object,
-        bipv_scenario_identifier=bipv_scenario_identifier,
-        roof_id_pv_tech=roof_panel_id,
-        facades_id_pv_tech=facades_panel_id,
-        roof_inverter_sizing_ratio=roof_inverter_sizing_ratio,
-        facades_inverter_sizing_ratio=facades_inverter_sizing_ratio,
-        minimum_panel_eroi=min_panel_eroi,
-        start_year=0,
-        end_year=50,
-        replacement_scenario="replace_failed_panels_every_X_years",
-        continue_simulation=False,
-        update_panel_technology=False,
-        replacement_frequency_in_years=replacement_frequency
-    )
+    suppress_print_wrapper(SimFunSolarRadAndBipv.run_bipv_harvesting_and_lca_simulation,
+                           urban_canopy_object=urban_canopy_object,
+                           bipv_scenario_identifier=bipv_scenario_identifier,
+                           roof_id_pv_tech=roof_panel_id,
+                           facades_id_pv_tech=facades_panel_id,
+                           roof_inverter_sizing_ratio=roof_inverter_sizing_ratio,
+                           facades_inverter_sizing_ratio=facades_inverter_sizing_ratio,
+                           minimum_panel_eroi=min_panel_eroi,
+                           start_year=0,
+                           end_year=50,
+                           replacement_scenario="replace_failed_panels_every_X_years",
+                           continue_simulation=False,
+                           update_panel_technology=False,
+                           replacement_frequency_in_years=replacement_frequency
+                           )
     # Run KPI computation
-    SimFunSolarRadAndBipv.run_kpi_simulation(urban_canopy_object=urban_canopy_object,
-                                             bipv_scenario_identifier="replace_failed_panels_every_X_years",
-                                             grid_ghg_intensity=default_grid_ghg_intensity,
-                                             grid_energy_intensity=default_grid_energy_intensity,
-                                             grid_electricity_sell_price=default_grid_electricity_sell_price,
-                                             zone_area=None)
+    suppress_print_wrapper(SimFunSolarRadAndBipv.run_kpi_simulation, urban_canopy_object=urban_canopy_object,
+                           bipv_scenario_identifier=bipv_scenario_identifier,
+                           grid_ghg_intensity=default_grid_ghg_intensity,
+                           grid_energy_intensity=default_grid_energy_intensity,
+                           grid_electricity_sell_price=default_grid_electricity_sell_price,
+                           zone_area=None)
 
     # extract the KPI dict
     kpi_dict = urban_canopy_object.bipv_scenario_dict[
-        bipv_scenario_identifier].urban_canopy_bipv_kpis_obj.to_dict()
+        bipv_scenario_identifier].urban_canopy_bipv_kpis_obj.to_dict()["kpis"]
 
     # Compute the fitness value
     fitness_value = fitness_func(kpi_dict)
 
     # Save the results in the json file
-    update_json_results_dict(path_json_results_file=path_json_results_file, fitness_value=fitness_value,
-                             kpi_dict=kpi_dict)
+    update_json_results_dict(path_json_file=path_json_results_file, fitness_value=fitness_value,
+                             kpi_dict=kpi_dict, roof_panel_id=roof_panel_id,
+                             facades_panel_id=facades_panel_id,
+                             roof_inverter_sizing_ratio=roof_inverter_sizing_ratio,
+                             facades_inverter_sizing_ratio=facades_inverter_sizing_ratio,
+                             min_panel_eroi=min_panel_eroi, replacement_frequency=replacement_frequency)
 
     return fitness_value
 

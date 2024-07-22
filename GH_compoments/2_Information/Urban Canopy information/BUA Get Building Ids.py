@@ -12,15 +12,22 @@
 __author__ = "Elie"
 __version__ = "2024.05.26"
 
-from ghpythonlib.componentbase import executingcomponent as component
 
 ghenv.Component.Name = "BUA Get Building Ids"
 ghenv.Component.NickName = 'GetBuildingIds'
-ghenv.Component.Message = '1.1.0'
+ghenv.Component.Message = '1.2.0'
 ghenv.Component.Category = "BUA"
 ghenv.Component.SubCategory = "2 :: Information"
 
 
+import rhinoscriptsyntax as rs
+def get_rhino_version():
+    return rs.ExeVersion()
+rhino_version = get_rhino_version()
+if rhino_version > 7:
+    import ghpythonlib as ghlib
+    c = ghlib.component._get_active_component()
+    c.ToggleObsolete(False)
 
 import json
 import os

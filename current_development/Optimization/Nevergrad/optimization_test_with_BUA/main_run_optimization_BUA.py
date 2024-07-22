@@ -9,7 +9,7 @@ from bua.utils.utils_import_simulation_steps_and_config_var import *
 
 from current_development.Optimization.Nevergrad.optimization_test_with_BUA.eval_function import eval_func_wrapper
 from current_development.Optimization.Nevergrad.optimization_test_with_BUA.fitness_functions import \
-    environmental_oriented_fitness_func
+    environmental_oriented_fitness_func, eroi_only_fitness_func
 from current_development.Optimization.Nevergrad.optimization_test_with_BUA.design_variable_definition_and_boundaries import \
     roof_inverter_sizing_ratio_dv, facades_inverter_sizing_ratio_dv, min_panel_eroi_dv, \
     replacement_frequency_dv, roof_panel_id_dv, facades_panel_id_dv
@@ -48,7 +48,7 @@ def run_optimization_bua(path_json_results_file: str,
     # Run the optimization
     recommendation = optimizer.minimize(
         eval_func_wrapper(urban_canopy_obj=urban_canopy_object, fitness_func=fitness_function,
-                          path_json_results_file=path_json_results_file), verbosity=0)
+                          path_json_results_file=path_json_results_file), verbosity=1)
 
     # # Print the best individual
     print(f"optimized value: \n")
@@ -59,7 +59,12 @@ def run_optimization_bua(path_json_results_file: str,
 
 
 if __name__ == "__main__":
+    # run_optimization_bua(path_json_results_file="results.json",
+    #                      optimization_algorithm=OnePlusOne,
+    #                      fitness_function=environmental_oriented_fitness_func,
+    #                      budget=20)
+
     run_optimization_bua(path_json_results_file="results.json",
                          optimization_algorithm=OnePlusOne,
-                         fitness_function=environmental_oriented_fitness_func,
-                         budget=5)
+                         fitness_function=eroi_only_fitness_func,
+                         budget=100)
