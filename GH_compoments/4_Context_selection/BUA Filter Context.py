@@ -17,10 +17,20 @@ __version__ = "2023.08.21"
 
 ghenv.Component.Name = "BUA Filter Context"
 ghenv.Component.NickName = 'FilterContext'
-ghenv.Component.Message = '1.0.0'
+ghenv.Component.Message = '1.2.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '4 :: Context Selection'
 ghenv.Component.AdditionalHelpFromDocStrings = "1"
+
+
+import rhinoscriptsyntax as rs
+def get_rhino_version():
+    return rs.ExeVersion()
+rhino_version = get_rhino_version()
+if rhino_version > 7:
+    import ghpythonlib as ghlib
+    c = ghlib.component._get_active_component()
+    c.ToggleObsolete(False)
 
 def clean_path(path):
     path = path.replace("\\", "/")

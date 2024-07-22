@@ -7,10 +7,18 @@ __version__ = "2024.05.15"
 
 ghenv.Component.Name = "BUA Clean Default Simulation Folder"
 ghenv.Component.NickName = 'CleanDefaultSimulationFolder'
-ghenv.Component.Message = '1.0.0'
+ghenv.Component.Message = '1.2.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '7 :: General'
 
+import rhinoscriptsyntax as rs
+def get_rhino_version():
+    return rs.ExeVersion()
+rhino_version = get_rhino_version()
+if rhino_version > 7:
+    import ghpythonlib as ghlib
+    c = ghlib.component._get_active_component()
+    c.ToggleObsolete(False)
 
 import shutil
 import os

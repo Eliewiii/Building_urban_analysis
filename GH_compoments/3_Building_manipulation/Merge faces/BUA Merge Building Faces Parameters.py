@@ -12,9 +12,18 @@ __version__ = "2023.09.06"
 
 ghenv.Component.Name = "BUA Merge Face Parameters"
 ghenv.Component.NickName = 'MergeFaceParameters'
-ghenv.Component.Message = '1.0.0'
+ghenv.Component.Message = '1.2.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '3 :: Building manipulation'
+
+import rhinoscriptsyntax as rs
+def get_rhino_version():
+    return rs.ExeVersion()
+rhino_version = get_rhino_version()
+if rhino_version > 7:
+    import ghpythonlib as ghlib
+    c = ghlib.component._get_active_component()
+    c.ToggleObsolete(False)
 
 import json
 

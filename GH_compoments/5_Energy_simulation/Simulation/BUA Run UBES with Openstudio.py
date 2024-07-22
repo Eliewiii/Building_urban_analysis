@@ -23,10 +23,18 @@ __version__ = "2024.05.28"
 
 ghenv.Component.Name = "BUA Run UBES with Openstudio"
 ghenv.Component.NickName = 'RunUBESwithOpenstudio'
-ghenv.Component.Message = '1.1.0'
+ghenv.Component.Message = '1.2.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '5 :: Energy Simulation'
 
+import rhinoscriptsyntax as rs
+def get_rhino_version():
+    return rs.ExeVersion()
+rhino_version = get_rhino_version()
+if rhino_version > 7:
+    import ghpythonlib as ghlib
+    c = ghlib.component._get_active_component()
+    c.ToggleObsolete(False)
 
 import os
 import json
@@ -57,7 +65,7 @@ if path_simulation_folder_ is not None and os.path.isdir(path_simulation_folder_
 local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
 name_temporary_files_folder = "temporary_files"
-path_bat_file = os.path.join(path_tool, "Scripts", "mains_tool", "run_BUA.bat")
+path_bat_file = os.path.join(path_tool, "Scripts","bua", "mains_tool", "run_BUA.bat")
 
 # Check the Honeybee simulation parameters
 if _hb_simulation_parameters is None:

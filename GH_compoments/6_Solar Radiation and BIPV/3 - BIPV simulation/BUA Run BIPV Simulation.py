@@ -24,9 +24,18 @@ __version__ = "2024.04.07"
 
 ghenv.Component.Name = "BUA Run BIPV Simulation"
 ghenv.Component.NickName = 'RunBIPVSimulation'
-ghenv.Component.Message = '1.0.0'
+ghenv.Component.Message = '1.2.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '6 :: Solar Radiation and BIPV'
+
+import rhinoscriptsyntax as rs
+def get_rhino_version():
+    return rs.ExeVersion()
+rhino_version = get_rhino_version()
+if rhino_version > 7:
+    import ghpythonlib as ghlib
+    c = ghlib.component._get_active_component()
+    c.ToggleObsolete(False)
 
 import os
 import json
@@ -51,7 +60,7 @@ def read_logs(path_simulation_folder):
 # Get Appdata\local folder
 local_appdata = os.environ['LOCALAPPDATA']
 path_tool = os.path.join(local_appdata, "Building_urban_analysis")
-path_bat_file = os.path.join(path_tool, "Scripts", "mains_tool", "run_BUA.bat")
+path_bat_file = os.path.join(path_tool, "Scripts","bua", "mains_tool", "run_BUA.bat")
 
 # Check path_simulation_folder_
 if path_simulation_folder_ is not None and os.path.isdir(path_simulation_folder_) is False:

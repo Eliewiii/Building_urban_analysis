@@ -11,10 +11,18 @@ __version__ = "2024.05.05"
 
 ghenv.Component.Name = "BUA Get HB Models"
 ghenv.Component.NickName = 'GetHBModels'
-ghenv.Component.Message = '1.0.0'
+ghenv.Component.Message = '1.2.0'
 ghenv.Component.Category = 'BUA'
 ghenv.Component.SubCategory = '2 :: Information'
 
+import rhinoscriptsyntax as rs
+def get_rhino_version():
+    return rs.ExeVersion()
+rhino_version = get_rhino_version()
+if rhino_version > 7:
+    import ghpythonlib as ghlib
+    c = ghlib.component._get_active_component()
+    c.ToggleObsolete(False)
 
 import json
 import os
