@@ -1,4 +1,4 @@
-""" Generate the bounding boxes buildings for context selection algorithm.
+"""Generate the bounding boxes buildings for context selection algorithm.
     Inputs:
         path_simulation_folder_: Path to the simulation folder. Default = Appdata\Local\Building_urban_analysis\Simulation_temp
         _overwrite_: Set to True to overwrite the existing bounding boxes. Default = False

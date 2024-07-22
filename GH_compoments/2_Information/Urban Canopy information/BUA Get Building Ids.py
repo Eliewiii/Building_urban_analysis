@@ -12,7 +12,6 @@
 __author__ = "Elie"
 __version__ = "2024.05.26"
 
-from ghpythonlib.componentbase import executingcomponent as component
 
 ghenv.Component.Name = "BUA Get Building Ids"
 ghenv.Component.NickName = 'GetBuildingIds'
