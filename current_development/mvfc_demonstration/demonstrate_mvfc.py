@@ -19,9 +19,9 @@ exceptions = []
 for i in range(n_rectangles):
     if i % 100 == 0:
         print(f"Progress: {i}/{n_rectangles}%")
-    ref_rectangle, random_rectangle = generate_random_rectangles(min_size=0.1, max_size=10,
+    ref_rectangle, random_rectangle_list = generate_random_rectangles(min_size=0.1, max_size=10,
                                                                  max_distance_factor=10)
-    vf, vf_radiance, supremum_vf = computes_vf_betweem_2_rectangles(ref_rectangle, random_rectangle,
+    vf, vf_radiance, supremum_vf = computes_vf_betweem_2_rectangles(ref_rectangle, random_rectangle_list[0],
                                                                     path_temp_folder)
     vf_tuple_list.append((vf, supremum_vf, True if supremum_vf >= vf else False))
     # if supremum_vf <= vf:

@@ -64,7 +64,7 @@ if __name__ == "__main__":
     #                      fitness_function=environmental_oriented_fitness_func,
     #                      budget=20)
 
-    run_optimization_bua(path_json_results_file="results.json",
+    run_optimization_bua(path_json_results_file="Saved_results/results_test_Nicolo.json",
                          optimization_algorithm=OnePlusOne,
                          fitness_function=eroi_only_fitness_func,
-                         budget=100)
+                         budget=1000)
