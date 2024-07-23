@@ -29,8 +29,8 @@ def process_view_factors(rad_file_pairs, output_dir, num_workers):
     # Create a lock for thread safety
     lock = Lock()
 
-    # with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
-    with concurrent.futures.ProcessPoolExecutor(max_workers=num_workers) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:  # Shared memory
+    # with concurrent.futures.ProcessPoolExecutor(max_workers=num_workers) as executor:  # Separate memory
         # Submit tasks and collect futures
         futures = [executor.submit(run_radiance_command, pair, output_dir, lock) for pair in rad_file_pairs]
 

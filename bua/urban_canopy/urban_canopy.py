@@ -7,6 +7,9 @@ import json
 import logging
 import shutil
 
+import threading
+import concurrent.futures
+
 from datetime import datetime
 
 from honeybee.model import Model
@@ -27,7 +30,8 @@ from bua.bipv.bipv_technology import BipvTechnology
 from bua.bipv.bipv_inverter import BipvInverter
 from bua.bipv.bipv_transportation import BipvTransportation
 
-from bua.utils.utils_configuration import name_urban_canopy_export_file_pkl, name_urban_canopy_export_file_json, \
+from bua.utils.utils_configuration import name_urban_canopy_export_file_pkl, \
+    name_urban_canopy_export_file_json, \
     name_radiation_simulation_folder, name_temporary_files_folder, name_ubes_temp_simulation_folder, \
     name_ubes_simulation_result_folder, name_ubes_epw_file, \
     path_folder_default_bipv_parameters, \
@@ -48,6 +52,7 @@ class UrbanCanopy:
         self.typology_dict = {}  # dictionary of the typologies loaded the urban canopy
         self.moving_vector_to_origin = None  # moving vector of the urban canopy that moved the urban canopy to the origin
         self.json_dict = {}  # dictionary containing relevant attributes of the urban canopy to be exported to json
+        self.lock = threading.Lock()  # Lock for thread safety
 
         # Context filtering
         self.full_context_pyvista_mesh = None  # pyvista mesh of all the buildings within the urban canopy
@@ -407,7 +412,7 @@ class UrbanCanopy:
 
     def move_buildings_to_origin(self):
         """ Move the buildings to the origin if the urban canopy has not already been moved to the origin"""
-       # Check if the the urban canopy has already been moved to the origin
+        # Check if the the urban canopy has already been moved to the origin
         if self.moving_vector_to_origin is not None:
             # Check if a building has not been moved yet
             flag = False
@@ -689,8 +694,10 @@ class UrbanCanopy:
                         f"The building id {building_id} is not in the urban canopy, make sure you indicated "
                         f"the proper identifier in the input")
                 elif not isinstance(self.building_dict[building_id], BuildingModeled) or (not \
-                        self.building_dict[building_id].is_target and not self.building_dict[
-                    building_id].to_simulate):
+                                                                                                  self.building_dict[
+                                                                                                      building_id].is_target and not
+                                                                                          self.building_dict[
+                                                                                              building_id].to_simulate):
                     user_logger.warning(
                         f"The building id {building_id} is not a target building or is not set to be "
                         f"simulated, thus it cannot be simulated by with EnergyPlus")
@@ -710,7 +717,7 @@ class UrbanCanopy:
         for building_obj in self.building_dict.values():
             if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
                     and isinstance(building_obj, BuildingModeled) and (
-                    building_obj.is_target or building_obj.to_simulate) :
+                    building_obj.is_target or building_obj.to_simulate):
                 # Generate the hbjson then idf file for the building simulation
                 building_obj.generate_idf_for_bes_with_openstudio(
                     path_ubes_temp_sim_folder=path_ubes_temp_sim_folder,
@@ -736,8 +743,10 @@ class UrbanCanopy:
                         f"The building id {building_id} is not in the urban canopy, make sure you indicated "
                         f"the proper identifier in the input")
                 elif not isinstance(self.building_dict[building_id], BuildingModeled) or (not \
-                        self.building_dict[building_id].is_target and not self.building_dict[
-                    building_id].to_simulate):
+                                                                                                  self.building_dict[
+                                                                                                      building_id].is_target and not
+                                                                                          self.building_dict[
+                                                                                              building_id].to_simulate):
                     user_logger.warning(
                         f"The building id {building_id} is not a target building or is not set to be "
                         f"simulated, thus it cannot be simulated by with EnergyPlus")
@@ -748,17 +757,23 @@ class UrbanCanopy:
         path_epw_file = os.path.join(path_ubes_temp_sim_folder, name_ubes_epw_file)
         # Initialize the duration directory
         duration_dict = {}
-        # run the idf files for the buildings
-        for building_obj in self.building_dict.values():
-            if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
-                    and isinstance(building_obj, BuildingModeled) and (
-                    building_obj.is_target or building_obj.to_simulate):
-                # Run the idf file for the building simulation
-                duration = building_obj.run_idf_with_energyplus_for_bes(
-                    path_ubes_temp_sim_folder=path_ubes_temp_sim_folder,
-                    path_epw_file=path_epw_file, overwrite=overwrite, silent=silent)
-                if duration is not None:
-                    duration_dict[building_obj.id] = duration
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+            futures = []
+            with self.lock:  # Ensure safe access to the buildings dictionary
+                for building_obj in self.building_dict.values():
+                    if ((
+                        building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
+                            and isinstance(building_obj, BuildingModeled) and (
+                            building_obj.is_target or building_obj.to_simulate):
+                        futures.append(executor.submit(building_obj.run_idf_with_energyplus_for_bes, path_ubes_temp_sim_folder=path_ubes_temp_sim_folder,
+                    path_epw_file=path_epw_file, overwrite=overwrite, silent=silent))
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    future.result()  # Ensure any exceptions are raised
+                except Exception as e:
+                    print(f"Task generated an exception: {e}")
+
         # Make the UBES simulation result folder or overwrite it if necessary
         path_ubes_sim_result_folder = os.path.join(path_simulation_folder, name_ubes_simulation_result_folder)
         if os.path.isdir(path_ubes_sim_result_folder):
@@ -775,8 +790,8 @@ class UrbanCanopy:
                     path_ubes_sim_result_folder=path_ubes_sim_result_folder
                 )
 
-        if duration_dict.values() != []:
-            self.ubes_obj.has_run = True
+        # if duration_dict.values() != []:
+        #     self.ubes_obj.has_run = True
 
         return duration_dict
 
