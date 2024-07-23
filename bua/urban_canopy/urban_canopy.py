@@ -7,6 +7,8 @@ import json
 import logging
 import shutil
 
+import psutil
+
 import threading
 import concurrent.futures
 
@@ -758,7 +760,9 @@ class UrbanCanopy:
         # Initialize the duration directory
         duration_dict = {}
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+        num_physical_cores = psutil.cpu_count(logical=False)
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=num_physical_cores) as executor:
             futures = []
             with self.lock:  # Ensure safe access to the buildings dictionary
                 for building_obj in self.building_dict.values():

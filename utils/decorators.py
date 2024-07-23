@@ -7,6 +7,7 @@ import os
 import threading
 from functools import wraps
 from contextlib import contextmanager
+import subprocess
 
 
 ###############################
@@ -14,9 +15,6 @@ from contextlib import contextmanager
 ###############################
 @contextmanager
 def suppress_output():
-    """
-    Create a context manager to suppress the output to the terminal
-    """
     with open(os.devnull, 'w') as devnull:
         original_stdout = sys.stdout
         original_stderr = sys.stderr
@@ -30,12 +28,9 @@ def suppress_output():
 
 
 def suppress_terminal_output(func):
-    """
-    Decorator to suppress the terminal output of a function
-    """
-
     @wraps(func)
     def wrapper(*args, **kwargs):
+        # Redirect output streams for subprocess calls
         with suppress_output():
             return func(*args, **kwargs)
 
