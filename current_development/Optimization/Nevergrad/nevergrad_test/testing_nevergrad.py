@@ -60,7 +60,7 @@ instrumentation = ng.p.Instrumentation(
     cat_var=ng.p.Choice(range(len(CATEGORIES)))  # Categorical variable with 3 categories
 )
 
-budget = 10
+budget = 100
 
 # Choose an optimizer
 # optimizer = ng.optimizers.OnePlusOne(parametrization=instrumentation, budget=budget, num_workers=1)
@@ -70,7 +70,7 @@ optimizer = ng.optimizers.DiscreteOnePlusOne(parametrization=instrumentation, bu
 
 
 # Run the optimization
-recommendation = optimizer.minimize(create_eval_func_with_custom_object(zob=1), verbosity=0)
+recommendation = optimizer.minimize(create_eval_func_with_custom_object(zob=1), verbosity=1)
 
 # Extract the best individual
 best_individual = recommendation.kwargs['int_var_1']
