@@ -21,7 +21,7 @@ def environmental_oriented_fitness_func(kpi_dict: dict):
     weight_ghg_intensity = - 1.
 
     # fitness value to maximize
-    fitness_value = weight_eroi * eroi / EROI_REF_ENV + weight_ghg_intensity * ghg_intensity / GHGI_REF_ENV
+    fitness_value = weight_eroi * eroi / EROI_REF_ENV - weight_ghg_intensity * ghg_intensity / GHGI_REF_ENV
 
     return - fitness_value
 
