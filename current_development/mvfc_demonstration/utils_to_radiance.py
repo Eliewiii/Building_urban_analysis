@@ -21,8 +21,8 @@ def compute_vf_between_2_rectangles_with_radiance(rectangle_emitter: Rectangle, 
     # Save the rectangles as Radiance files
     path_emitter_rad_file = os.path.join(path_temp_folder, "emitter.rad")
     path_receiver_rad_file = os.path.join(path_temp_folder, "receiver.rad")
-    from_rectangle_to_rad_file(rectangle_emitter,path_emitter_rad_file, id_rectangle=1)
-    from_rectangle_to_rad_file(rectangle_receiver,path_receiver_rad_file, id_rectangle=2)
+    from_rectangle_to_rad_file(rectangle_emitter, path_emitter_rad_file, id_rectangle=1)
+    from_rectangle_to_rad_file(rectangle_receiver, path_receiver_rad_file, id_rectangle=2)
     # Compute the view factor
     out_file = os.path.join(path_temp_folder, "output.txt")
     command = f'rfluxmtx -h- -ab 0 -c {nb_rays} ' + f'"!xform -I "{path_emitter_rad_file}"" ' + f'"{path_receiver_rad_file}" > "{out_file}"'
@@ -30,8 +30,12 @@ def compute_vf_between_2_rectangles_with_radiance(rectangle_emitter: Rectangle, 
 
     return read_ruflumtx_output_file(out_file)
 
-def compute_vf_between_one_rectangle_and_a_list_of_rectangles_with_radiance(rectangle_emitter: Rectangle, rectangle_receiver_list: [Rectangle],
-                                                  path_temp_folder: str, nb_rays: int = 10000):
+
+def compute_vf_between_one_rectangle_and_a_list_of_rectangles_with_radiance(rectangle_emitter: Rectangle,
+                                                                            rectangle_receiver_list: [
+                                                                                Rectangle],
+                                                                            path_temp_folder: str,
+                                                                            nb_rays: int = 10000):
     """
     Compute the view factor between 2 rectangles with Radiance.
     :param rectangle_emitter: Rectangle, the emitter rectangle.
@@ -43,8 +47,8 @@ def compute_vf_between_one_rectangle_and_a_list_of_rectangles_with_radiance(rect
     # Save the rectangles as Radiance files
     path_emitter_rad_file = os.path.join(path_temp_folder, "emitter.rad")
     path_receiver_rad_file = os.path.join(path_temp_folder, "receiver.rad")
-    from_rectangle_to_rad_file(rectangle_emitter,path_emitter_rad_file, id_rectangle=1)
-    from_rectangle_list_to_rad_file(rectangle_receiver_list,path_receiver_rad_file, id_rectangle=2)
+    from_rectangle_to_rad_file(rectangle_emitter, path_emitter_rad_file, id_rectangle=1)
+    from_rectangle_list_to_rad_file(rectangle_receiver_list, path_receiver_rad_file, id_rectangle=2)
     # Compute the view factor
     out_file = os.path.join(path_temp_folder, "output.txt")
     command = f'rfluxmtx -h- -ab 0 -c {nb_rays} ' + f'"!xform -I "{path_emitter_rad_file}"" ' + f'"{path_receiver_rad_file}" > "{out_file}"'
@@ -78,6 +82,7 @@ def from_rectangle_list_to_rad_file(rectangle_list: [Rectangle], path_rad_file: 
     with open(path_rad_file, "w") as file:
         file.write(rad_file_content)
 
+
 def from_rectangle_to_rad_file(rectangle: Rectangle, path_rad_file: str, id_rectangle: int):
     """
     Convert a rectangle to a Radiance file.
@@ -100,7 +105,8 @@ def from_rectangle_to_rad_file(rectangle: Rectangle, path_rad_file: str, id_rect
         rad_file_content += f" {v[3][0]} {v[3][1]} {v[3][2]}" + "\n"
         file.write(rad_file_content)
 
-def read_ruflumtx_output_file(path_output_file:str) -> [float]:
+
+def read_ruflumtx_output_file(path_output_file: str) -> [float]:
     """
     Read the output file of rfluxmtx.
     :param path_output_file: str, the path of the output file.
@@ -108,4 +114,4 @@ def read_ruflumtx_output_file(path_output_file:str) -> [float]:
     """
     with open(path_output_file, "r") as file_rad:
         data = file_rad.read().split("\t")
-        return [float(data[i*3]) for i in range(len(data)//3)]
+        return [float(data[i * 3]) for i in range(len(data) // 3)]
