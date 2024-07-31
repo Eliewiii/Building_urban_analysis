@@ -17,10 +17,10 @@ def test_radiance_computation_compared_to_analytical_solution():
     path_temp_folder = r"..\file_temp"
     for i in range(n_rectangles):
         print(f"Progress: {100*i/n_rectangles}%")
-        rectangle_1, rectangle_2 = generate_random_rectangles(min_size=0.2, max_size=5,
+        rectangle_1, rectangle_2_list = generate_random_rectangles(min_size=0.2, max_size=5,
                                                               max_distance_factor=3,
                                                               parallel_coaxial_squares=True)
-        vf, vf_radiance, supremum_vf = computes_vf_betweem_2_rectangles(rectangle_1, rectangle_2,
+        vf, vf_radiance, supremum_vf = computes_vf_betweem_2_rectangles(rectangle_1, rectangle_2_list[0],
                                                                         path_temp_folder, nb_rays=nb_ray)
         assert abs(1 - vf_radiance / supremum_vf) < 0.01
         print(f"VF: {vf}, VF Radiance: {vf_radiance}, Supremum VF: {supremum_vf}")

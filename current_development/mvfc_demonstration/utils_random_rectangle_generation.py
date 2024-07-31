@@ -13,14 +13,16 @@ from math import sqrt, atan, log, pi
 
 
 def generate_random_rectangles(min_size: float = 0.0001, max_size: float = 100.,
-                               max_distance_factor: float = 100., parallel_coaxial_squares: bool = False) -> \
-tuple[
-    pv.Rectangle, pv.Rectangle]:
+                               max_distance_factor: float = 100., parallel_coaxial_squares: bool = False,
+                               nb_random_rectangles: int = 1) -> tuple[pv.Rectangle, pv.Rectangle]:
     """
     Generate a reference rectangle and a random rectangle that faces the reference rectangle.
     :param min_size: The minimum size of an edge of the rectangles.
     :param max_size: The maximum size of an edge of the rectangles.
-    :return: The reference rectangle and the random rectangle.
+    :param max_distance_factor: The maximum distance factor between the reference rectangle and the random rectangle.
+    :param parallel_coaxial_squares: If True, the width of the rectangle is set to 1. to make a normalized square.
+    :param nb_random_rectangles: The number of random rectangles to generate.
+    :return: The reference rectangle and the list of random rectangle.
     """
 
     def generate_ref_rectangle_in_xy_plane(parallel_coaxial_squares: bool = False):
@@ -96,9 +98,11 @@ tuple[
     # Generate the reference rectangle
     ref_rectangle = generate_ref_rectangle_in_xy_plane(parallel_coaxial_squares=parallel_coaxial_squares)
     # Generate the random rectangle
-    random_rectangle = generate_random_rectangle(ref_rectangle, parallel_coaxial_squares=parallel_coaxial_squares)
+    random_rectangle_list = [
+        generate_random_rectangle(ref_rectangle, parallel_coaxial_squares=parallel_coaxial_squares) for
+        i in range(nb_random_rectangles)]
 
-    return ref_rectangle, random_rectangle
+    return ref_rectangle, random_rectangle_list
 
 
 def random_face_normal_vector_facing_face(vertex_ref: np.ndarray, normal_ref: np.ndarray,
@@ -123,7 +127,7 @@ def random_face_normal_vector_facing_face(vertex_ref: np.ndarray, normal_ref: np
 
 def random_point_with_maximum_distance_from_point(point: np.ndarray, max_distance: float,
                                                   ensure_z_posive: bool = True,
-                                                  enforce_z_direction:bool =False) -> np.ndarray:
+                                                  enforce_z_direction: bool = False) -> np.ndarray:
     """
     Generate a random point with a maximum distance from a given point.
     :param point: The given point.
@@ -143,8 +147,9 @@ def random_point_with_maximum_distance_from_point(point: np.ndarray, max_distanc
     return point + random_distance * random_unit_vector
 
 
-def random_orthonormal_vectors(normal_vec: np.ndarray, normalize: bool = False,enforce_y_x:bool = False) -> tuple[
-    np.ndarray, np.ndarray]:
+def random_orthonormal_vectors(normal_vec: np.ndarray, normalize: bool = False, enforce_y_x: bool = False) -> \
+        tuple[
+            np.ndarray, np.ndarray]:
     """
     Generate two random orthonormal vectors.
     :param normal_vec: The normal vector.
