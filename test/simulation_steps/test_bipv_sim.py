@@ -127,6 +127,7 @@ def test_bua_bipv_simulation():
         replacement_frequency_in_years=10,
         infrastructure_replacement_last_year=40,
         panel_replacement_min_age=25,
+        # no_csv=True
     )
     # Save the UrbanCanopy object to a pickle and json files
     SimulationCommonMethods.save_urban_canopy_object_to_pickle(urban_canopy_object=urban_canopy_object,
