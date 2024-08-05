@@ -3,6 +3,7 @@ Utility functions for folder manipulation.
 """
 
 import os
+from pathlib import Path
 
 
 def check_file_exist(file_path: str):
@@ -19,6 +20,12 @@ def check_parent_folder_exist(file_path: str):
     Check if the parent folder of a file path exists and raise an error if not.
     :param file_path: str, the path of the file.
     """
-    parent_folder = os.path.dirname(file_path)
-    if not os.path.exists(parent_folder):
-        raise FileNotFoundError(f"Folder not found: {parent_folder}")
+    file_path = Path(file_path)
+    parent_folder_path = file_path.parent
+    if not os.path.exists(parent_folder_path):
+        raise FileNotFoundError(f"Folder not found: {parent_folder_path}")
+
+
+if __name__ == "__main__":
+    check_parent_folder_exist(r"test\test_generate_input_for_radiance.py")
+

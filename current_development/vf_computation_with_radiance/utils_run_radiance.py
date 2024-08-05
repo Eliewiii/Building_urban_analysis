@@ -22,9 +22,17 @@ def run_radiant_vf_computation_in_batches(path_emitter_rad_file_list: List[str],
     :param path_emitter_rad_file_list: [str], the list of paths of the emitter Radiance files.
 
     """
+    # Generate the commands
+    command_list = []
+    for path_emitter_rad_file, path_receiver_rad_file, path_output_file, path_octree_context in zip(
+            path_emitter_rad_file_list, path_receiver_rad_file_list, path_output_file_list, path_octree_context_list):
+        write_radiance_command_for_vf_computation(path_emitter_rad_file, path_receiver_rad_file, path_output_file,
+                                                  path_octree_context, nb_rays)
+    # Run the commands in batches
+    run_command_in_batches(command_list, command_batch_size)
 
 
-def run_command_in_batches(command_list: [str], command_batch_size: int):
+def run_command_in_batches(command_list: List[str], command_batch_size: int):
     """
     Run a list of commands in batches.
     :param command_list: [str], the list of commands to run.
