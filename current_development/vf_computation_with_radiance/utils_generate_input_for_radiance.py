@@ -9,6 +9,9 @@ import numpy as np
 
 from .utils_folder_manipulation import check_parent_folder_exist
 
+
+def spl
+
 def from_polydata_to_rad_file(polydata: PolyData, path_rad_file: str, identifier: str):
     """
     Convert a PolyData to a Radiance file.
