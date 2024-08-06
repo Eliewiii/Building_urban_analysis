@@ -57,7 +57,7 @@ the BUA_installer.bat again.
 
 ## Usage
 
-Please refer to the documentation in the documentation folder to understand the logic and how to use the tool.
+Please refer to the documentation in the documentation folder or in the additional documents of the last release to understand the logic and how to use the tool.
 
 ### Using Python 
 Using the tool through Python enable further customization and automation of the tool, running many simulations at once, or performing parametric optimization. 
