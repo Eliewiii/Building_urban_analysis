@@ -933,6 +933,7 @@ class UrbanCanopy:
         :param continue_simulation: bool: if True, continue the simulation, default = False
         :param kwargs: dict: additional arguments to be passed to the run_bipv_panel_simulation method of the
             BuildingModeled object
+
         """
 
         # If start_year is higher than end_year, raise an error
@@ -1047,8 +1048,9 @@ class UrbanCanopy:
             solar_rad_and_bipv_obj_list=solar_rad_and_bipv_obj_list)
 
         # Write urban scale results to CSV file (overwrite existing file if it exists)
-        bipv_scenario_obj.write_bipv_results_to_csv(
-            path_radiation_and_bipv_result_folder=path_radiation_and_bipv_result_folder)
+        if "no_csv" not in kwargs or not kwargs["no_csv"]:
+            bipv_scenario_obj.write_bipv_results_to_csv(
+                path_radiation_and_bipv_result_folder=path_radiation_and_bipv_result_folder)
 
     @staticmethod
     def does_building_fits_bipv_requirement(building_obj, building_id_list, continue_simulation):

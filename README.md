@@ -1,6 +1,6 @@
 # Building Urban Analysis
 
-A powerful urban building energy modeling (UBEM) tool for energy simulation, lca and Building Integrated Photovoltaic (BIPV) for python and Grasshopper.
+A powerful urban building energy modeling (UBEM) tool for energy simulation, lca and Building Integrated Photovoltaic (BIPV) for python and Grasshopper. Available for now on Windows only.
 
 ## Table of Contents
 
@@ -39,6 +39,7 @@ The tool used the LadybugTools (Ladybug, Honeybee and Dragonfly) objects and fun
 To get started with Building Urban Analysis, follow these steps:
 
 ### Prerequisites
+- Windows 10/11
 - Rhino 7 or 8 (if you plan to use the Grasshopper interface)
 - Polination for Grasshopper (that can be downloaded from [here](https://www.pollination.cloud/grasshopper-plugin))
 
