@@ -12,6 +12,7 @@ from .radiative_surface import RadiativeSurface
 from .utils_generate_input_for_radiance import from_emitter_receiver_rad_str_to_rad_files
 from .utils_batches import split_into_batches
 from .utils_folder_manipulation import create_folder
+from .utils_parallel_computing import parallel_computation_in_batches
 
 
 class RadiativeSurfaceManager:
@@ -92,7 +93,7 @@ class RadiativeSurfaceManager:
 
     def generate_radiance_inputs_for_all_surfaces_in_parallel(self, path_folder_emitter: str, path_folder_receiver: str,
                                                               path_folder_output: str, nb_receiver_per_batch: int = 1,
-                                                              num_workers=1,batch_size = 1,executor_type =ThreadPoolExecutor, 'thread'):
+                                                              num_workers=1,batch_size = 1,executor_type =ThreadPoolExecutor):
         """
 
         """
