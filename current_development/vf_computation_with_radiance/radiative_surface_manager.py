@@ -2,7 +2,6 @@
 Class that manages the whole LWR simulation, especially the RadiativeSurface objects.
 """
 
-
 import os
 
 from typing import List
@@ -10,7 +9,6 @@ from typing import List
 from .radiative_surface import RadiativeSurface
 from .utils_generate_input_for_radiance import from_emitter_receiver_rad_str_to_rad_files
 from .utils_batches import split_into_batches
-
 
 
 class RadiativeSurfaceManager:
@@ -65,6 +63,13 @@ class RadiativeSurfaceManager:
         """
         # todo: implement this method
 
+    def add_argument_to_radiance_argument_list(self, *args):
+        """
+        Add an argument to the Radiance argument list.
+        :param args: the arguments to add.
+        """
+        self.radiance_argument_list.append([arg for arg in args])
+
     def generate_radiance_inputs_for_all_surfaces(self, path_folder_emitter: str, path_folder_receiver: str,
                                                   path_folder_output: str, nb_receiver_per_batch: int = 1):
         """
@@ -76,7 +81,8 @@ class RadiativeSurfaceManager:
         """
         for radiative_surface_obj in self.radiative_surface_dict.values():
             self.generate_radiance_inputs_for_one_surface(radiative_surface_obj, path_folder_emitter,
-                                                          path_folder_receiver, path_folder_output)
+                                                          path_folder_receiver, path_folder_output,
+                                                          nb_receiver_per_batch)
 
     def generate_radiance_inputs_for_one_surface(self, radiative_surface_obj: RadiativeSurface,
                                                  path_folder_emitter: str, path_folder_receiver: str,
@@ -87,7 +93,8 @@ class RadiativeSurfaceManager:
         :param path_folder_emitter: str, the folder path where the emitter Radiance files will be saved.
         :param path_folder_receiver: str, the folder path where the receiver Radiance files will be saved.
         :param path_folder_output: str, the folder path where the output Radiance files will be saved.
-        :param nb_receiver_per_batch: int, the number of receivers in the receiver rad file per batch.
+        :param nb_receiver_per_batch: int, the number of receivers in the receiver rad file per batch. Each batch is
+            simulated the with separate calls of Radiance and generate results in different files.
         """
         # Get the rad_str of the emitter and receivers
         emitter_rad_str = radiative_surface_obj.rad_file_content
@@ -95,7 +102,19 @@ class RadiativeSurfaceManager:
                                  radiative_surface_obj.get_viewed_surfaces_id_list()]
         receiver_rad_str_list_batches = split_into_batches(receiver_rad_str_list, nb_receiver_per_batch)
         # Generate the paths of the Radiance files
-        path_emitter_rad_file = os.path.join(path_folder_emitter, f"emitter_{radiative_surface_obj.identifier}.rad")
+        name_emitter_rad_file, name_receiver_rad_file, name_output_file = radiative_surface_obj.generate_rad_file_name()
+        path_emitter_rad_file = os.path.join(path_folder_emitter, name_emitter_rad_file + ".rad")
+        # Generate the Radiance files for each batch
+        for i, batch in enumerate(receiver_rad_str_list_batches):
+            path_receiver_rad_file = os.path.join(path_folder_receiver, name_receiver_rad_file + f"{i}.rad")
+            path_output_file = os.path.join(path_folder_output, name_output_file + f"{i}.txt")
+            # Generate the files
+            from_emitter_receiver_rad_str_to_rad_files(emitter_rad_str=emitter_rad_str,
+                                                       receiver_rad_str_list=batch,
+                                                       path_emitter_rad_file=path_emitter_rad_file,
+                                                       path_receiver_rad_file=path_receiver_rad_file,
+                                                       path_output_file=path_output_file)
 
-
-        from_emitter_receiver_rad_str_to_rad_files
+            # Add the Radiance argument to the list
+            self.add_argument_to_radiance_argument_list(path_emitter_rad_file,
+                                                        path_receiver_rad_file, path_output_file)

@@ -59,3 +59,15 @@ class RadiativeSurface:
         Get the list of identifiers of the surfaces viewed by the current surface.
         """
         return self.viewed_surfaces_id_list
+
+    def generate_rad_file_name(self) -> (str, str, str):
+        """
+        Generate the name of the Radiance file from the identifier without the extension and batch number.
+        :return: str, the name of the emitter Radiance file.
+        :return: str, the name of the receiver Radiance file.
+        :return: str, the name of the output Radiance file.
+        """
+        name_emitter_rad_file = f"emitter_{self.identifier}"
+        name_receiver_rad_file = f"receiver_{self.identifier}_batch_"
+        name_output_file = f"output_{self.identifier}_batch_"
+        return name_emitter_rad_file, name_receiver_rad_file, name_output_file
