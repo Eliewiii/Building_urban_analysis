@@ -6,15 +6,9 @@ import os
 import shutil
 
 from pathlib import Path
-from typing import Callable
+from typing import Callable, List
 
-
-def run_for_each_arg(func: Callable):
-    def wrapper(*args, **kwargs):
-        for arg in args:
-            func(arg, **kwargs)
-
-    return wrapper
+from .decorators import run_for_each_arg
 
 
 @run_for_each_arg
