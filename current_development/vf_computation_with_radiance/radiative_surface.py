@@ -14,8 +14,10 @@ class RadiativeSurface:
 
     def __init__(self, identifier: str):
         self.identifier = None
+        self.hb_identifier = None
         self.polydata_geometry = None
         self.viewed_surfaces_id_list = []
+        self.viewed_surfaces_view_factor_list = []
         # Radiative properties
         self.emissivity = None
         self.reflectivity = None
@@ -57,5 +59,3 @@ class RadiativeSurface:
         Get the list of identifiers of the surfaces viewed by the current surface.
         """
         return self.viewed_surfaces_id_list
-
-

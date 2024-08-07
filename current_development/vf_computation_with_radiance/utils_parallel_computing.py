@@ -5,6 +5,8 @@ import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from typing import Callable, List, Type
 
+from .utils_batches import split_into_batches
+
 
 def parallel_computation_in_batches(func: Callable, input_tables: List[list],
                                     executor_type: Type[concurrent.futures.Executor] = ThreadPoolExecutor,
@@ -30,18 +32,7 @@ def parallel_computation_in_batches(func: Callable, input_tables: List[list],
                 print(f"Task generated an exception: {e}")
 
 
-def split_into_batches(input_table: List[list], batch_size: int) -> List[List[list]]:
-    """
-    Splits multiple lists of data into batches of a specified size.
 
-    :param input_table: List of lists, data to be split into batches.
-    :param batch_size: Int, size of each batch.
-    :return: List of batches.
-    """
-    num_items = len(input_table)
-    if num_items < batch_size:
-        return [input_table]
-    return [input_table[i:i + batch_size] for i in range(0, num_items, batch_size)]
 
 
 def run_func_in_batch_with_list_input_wrapper(func: Callable, args_list_in_batches: List[list], **kwargs):

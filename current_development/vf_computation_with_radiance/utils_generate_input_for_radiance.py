@@ -25,6 +25,7 @@ def from_emitter_receiver_to_rad_files(emitter_polydata: PolyData, emitter_id: s
     :param receiver_id_list: [str], the list of identifiers of the receivers.
     :param path_emitter_folder: str, the path of the folder where to save the emitter Radiance file.
     :param path_receiver_folder: str, the path of the folder where to save the receiver Radiance files.
+    :param path_output_folder: str, the path of the folder where to save the output files.
     :param batch_index_emitter: int, the index of the batch for the emitter due to the limit of simultaneous receivers
         Radiance accepts.
     :return path_emitter_rad_file: str, the path of the emitter Radiance file.
