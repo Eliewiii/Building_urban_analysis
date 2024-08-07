@@ -1,7 +1,7 @@
 """
 Script to define the fitness functions to be used in the optimization process.
 """
-from kpi_reference_values import *
+from current_development.Optimization.Nevergrad.optimization_test_with_BUA.kpi_reference_values import *
 
 
 def environmental_oriented_fitness_func(kpi_dict: dict):
