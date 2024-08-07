@@ -6,9 +6,12 @@ import os
 
 from typing import List
 
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+
 from .radiative_surface import RadiativeSurface
 from .utils_generate_input_for_radiance import from_emitter_receiver_rad_str_to_rad_files
 from .utils_batches import split_into_batches
+from .utils_folder_manipulation import create_folder
 
 
 class RadiativeSurfaceManager:
@@ -79,10 +82,24 @@ class RadiativeSurfaceManager:
         :param path_folder_output: str, the folder path where the output Radiance files will be saved.
         :param nb_receiver_per_batch: int, the number of receivers in the receiver rad file per batch.
         """
+        # Generate the folder if they don't exist
+        create_folder(path_folder_emitter, path_folder_emitter, path_folder_output, overwrite=False)
+
         for radiative_surface_obj in self.radiative_surface_dict.values():
             self.generate_radiance_inputs_for_one_surface(radiative_surface_obj, path_folder_emitter,
                                                           path_folder_receiver, path_folder_output,
                                                           nb_receiver_per_batch)
+
+    def generate_radiance_inputs_for_all_surfaces_in_parallel(self, path_folder_emitter: str, path_folder_receiver: str,
+                                                              path_folder_output: str, nb_receiver_per_batch: int = 1,
+                                                              num_workers=1,batch_size = 1,executor_type =ThreadPoolExecutor, 'thread'):
+        """
+
+        """
+        # Generate the folder if they don't exist
+        create_folder(path_folder_emitter, path_folder_emitter, path_folder_output, overwrite=False)
+        # Split t
+        batches = split_into_batches(self.radiative_surface_dict.values(), nb_receiver_per_batch)
 
     def generate_radiance_inputs_for_one_surface(self, radiative_surface_obj: RadiativeSurface,
                                                  path_folder_emitter: str, path_folder_receiver: str,
@@ -96,6 +113,9 @@ class RadiativeSurfaceManager:
         :param nb_receiver_per_batch: int, the number of receivers in the receiver rad file per batch. Each batch is
             simulated the with separate calls of Radiance and generate results in different files.
         """
+        # Check if the surface has viewed surfaces aka simulation is needed
+        if len(radiative_surface_obj.get_viewed_surfaces_id_list()) == 0:
+            return
         # Get the rad_str of the emitter and receivers
         emitter_rad_str = radiative_surface_obj.rad_file_content
         receiver_rad_str_list = [self.get_radiative_surface[receiver_id].rad_file_content for receiver_id in

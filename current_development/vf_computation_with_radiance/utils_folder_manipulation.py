@@ -3,7 +3,32 @@ Utility functions for folder manipulation.
 """
 
 import os
+import shutil
+
 from pathlib import Path
+from typing import Callable
+
+
+def run_for_each_arg(func: Callable):
+    def wrapper(*args, **kwargs):
+        for arg in args:
+            func(arg, **kwargs)
+
+    return wrapper
+
+
+@run_for_each_arg
+def create_folder(folder_path: str, overwrite: bool = False):
+    """
+    Create a folder if it does not exist.
+    :param folder_path: str, the path of the folder.
+    :param overwrite: bool, overwrite the folder if it already
+    """
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+    elif overwrite:
+        shutil.rmtree(folder_path)
+        os.makedirs(folder_path)
 
 
 def check_file_exist(file_path: str):
@@ -28,4 +53,3 @@ def check_parent_folder_exist(file_path: str):
 
 if __name__ == "__main__":
     check_parent_folder_exist(r"test\test_generate_input_for_radiance.py")
-
