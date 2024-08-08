@@ -32,9 +32,6 @@ def parallel_computation_in_batches(func: Callable, input_tables: List[list],
                 print(f"Task generated an exception: {e}")
 
 
-
-
-
 def run_func_in_batch_with_list_input_wrapper(func: Callable, args_list_in_batches: List[list], **kwargs):
     """
     Wrapper to call a function with arguments from a list of batches.

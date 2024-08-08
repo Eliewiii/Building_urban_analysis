@@ -4,7 +4,9 @@ Class of surfaces for radiative simulations
 
 from pyvista import PolyData
 
-from .utils_generate_input_for_radiance import from_polydata_to_dot_rad_str
+from typing import List
+
+from current_development.vf_computation_with_radiance.utils_generate_input_for_radiance import from_polydata_to_dot_rad_str
 
 
 class RadiativeSurface:
@@ -13,7 +15,7 @@ class RadiativeSurface:
     """
 
     def __init__(self, identifier: str):
-        self.identifier = None
+        self.identifier = identifier
         self.hb_identifier = None
         self.polydata_geometry = None
         self.viewed_surfaces_id_list = []
@@ -53,6 +55,17 @@ class RadiativeSurface:
         radiative_surface_obj.rad_file_content = from_polydata_to_dot_rad_str(polydata, identifier)
 
         return radiative_surface_obj
+
+    def add_viewed_surfaces(self, viewed_surface_id_list: List[str]):
+        """
+        Add a viewed surface to the current surface.
+        :param viewed_surface_id_list: str or [str], the identifier of the viewed surface.
+        """
+        for viewed_surface_id in viewed_surface_id_list:
+            if viewed_surface_id not in self.viewed_surfaces_id_list:
+                self.viewed_surfaces_id_list.append(viewed_surface_id)
+            else:
+                raise ValueError(f"The surface {viewed_surface_id} is already in the viewed surfaces list.")
 
     def get_viewed_surfaces_id_list(self):
         """

@@ -2,9 +2,7 @@
 Class that manages the whole LWR simulation, especially the RadiativeSurface objects.
 """
 
-from typing import List
-
-from .radiative_surface_manager import RadiativeSurfaceManager
+from current_development.vf_computation_with_radiance.radiative_surface.radiative_surface_manager_class import RadiativeSurfaceManager
 
 
 
