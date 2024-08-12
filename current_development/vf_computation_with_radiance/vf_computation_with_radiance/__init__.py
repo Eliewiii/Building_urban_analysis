@@ -1,6 +1,6 @@
-__all__ = ['radiative_surface','utils']
+__all__ = ['radiative_surface', 'utils']
 
-from radiative_surface.radiative_surface_class import RadiativeSurface
-from radiative_surface.radiative_surface_manager_class import RadiativeSurfaceManager
+from .radiative_surface.radiative_surface_class import RadiativeSurface
+from .radiative_surface.radiative_surface_manager_class import RadiativeSurfaceManager
 
-import utils
+from .utils import *

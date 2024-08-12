@@ -15,7 +15,7 @@ from math import sqrt, atan, log, pi
 
 def generate_random_rectangles(min_size: float = 0.0001, max_size: float = 100.,
                                max_distance_factor: float = 100., parallel_coaxial_squares: bool = False,
-                               nb_random_rectangles: int = 1) -> List[pv.Rectangle, List[pv.Rectangle]]:
+                               nb_random_rectangles: int = 1) -> [pv.Rectangle, List[pv.Rectangle]]:
     """
     Generate a reference rectangle and a random rectangle that faces the reference rectangle.
     :param min_size: The minimum size of an edge of the rectangles.

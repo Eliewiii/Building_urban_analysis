@@ -7,7 +7,7 @@ import shutil
 
 from pathlib import Path
 
-from current_development.vf_computation_with_radiance.vf_computation_with_radiance.decorators import run_for_each_arg
+from ..decorators import run_for_each_arg
 
 
 @run_for_each_arg

@@ -5,7 +5,7 @@ import pytest
 
 from pyvista import PolyData
 
-from current_development.vf_computation_with_radiance.vf_computation_with_radiance.radiative_surface.radiative_surface_class import RadiativeSurface
+from ...vf_computation_with_radiance import RadiativeSurface
 
 # Sample Polydata for testing
 point_a = [1., 0., 0.]
@@ -20,7 +20,7 @@ def test_init_radiative_surface():
     Test the initialization of the RadiativeSurface class.
     """
     radiative_surface = RadiativeSurface("identifier")
-    assert radiative_surface.identifier is None
+    assert radiative_surface.identifier == "identifier"
     assert radiative_surface.hb_identifier is None
     assert radiative_surface.polydata_geometry is None
     assert radiative_surface.viewed_surfaces_id_list == []
@@ -50,7 +50,7 @@ def test_from_polydata():
     assert "identifier" in radiative_surface.rad_file_content
     assert "polygon" in radiative_surface.rad_file_content
     assert "void glow" in radiative_surface.rad_file_content
-    assert len([point_a, point_b, point_c, point_d]) * 3 in radiative_surface.rad_file_content
+    assert str(len([point_a, point_b, point_c, point_d]) * 3) in radiative_surface.rad_file_content
 
 
 def test_add_viewed_face():

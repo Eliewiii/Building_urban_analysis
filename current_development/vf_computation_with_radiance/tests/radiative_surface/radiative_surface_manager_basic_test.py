@@ -2,7 +2,8 @@
 Test functions for the method and initialization of the RadiativeSurfaceManager class.
 """
 
-from current_development.vf_computation_with_radiance.vf_computation_with_radiance.radiative_surface.radiative_surface_manager_class import RadiativeSurfaceManager
+from ...vf_computation_with_radiance import RadiativeSurfaceManager
+
 
 def test_init_radiative_surface_manager():
     """
@@ -14,8 +15,5 @@ def test_init_radiative_surface_manager():
     assert radiative_surface_manager.radiance_argument_list == []
 
 
-
-
-
-if __name__=="__main__":
+if __name__ == "__main__":
     None
