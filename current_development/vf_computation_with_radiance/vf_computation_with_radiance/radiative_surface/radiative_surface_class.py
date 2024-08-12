@@ -2,8 +2,9 @@
 Class of surfaces for radiative simulations
 """
 
-from pyvista import PolyData
+from copy import deepcopy
 
+from pyvista import PolyData
 from typing import List
 
 from ..utils import from_polydata_to_dot_rad_str
@@ -15,17 +16,33 @@ class RadiativeSurface:
     """
 
     def __init__(self, identifier: str):
-        self.identifier = identifier
-        self.hb_identifier = None
-        self.polydata_geometry = None
-        self.viewed_surfaces_id_list = []
-        self.viewed_surfaces_view_factor_list = []
+        self.identifier: str = identifier
+        self.hb_identifier: str = None
+        self.polydata_geometry: PolyData = None
+        self.viewed_surfaces_id_list: List = []
+        self.viewed_surfaces_view_factor_list: List = []
         # Radiative properties
-        self.emissivity = None
-        self.reflectivity = None
-        self.transmissivity = None
+        self.emissivity: float = None
+        self.reflectivity: float = None
+        self.transmissivity: float = None
         # Preprocessed data for Radiance
-        self.rad_file_content = None
+        self.rad_file_content: str = None
+
+    def __deepcopy__(self, memo={}):
+        """
+        Make a deepcopy of the RadiativeSurface object.
+        """
+        new_radiative_surface = RadiativeSurface(self.identifier)
+        new_radiative_surface.hb_identifier = self.hb_identifier
+        new_radiative_surface.polydata_geometry = deepcopy(self.polydata_geometry, memo)
+        new_radiative_surface.viewed_surfaces_id_list = deepcopy(self.viewed_surfaces_id_list, memo)
+        new_radiative_surface.viewed_surfaces_view_factor_list = deepcopy(self.viewed_surfaces_view_factor_list, memo)
+        new_radiative_surface.emissivity = self.emissivity
+        new_radiative_surface.reflectivity = self.reflectivity
+        new_radiative_surface.transmissivity = self.transmissivity
+        new_radiative_surface.rad_file_content = self.rad_file_content
+
+        return new_radiative_surface
 
     @classmethod
     def from_hb_face_object(cls, hb_face_object):
@@ -50,6 +67,8 @@ class RadiativeSurface:
         :param identifier: str, the identifier of the object.
         :param polydata: PolyData, the polydata to convert.
         """
+        if not isinstance(polydata, PolyData):
+            raise ValueError(f"The polydata must be a PolyData object, not {type(polydata)}.")
         radiative_surface_obj = cls(identifier)
         radiative_surface_obj.polydata_geometry = polydata
         radiative_surface_obj.rad_file_content = from_polydata_to_dot_rad_str(polydata, identifier)

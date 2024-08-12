@@ -3,6 +3,8 @@ Test functions for the RadiativeSurface class.
 """
 import pytest
 
+from copy import deepcopy
+
 from pyvista import PolyData
 
 from ...vf_computation_with_radiance import RadiativeSurface
@@ -16,10 +18,19 @@ polydata_obj_1 = PolyData([point_a, point_b, point_c, point_d])
 
 
 @pytest.fixture(scope='function')
-def radiative_surface_instance():
-    radiative_surface_instance_id = "identifier"
-    instance = RadiativeSurface.from_polydata(radiative_surface_instance_id, polydata_obj_1)
-    return instance
+def radiative_surface_instance(request):
+    num_instances = request.param if hasattr(request, 'param') else 1  # Default to 1 if no param
+    if num_instances == 1:
+        radiative_surface_instance_id = "identifier"
+        instance = RadiativeSurface(radiative_surface_instance_id)
+        return instance
+    else:
+        instance_list = []
+        for i in range(num_instances):
+            radiative_surface_instance_id = f"surface_{i}"
+            instance_list.append(RadiativeSurface.from_polydata(radiative_surface_instance_id, polydata_obj_1))
+
+        return instance_list
 
 
 class TestRadiativeSurface:
@@ -63,6 +74,24 @@ class TestRadiativeSurface:
         # Check with wrong input data
         with pytest.raises(ValueError):
             RadiativeSurface.from_polydata("identifier", "wrong_input")
+
+    def test_deepcopy(self, radiative_surface_instance):
+        """
+        Test the deepcopy method of the RadiativeSurface class.
+        """
+        radiative_surface = radiative_surface_instance
+        new_radiative_surface = deepcopy(radiative_surface)
+        assert new_radiative_surface.identifier == radiative_surface.identifier
+        assert new_radiative_surface.hb_identifier == radiative_surface.hb_identifier
+        assert new_radiative_surface.polydata_geometry == radiative_surface.polydata_geometry
+        assert new_radiative_surface.viewed_surfaces_view_factor_list == radiative_surface.viewed_surfaces_view_factor_list
+        assert new_radiative_surface.viewed_surfaces_id_list == radiative_surface.viewed_surfaces_id_list
+        assert new_radiative_surface.viewed_surfaces_id_list is not radiative_surface.viewed_surfaces_id_list
+        assert new_radiative_surface.viewed_surfaces_view_factor_list is not radiative_surface.viewed_surfaces_view_factor_list
+        assert new_radiative_surface.emissivity == radiative_surface.emissivity
+        assert new_radiative_surface.reflectivity == radiative_surface.reflectivity
+        assert new_radiative_surface.transmissivity == radiative_surface.transmissivity
+        assert new_radiative_surface.rad_file_content == radiative_surface.rad_file_content
 
     def test_add_viewed_face(self, radiative_surface_instance):
         """

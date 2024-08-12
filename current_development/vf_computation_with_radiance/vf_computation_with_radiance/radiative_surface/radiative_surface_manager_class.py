@@ -12,10 +12,10 @@ from current_development.mvfc_demonstration.utils_random_rectangle_generation im
 
 from .radiative_surface_class import RadiativeSurface
 
-from current_development.vf_computation_with_radiance.vf_computation_with_radiance.utils import from_emitter_receiver_rad_str_to_rad_files
-from current_development.vf_computation_with_radiance.vf_computation_with_radiance.utils import split_into_batches
-from current_development.vf_computation_with_radiance.vf_computation_with_radiance.utils import create_folder
-from current_development.vf_computation_with_radiance.vf_computation_with_radiance.utils import parallel_computation_in_batches_with_return
+from ..utils import from_emitter_receiver_rad_str_to_rad_files
+from ..utils import split_into_batches
+from ..utils import create_folder
+from ..utils import parallel_computation_in_batches_with_return
 
 
 class RadiativeSurfaceManager:
@@ -67,13 +67,14 @@ class RadiativeSurfaceManager:
                 for id_random, random_rectangle in zip(id_random_list, random_rectangle_list)]
             ref_rad_surface_obj.add_viewed_surfaces(id_random_list)
             # Add the RadiativeSurface objects to the manager
-            radiative_surface_manager.add_radiative_surface(ref_rad_surface_obj, random_rad_surface_obj_list)
+            radiative_surface_manager.add_radiative_surfaces(ref_rad_surface_obj, random_rad_surface_obj_list)
 
         return radiative_surface_manager
 
     def add_radiative_surfaces(self, *args):
         """
         Add multiple RadiativeSurface objects to the manager.
+        The arguments can be either RadiativeSurface or list of RadiativeSurface
         """
         for radiative_surface_element_or_list in args:
             if isinstance(radiative_surface_element_or_list, list):
@@ -113,12 +114,12 @@ class RadiativeSurfaceManager:
         """
         # todo: implement this method
 
-    def add_argument_to_radiance_argument_list(self, arugument_list: List[List[str]]):
+    def add_argument_to_radiance_argument_list(self, argument_list: List[List[str]]):
         """
         Add an argument to the Radiance argument list.
-        :param args: the arguments to add.
+        :param argument_list: the argument_list to add.
         """
-        self.radiance_argument_list.extend(arugument_list)
+        self.radiance_argument_list.extend(argument_list)
 
     def reinitialize_radiance_argument_list(self):
         """
