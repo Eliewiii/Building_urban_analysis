@@ -6,13 +6,13 @@ import sys
 
 from typing import Callable, List, Tuple
 
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 
 from bua.utils.utils_import_simulation_steps_and_config_var import *
 
 from bua.urban_canopy.urban_canopy import UrbanCanopy
 
-from current_development.vf_computation_with_radiance.utils_parallel_computing_with_return import \
+from current_development.vf_computation_with_radiance.vf_computation_with_radiance.utils.utils_parallel_computing_with_return import \
     parallel_computation_in_batches_with_return
 
 from current_development.Optimization.Nevergrad.optimization_test_with_BUA.json_result_dict_methods import \

@@ -23,7 +23,7 @@ if __name__ == '__main__':
     # Our fitness function will be the Langermann function
     problem = LangermannProblem(maximize=False)
 
-    # When running the test harness, just run for two generations
+    # When running the tests harness, just run for two generations
     # (we use this to quickly ensure our examples don't get bitrot)
     if os.environ.get(test_env_var, False) == 'True':
         generations = 2
@@ -71,7 +71,7 @@ if __name__ == '__main__':
                                 ]
                                 )
 
-    # If we're not in test-harness mode, block until the user closes the app
+    # If we're not in tests-harness mode, block until the user closes the app
     if os.environ.get(test_env_var, False) != 'True':
         plt.show()
 

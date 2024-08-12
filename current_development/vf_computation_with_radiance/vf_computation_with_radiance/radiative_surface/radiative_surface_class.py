@@ -6,7 +6,7 @@ from pyvista import PolyData
 
 from typing import List
 
-from current_development.vf_computation_with_radiance.utils_generate_input_for_radiance import from_polydata_to_dot_rad_str
+from current_development.vf_computation_with_radiance.vf_computation_with_radiance.utils import from_polydata_to_dot_rad_str
 
 
 class RadiativeSurface:

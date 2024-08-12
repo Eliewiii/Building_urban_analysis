@@ -56,7 +56,7 @@ def generate_data_base_from_sample(path_file_shp,index,output_building_type_path
         # generate the image
         image_output_path = os.path.join(output_building_type_path, "sample_{}.png".format(index))
         Polygon_to_png_BnW(noisy_shape,image_output_path)
-        # #test
+        # #tests
         # image_output_path = os.path.join(output_building_type_path, "sample_x_{}.png".format(index))
         # Polygon_to_png_BnW_test(noisy_shape,image_output_path)
         # increase the counter
@@ -103,7 +103,7 @@ def generate_data_base_from_sample_parallel(path_file_shp,index,output_building_
         # generate the image
         image_output_path = os.path.join(output_building_type_path, "sample_{}.png".format(index))
         Polygon_to_png_BnW(noisy_shape,image_output_path)
-        # #test
+        # #tests
         # image_output_path = os.path.join(output_building_type_path, "sample_x_{}.png".format(index))
         # Polygon_to_png_BnW_test(noisy_shape,image_output_path)
         # increase the counter

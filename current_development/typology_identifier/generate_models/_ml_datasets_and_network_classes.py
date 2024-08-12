@@ -50,7 +50,7 @@ class MultipleBuildingsDataset(Dataset):
 
 # class SingleBuildingDataset(Dataset):
 #     """
-#     Dataset to test only one images
+#     Dataset to tests only one images
 #     """
 #
 #     def __init__(self, path_image, transform=None):
@@ -79,7 +79,7 @@ class MultipleBuildingsDataset(Dataset):
 
 class SingleBuildingDataset(Dataset):
     """
-    Dataset to test only one images
+    Dataset to tests only one images
     """
 
     def __init__(self, path_image, transform=None):

@@ -6,17 +6,16 @@ import os
 
 from typing import List
 
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 
 from current_development.mvfc_demonstration.utils_random_rectangle_generation import generate_random_rectangles
 
-from current_development.vf_computation_with_radiance.radiative_surface.radiative_surface_class import RadiativeSurface
-from current_development.vf_computation_with_radiance.utils_generate_input_for_radiance import \
-    from_emitter_receiver_rad_str_to_rad_files
-from current_development.vf_computation_with_radiance.utils_batches import split_into_batches
-from current_development.vf_computation_with_radiance.utils_folder_manipulation import create_folder
-from current_development.vf_computation_with_radiance.utils_parallel_computing_with_return import \
-    parallel_computation_in_batches_with_return
+from .radiative_surface_class import RadiativeSurface
+
+from current_development.vf_computation_with_radiance.vf_computation_with_radiance.utils import from_emitter_receiver_rad_str_to_rad_files
+from current_development.vf_computation_with_radiance.vf_computation_with_radiance.utils import split_into_batches
+from current_development.vf_computation_with_radiance.vf_computation_with_radiance.utils import create_folder
+from current_development.vf_computation_with_radiance.vf_computation_with_radiance.utils import parallel_computation_in_batches_with_return
 
 
 class RadiativeSurfaceManager:
@@ -63,11 +62,12 @@ class RadiativeSurfaceManager:
             id_random_list = [f"random_{j}_ref{i}" for j in range(num_random_rectangle)]
             # Convert the PolyData to RadiativeSurface objects
             ref_rad_surface_obj = RadiativeSurface.from_polydata(identifier=id_ref, polydata=ref_rectangles)
-            random_rad_surface_obj_list = [RadiativeSurface.from_polydata(identifier=id_random, polydata=random_rectangle)
-                                             for id_random, random_rectangle in zip(id_random_list, random_rectangle_list)]
+            random_rad_surface_obj_list = [
+                RadiativeSurface.from_polydata(identifier=id_random, polydata=random_rectangle)
+                for id_random, random_rectangle in zip(id_random_list, random_rectangle_list)]
             ref_rad_surface_obj.add_viewed_surfaces(id_random_list)
             # Add the RadiativeSurface objects to the manager
-            radiative_surface_manager.add_radiative_surface(ref_rad_surface_obj,random_rad_surface_obj_list)
+            radiative_surface_manager.add_radiative_surface(ref_rad_surface_obj, random_rad_surface_obj_list)
 
         return radiative_surface_manager
 

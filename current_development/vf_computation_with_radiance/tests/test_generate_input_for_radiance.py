@@ -4,7 +4,7 @@
 
 import os
 
-from ..utils_generate_input_for_radiance import from_polydata_to_rad_file, from_polydata_to_dot_rad_str, \
+from current_development.vf_computation_with_radiance.vf_computation_with_radiance.utils.utils_generate_input_for_radiance import from_polydata_to_rad_file, from_polydata_to_dot_rad_str, \
     from_polydata_list_to_rad_file
 
 from pyvista import PolyData

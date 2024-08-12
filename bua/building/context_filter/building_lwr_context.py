@@ -30,7 +30,7 @@ class BuildingLWRContextFilter(BuildingContextFilter):
         """
         Select the context surfaces that will be used for the shading simulation of the current target building.
         :param target_lb_polyface3d_extruded_footprint: Ladybug Polyface3D of the target building
-        :param context_hb_model_list_to_test: list of Honeybee Model of the context building to test. It will be more efficient (for the algorithm efficiency as well as the shadiong computation in EnergyPlus) to use HB models with merged facades.
+        :param context_hb_model_list_to_test: list of Honeybee Model of the context building to tests. It will be more efficient (for the algorithm efficiency as well as the shadiong computation in EnergyPlus) to use HB models with merged facades.
         :param full_urban_canopy_pyvista_mesh: Pyvista Mesh containing the envelopes of all the in the urban canopy
         :return hb_face_list_kept :
         """

@@ -5,8 +5,8 @@ from time import time
 
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
-from ..utils_parallel_computing_with_return import parallel_computation_in_batches_with_return
-from ..utils_parallel_computing import parallel_computation_in_batches
+from current_development.vf_computation_with_radiance.vf_computation_with_radiance.utils.utils_parallel_computing_with_return import parallel_computation_in_batches_with_return
+from current_development.vf_computation_with_radiance.vf_computation_with_radiance.utils.utils_parallel_computing import parallel_computation_in_batches
 
 
 def test_parallel_computation_in_batches_with_return():

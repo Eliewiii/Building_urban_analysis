@@ -134,7 +134,7 @@ def merge_facades_and_roof_faces_in_hb_model(hb_model_obj, orient_roof_mesh_to_a
 
     assign_construction_to_merged_faces_hb_model(hb_model_obj=hb_model_obj,
                                                  merged_faces_hb_model_obj=merged_faces_hb_model_obj)
-    # todo @Elie: test if this part works
+    # todo @Elie: tests if this part works
 
     return merged_faces_hb_model_obj
 

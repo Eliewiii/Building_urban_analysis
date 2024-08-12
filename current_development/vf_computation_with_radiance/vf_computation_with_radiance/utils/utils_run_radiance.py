@@ -5,11 +5,9 @@
 import os
 import subprocess
 
-from pyvista import PolyData
-import numpy as np
 from typing import List
 
-from .utils_folder_manipulation import check_parent_folder_exist, check_file_exist
+from current_development.vf_computation_with_radiance.vf_computation_with_radiance.utils.utils_folder_manipulation import check_parent_folder_exist, check_file_exist
 
 
 def run_radiant_vf_computation_in_batches(path_emitter_rad_file_list: List[str],

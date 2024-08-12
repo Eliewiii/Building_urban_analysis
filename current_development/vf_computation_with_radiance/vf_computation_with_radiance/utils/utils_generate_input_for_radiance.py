@@ -2,14 +2,12 @@
 
 """
 import os
-import subprocess
 
 from pyvista import PolyData
-import numpy as np
 
 from typing import List
 
-from .utils_folder_manipulation import check_parent_folder_exist
+from current_development.vf_computation_with_radiance.vf_computation_with_radiance.utils.utils_folder_manipulation import check_parent_folder_exist
 
 
 def from_emitter_receiver_to_rad_files(emitter_polydata: PolyData, emitter_id: str,

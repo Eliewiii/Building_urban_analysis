@@ -148,7 +148,7 @@ class UrbanCanopyKPIs:
 
     def to_csv(self, path_folder, start_year, end_year, prefix=""):
         """
-        # todo @Elie to test
+        # todo @Elie to tests
         Save the object to a csv file.
         :param path_folder: str, the path to the folder to write the csv files in
         :param start_year: int, the start year of the simulation

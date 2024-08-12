@@ -25,7 +25,7 @@ path_folder_shp_training = os.path.join(path_folder_shp_data, "training_shp")
 path_folder_shp_test = os.path.join(path_folder_shp_data, "test_shp")
 # Initialization outputs
 path_folder_output_data_training = path_folder_shp_data = os.path.join(path_folder_model, "training")
-path_folder_output_data_test = os.path.join(path_folder_model, "test")
+path_folder_output_data_test = os.path.join(path_folder_model, "tests")
 
 
 def generate_sample_ml(building_type, training_or_test):
@@ -38,7 +38,7 @@ def generate_sample_ml(building_type, training_or_test):
         path_output_building_type = os.path.join(path_folder_output_data_training, building_type)
         os.mkdir(path_output_building_type)  # create the output folder
 
-    if training_or_test == "test":
+    if training_or_test == "tests":
         path_building_type_shp = os.path.join(path_folder_shp_test,
                                               building_type)  # path directory with all the samples
         ## create a folder to store the generated images
@@ -67,8 +67,8 @@ if __name__ == "__main__":  # mandatory for parallel processing, what is execute
     # Prepare inputs parameters for paralellization
     nb_type = len(building_type_list)
     building_type_input_list = building_type_list + building_type_list  # concatenate the list with itself to have
-    # for both training and test
-    type_data = ["training" for i in range(nb_type)] + ["test" for i in
+    # for both training and tests
+    type_data = ["training" for i in range(nb_type)] + ["tests" for i in
                                                         range(nb_type)]  # input for multiprocessing
     # Number of processes to run
     nb_process = nb_type * 2

@@ -153,8 +153,8 @@ class SolarRadAndBipvSimulation:
         Set the mesh parameters for the simulation
         :param roof_or_facades: str: roof or facades
         :param on_roof_or_facades: bool: default=True, whether to run the simulation on the roof or the facades
-        :param grid_size_x: Number for the size of the test grid
-        :param grid_size_y: Number for the size of the test grid
+        :param grid_size_x: Number for the size of the tests grid
+        :param grid_size_y: Number for the size of the tests grid
         :param offset_dist: Number for the distance to move points from the surfaces of the geometry of the model.
         """
         if roof_or_facades == "roof":
@@ -274,10 +274,10 @@ class SolarRadAndBipvSimulation:
         :param hb_model_obj: Honeybee model object
         :param bipv_on_roof: bool: default=True
         :param bipv_on_facades: bool: default=True
-        :param roof_grid_size_x: Number for the size of the test grid
-        :param facades_grid_size_x: Number for the size of the test grid
-        :param roof_grid_size_y: Number for the size of the test grid
-        :param facades_grid_size_y: Number for the size of the test grid
+        :param roof_grid_size_x: Number for the size of the tests grid
+        :param facades_grid_size_x: Number for the size of the tests grid
+        :param roof_grid_size_y: Number for the size of the tests grid
+        :param facades_grid_size_y: Number for the size of the tests grid
         :param offset_dist: Number for the distance to move points from the surfaces of the geometry
         :param overwrite: bool: Overwrite the existing mesh if there is one default=False
 

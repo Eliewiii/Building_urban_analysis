@@ -86,7 +86,7 @@ class BuildingContextFilter:
         in the first pass of the algorithm
         :return: boolean
         """
-        # todo @Elie check the description of the function and test it
+        # todo @Elie check the description of the function and tests it
         # Loop over all the couples of surfaces between the target building and the context building
         for context_lb_face3d in list(context_lb_polyface3d_oriented_bounding_box.faces):  # polyface3d.faces is a tuple
             if not is_vector3d_vertical(context_lb_face3d.normal):  # exclude the horizontal/roof/ground surfaces

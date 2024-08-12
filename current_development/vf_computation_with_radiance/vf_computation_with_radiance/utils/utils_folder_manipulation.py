@@ -6,9 +6,8 @@ import os
 import shutil
 
 from pathlib import Path
-from typing import Callable, List
 
-from .decorators import run_for_each_arg
+from current_development.vf_computation_with_radiance.vf_computation_with_radiance.decorators import run_for_each_arg
 
 
 @run_for_each_arg
@@ -46,4 +45,4 @@ def check_parent_folder_exist(file_path: str):
 
 
 if __name__ == "__main__":
-    check_parent_folder_exist(r"test\test_generate_input_for_radiance.py")
+    check_parent_folder_exist(r"../testss/test_generate_input_for_radiance.py")

@@ -59,7 +59,7 @@ class BuildingModeled(BuildingBasic):
         Load the attributes that cannot be pickled from equivalent attribute dict.
         """
         # Convert the hb_model_dict to hb_model_obj
-        self.hb_model_obj = Model.from_dict(self.hb_model_dict)  # todo: test if it works
+        self.hb_model_obj = Model.from_dict(self.hb_model_dict)  # todo: tests if it works
         self.hb_model_dict = None
         # Load attributes in the context filter object after pickling
         self.shading_context_obj.load_from_pkl()
@@ -69,7 +69,7 @@ class BuildingModeled(BuildingBasic):
         Convert the hb_model_obj to hb_model_dict to be able to pickle it.
         """
         # Convert the hb_model_obj to hb_model_dict
-        self.hb_model_dict = self.hb_model_obj.to_dict()  # todo: test if it works
+        self.hb_model_dict = self.hb_model_obj.to_dict()  # todo: tests if it works
         self.hb_model_obj = None
         # Prepare attributes in the context filter objects
         self.shading_context_obj.prepare_for_pkl()
@@ -511,10 +511,10 @@ class BuildingModeled(BuildingBasic):
         It does not add the SendorgGrid to the HB model.
         :param bipv_on_roof: Boolean to indicate if the simulation should be done on the roof
         :param bipv_on_facades: Boolean to indicate if the simulation should be done on the facades
-        :param roof_grid_size_x: Number for the size of the test grid on the roof in the x direction
-        :param facades_grid_size_x: Number for the size of the test grid on the facades in the x direction
-        :param roof_grid_size_y: Number for the size of the test grid on the roof in the y direction
-        :param facades_grid_size_y: Number for the size of the test grid on the facades in the y direction
+        :param roof_grid_size_x: Number for the size of the tests grid on the roof in the x direction
+        :param facades_grid_size_x: Number for the size of the tests grid on the facades in the x direction
+        :param roof_grid_size_y: Number for the size of the tests grid on the roof in the y direction
+        :param facades_grid_size_y: Number for the size of the tests grid on the facades in the y direction
         :param offset_dist: Number for the distance to move points from the surfaces of the geometry of the model.
         :param overwrite: Boolean to indicate if the existing SensorGrid should be overwritten
         """

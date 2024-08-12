@@ -30,7 +30,7 @@ def load_ml_parameters(path_json):
 
     # path to the images datasets
     path_training_data = os.path.join(parameter_dic["path_folder"], "training")
-    path_test_data = os.path.join(parameter_dic["path_folder"], "test")
+    path_test_data = os.path.join(parameter_dic["path_folder"], "tests")
     path_model_pkl = os.path.join(parameter_dic["path_folder"], identifier + ".pkl")
     # List with the identifier of the shapes
     shapes = parameter_dic["shapes"]
