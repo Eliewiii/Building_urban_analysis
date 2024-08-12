@@ -3,6 +3,7 @@
 """
 
 import os
+import pytest
 
 from current_development.vf_computation_with_radiance.vf_computation_with_radiance.utils import \
     from_polydata_to_dot_rad_str, from_rad_str_to_rad_file, from_rad_str_list_to_rad_file
@@ -21,6 +22,8 @@ point_c = [0., 1., 0.]
 point_d = [-1., 0., 0.]
 point_e = [0., 0., 0.]
 polydata_2 = PolyData([point_a, point_b, point_c, point_d, point_e])
+
+
 
 
 def test_from_polydata_to_dot_rad_str():
