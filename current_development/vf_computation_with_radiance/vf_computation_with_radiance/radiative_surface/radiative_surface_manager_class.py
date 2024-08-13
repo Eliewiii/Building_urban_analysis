@@ -8,7 +8,8 @@ from typing import List
 
 from concurrent.futures import ThreadPoolExecutor
 
-from current_development.mvfc_demonstration.utils_random_rectangle_generation import generate_random_rectangles
+from current_development.mvfc_demonstration.utils_random_rectangle_generation import \
+    generate_random_rectangles
 
 from .radiative_surface_class import RadiativeSurface
 
@@ -30,7 +31,8 @@ class RadiativeSurfaceManager:
 
     @classmethod
     def from_random_rectangles(cls, num_ref_rectangles: int = 1, num_random_rectangle: int = 10,
-                               min_size: float = 0.001, max_size: float = 100, max_distance_factor: float = 100, \
+                               min_size: float = 0.001, max_size: float = 100,
+                               max_distance_factor: float = 100, \
                                parallel_coaxial_squares: bool = False) -> "RadiativeSurfaceManager":
         """
         Make a RadiativeSurfaceManager object from random rectangles PolyData.
@@ -59,7 +61,7 @@ class RadiativeSurfaceManager:
                 parallel_coaxial_squares=parallel_coaxial_squares)
             # Set the id
             id_ref = f"ref_{i}"
-            id_random_list = [f"random_{j}_ref{i}" for j in range(num_random_rectangle)]
+            id_random_list = [f"random_{j}_ref_{i}" for j in range(num_random_rectangle)]
             # Convert the PolyData to RadiativeSurface objects
             ref_rad_surface_obj = RadiativeSurface.from_polydata(identifier=id_ref, polydata=ref_rectangles)
             random_rad_surface_obj_list = [
@@ -105,7 +107,8 @@ class RadiativeSurfaceManager:
         :return: RadiativeSurface, the RadiativeSurface object.
         """
         if identifier not in self.radiative_surface_dict:
-            raise ValueError(f"The RadiativeSurface id {identifier} object does not exist in the surface manager.")
+            raise ValueError(
+                f"The RadiativeSurface id {identifier} object does not exist in the surface manager.")
         return self.radiative_surface_dict[identifier]
 
     def make_context_octree(self):
@@ -138,95 +141,97 @@ class RadiativeSurfaceManager:
                         f"The viewed surface {viewed_surface_id} of the surface {radiative_surface_obj.identifier} "
                         f"is not in the radiative surface manager.")
 
-    def generate_radiance_inputs_for_all_surfaces(self, path_folder_emitter: str, path_folder_receiver: str,
-                                                  path_folder_output: str, nb_receiver_per_batch: int = 1):
+    def generate_radiance_inputs_for_all_surfaces(self, path_emitter_folder: str, path_receiver_folder: str,
+                                                  path_output_folder: str, nb_receiver_per_batch: int = 1):
         """
         Generate the Radiance input files for all the RadiativeSurface objects.
-        :param path_folder_emitter: str, the folder path where the emitter Radiance files will be saved.
-        :param path_folder_receiver: str, the folder path where the receiver Radiance files will be saved.
-        :param path_folder_output: str, the folder path where the output Radiance files will be saved.
+        :param path_emitter_folder: str, the folder path where the emitter Radiance files will be saved.
+        :param path_receiver_folder: str, the folder path where the receiver Radiance files will be saved.
+        :param path_output_folder: str, the folder path where the output Radiance files will be saved.
         :param nb_receiver_per_batch: int, the number of receivers in the receiver rad file per batch.
+            From testing, it seems that the number of receivers per batch has a limit around 100, but it might be computer dependant.
         """
         # Generate the folder if they don't exist
-        create_folder(path_folder_emitter, path_folder_emitter, path_folder_output, overwrite=True)
+        create_folder(path_emitter_folder, path_receiver_folder, path_output_folder, overwrite=True)
 
         argument_list_to_add = []
         # Generate the Radiance files for each surface
         for radiative_surface_obj in self.radiative_surface_dict.values():
             argument_list_to_add.extend(
-                self.generate_radiance_inputs_for_one_surface(radiative_surface_obj, path_folder_emitter,
-                                                              path_folder_receiver, path_folder_output,
+                self.generate_radiance_inputs_for_one_surface(radiative_surface_obj, path_emitter_folder,
+                                                              path_receiver_folder, path_output_folder,
                                                               nb_receiver_per_batch))
 
         self.add_argument_to_radiance_argument_list(argument_list_to_add)
 
-    def generate_radiance_inputs_for_all_surfaces_in_parallel(self, path_folder_emitter: str,
-                                                              path_folder_receiver: str,
-                                                              path_folder_output: str, nb_receiver_per_batch: int = 1,
+    def generate_radiance_inputs_for_all_surfaces_in_parallel(self, path_emitter_folder: str,
+                                                              path_receiver_folder: str,
+                                                              path_output_folder: str,
+                                                              nb_receiver_per_batch: int = 1,
                                                               num_workers=1, batch_size=1,
                                                               executor_type=ThreadPoolExecutor):
         """
         Generate the Radiance input files for all the RadiativeSurface objects in parallel.
-        :param path_folder_emitter: str, the folder path where the emitter Radiance files will be saved.
-        :param path_folder_emitter: str, the folder path where the emitter Radiance files will be saved.
-        :param path_folder_receiver: str, the folder path where the receiver Radiance files will be saved.
-        :param path_folder_output: str, the folder path where the output Radiance files will be saved.
+        :param path_emitter_folder: str, the folder path where the emitter Radiance files will be saved.
+        :param path_emitter_folder: str, the folder path where the emitter Radiance files will be saved.
+        :param path_receiver_folder: str, the folder path where the receiver Radiance files will be saved.
+        :param path_output_folder: str, the folder path where the output Radiance files will be saved.
         :param nb_receiver_per_batch: int, the number of receivers in the receiver rad file per batch.
         :param num_workers: int, the number of workers to use for the parallelization
         :param batch_size: int, the size of the batch of surfaces to process in parallel.
         :param executor_type: the type of executor to use for the parallelization.
         """
         # Generate the folder if they don't exist
-        create_folder(path_folder_emitter, path_folder_receiver, path_folder_output, overwrite=False)
+        create_folder(path_emitter_folder, path_receiver_folder, path_output_folder, overwrite=True)
         # Split t
         argument_list_to_add = parallel_computation_in_batches_with_return(
             func=self.generate_radiance_inputs_for_one_surface,
-            input_tables=list(self.radiative_surface_dict.values()),
+            input_tables=[[radiative_surface_obj] for radiative_surface_obj in
+                          self.radiative_surface_dict.values()],
             executor_type=executor_type,
             batch_size=batch_size,
             num_workers=num_workers,
-            path_folder_emitter=path_folder_emitter,
-            path_folder_receiver=path_folder_receiver,
-            path_folder_output=path_folder_output,
+            path_emitter_folder=path_emitter_folder,
+            path_receiver_folder=path_receiver_folder,
+            path_output_folder=path_output_folder,
             nb_receiver_per_batch=nb_receiver_per_batch)
 
         self.add_argument_to_radiance_argument_list(argument_list_to_add)
 
     def generate_radiance_inputs_for_one_surface(self, radiative_surface_obj: RadiativeSurface,
-                                                 path_folder_emitter: str, path_folder_receiver: str,
-                                                 path_folder_output: str, nb_receiver_per_batch: int = 1):
+                                                 path_emitter_folder: str, path_receiver_folder: str,
+                                                 path_output_folder: str, nb_receiver_per_batch: int = 1):
         """
         Generate the Radiance input files for one RadiativeSurface object.
         :param radiative_surface_obj: RadiativeSurface, the RadiativeSurface object.
-        :param path_folder_emitter: str, the folder path where the emitter Radiance files will be saved.
-        :param path_folder_receiver: str, the folder path where the receiver Radiance files will be saved.
-        :param path_folder_output: str, the folder path where the output Radiance files will be saved.
+        :param path_emitter_folder: str, the folder path where the emitter Radiance files will be saved.
+        :param path_receiver_folder: str, the folder path where the receiver Radiance files will be saved.
+        :param path_output_folder: str, the folder path where the output Radiance files will be saved.
         :param nb_receiver_per_batch: int, the number of receivers in the receiver rad file per batch. Each batch is
             simulated the with separate calls of Radiance and generate results in different files.
         """
         # Check if the surface has viewed surfaces aka simulation is needed
         if len(radiative_surface_obj.get_viewed_surfaces_id_list()) == 0:
-            return
+            return []
         # Get the rad_str of the emitter and receivers
         emitter_rad_str = radiative_surface_obj.rad_file_content
-        receiver_rad_str_list = [self.get_radiative_surface[receiver_id].rad_file_content for receiver_id in
+        receiver_rad_str_list = [self.get_radiative_surface(receiver_id).rad_file_content for receiver_id in
                                  radiative_surface_obj.get_viewed_surfaces_id_list()]
         receiver_rad_str_list_batches = split_into_batches(receiver_rad_str_list, nb_receiver_per_batch)
         # Generate the paths of the Radiance files
         name_emitter_rad_file, name_receiver_rad_file, name_output_file = radiative_surface_obj.generate_rad_file_name()
-        path_emitter_rad_file = os.path.join(path_folder_emitter, name_emitter_rad_file + ".rad")
+        path_emitter_rad_file = os.path.join(path_emitter_folder, name_emitter_rad_file + ".rad")
         #
         argument_list_to_add = []
         # Generate the Radiance files for each batch
         for i, batch in enumerate(receiver_rad_str_list_batches):
-            path_receiver_rad_file = os.path.join(path_folder_receiver, name_receiver_rad_file + f"{i}.rad")
-            path_output_file = os.path.join(path_folder_output, name_output_file + f"{i}.txt")
+            path_receiver_rad_file = os.path.join(path_receiver_folder, name_receiver_rad_file + f"{i}.rad")
+            path_output_file = os.path.join(path_output_folder, name_output_file + f"{i}.txt")
             # Generate the files
             from_emitter_receiver_rad_str_to_rad_files(emitter_rad_str=emitter_rad_str,
                                                        receiver_rad_str_list=batch,
                                                        path_emitter_rad_file=path_emitter_rad_file,
-                                                       path_receiver_rad_file=path_receiver_rad_file,
-                                                       path_output_file=path_output_file)
+                                                       path_receiver_rad_file=path_receiver_rad_file)
 
             # Add the Radiance argument to the list
             argument_list_to_add.append([path_emitter_rad_file, path_receiver_rad_file, path_output_file])

@@ -5,7 +5,8 @@ import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
 from typing import Callable, List, Type
 
-from current_development.vf_computation_with_radiance.vf_computation_with_radiance.utils.utils_batches import split_into_batches
+from current_development.vf_computation_with_radiance.vf_computation_with_radiance.utils.utils_batches import \
+    split_into_batches
 
 
 def parallel_computation_in_batches_with_return(func: Callable, input_tables: List[list],
@@ -25,7 +26,8 @@ def parallel_computation_in_batches_with_return(func: Callable, input_tables: Li
     results_list = []
     input_batches = split_into_batches(input_tables, batch_size=batch_size)
     with executor_type(max_workers=num_workers) as executor:
-        futures = [executor.submit(run_func_in_batch_with_list_input_wrapper_with_return, func, input_batch, **kwargs)
+        futures = [executor.submit(run_func_in_batch_with_list_input_wrapper_with_return, func, input_batch,
+                                   **kwargs)
                    for input_batch in input_batches]
         for future in concurrent.futures.as_completed(futures):
             try:
@@ -36,7 +38,8 @@ def parallel_computation_in_batches_with_return(func: Callable, input_tables: Li
     return results_list
 
 
-def run_func_in_batch_with_list_input_wrapper_with_return(func: Callable, args_list_in_batches: List[list], **kwargs):
+def run_func_in_batch_with_list_input_wrapper_with_return(func: Callable, args_list_in_batches: List[list],
+                                                          **kwargs):
     """
     Wrapper to call a function with arguments from a list of batches.
 
@@ -58,6 +61,7 @@ if __name__ == "__main__":
 
 
     input_data = [[1, 2], [3, 4], [5, 6], [7, 8]]
-    results_list = parallel_computation_in_batches_with_return(func=add, input_tables=input_data, batch_size=4,
-                                                          num_workers=2)
+    results_list = parallel_computation_in_batches_with_return(func=add, input_tables=input_data,
+                                                               batch_size=4,
+                                                               num_workers=2)
     print(results_list)

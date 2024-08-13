@@ -45,4 +45,4 @@ def check_parent_folder_exist(file_path: str):
 
 
 if __name__ == "__main__":
-    check_parent_folder_exist(r"../testss/test_generate_input_for_radiance.py")
+    check_parent_folder_exist(r"../tests/test_generate_input_for_radiance.py")
