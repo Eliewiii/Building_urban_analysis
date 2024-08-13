@@ -9,6 +9,9 @@ from typing import List
 
 from ..utils import from_polydata_to_dot_rad_str
 
+from current_development.mvfc_demonstration.utils_random_rectangle_generation import \
+    generate_random_rectangles
+
 
 class RadiativeSurface:
     """
@@ -36,7 +39,8 @@ class RadiativeSurface:
         new_radiative_surface.hb_identifier = self.hb_identifier
         new_radiative_surface.polydata_geometry = deepcopy(self.polydata_geometry, memo)
         new_radiative_surface.viewed_surfaces_id_list = deepcopy(self.viewed_surfaces_id_list, memo)
-        new_radiative_surface.viewed_surfaces_view_factor_list = deepcopy(self.viewed_surfaces_view_factor_list, memo)
+        new_radiative_surface.viewed_surfaces_view_factor_list = deepcopy(
+            self.viewed_surfaces_view_factor_list, memo)
         new_radiative_surface.emissivity = self.emissivity
         new_radiative_surface.reflectivity = self.reflectivity
         new_radiative_surface.transmissivity = self.transmissivity
@@ -74,6 +78,38 @@ class RadiativeSurface:
         radiative_surface_obj.rad_file_content = from_polydata_to_dot_rad_str(polydata, identifier)
 
         return radiative_surface_obj
+
+    @classmethod
+    def from_random_rectangles(cls, id_index: int, num_random_rectangle: int = 10,
+                               min_size: float = 0.001, max_size: float = 100,
+                               max_distance_factor: float = 100,
+                               parallel_coaxial_squares: bool = False):
+        """
+        Generate random rectangles and convert them to RadiativeSurface objects.
+        :param id_index: int, the identifier index to name the surfaces.
+        :param num_random_rectangle: int, the number of random rectangles.
+        :param min_size: float, the minimum size of the rectangles.
+        :param max_size: float, the maximum size of the rectangles.
+        :param max_distance_factor: float, the maximum distance factor between the rectangles.
+        :param parallel_coaxial_squares: bool, True to generate parallel coaxial squares.
+        """
+        if id_index % 50 == 0:
+            print(id_index)
+        ref_rectangle, random_rectangle_list = generate_random_rectangles(
+            nb_random_rectangles=num_random_rectangle, min_size=min_size, max_size=max_size,
+            max_distance_factor=max_distance_factor,
+            parallel_coaxial_squares=parallel_coaxial_squares)
+        # Set the id
+        id_ref = f"ref_{id_index}"
+        id_random_list = [f"random_{j}_ref_{id_index}" for j in range(num_random_rectangle)]
+        # Convert the PolyData to RadiativeSurface objects
+        ref_rad_surface_obj = RadiativeSurface.from_polydata(identifier=id_ref, polydata=ref_rectangle)
+        random_rad_surface_obj_list = [
+            RadiativeSurface.from_polydata(identifier=id_random, polydata=random_rectangle)
+            for id_random, random_rectangle in zip(id_random_list, random_rectangle_list)]
+        ref_rad_surface_obj.add_viewed_surfaces(id_random_list)
+
+        return random_rad_surface_obj_list + [ref_rad_surface_obj]
 
     def add_viewed_surfaces(self, viewed_surface_id_list: List[str]):
         """

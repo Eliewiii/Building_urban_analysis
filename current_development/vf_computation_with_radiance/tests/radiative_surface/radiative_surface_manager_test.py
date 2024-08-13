@@ -243,7 +243,7 @@ class TestRadiativeSurfaceManagerRadianceVFComputation:
         command_batch_size = 2
         num_workers = 2
         worker_batch_size = 2
-        radiative_surface_manager.run_vf_computation_in_parallel(
+        radiative_surface_manager.run_vf_computation_in_parallel_with_grouped_commands(
             nb_rays=nb_rays,
             command_batch_size=command_batch_size,
             num_workers=num_workers,

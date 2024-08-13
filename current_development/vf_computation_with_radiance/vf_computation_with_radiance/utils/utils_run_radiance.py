@@ -11,7 +11,7 @@ from current_development.vf_computation_with_radiance.vf_computation_with_radian
     check_parent_folder_exist, check_file_exist
 
 
-def run_radiant_vf_computation_in_batches(rad_argument_batch_list: List[List],
+def run_radiant_vf_computation_in_batches(*rad_argument_batch_list: List[List],
                                           path_octree_context_list: List[str] = None,
                                           nb_rays: int = 10000):
     """
@@ -22,9 +22,10 @@ def run_radiant_vf_computation_in_batches(rad_argument_batch_list: List[List],
     """
     # Generate the commands
     command_list = []
-    for rad_argument_batch, path_octree_context in zip(rad_argument_batch_list, path_octree_context_list):
+    for rad_argument_batch in rad_argument_batch_list:
         command_list.append(write_radiance_command_for_vf_computation(*rad_argument_batch,
-                                                                      path_octree_context, nb_rays))
+                                                                      # path_octree_context=path_octree_context,
+                                                                      nb_rays=nb_rays))
     # Run the commands in batches
     run_command_in_batches(command_list)
 
