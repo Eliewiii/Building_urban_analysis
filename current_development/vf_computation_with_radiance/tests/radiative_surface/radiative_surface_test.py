@@ -115,3 +115,19 @@ class TestRadiativeSurface:
         assert name_emitter_rad_file == f"emitter_{radiative_surface.identifier}"
         assert name_receiver_rad_file == f"receiver_{radiative_surface.identifier}_batch_"
         assert name_output_file == f"output_{radiative_surface.identifier}_batch_"
+
+    def test_from_random_rectangles(self):
+        """
+        Test the from_random_rectangles method of the RadiativeSurface class.
+        """
+        # todo
+        # radiative_surface = RadiativeSurface.from_random_rectangles()
+        # assert radiative_surface.identifier == "random_rectangle"
+        # assert radiative_surface.hb_identifier is None
+        # assert radiative_surface.polydata_geometry is not None
+        # assert radiative_surface.viewed_surfaces_id_list == []
+        # assert radiative_surface.viewed_surfaces_view_factor_list == []
+        # assert radiative_surface.emissivity is None
+        # assert radiative_surface.reflectivity is None
+        # assert radiative_surface.transmissivity is None
+        # assert radiative_surface.rad_file_content is not None

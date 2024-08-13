@@ -83,6 +83,22 @@ def init_radiative_surface_manager_in_parallel(num_ref_rectangles=1,
     return radiative_surface_manager_obj
 
 
+def init_radiative_surface_manager_from_random_rectangles_that_see_each_others(num_rectangles=1,
+                                                                               min_size=0.1, max_size=10,
+                                                                               max_distance_factor=10):
+    """
+
+    """
+
+    radiative_surface_manager_obj = RadiativeSurfaceManager.from_random_rectangles_that_see_each_others(
+        num_rectangles=num_rectangles,
+        min_size=min_size, max_size=max_size,
+        max_distance_factor=max_distance_factor,
+        parallel_coaxial_squares=False,
+    )
+    return radiative_surface_manager_obj
+
+
 def set_up_folders_for_radiance_files(rad_sim_folder):
     """
 

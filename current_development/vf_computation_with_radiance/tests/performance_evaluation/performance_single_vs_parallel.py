@@ -17,14 +17,14 @@ def main(path_simulation_manager_pkl, path_simulation_folder: str):
     :param path_simulation_folder: str, the path of the simulation folder.
     """
     # Input geometry
-    n_vf=100000
+    n_vf=1000000
     # Input batch within receiver rad_files
     num_receiver_per_file = 100
     # Input vf computation
     nb_rays = 100000
     command_batch_size = 10
-    num_workers = 8
-    worker_batch_size = 10
+    num_workers = 10
+    worker_batch_size = 11
     executor_type = ThreadPoolExecutor
     print(f"start init.")
     dur = time()
@@ -52,8 +52,24 @@ def main(path_simulation_manager_pkl, path_simulation_folder: str):
                              command_batch_size=command_batch_size,
                              num_workers=num_workers,
                              worker_batch_size=worker_batch_size,
-                             executor_type=executor_type)
-    print(f"Duration parallel: {dur}s for {n_vf} vf to compute.")
+                             executor_type=ThreadPoolExecutor)
+    print(f"Duration parallel Thread: {dur}s for {n_vf} vf to compute.")
+
+    dur = run_vf_computation(radiative_surface_manager_obj, type="parallel",
+                             nb_rays=nb_rays,
+                             command_batch_size=command_batch_size,
+                             num_workers=num_workers,
+                             worker_batch_size=worker_batch_size,
+                             executor_type=ProcessPoolExecutor)
+    print(f"Duration parallel process: {dur}s for {n_vf} vf to compute.")
+
+    # dur = run_vf_computation(radiative_surface_manager_obj, type="parallel",
+    #                          nb_rays=nb_rays,
+    #                          command_batch_size=command_batch_size,
+    #                          num_workers=num_workers,
+    #                          worker_batch_size=worker_batch_size,
+    #                          executor_type=executor_type)
+    # print(f"Duration parallel: {dur}s for {n_vf} vf to compute.")
 
     # dur = run_vf_computation(radiative_surface_manager_obj, type="parallel_grouped_commands",
     #                          nb_rays=nb_rays,
@@ -67,5 +83,6 @@ def main(path_simulation_manager_pkl, path_simulation_folder: str):
 
 if __name__ == "__main__":
     path_simulation_folder = r"D:\Elie\PhD\vf_computation\tests"
+    path_simulation_manager_pkl = r"D:\Elie\PhD\vf_computation\radiative_surface_manager_l_40K.pkl"
 
-    main(path_simulation_folder)
+    main(path_simulation_manager_pkl,path_simulation_folder)
