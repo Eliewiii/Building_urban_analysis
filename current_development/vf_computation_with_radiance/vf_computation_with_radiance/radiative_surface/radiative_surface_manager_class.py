@@ -13,10 +13,9 @@ from current_development.mvfc_demonstration.utils_random_rectangle_generation im
 
 from .radiative_surface_class import RadiativeSurface
 
-from ..utils import from_emitter_receiver_rad_str_to_rad_files
-from ..utils import split_into_batches
-from ..utils import create_folder
-from ..utils import parallel_computation_in_batches_with_return
+from ..utils import from_emitter_receiver_rad_str_to_rad_files, split_into_batches, create_folder, \
+    parallel_computation_in_batches_with_return, run_radiant_vf_computation_in_batches, \
+    compute_vf_between_emitter_and_receivers_radiance
 
 
 class RadiativeSurfaceManager:
@@ -25,9 +24,9 @@ class RadiativeSurfaceManager:
     """
 
     def __init__(self):
-        self.radiative_surface_dict = {}
+        self.radiative_surface_dict: dict = {}
         self.context_octree = None
-        self.radiance_argument_list = []
+        self.radiance_argument_list: List[List] = []
 
     @classmethod
     def from_random_rectangles(cls, num_ref_rectangles: int = 1, num_random_rectangle: int = 10,
@@ -122,7 +121,9 @@ class RadiativeSurfaceManager:
         Add an argument to the Radiance argument list.
         :param argument_list: the argument_list to add.
         """
-        self.radiance_argument_list.extend(argument_list)
+        for argument in argument_list:
+            if isinstance(argument, list) and not argument == []:
+                self.radiance_argument_list.append(argument)
 
     def reinitialize_radiance_argument_list(self):
         """
@@ -142,13 +143,13 @@ class RadiativeSurfaceManager:
                         f"is not in the radiative surface manager.")
 
     def generate_radiance_inputs_for_all_surfaces(self, path_emitter_folder: str, path_receiver_folder: str,
-                                                  path_output_folder: str, nb_receiver_per_batch: int = 1):
+                                                  path_output_folder: str, num_receiver_per_file: int = 1):
         """
         Generate the Radiance input files for all the RadiativeSurface objects.
         :param path_emitter_folder: str, the folder path where the emitter Radiance files will be saved.
         :param path_receiver_folder: str, the folder path where the receiver Radiance files will be saved.
         :param path_output_folder: str, the folder path where the output Radiance files will be saved.
-        :param nb_receiver_per_batch: int, the number of receivers in the receiver rad file per batch.
+        :param num_receiver_per_file: int, the number of receivers in the receiver rad file per batch.
             From testing, it seems that the number of receivers per batch has a limit around 100, but it might be computer dependant.
         """
         # Generate the folder if they don't exist
@@ -160,15 +161,15 @@ class RadiativeSurfaceManager:
             argument_list_to_add.extend(
                 self.generate_radiance_inputs_for_one_surface(radiative_surface_obj, path_emitter_folder,
                                                               path_receiver_folder, path_output_folder,
-                                                              nb_receiver_per_batch))
+                                                              num_receiver_per_file))
 
         self.add_argument_to_radiance_argument_list(argument_list_to_add)
 
     def generate_radiance_inputs_for_all_surfaces_in_parallel(self, path_emitter_folder: str,
                                                               path_receiver_folder: str,
                                                               path_output_folder: str,
-                                                              nb_receiver_per_batch: int = 1,
-                                                              num_workers=1, batch_size=1,
+                                                              num_receiver_per_file: int = 1,
+                                                              num_workers=1, worker_batch_size=1,
                                                               executor_type=ThreadPoolExecutor):
         """
         Generate the Radiance input files for all the RadiativeSurface objects in parallel.
@@ -176,9 +177,9 @@ class RadiativeSurfaceManager:
         :param path_emitter_folder: str, the folder path where the emitter Radiance files will be saved.
         :param path_receiver_folder: str, the folder path where the receiver Radiance files will be saved.
         :param path_output_folder: str, the folder path where the output Radiance files will be saved.
-        :param nb_receiver_per_batch: int, the number of receivers in the receiver rad file per batch.
+        :param num_receiver_per_file: int, the number of receivers in the receiver rad file per batch.
         :param num_workers: int, the number of workers to use for the parallelization
-        :param batch_size: int, the size of the batch of surfaces to process in parallel.
+        :param worker_batch_size: int, the size of the batch of surfaces to process in parallel.
         :param executor_type: the type of executor to use for the parallelization.
         """
         # Generate the folder if they don't exist
@@ -189,35 +190,37 @@ class RadiativeSurfaceManager:
             input_tables=[[radiative_surface_obj] for radiative_surface_obj in
                           self.radiative_surface_dict.values()],
             executor_type=executor_type,
-            batch_size=batch_size,
+            worker_batch_size=worker_batch_size,
             num_workers=num_workers,
             path_emitter_folder=path_emitter_folder,
             path_receiver_folder=path_receiver_folder,
             path_output_folder=path_output_folder,
-            nb_receiver_per_batch=nb_receiver_per_batch)
+            num_receiver_per_file=num_receiver_per_file)
+
+        argument_list_to_add = flatten_table_to_lists(argument_list_to_add)
 
         self.add_argument_to_radiance_argument_list(argument_list_to_add)
 
     def generate_radiance_inputs_for_one_surface(self, radiative_surface_obj: RadiativeSurface,
                                                  path_emitter_folder: str, path_receiver_folder: str,
-                                                 path_output_folder: str, nb_receiver_per_batch: int = 1):
+                                                 path_output_folder: str, num_receiver_per_file: int = 1):
         """
         Generate the Radiance input files for one RadiativeSurface object.
         :param radiative_surface_obj: RadiativeSurface, the RadiativeSurface object.
         :param path_emitter_folder: str, the folder path where the emitter Radiance files will be saved.
         :param path_receiver_folder: str, the folder path where the receiver Radiance files will be saved.
         :param path_output_folder: str, the folder path where the output Radiance files will be saved.
-        :param nb_receiver_per_batch: int, the number of receivers in the receiver rad file per batch. Each batch is
+        :param num_receiver_per_file: int, the number of receivers in the receiver rad file per batch. Each batch is
             simulated the with separate calls of Radiance and generate results in different files.
         """
         # Check if the surface has viewed surfaces aka simulation is needed
         if len(radiative_surface_obj.get_viewed_surfaces_id_list()) == 0:
-            return []
+            return [[]]
         # Get the rad_str of the emitter and receivers
         emitter_rad_str = radiative_surface_obj.rad_file_content
         receiver_rad_str_list = [self.get_radiative_surface(receiver_id).rad_file_content for receiver_id in
                                  radiative_surface_obj.get_viewed_surfaces_id_list()]
-        receiver_rad_str_list_batches = split_into_batches(receiver_rad_str_list, nb_receiver_per_batch)
+        receiver_rad_str_list_batches = split_into_batches(receiver_rad_str_list, num_receiver_per_file)
         # Generate the paths of the Radiance files
         name_emitter_rad_file, name_receiver_rad_file, name_output_file = radiative_surface_obj.generate_rad_file_name()
         path_emitter_rad_file = os.path.join(path_emitter_folder, name_emitter_rad_file + ".rad")
@@ -237,3 +240,72 @@ class RadiativeSurfaceManager:
             argument_list_to_add.append([path_emitter_rad_file, path_receiver_rad_file, path_output_file])
 
         return argument_list_to_add
+
+    def run_vf_computation(self, nb_rays: int = 10000,
+                           command_batch_size: int = 1):
+        """
+        Compute the view factor between multiple emitter and receiver with Radiance in batches.
+        :param nb_rays: int, the number of rays to use.
+        :param command_batch_size: int, the size of the batch of commands to run one after another
+            in one command in each thread/process.
+        :param num_workers: int, the number of workers to use for the parallelization.
+        :param worker_batch_size: int, the size of the batch of commands to run in parallel.
+        :param executor_type: the type of executor to use for the parallelization.
+        """
+        for input_arg in self.radiance_argument_list:
+            compute_vf_between_emitter_and_receivers_radiance(*input_arg, nb_rays=nb_rays)
+
+    def run_vf_computation_in_parallel(self, nb_rays: int = 10000,
+                                       command_batch_size: int = 1, num_workers=1, worker_batch_size=1,
+                                       executor_type=ThreadPoolExecutor):
+        """
+        Compute the view factor between multiple emitter and receiver with Radiance in batches.
+        :param nb_rays: int, the number of rays to use.
+        :param command_batch_size: int, the size of the batch of commands to run one after another
+            in one command in each thread/process.
+        :param num_workers: int, the number of workers to use for the parallelization.
+        :param worker_batch_size: int, the size of the batch of commands to run in parallel.
+        :param executor_type: the type of executor to use for the parallelization.
+        """
+        # todo: add the octree to the arguments (and maybe generate it)
+
+        parallel_computation_in_batches_with_return(
+            func=compute_vf_between_emitter_and_receivers_radiance,
+            input_tables=self.radiance_argument_list,
+            executor_type=executor_type,
+            worker_batch_size=worker_batch_size,
+            num_workers=num_workers,
+            nb_rays=nb_rays)
+
+    def run_vf_computation_in_parallel_with_grouped_commands(self, nb_rays: int = 10000,
+                                       command_batch_size: int = 1, num_workers=1, worker_batch_size=1,
+                                       executor_type=ThreadPoolExecutor):
+        """
+        Compute the view factor between multiple emitter and receiver with Radiance in batches.
+        :param nb_rays: int, the number of rays to use.
+        :param command_batch_size: int, the size of the batch of commands to run one after another
+            in one command in each thread/process.
+        :param num_workers: int, the number of workers to use for the parallelization.
+        :param worker_batch_size: int, the size of the batch of commands to run in parallel.
+        :param executor_type: the type of executor to use for the parallelization.
+        """
+        # todo: add the octree to the arguments (and maybe generate it)
+        input_batches = split_into_batches(self.radiance_argument_list, batch_size=command_batch_size)
+
+        parallel_computation_in_batches_with_return(
+            func=run_radiant_vf_computation_in_batches,
+            input_tables=input_batches,
+            executor_type=executor_type,
+            worker_batch_size=worker_batch_size,
+            num_workers=num_workers,
+            nb_rays=nb_rays)
+
+def flatten_table_to_lists(table):
+    flattened = []
+    for item in table:
+        if isinstance(item, list) and any(isinstance(sub_item, list) for sub_item in item):
+            flattened.extend(flatten_table_to_lists(item))  # Recursively flatten sublist
+        elif not item == [] or isinstance(item, list):  # Ignore empty lists
+            flattened.append(item)  # Add non-list item or innermost non-empty list to the flattened list
+    flattened = [item for item in flattened if not item == []]  # Remove empty lists
+    return flattened
