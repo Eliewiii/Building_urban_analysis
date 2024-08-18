@@ -18,7 +18,7 @@ dragonfly-uwg==0.5.534
 exceptiongroup==1.2.2
 fonttools==4.53.1
 geopandas==1.0.1
-git+https://github.com/Eliewiii/View_Factor_Computation_With_Radiance@0.1
+https://github.com/Eliewiii/View_Factor_Computation_With_Radiance/archive/refs/tags/0.1.zip
 honeybee-core==1.58.32
 honeybee-display==0.3.10
 honeybee-energy==1.107.4
