@@ -4,6 +4,7 @@ will be much different
 todo @Elie
 """
 from bua.building.context_filter.building_context import BuildingContextFilter
+from honeybee.model import Model
 
 
 class BuildingLWRContextFilter(BuildingContextFilter):
@@ -23,6 +24,27 @@ class BuildingLWRContextFilter(BuildingContextFilter):
     def add_sky_and_ground_surface(self):
         """ todo """
 
-    def generate_radiative_surface_objects_from_hb_model(self):
+    def generate_radiative_surface_dict_from_hb_model(self):
         """ todo """
         pass
+
+
+    @staticmethod
+    def _generate_radiative_surface_objects_from_hb_model(hb_model:Model):
+        """ todo """
+
+        def get_outdoor_faces_and_apertures_geometry_arrays(hb_model):
+            None  # define in additionnal package
+
+        hb_face_aperture_array_tuple_list = get_outdoor_faces_and_apertures_geometry_arrays(hb_model)
+
+        radiative_surface_object_list = []
+        for
+
+
+
+
+        pass
+
+
+

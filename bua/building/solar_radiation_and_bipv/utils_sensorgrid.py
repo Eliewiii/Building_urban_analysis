@@ -36,7 +36,6 @@ def generate_sensor_grid_for_hb_model(hb_model_obj, grid_size_x, grid_size_y, of
 
     if surface_type not in ["roof", "facades"]:
         dev_logger.critical(f"the surface_type is either not specified or incorrect, please check")
-        # TODO @Ale, what to do to stop the program here
     elif surface_type == "roof":
         lb_punched_face3d_list = get_hb_faces_list_according_to_type(hb_model_obj, is_roof)
     else:
