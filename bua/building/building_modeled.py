@@ -6,8 +6,10 @@ as they will be simulated
 import os
 import logging
 import shutil
+from typing import List
 
-from ladybug_geometry.geometry3d import Vector3D
+from bua.building.context_filter.building_lwr_context import BuildingLWRContextFilter
+from ladybug_geometry.geometry3d import Vector3D, Polyface3D
 from honeybee.model import Model
 from honeybee.room import Room
 
@@ -28,7 +30,6 @@ dev_logger = logging.getLogger("dev")
 class BuildingModeled(BuildingBasic):
     """BuildingBasic class, representing one building in an urban canopy."""
 
-
     def __init__(self, identifier, lb_face_footprint=None, urban_canopy=None, building_index_in_gis=None,
                  **kwargs):
         # Initialize with the inherited attributes from the BuildingBasic parent class
@@ -45,6 +46,7 @@ class BuildingModeled(BuildingBasic):
         self.is_target = False
         # Shading computation
         self.shading_context_obj = BuildingShadingContextFilter()
+        self.lwr_context_obj = BuildingLWRContextFilter()
         # Building Energy Simulation
         self.bes_obj = BuildingEnergySimulation(self.id)
         # Solar and panel radiation
@@ -199,7 +201,6 @@ class BuildingModeled(BuildingBasic):
 
         return building_dict
 
-
     def move(self, vector):
         """
         Move the building
@@ -262,6 +263,9 @@ class BuildingModeled(BuildingBasic):
                 north_angle=north_angle)
             self.merged_faces_hb_model_dict = merged_faces_hb_model_obj.to_dict()
 
+    ####################################################################################################################
+    # Context filtering methods
+    ####################################################################################################################
     def perform_first_pass_context_filtering(self, uc_building_id_list, uc_building_bounding_box_list,
                                              min_vf_criterion=0.01, overwrite=True):
         """
@@ -384,6 +388,89 @@ class BuildingModeled(BuildingBasic):
         # Return the list of context buildings
         nb_context_faces = len(self.shading_context_obj.context_shading_hb_shade_list)
         return nb_context_faces, self.shading_context_obj.second_pass_duration, flag_use_envelop
+
+    ####################################################################################################################
+    # Long Wave Radiation methods
+    ####################################################################################################################
+
+    def perform_first_pass_lwr_context_filtering(self, uc_building_id_list: List[str],
+                                                 uc_building_bounding_box_list: List[Polyface3D],
+                                                 min_vf_criterion: float = 0.01, overwrite: bool = True):
+        """
+        Perform the first pass of the context filtering algorithm on the building.
+        :param uc_building_id_list: list of str: list of the building IDs in the urban canopy
+        :param uc_building_bounding_box_list: list of Ladybug Polyface3D: list of the bounding boxes of the buildings
+            in the urban canopy
+        :param min_vf_criterion: float: default=0.01, minimum view factor criterion for the first pass of the
+            context filtering algorithm
+        :param overwrite: bool: default=False, if True, overwrite the context building list of the building
+        if it already exists
+        :return context_building_id_list: list of str: list of the IDs of the buildings that are context for the
+            current building
+        :return duration: float: duration of the simulation in seconds
+        """
+        # overwrite context filtering object if needed
+        if overwrite:
+            self.lwr_context_obj.overwrite_filtering(overwrite_first_pass=True)
+        # check if the first pass was already done and run it (if it was overwritten, it will be run again)
+        if not self.lwr_context_obj.first_pass_done:
+            # Set the min VF criterion
+            self.lwr_context_obj.set_mvfc(min_vf_criterion=min_vf_criterion)
+            # Convert HB model to LB Polyface3D, keeping only the faces with outdoor boundary condition
+            target_lb_polyface3d_of_outdoor_faces = self.lwr_context_obj. \
+                get_lb_polyface3d_of_outdoor_faces_from_hb_model(hb_model=self.hb_model_obj)
+
+            # Perform the first pass of the context filtering algorithm
+            selected_context_building_id_list, duration = self.lwr_context_obj. \
+                select_context_building_using_the_mvfc(
+                target_lb_polyface3d_of_outdoor_faces=target_lb_polyface3d_of_outdoor_faces,
+                target_building_id=self.id,
+                uc_building_id_list=uc_building_id_list,
+                uc_building_bounding_box_list=uc_building_bounding_box_list,
+                include_target_building=True)
+
+        # Return the list of context buildings
+        return selected_context_building_id_list, duration
+
+    def generate_radiative_surface_objects_for_lwr_computation(self,overwrite:bool=False):
+        """
+
+        """
+        if overwrite:
+            self.lwr_context_obj.overwrite_radiative_surfaces()
+
+        self.lwr_context_obj.generate_radiative_surface_objects_from_hb_model(hb_model=self.hb_model)
+
+
+    def perform_second_pass_lwr_context(self,
+                                        building_surfaces_dict: dict,
+                                        urban_canopy_pyvista_mesh: object,
+                                        ray_arg=None):
+        """
+        Perform the second pass of the context filtering algorithm on the building.
+        """
+        # Check if the first pass was done, if not second pass cannot be performed
+        if not self.shading_context_obj.first_pass_done:
+            dev_logger.info(
+                f"The first pass of the context filtering was not done for the building {self.id}, it will be ignored")
+            user_logger.info(
+                f"The first pass of the context filtering was not done for the building {self.id}, it will be ignored")
+            return
+
+        # check that the
+
+        # overwrite context filtering object if needed
+        if overwrite:
+            self.shading_context_obj.overwrite_filtering(overwrite_second_pass=True)
+        if not self.shading_context_obj.second_pass_done:
+            # Perform the first pass of the context filtering algorithm
+            nb_context_faces, duration = self.shading_context_obj.select_non_obstructed_context_faces_with_ray_tracing(
+                building_surfaces_dict=building_surfaces_dict,
+                urban_canopy_pyvista_mesh=urban_canopy_pyvista_mesh)
+
+    ####################################################################################################################
+    # Solar radiation and BIPV methods
+    ####################################################################################################################
 
     def add_selected_bipv_panels_to_shades(self):
         """

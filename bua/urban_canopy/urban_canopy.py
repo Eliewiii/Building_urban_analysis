@@ -9,6 +9,7 @@ import shutil
 
 from datetime import datetime
 
+from bua.building.merge_hb_model_faces.merge_hb_model_faces import merge_facades_and_roof_faces_in_hb_model
 from honeybee.model import Model
 
 from bua.urban_canopy.export_to_json import ExportUrbanCanopyToJson
@@ -645,7 +646,8 @@ class UrbanCanopy:
         self.full_context_pyvista_mesh = make_pyvista_polydata_from_list_of_hb_model_and_lb_polyface3d(
             hb_model_and_lb_polyface3d_list=hb_model_and_lb_polyface3d_list)
 
-    def perform_surface_selection_for_lwr_computation(self,min_cf_criterion, context_building_generation_options=None, overwrite=False):
+    def perform_surface_selection_for_lwr_computation(self, min_cf_criterion, context_building_generation_options=None,
+                                                      overwrite=False):
         """
         Perform the selection of the couple of surfaces to use for for the longwave radiation computation.
         :param min_cf_criterion: float, the minimum form factor criterion for the selection of the surfaces.
@@ -674,14 +676,17 @@ class UrbanCanopy:
             are_simulated=True, use_typology=True,
             typology_identification=False, autozoner=True,
             use_layout_from_typology=True,
-            use_properties_from_typology=True
+            use_properties_from_typology=True,
+            merge_facades_and_roof_faces_in_hb_model=False
         )
         # Perform this first pass context filtering for these is_simulated buildings that were just created
-        target_and_simulated_building_id_list = [building_id for building_id, building_obj in self.building_dict.items() if self.included_in_lwr_computation(building_obj)]
+        target_and_simulated_building_id_list = [building_id for building_id, building_obj in self.building_dict.items()
+                                                 if self.included_in_lwr_computation(building_obj)]
         for building_id, building_obj in self.building_dict.items():
             if self.included_in_lwr_computation(building_obj):
                 selected_building_id_list, duration = building_obj.perform_first_pass_lwr_context_filtering(
-                    uc_building_id_list=target_and_simulated_building_id_list,  # No need to put the other buildings, they will not be used in the LWR computation
+                    uc_building_id_list=target_and_simulated_building_id_list,
+                    # No need to put the other buildings, they will not be used in the LWR computation
                     uc_building_bounding_box_list=uc_building_bounding_box_list,
                     min_vf_criterion=min_vf_criterion, overwrite=overwrite)
 
@@ -690,9 +695,9 @@ class UrbanCanopy:
         # Generate surfaces objects for all outside surfaces of the buildings to use for the LWR computation (preprocess center, normal, area, and the edges)
         for building_id, building_obj in self.building_dict.items():
             if self.included_in_lwr_computation(building_obj):
-                building_obj.generate_surfaces_for_lwr_computation(overwrite=overwrite)
+                building_obj.generate_radiative_surface_objects_for_lwr_computation(overwrite=overwrite)
         # Gather akk the surfaces to use for the LWR computation
-        lwr_surfaces_dict={} # todo: @Elie: to be implemented, create a dict with {building_id: [surfaces_obj]}
+        lwr_surfaces_dict = {}  # todo: @Elie: to be implemented, create a dict with {building_id: [surfaces_obj]}
         for building_id, building_obj in self.building_dict.items():
             if self.included_in_lwr_computation(building_obj):
                 lwr_surfaces_dict[building_id] = building_obj.lwr_surfaces_dict
@@ -702,22 +707,22 @@ class UrbanCanopy:
                 building_obj.perform_second_pass_lwr_context(
                     building_surfaces_dict=lwr_surfaces_dict,
                     urban_canopy_pyvista_mesh=self.full_context_pyvista_mesh,
-                    ray_arg = None, overwrite=overwrite
+                    ray_arg=None
                 )
         # Add special surfaces for ground and sky according the location of the urban canopy
 
         # Make self.radiative_surface_manager
 
     @staticmethod
-    def included_in_lwr_computation(building_obj:BuildingModeled)->bool:
+    def included_in_lwr_computation(building_obj: BuildingModeled) -> bool:
         """
         Condition to check if the building is included in the LWR computation to simplify the code.
         :param building_obj: Building object
         :return: bool
         """
-        retrun (isinstance(building_obj, BuildingModeled) and (building_obj.is_simulated or building_obj.is_target))
+        retrun(isinstance(building_obj, BuildingModeled) and (building_obj.is_simulated or building_obj.is_target))
 
-    def perform_the_view_factor_computation_for_lwr(self, overwrite:bool=False):
+    def perform_the_view_factor_computation_for_lwr(self, overwrite: bool = False):
         """
         Perform the view factor computation for the longwave radiation.
         """

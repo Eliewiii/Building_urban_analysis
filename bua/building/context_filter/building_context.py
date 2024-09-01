@@ -17,7 +17,7 @@ user_logger = logging.getLogger("user")
 dev_logger = logging.getLogger("dev")
 
 # Minimum and maximum value for the minimum view factor criterion
-min_mvfc = 0.00001
+min_mvfc = 0.0000001
 max_mvfc = 1.
 
 
@@ -43,7 +43,7 @@ class BuildingContextFilter:
                                 f" factor criterion was set to 0.01")
 
     def select_context_building_using_the_mvfc(self, target_lb_polyface3d_of_outdoor_faces, target_building_id,
-                                               uc_building_id_list, uc_building_bounding_box_list):
+                                               uc_building_id_list, uc_building_bounding_box_list, include_target_building:bool=False):
         """
         Select the context buildings of a target building using the minimum view factor criterion.
         It corresponds to the first pass of the context filter algorithm
@@ -67,6 +67,9 @@ class BuildingContextFilter:
                                                                           min_vf_criterion=self.min_vf_criterion)):
                 # if it verifies the criterion we add it to the context building
                 self.selected_context_building_id_list.append(context_building_id)
+        # If the target building is included in the context buildings, we add it to the list
+        if include_target_building:
+            self.selected_context_building_id_list.append(target_building_id)
         # Set the first pass as done
         self.first_pass_done = True
         self.first_pass_duration = time() - timer
