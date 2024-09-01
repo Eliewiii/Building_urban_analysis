@@ -51,6 +51,7 @@ class UrbanCanopy:
 
         # Context filtering
         self.full_context_pyvista_mesh = None  # pyvista mesh of all the buildings within the urban canopy
+        self.lwr_context_pyvista_mesh = None  # pyvista mesh of all the buildings within the urban canopy
         self.shade_manager = ShadeManager()  # Shade manager object
 
         # UBES
@@ -407,7 +408,7 @@ class UrbanCanopy:
 
     def move_buildings_to_origin(self):
         """ Move the buildings to the origin if the urban canopy has not already been moved to the origin"""
-       # Check if the the urban canopy has already been moved to the origin
+        # Check if the the urban canopy has already been moved to the origin
         if self.moving_vector_to_origin is not None:
             # Check if a building has not been moved yet
             flag = False
@@ -602,7 +603,7 @@ class UrbanCanopy:
 
         return result_summary_dict
 
-    def make_pyvista_polydata_mesh_of_all_buildings(self):
+    def make_pyvista_polydata_mesh_of_all_buildings(self, target_and_simulated_only=False):
         """
         Make the Pyvista mesh of all the buildings in the urban canopy to be used for the second pass context filtering.
         That way, the mesh is generated once only and can be reused for all the buildings.
@@ -610,12 +611,12 @@ class UrbanCanopy:
         # Initialize the list of HB model and LB polyface3d to be used to make the full context mesh
         hb_model_and_lb_polyface3d_list = []
 
+        # todo: test this new veriosn of the function
+
         for building in self.building_dict.values():
-            if isinstance(building, BuildingBasic):
-                # Use the LB Polyface3D extruded footprint for BuildingBasic,
-                building.make_lb_polyface3d_extruded_footprint()  # Create it if it doen't exist
-                hb_model_and_lb_polyface3d_list.append(building.lb_polyface3d_extruded_footprint)
-            elif isinstance(building, BuildingModeled):
+            if (isinstance(building, BuildingModeled)
+                    and (not target_and_simulated_only
+                         or (building.is_target or building.is_simulated))):
                 # Use preferably the merged faces HB model of the building
                 if building.merged_faces_hb_model_dict is not None:
                     hb_model_and_lb_polyface3d_list.append(
@@ -628,6 +629,13 @@ class UrbanCanopy:
                     dev_logger.info(
                         f"The building {building.id} does not have a Honeybee model, it will not be included in the "
                         f"full context mesh")
+            elif target_and_simulated_only:
+                continue  # Skip the building if it is not a BuildingModeled
+            elif isinstance(building, BuildingBasic):
+                # Use the LB Polyface3D extruded footprint for BuildingBasic,
+                building.make_lb_polyface3d_extruded_footprint()  # Create it if it doen't exist
+                hb_model_and_lb_polyface3d_list.append(building.lb_polyface3d_extruded_footprint)
+
             else:
                 dev_logger.info(
                     f"The building {building.id} is not a BuildingBasic or a BuildingModeled type, it will not be "
@@ -637,32 +645,79 @@ class UrbanCanopy:
         self.full_context_pyvista_mesh = make_pyvista_polydata_from_list_of_hb_model_and_lb_polyface3d(
             hb_model_and_lb_polyface3d_list=hb_model_and_lb_polyface3d_list)
 
-    def perform_surface_selection_for_lwr_computation(self, context_building_generation_options=None, overwrite=False):
+    def perform_surface_selection_for_lwr_computation(self,min_cf_criterion, context_building_generation_options=None, overwrite=False):
         """
         Perform the selection of the couple of surfaces to use for for the longwave radiation computation.
+        :param min_cf_criterion: float, the minimum form factor criterion for the selection of the surfaces.
         :param context_building_generation_options: todo option for the generation of HB models of the context buildings
         :param overwrite: bool, if True, the existing selected surfaces will be overwritten.
         """
 
+        # todo @Elie: to be implemented, check the following steps,
         building_id_list_to_convert_to_building_modeled = []
+        uc_building_id_list = list(self.building_dict.keys())
+        uc_building_bounding_box_list = [building_obj.lb_polyface3d_oriented_bounding_box for
+                                         building_obj in self.building_dict.values()]
         # Selection of the buildings to use for the LWR using the min VF criterion (the same as the first pass context selection)
         for building_id, building_obj in self.building_dict.items():
             if (isinstance(building_obj, BuildingModeled) and building_obj.is_target):
-                None
+                selected_building_id_list, duration = building_obj.perform_first_pass_lwr_context_filtering(
+                    uc_building_id_list=uc_building_id_list,
+                    uc_building_bounding_box_list=uc_building_bounding_box_list,
+                    min_vf_criterion=min_vf_criterion, overwrite=overwrite)
+                building_id_list_to_convert_to_building_modeled.extend(selected_building_id_list)
 
         # Generate the HB model/convert to BuildingModeled the buildings to use for the LWR computation if they are not already and set is_simulated to True for them
-
+        # todo: @Elie: correct this function and make it so that it ignores buildings that are already BuildingModeled (to thus ignore duplicated building from the list)
+        self.transform_buildingbasic_into_building_model(
+            building_id_list=building_id_list_to_convert_to_building_modeled,
+            are_simulated=True, use_typology=True,
+            typology_identification=False, autozoner=True,
+            use_layout_from_typology=True,
+            use_properties_from_typology=True
+        )
         # Perform this first pass context filtering for these is_simulated buildings that were just created
-
-
+        target_and_simulated_building_id_list = [building_id for building_id, building_obj in self.building_dict.items() if self.included_in_lwr_computation(building_obj)]
+        for building_id, building_obj in self.building_dict.items():
+            if self.included_in_lwr_computation(building_obj):
+                selected_building_id_list, duration = building_obj.perform_first_pass_lwr_context_filtering(
+                    uc_building_id_list=target_and_simulated_building_id_list,  # No need to put the other buildings, they will not be used in the LWR computation
+                    uc_building_bounding_box_list=uc_building_bounding_box_list,
+                    min_vf_criterion=min_vf_criterion, overwrite=overwrite)
 
         # Generate the Pyvista mesh including all the buildings in the urban canopy or just the one within target and simulated
-
+        self.make_pyvista_polydata_mesh_of_all_buildings(target_and_simulated_only=True)
         # Generate surfaces objects for all outside surfaces of the buildings to use for the LWR computation (preprocess center, normal, area, and the edges)
-
+        for building_id, building_obj in self.building_dict.items():
+            if self.included_in_lwr_computation(building_obj):
+                building_obj.generate_surfaces_for_lwr_computation(overwrite=overwrite)
+        # Gather akk the surfaces to use for the LWR computation
+        lwr_surfaces_dict={} # todo: @Elie: to be implemented, create a dict with {building_id: [surfaces_obj]}
+        for building_id, building_obj in self.building_dict.items():
+            if self.included_in_lwr_computation(building_obj):
+                lwr_surfaces_dict[building_id] = building_obj.lwr_surfaces_dict
         # Perform an adjusted version second pass context filtering on the buildings to use for the LWR computation
+        for building_id, building_obj in self.building_dict.items():
+            if self.included_in_lwr_computation(building_obj):
+                building_obj.perform_second_pass_lwr_context(
+                    building_surfaces_dict=lwr_surfaces_dict,
+                    urban_canopy_pyvista_mesh=self.full_context_pyvista_mesh,
+                    ray_arg = None, overwrite=overwrite
+                )
+        # Add special surfaces for ground and sky according the location of the urban canopy
 
-    def perform_the_view_factor_computation_for_lwr(self, overwrite=False):
+        # Make self.radiative_surface_manager
+
+    @staticmethod
+    def included_in_lwr_computation(building_obj:BuildingModeled)->bool:
+        """
+        Condition to check if the building is included in the LWR computation to simplify the code.
+        :param building_obj: Building object
+        :return: bool
+        """
+        retrun (isinstance(building_obj, BuildingModeled) and (building_obj.is_simulated or building_obj.is_target))
+
+    def perform_the_view_factor_computation_for_lwr(self, overwrite:bool=False):
         """
         Perform the view factor computation for the longwave radiation.
         """
@@ -720,8 +775,10 @@ class UrbanCanopy:
                         f"The building id {building_id} is not in the urban canopy, make sure you indicated "
                         f"the proper identifier in the input")
                 elif not isinstance(self.building_dict[building_id], BuildingModeled) or (not \
-                        self.building_dict[building_id].is_target and not self.building_dict[
-                    building_id].to_simulate):
+                                                                                                  self.building_dict[
+                                                                                                      building_id].is_target and not
+                                                                                          self.building_dict[
+                                                                                              building_id].to_simulate):
                     user_logger.warning(
                         f"The building id {building_id} is not a target building or is not set to be "
                         f"simulated, thus it cannot be simulated by with EnergyPlus")
@@ -741,7 +798,7 @@ class UrbanCanopy:
         for building_obj in self.building_dict.values():
             if ((building_id_list is None or building_id_list is []) or building_obj.id in building_id_list) \
                     and isinstance(building_obj, BuildingModeled) and (
-                    building_obj.is_target or building_obj.to_simulate) :
+                    building_obj.is_target or building_obj.to_simulate):
                 # Generate the hbjson then idf file for the building simulation
                 building_obj.generate_idf_for_bes_with_openstudio(
                     path_ubes_temp_sim_folder=path_ubes_temp_sim_folder,
@@ -767,8 +824,10 @@ class UrbanCanopy:
                         f"The building id {building_id} is not in the urban canopy, make sure you indicated "
                         f"the proper identifier in the input")
                 elif not isinstance(self.building_dict[building_id], BuildingModeled) or (not \
-                        self.building_dict[building_id].is_target and not self.building_dict[
-                    building_id].to_simulate):
+                                                                                                  self.building_dict[
+                                                                                                      building_id].is_target and not
+                                                                                          self.building_dict[
+                                                                                              building_id].to_simulate):
                     user_logger.warning(
                         f"The building id {building_id} is not a target building or is not set to be "
                         f"simulated, thus it cannot be simulated by with EnergyPlus")
