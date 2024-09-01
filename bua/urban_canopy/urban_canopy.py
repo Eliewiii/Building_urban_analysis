@@ -637,6 +637,37 @@ class UrbanCanopy:
         self.full_context_pyvista_mesh = make_pyvista_polydata_from_list_of_hb_model_and_lb_polyface3d(
             hb_model_and_lb_polyface3d_list=hb_model_and_lb_polyface3d_list)
 
+    def perform_surface_selection_for_lwr_computation(self, context_building_generation_options=None, overwrite=False):
+        """
+        Perform the selection of the couple of surfaces to use for for the longwave radiation computation.
+        :param context_building_generation_options: todo option for the generation of HB models of the context buildings
+        :param overwrite: bool, if True, the existing selected surfaces will be overwritten.
+        """
+
+        building_id_list_to_convert_to_building_modeled = []
+        # Selection of the buildings to use for the LWR using the min VF criterion (the same as the first pass context selection)
+        for building_id, building_obj in self.building_dict.items():
+            if (isinstance(building_obj, BuildingModeled) and building_obj.is_target):
+                None
+
+        # Generate the HB model/convert to BuildingModeled the buildings to use for the LWR computation if they are not already and set is_simulated to True for them
+
+        # Perform this first pass context filtering for these is_simulated buildings that were just created
+
+
+
+        # Generate the Pyvista mesh including all the buildings in the urban canopy or just the one within target and simulated
+
+        # Generate surfaces objects for all outside surfaces of the buildings to use for the LWR computation (preprocess center, normal, area, and the edges)
+
+        # Perform an adjusted version second pass context filtering on the buildings to use for the LWR computation
+
+    def perform_the_view_factor_computation_for_lwr(self, overwrite=False):
+        """
+        Perform the view factor computation for the longwave radiation.
+        """
+        # todo: @Elie: to be implemented
+
     def load_epw_and_hb_simulation_parameters_for_ubes(self, path_simulation_folder,
                                                        path_hbjson_simulation_parameter_file,
                                                        path_weather_file, ddy_file=None,

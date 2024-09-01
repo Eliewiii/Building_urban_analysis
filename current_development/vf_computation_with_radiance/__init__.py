@@ -1,4 +1,0 @@
-__all__ = ['vf_computation_with_radiance']
-
-from .vf_computation_with_radiance.radiative_surface.radiative_surface_class import RadiativeSurface
-from .vf_computation_with_radiance.radiative_surface.radiative_surface_manager_class import RadiativeSurfaceManager
