@@ -12,39 +12,39 @@ SimulationCommonMethods.make_simulation_folder()
 urban_canopy_object = SimulationCommonMethods.create_or_load_urban_canopy_object(
     path_simulation_folder=default_path_simulation_folder)
 
-# ##### UBES
-# # Load Buildings from json
-# SimulationLoadBuildingOrGeometry.add_buildings_from_hbjson_to_urban_canopy(
-#     urban_canopy_object=urban_canopy_object,
-#     path_folder_hbjson=None,
-#     path_file_hbjson=path_hbjson_file_1,
-#     keep_context_from_hbjson=True,
-#     are_buildings_targets=True)
-# # Load epw and simulation parameters
-# UrbanBuildingEnergySimulationFunctions.load_epw_and_hb_simulation_parameters_for_ubes_in_urban_canopy(
-#     urban_canopy_obj=urban_canopy_object,
-#     # path_simulation_folder=default_path_simulation_folder,
-#     # path_hbjson_simulation_parameter_file=default_path_hbjson_simulation_parameter_file,
-#     # path_file_epw=default_path_weather_file,
-#     # ddy_file=None,
-#     overwrite=True)
-# # Write IDF
-# UrbanBuildingEnergySimulationFunctions.generate_idf_files_for_ubes_with_openstudio_in_urban_canopy(
-#     urban_canopy_obj=urban_canopy_object,
-#     path_simulation_folder=default_path_simulation_folder,
-#     overwrite=False,
-#     silent=True)
-# # Run IDF through EnergyPlus
-# UrbanBuildingEnergySimulationFunctions.run_idf_files_with_energyplus_for_ubes_in_urban_canopy(
-#     urban_canopy_obj=urban_canopy_object,
-#     path_simulation_folder=default_path_simulation_folder,
-#     overwrite=False,
-#     silent=True)
-# # Extract results
-# UrbanBuildingEnergySimulationFunctions.extract_results_from_ep_simulation(
-#     urban_canopy_obj=urban_canopy_object,
-#     path_simulation_folder=default_path_simulation_folder,
-#     cop_heating=3., cop_cooling=3.)
+##### UBES
+# Load Buildings from json
+SimulationLoadBuildingOrGeometry.add_buildings_from_hbjson_to_urban_canopy(
+    urban_canopy_object=urban_canopy_object,
+    path_folder_hbjson=None,
+    path_file_hbjson=path_hbjson_file_1,
+    keep_context_from_hbjson=True,
+    are_buildings_targets=True)
+# Load epw and simulation parameters
+UrbanBuildingEnergySimulationFunctions.load_epw_and_hb_simulation_parameters_for_ubes_in_urban_canopy(
+    urban_canopy_obj=urban_canopy_object,
+    # path_simulation_folder=default_path_simulation_folder,
+    # path_hbjson_simulation_parameter_file=default_path_hbjson_simulation_parameter_file,
+    # path_file_epw=default_path_weather_file,
+    # ddy_file=None,
+    overwrite=True)
+# Write IDF
+UrbanBuildingEnergySimulationFunctions.generate_idf_files_for_ubes_with_openstudio_in_urban_canopy(
+    urban_canopy_obj=urban_canopy_object,
+    path_simulation_folder=default_path_simulation_folder,
+    overwrite=False,
+    silent=True)
+# Run IDF through EnergyPlus
+UrbanBuildingEnergySimulationFunctions.run_idf_files_with_energyplus_for_ubes_in_urban_canopy(
+    urban_canopy_obj=urban_canopy_object,
+    path_simulation_folder=default_path_simulation_folder,
+    overwrite=False,
+    silent=True)
+# Extract results
+UrbanBuildingEnergySimulationFunctions.extract_results_from_ep_simulation(
+    urban_canopy_obj=urban_canopy_object,
+    path_simulation_folder=default_path_simulation_folder,
+    cop_heating=3., cop_cooling=3.)
 
 
 ##### BIPV

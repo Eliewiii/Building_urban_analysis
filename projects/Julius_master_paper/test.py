@@ -50,9 +50,7 @@ scenarios_dict = {
     "baseline": {
         "rooftech": rooftech_baseline,
         "envtech": envtech_baseline,
-        "replacement": replacement_frequency_baseline,
-        "x_size" : ,
-        "y_size" :
+        "replacement": replacement_frequency_baseline
     },
     "rep_5": {
         "rooftech": rooftech_baseline,
@@ -167,68 +165,19 @@ SimulationContextFiltering.perform_second_pass_of_context_filtering_on_buildings
     consider_windows=consider_windows,
     overwrite=True)
 
-# UBES
-# Write IDF
-UrbanBuildingEnergySimulationFunctions.generate_idf_files_for_ubes_with_openstudio_in_urban_canopy(
-    urban_canopy_obj=urban_canopy_object,
-    overwrite=True,
-    silent=True)
-# Run IDF through EnergyPlus
-UrbanBuildingEnergySimulationFunctions.run_idf_files_with_energyplus_for_ubes_in_urban_canopy(
-    urban_canopy_obj=urban_canopy_object,
-    overwrite=True,
-    silent=True)
-# Extract UBES results
-UrbanBuildingEnergySimulationFunctions.extract_results_from_ep_simulation(
-    urban_canopy_obj=urban_canopy_object,
-    cop_heating=3., cop_cooling=3.)
-
 
 # -------------------------------------------------------------------------------------------
 # Loop over scenarios for BIPV assessment
 # -------------------------------------------------------------------------------------------
-for scenario_id in scenarios_list:
-    # BIPV
-    # Merge the face of the buildings to reduce the number of faces and the
-    SimulationBuildingManipulationFunctions.make_merged_face_of_buildings_in_urban_canopy(
-        urban_canopy_object=urban_canopy_object)
-    # Generate the sensor grid
-    SimFunSolarRadAndBipv.generate_sensor_grid(urban_canopy_object=urban_canopy_object,
-                                               )
-    # Run annual solar irradiance simulation
-    SimFunSolarRadAndBipv.run_annual_solar_irradiance_simulation(urban_canopy_object=urban_canopy_object)
-    SimFunSolarRadAndBipv.run_bipv_harvesting_and_lca_simulation(
-        urban_canopy_object=urban_canopy_object,
-        building_id_list=None,
-        bipv_scenario_identifier=scenario_id,
-        roof_id_pv_tech = scenarios_dict[scenario_id]["rooftech"],
-        facades_id_pv_tech = scenarios_dict[scenario_id]["envtech"],
-        minimum_panel_eroi=1.5,
-        start_year=2024,
-        end_year=2074,
-        replacement_scenario="replace_failed_panels_every_X_years",
-        continue_simulation=False,
-        update_panel_technology=False,
-        replacement_frequency_in_years=scenarios_dict["replacement"])
 
-    ##### Run KPI computation
-    SimFunSolarRadAndBipv.run_kpi_simulation(urban_canopy_object=urban_canopy_object,
-                                             bipv_scenario_identifier=scenario_id,
-                                             grid_ghg_intensity=default_grid_ghg_intensity,
-                                             grid_energy_intensity=default_grid_energy_intensity,
-                                             grid_electricity_sell_price=default_grid_electricity_sell_price,
-                                             zone_area=None)
-
-    alternative_result_dict = {
-        "scenario_id": scenario_id,
-        "bipv_and_kpi_simulation": urban_canopy_object.bipv_scenario_dict[scenario_id].to_dict(),
-        "UBES": urban_canopy_object.ubes_obj.to_dict()
-    }
-    json_result_dict[scenario_id] = alternative_result_dict
-    # Overwrite the json file
-    with open(path_json_result_file, 'w') as json_file:
-        json.dump(json_result_dict, json_file)
-
+# BIPV
+# Merge the face of the buildings to reduce the number of faces and the
+#SimulationBuildingManipulationFunctions.make_merged_face_of_buildings_in_urban_canopy(
+#    urban_canopy_object=urban_canopy_object)
+# Generate the sensor grid
+SimFunSolarRadAndBipv.generate_sensor_grid(urban_canopy_object=urban_canopy_object
+                                           )
+SimFunSolarRadAndBipv.run_annual_solar_irradiance_simulation(urban_canopy_object=urban_canopy_object)
 
 
 
