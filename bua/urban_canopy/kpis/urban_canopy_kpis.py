@@ -256,14 +256,14 @@ class UrbanCanopyKPIs:
         # Economical
         self.economical_roi[sub_type] = \
             self.kpi_intermediate_results_dict[sub_type]["net_economical_income"]["cumulative"][-1] / \
-            bipv_result_dict["cost"]["net_profit"]["cumulative"][-1]
+            bipv_result_dict["cost"]["investment"]["total"]["cumulative"][-1]
         self.economical_payback_time["lifetime_investment"][sub_type] = self.compute_lifetime_investment_pay_back_time(
-            cumulative_annual_cost_list=bipv_result_dict["cost"]["net_profit"]["cumulative"],
+            cumulative_annual_cost_list=bipv_result_dict["cost"]["investment"]["total"]["cumulative"],
             cumulative_annual_offset_list=
             self.kpi_intermediate_results_dict[sub_type]["net_economical_income"][
                 "cumulative"])
         self.economical_payback_time["profitability_threshold"][sub_type] = self.compute_profitability_threshold_pay_back_time(
-            cumulative_annual_cost_list=bipv_result_dict["cost"]["net_profit"]["cumulative"],
+            cumulative_annual_cost_list=bipv_result_dict["cost"]["investment"]["total"]["cumulative"],
             cumulative_annual_offset_list=
             self.kpi_intermediate_results_dict[sub_type]["net_economical_income"][
                 "cumulative"])
@@ -335,13 +335,16 @@ class UrbanCanopyKPIs:
             bipv_result_dict["energy_harvested"]["yearly"]]
         # Net economical benefit
         sub_kpi_intermediate_results_dict["net_economical_income"]["yearly"] = [
-            electricity_harvested * self.grid_electricity_sell_price for electricity_harvested in
-            bipv_result_dict["energy_harvested"]["yearly"]]
-        sub_kpi_intermediate_results_dict["net_economical_benefit"]["yearly"] = [
-            electricity_harvested * self.grid_electricity_sell_price - bipv_cost for
-            electricity_harvested, bipv_cost in
+            electricity_harvested * self.grid_electricity_sell_price + bipv_revenues for
+            electricity_harvested, bipv_revenues in
             zip(bipv_result_dict["energy_harvested"]["yearly"],
-                bipv_result_dict["cost"]["net_profit"]["yearly"])]
+                bipv_result_dict["cost"]["revenue"]["total"]["yearly"])]
+        sub_kpi_intermediate_results_dict["net_economical_benefit"]["yearly"] = [
+            electricity_harvested * self.grid_electricity_sell_price + bipv_revenues - bipv_cost for
+            electricity_harvested,bipv_revenues, bipv_cost in
+            zip(bipv_result_dict["energy_harvested"]["yearly"],
+                bipv_result_dict["cost"]["revenue"]["total"]["yearly"],
+                bipv_result_dict["cost"]["investment"]["total"])]
         if self.zone_area is not None:
             sub_kpi_intermediate_results_dict["net_economical_benefit_density"]["zone"]["yearly"] = [
                 net_economical_benefit / self.zone_area for net_economical_benefit in
